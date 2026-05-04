@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Concierge — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --sidebar-bg:#0f172a;
+  --sidebar-text:rgba(255,255,255,0.55);
+  --sidebar-active:#4f46e5;
+  --sidebar-active-bg:rgba(79,70,229,0.15);
+  --content-bg:#f1f5f9;
+  --card-bg:#ffffff;
+  --border:#e2e8f0;
+  --text-primary:#0f172a;
+  --text-secondary:#64748b;
+  --indigo:#4f46e5;
+  --green:#10b981;
+  --orange:#f59e0b;
+  --red:#ef4444;
+  --blue:#3b82f6;
+  --purple:#8b5cf6;
+}
+html,body{height:100%;font-family:'Montserrat',sans-serif;background:var(--content-bg);color:var(--text-primary)}
+body{display:flex}
+
+/* ── SIDEBAR ── */
+#sidebar{width:240px;min-width:240px;height:100vh;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:24px 20px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:8px;cursor:pointer;text-decoration:none;transition:opacity 0.18s}
+.sidebar-logo:hover{opacity:0.8}
+.logo-soma{font-size:18px;font-weight:300;color:#fff;letter-spacing:0.5px;font-family:'Montserrat',sans-serif}
+.logo-pipe{width:1px;height:24px;background:rgba(255,255,255,0.45)}
+.logo-partners{font-size:11px;font-weight:700;letter-spacing:5px;color:#fff;text-transform:uppercase;font-family:'Montserrat',sans-serif}
+.sidebar-section{padding:16px 12px 4px;font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.25);text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:1px 8px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--sidebar-text);transition:all 0.18s;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:#fff}
+.nav-item.active{background:var(--sidebar-active-bg);color:#fff}
+.nav-item.active .nav-icon svg{stroke:#818cf8}
+.nav-icon{display:flex;align-items:center;width:18px;flex-shrink:0}
+.nav-icon svg{width:15px;height:15px;stroke:var(--sidebar-text);stroke-width:1.8;fill:none;transition:stroke 0.18s}
+.nav-item:hover .nav-icon svg{stroke:#fff}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid rgba(255,255,255,0.07)}
+.back-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;color:rgba(255,255,255,0.35);font-size:12px;cursor:pointer;transition:all 0.18s}
+.back-btn:hover{color:#fff;background:rgba(255,255,255,0.06)}
+.back-btn svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none}
+
+/* ── MAIN ── */
+#main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:20px;font-weight:700;color:var(--text-primary)}
+.topbar-sub{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+.content-area{padding:28px 32px;flex:1}
+
+/* ── SECTIONS ── */
+.section{display:none}.section.active{display:block}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.kpi-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:16px}
+.kpi-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-icon svg{width:20px;height:20px;stroke-width:1.8;fill:none}
+.kpi-icon.blue{background:#eff6ff}.kpi-icon.blue svg{stroke:#3b82f6}
+.kpi-icon.green{background:#ecfdf5}.kpi-icon.green svg{stroke:#10b981}
+.kpi-icon.orange{background:#fffbeb}.kpi-icon.orange svg{stroke:#f59e0b}
+.kpi-icon.purple{background:#f5f3ff}.kpi-icon.purple svg{stroke:#8b5cf6}
+.kpi-icon.red{background:#fff0f0}.kpi-icon.red svg{stroke:#ef4444}
+.kpi-label{font-size:12px;color:var(--text-secondary);font-weight:500;margin-bottom:4px}
+.kpi-value{font-size:22px;font-weight:800;color:var(--text-primary)}
+.kpi-delta{font-size:11px;margin-top:3px}
+.kpi-delta.up{color:var(--green)}.kpi-delta.warn{color:var(--orange)}.kpi-delta.down{color:var(--red)}
+
+/* ── CARD ── */
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.card-header{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.card-title{font-size:15px;font-weight:700}
+.card-body{padding:0}
+
+/* ── TABLE ── */
+.table-toolbar{display:flex;gap:10px;align-items:center}
+.search-box{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;padding:7px 12px;background:#fff;font-size:13px}
+.search-box svg{width:14px;height:14px;stroke:var(--text-secondary);stroke-width:2;fill:none;flex-shrink:0}
+.search-box input{border:none;outline:none;font-family:'Montserrat',sans-serif;font-size:13px;width:180px;color:var(--text-primary)}
+.search-box input::placeholder{color:var(--text-secondary)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;background:#f8fafc;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid #f1f5f9;transition:background 0.15s;cursor:pointer}
+tbody tr:hover{background:#f8fafc}
+tbody tr:last-child{border-bottom:none}
+td{padding:13px 16px;font-size:13px;color:var(--text-primary)}
+.avatar{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:#fff}
+.client-cell{display:flex;align-items:center;gap:10px}
+.client-name{font-weight:600;font-size:13px}
+.client-email{font-size:11px;color:var(--text-secondary);margin-top:1px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-orange{background:#fef3c7;color:#92400e}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-gray{background:#f1f5f9;color:#475569}
+.badge-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.badge-green .badge-dot{background:#10b981}
+.badge-orange .badge-dot{background:#f59e0b}
+.badge-red .badge-dot{background:#ef4444}
+.badge-blue .badge-dot{background:#3b82f6}
+.badge-gray .badge-dot{background:#94a3b8}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all 0.18s}
+.btn svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
+.btn-primary{background:var(--indigo);color:#fff}.btn-primary:hover{background:#4338ca}
+.btn-outline{background:#fff;color:var(--text-primary);border:1px solid var(--border)}.btn-outline:hover{background:#f8fafc}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid transparent;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600}
+.btn-ghost:hover{background:#f1f5f9;color:var(--text-primary);border-color:var(--border)}
+.btn-icon{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all 0.18s}
+.btn-icon:hover{background:#f1f5f9}
+.btn-icon svg{width:13px;height:13px;stroke:var(--text-secondary);stroke-width:2;fill:none}
+.btn-icon:hover svg{stroke:var(--text-primary)}
+.btn-icon.danger:hover{background:#fee2e2;border-color:#fca5a5}
+.btn-icon.danger:hover svg{stroke:var(--red)}
+
+/* ── TABLE FOOTER ── */
+.table-footer{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,0.25)}
+.modal-header{padding:24px 28px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:17px;font-weight:700}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:4px 8px;border-radius:6px;display:flex;align-items:center}
+.modal-close:hover{background:#f1f5f9}
+.modal-close svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none}
+.modal-body{padding:20px 28px}
+.modal-footer{padding:0 28px 24px;display:flex;gap:10px;justify-content:flex-end}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.form-control{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Montserrat',sans-serif;color:var(--text-primary);outline:none;transition:border 0.18s}
+.form-control:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+select.form-control{cursor:pointer;background:#fff}
+textarea.form-control{resize:vertical;min-height:80px}
+
+/* ── TIMELINE ── */
+.timeline{padding:16px 24px}
+.timeline-item{display:flex;gap:14px;padding-bottom:20px;position:relative}
+.timeline-item:not(:last-child)::before{content:'';position:absolute;left:16px;top:34px;bottom:0;width:1px;background:#e2e8f0}
+.timeline-dot{width:33px;height:33px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;border:1px solid transparent}
+.timeline-dot svg{width:14px;height:14px;stroke-width:2;fill:none}
+.timeline-dot.green{background:#ecfdf5;border-color:#a7f3d0}.timeline-dot.green svg{stroke:#059669}
+.timeline-dot.blue{background:#eff6ff;border-color:#bfdbfe}.timeline-dot.blue svg{stroke:#2563eb}
+.timeline-dot.orange{background:#fffbeb;border-color:#fde68a}.timeline-dot.orange svg{stroke:#d97706}
+.timeline-dot.purple{background:#f5f3ff;border-color:#ddd6fe}.timeline-dot.purple svg{stroke:#7c3aed}
+.timeline-content{flex:1;padding-top:4px}
+.timeline-header{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.timeline-action{font-size:13px;font-weight:600}
+.timeline-date{font-size:11px;color:var(--text-secondary)}
+.timeline-desc{font-size:12px;color:var(--text-secondary);line-height:1.5}
+
+/* ── ALERTS ── */
+.alert-list{display:flex;flex-direction:column;gap:10px}
+.alert-item{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
+.alert-item.urgent{border-left:3px solid var(--red)}
+.alert-item.warn{border-left:3px solid var(--orange)}
+.alert-item.ok{border-left:3px solid var(--green)}
+.alert-icon-wrap{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alert-icon-wrap svg{width:15px;height:15px;stroke-width:2;fill:none}
+.alert-icon-wrap.red{background:#fee2e2}.alert-icon-wrap.red svg{stroke:var(--red)}
+.alert-icon-wrap.orange{background:#fef3c7}.alert-icon-wrap.orange svg{stroke:var(--orange)}
+.alert-icon-wrap.green{background:#d1fae5}.alert-icon-wrap.green svg{stroke:var(--green)}
+.alert-icon-wrap.blue{background:#dbeafe}.alert-icon-wrap.blue svg{stroke:var(--blue)}
+.alert-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.alert-desc{font-size:11px;color:var(--text-secondary);line-height:1.4}
+
+/* ── DOCS ── */
+.doc-list{display:flex;flex-direction:column;gap:8px}
+.doc-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:#fafafa}
+.doc-icon-wrap{width:36px;height:36px;border-radius:8px;background:#eff6ff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.doc-icon-wrap svg{width:16px;height:16px;stroke:#3b82f6;stroke-width:2;fill:none}
+.doc-name{font-size:13px;font-weight:600}
+.doc-meta{font-size:11px;color:var(--text-secondary);margin-top:2px}
+.doc-actions{margin-left:auto;display:flex;gap:6px}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:48px 24px;color:var(--text-secondary)}
+.empty-state-icon{width:48px;height:48px;border-radius:12px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.empty-state-icon svg{width:22px;height:22px;stroke:#94a3b8;stroke-width:1.5;fill:none}
+.empty-title{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+.empty-desc{font-size:12px}
+
+/* ── PRIORITY ── */
+.priority-wrap{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600}
+.priority-wrap svg{width:12px;height:12px;fill:none;stroke-width:2.5}
+.priority-high{color:var(--red)}.priority-high svg{stroke:var(--red)}
+.priority-med{color:var(--orange)}.priority-med svg{stroke:var(--orange)}
+.priority-low{color:var(--green)}.priority-low svg{stroke:var(--green)}
+
+/* ── DIVIDER ── */
+.type-label{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:#f1f5f9;color:var(--text-secondary)}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <a class="sidebar-logo" href="soma-partners.html">
+    <span class="logo-soma">Soma</span>
+    <div class="logo-pipe"></div>
+    <span class="logo-partners">Partners</span>
+  </a>
+
+  <div class="nav-item active" data-section="dashboard">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+    Visão Geral
+  </div>
+
+  <div class="sidebar-section">Gestão</div>
+  <div class="nav-item" data-section="clientes">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+    Clientes
+  </div>
+  <div class="nav-item" data-section="pagamentos">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
+    Pagamentos
+  </div>
+  <div class="nav-item" data-section="tarefas">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+    Tarefas
+  </div>
+  <div class="nav-item" data-section="documentos">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+    Documentos
+  </div>
+
+  <div class="sidebar-section">Histórico</div>
+  <div class="nav-item" data-section="historico">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+    Interações
+  </div>
+
+  <div class="sidebar-section">Alertas</div>
+  <div class="nav-item" data-section="lembretes">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+    Lembretes
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="back-btn" onclick="window.location.href='soma-partners.html'">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Voltar ao início
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Visão Geral</div>
+      <div class="topbar-sub" id="topbar-sub">Resumo operacional e financeiro dos clientes</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-sm" onclick="exportData()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar
+      </button>
+      <button class="btn btn-primary btn-sm" id="btn-primary-action" onclick="openModal('modal-cliente')">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo Cliente
+      </button>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- DASHBOARD -->
+    <div id="section-dashboard" class="section active">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div><div class="kpi-label">Total de Clientes</div><div class="kpi-value" id="kpi-total-clientes">0</div><div class="kpi-delta up" id="kpi-delta-clientes"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon orange"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+          <div><div class="kpi-label">Pagamentos Pendentes</div><div class="kpi-value" id="kpi-pendentes">0</div><div class="kpi-delta warn" id="kpi-delta-pendentes"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon red"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div><div class="kpi-label">Tarefas em Aberto</div><div class="kpi-value" id="kpi-tarefas">0</div><div class="kpi-delta down" id="kpi-delta-tarefas"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon purple"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div><div class="kpi-label">Lembretes Hoje</div><div class="kpi-value" id="kpi-lembretes">0</div><div class="kpi-delta" id="kpi-delta-lembretes"></div></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 380px;gap:20px">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Clientes Recentes</span>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('clientes')">Ver todos</button>
+          </div>
+          <div class="card-body">
+            <table id="table-dashboard-clientes">
+              <thead><tr><th>Cliente</th><th>Status Pgto</th><th>Tarefas</th><th>Último Contato</th></tr></thead>
+              <tbody id="tbody-dashboard"></tbody>
+            </table>
+            <div class="table-footer"><span id="dashboard-count">Nenhum cliente cadastrado</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Alertas do Dia</span></div>
+          <div class="card-body" style="padding:16px"><div class="alert-list" id="alertas-hoje"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div id="section-clientes" class="section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Todos os Clientes</span>
+          <div class="table-toolbar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-clientes" placeholder="Buscar cliente..." oninput="filterClientes()">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modal-cliente')">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Cliente</th><th>Telefone</th><th>Próximo Pgto</th><th>Status</th><th>Tarefas</th><th>Ações</th></tr></thead>
+            <tbody id="tbody-clientes"></tbody>
+          </table>
+          <div class="table-footer"><span id="clientes-count">0 clientes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGAMENTOS -->
+    <div id="section-pagamentos" class="section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Controle de Pagamentos</span>
+          <div class="table-toolbar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-pagamentos" placeholder="Buscar..." oninput="filterPagamentos()">
+            </div>
+            <select class="form-control btn-sm" id="filter-status-pgto" onchange="filterPagamentos()" style="width:140px;padding:7px 10px;font-size:12px">
+              <option value="">Todos os status</option>
+              <option value="pendente">Pendente</option>
+              <option value="pago">Pago</option>
+              <option value="atrasado">Atrasado</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modal-pagamento')">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Cliente</th><th>Descrição</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="tbody-pagamentos"></tbody>
+          </table>
+          <div class="table-footer"><span id="pagamentos-count">0 registros</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAREFAS -->
+    <div id="section-tarefas" class="section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Gestão de Tarefas</span>
+          <div class="table-toolbar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-tarefas" placeholder="Buscar tarefa..." oninput="filterTarefas()">
+            </div>
+            <select class="form-control btn-sm" id="filter-status-tarefa" onchange="filterTarefas()" style="width:150px;padding:7px 10px;font-size:12px">
+              <option value="">Todos os status</option>
+              <option value="aberta">Aberta</option>
+              <option value="em_andamento">Em andamento</option>
+              <option value="concluida">Concluída</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modal-tarefa')">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nova
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Tarefa</th><th>Cliente</th><th>Prioridade</th><th>Status</th><th>Prazo</th><th>Ações</th></tr></thead>
+            <tbody id="tbody-tarefas"></tbody>
+          </table>
+          <div class="table-footer"><span id="tarefas-count">0 tarefas</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTOS -->
+    <div id="section-documentos" class="section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Documentos</span>
+          <div class="table-toolbar">
+            <select class="form-control btn-sm" id="filter-cliente-docs" onchange="filterDocumentos()" style="width:200px;padding:7px 10px;font-size:12px">
+              <option value="">Todos os clientes</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modal-documento')">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Adicionar
+            </button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:16px"><div class="doc-list" id="doc-list"></div></div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div id="section-historico" class="section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Histórico de Interações</span>
+          <div class="table-toolbar">
+            <select class="form-control btn-sm" id="filter-cliente-hist" onchange="renderHistorico()" style="width:200px;padding:7px 10px;font-size:12px">
+              <option value="">Todos os clientes</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modal-interacao')">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Registrar
+            </button>
+          </div>
+        </div>
+        <div class="card-body"><div class="timeline" id="timeline-historico"></div></div>
+      </div>
+    </div>
+
+    <!-- LEMBRETES -->
+    <div id="section-lembretes" class="section">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Lembretes Ativos</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modal-lembrete')">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo
+            </button>
+          </div>
+          <div class="card-body" style="padding:16px"><div id="lembretes-list" class="alert-list"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Vencimentos Próximos</span></div>
+          <div class="card-body" style="padding:16px"><div id="vencimentos-list" class="alert-list"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+
+<!-- Modal Cliente -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-cliente-title">Novo Cliente</div>
+      <button class="modal-close" onclick="closeModal('modal-cliente')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cliente-edit-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nome completo *</label><input class="form-control" id="c-nome" placeholder="João Silva"></div>
+        <div class="form-group"><label class="form-label">E-mail *</label><input class="form-control" id="c-email" type="email" placeholder="joao@email.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Telefone</label><input class="form-control" id="c-telefone" placeholder="(11) 99999-9999"></div>
+        <div class="form-group"><label class="form-label">CPF / CNPJ</label><input class="form-control" id="c-cpf" placeholder="000.000.000-00"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Data de nascimento</label><input class="form-control" id="c-nascimento" type="date"></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-control" id="c-status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Endereço</label><input class="form-control" id="c-endereco" placeholder="Rua, número, cidade"></div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="c-obs" placeholder="Informações relevantes..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveCliente()">Salvar Cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Pagamento -->
+<div class="modal-overlay" id="modal-pagamento">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-pgt-title">Novo Pagamento</div>
+      <button class="modal-close" onclick="closeModal('modal-pagamento')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="pgt-edit-id">
+      <div class="form-group"><label class="form-label">Cliente *</label><select class="form-control" id="pgt-cliente"></select></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Descrição *</label><input class="form-control" id="pgt-desc" placeholder="Ex: Mensalidade, Taxa..."></div>
+        <div class="form-group"><label class="form-label">Valor (R$) *</label><input class="form-control" id="pgt-valor" type="number" step="0.01" placeholder="0,00"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Vencimento *</label><input class="form-control" id="pgt-vencimento" type="date"></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-control" id="pgt-status"><option value="pendente">Pendente</option><option value="pago">Pago</option><option value="atrasado">Atrasado</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="pgt-obs" rows="2" placeholder="Notas adicionais..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-pagamento')">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePagamento()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tarefa -->
+<div class="modal-overlay" id="modal-tarefa">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-tar-title">Nova Tarefa</div>
+      <button class="modal-close" onclick="closeModal('modal-tarefa')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="tar-edit-id">
+      <div class="form-group"><label class="form-label">Cliente</label><select class="form-control" id="tar-cliente"></select></div>
+      <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="tar-titulo" placeholder="Descreva a tarefa..."></div>
+      <div class="form-group"><label class="form-label">Descrição</label><textarea class="form-control" id="tar-desc" rows="2" placeholder="Detalhes..."></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Prioridade</label><select class="form-control" id="tar-prioridade"><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></select></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-control" id="tar-status"><option value="aberta">Aberta</option><option value="em_andamento">Em andamento</option><option value="concluida">Concluída</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Prazo</label><input class="form-control" id="tar-prazo" type="date"></div>
+        <div class="form-group"><label class="form-label">Responsável</label><input class="form-control" id="tar-responsavel" placeholder="Nome do responsável"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-tarefa')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTarefa()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Documento -->
+<div class="modal-overlay" id="modal-documento">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Adicionar Documento</div>
+      <button class="modal-close" onclick="closeModal('modal-documento')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Cliente *</label><select class="form-control" id="doc-cliente"></select></div>
+      <div class="form-group"><label class="form-label">Nome do Documento *</label><input class="form-control" id="doc-nome" placeholder="Ex: Contrato, RG, Comprovante..."></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tipo</label><select class="form-control" id="doc-tipo"><option>Contrato</option><option>Documento Pessoal</option><option>Comprovante</option><option>Proposta</option><option>Relatório</option><option>Outro</option></select></div>
+        <div class="form-group"><label class="form-label">Nome do arquivo</label><input class="form-control" id="doc-arquivo" placeholder="arquivo.pdf"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="doc-obs" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-documento')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveDocumento()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Interação -->
+<div class="modal-overlay" id="modal-interacao">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Registrar Interação</div>
+      <button class="modal-close" onclick="closeModal('modal-interacao')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Cliente *</label><select class="form-control" id="int-cliente"></select></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tipo</label><select class="form-control" id="int-tipo"><option value="ligacao">Ligação</option><option value="reuniao">Reunião</option><option value="email">E-mail</option><option value="whatsapp">WhatsApp</option><option value="outro">Outro</option></select></div>
+        <div class="form-group"><label class="form-label">Data *</label><input class="form-control" id="int-data" type="date"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Descrição *</label><textarea class="form-control" id="int-desc" rows="3" placeholder="O que foi discutido?"></textarea></div>
+      <div class="form-group"><label class="form-label">Resolução / Próximo passo</label><input class="form-control" id="int-resolucao" placeholder="O que ficou definido?"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-interacao')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveInteracao()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Lembrete -->
+<div class="modal-overlay" id="modal-lembrete">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Novo Lembrete</div>
+      <button class="modal-close" onclick="closeModal('modal-lembrete')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Cliente (opcional)</label><select class="form-control" id="lem-cliente"><option value="">Geral (sem cliente)</option></select></div>
+      <div class="form-group"><label class="form-label">Título *</label><input class="form-control" id="lem-titulo" placeholder="Ex: Ligar para confirmar reunião"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Data *</label><input class="form-control" id="lem-data" type="date"></div>
+        <div class="form-group"><label class="form-label">Prioridade</label><select class="form-control" id="lem-prioridade"><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="lem-obs" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-lembrete')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveLembrete()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmação -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="width:400px">
+    <div class="modal-header">
+      <div class="modal-title">Confirmar exclusão</div>
+      <button class="modal-close" onclick="closeModal('modal-confirm')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body"><p style="font-size:13px;color:var(--text-secondary);line-height:1.6">Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita.</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-confirm')">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// SVG icons for JS-generated HTML
+const IC = {
+  edit: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
+  phone: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.34 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.08 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16z"/></svg>`,
+  users: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  mail: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
+  msg: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  pin: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  file: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+  warn: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+  ok: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+  bell: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+  card: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
+  clip: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`
+};
+
+// ════════════════════════════════
+// DATA LAYER
+// ════════════════════════════════
+const STORAGE_KEY = 'soma_concierge_v1';
+function loadData(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)return JSON.parse(r)}catch(e){}return{clientes:[],pagamentos:[],tarefas:[],documentos:[],interacoes:[],lembretes:[]}}
+function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5)}
+let DB=loadData();
+
+// ════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════
+const SECTION_META={
+  dashboard:{title:'Visão Geral',sub:'Resumo operacional e financeiro dos clientes',btn:'Novo Cliente',action:()=>openModal('modal-cliente')},
+  clientes:{title:'Clientes',sub:'Cadastro completo de clientes',btn:'Novo Cliente',action:()=>openModal('modal-cliente')},
+  pagamentos:{title:'Pagamentos',sub:'Controle de pagamentos e vencimentos',btn:'Novo Pagamento',action:()=>openModal('modal-pagamento')},
+  tarefas:{title:'Tarefas',sub:'Gestão de demandas e pendências',btn:'Nova Tarefa',action:()=>openModal('modal-tarefa')},
+  documentos:{title:'Documentos',sub:'Upload e organização de documentos por cliente',btn:'Adicionar',action:()=>openModal('modal-documento')},
+  historico:{title:'Histórico de Interações',sub:'Timeline de todas as interações com clientes',btn:'Registrar',action:()=>openModal('modal-interacao')},
+  lembretes:{title:'Lembretes',sub:'Alertas e lembretes programados',btn:'Novo Lembrete',action:()=>openModal('modal-lembrete')},
+};
+
+function navigate(section){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('section-'+section).classList.add('active');
+  document.querySelector('[data-section="'+section+'"]').classList.add('active');
+  const m=SECTION_META[section];
+  document.getElementById('topbar-title').textContent=m.title;
+  document.getElementById('topbar-sub').textContent=m.sub;
+  const btn=document.getElementById('btn-primary-action');
+  btn.innerHTML=`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> ${m.btn}`;
+  btn.onclick=m.action;
+  renderSection(section);
+}
+document.querySelectorAll('.nav-item[data-section]').forEach(el=>{el.addEventListener('click',()=>navigate(el.dataset.section))});
+
+// ════════════════════════════════
+// HELPERS
+// ════════════════════════════════
+const AVATAR_COLORS=['#4f46e5','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6'];
+function getInitials(n){const p=n.trim().split(' ');return(p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase()}
+function avatarColor(n){let h=0;for(let c of n)h=(h+c.charCodeAt(0))%AVATAR_COLORS.length;return AVATAR_COLORS[h]}
+function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
+function fmtMoney(v){return'R$ '+parseFloat(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
+function today(){return new Date().toISOString().split('T')[0]}
+function isOverdue(d){return d&&d<today()}
+function getClienteName(id){const c=DB.clientes.find(x=>x.id===id);return c?c.nome:'—'}
+
+function statusPgtoBadge(s){
+  const m={pago:'badge-green',pendente:'badge-orange',atrasado:'badge-red'};
+  const l={pago:'Pago',pendente:'Pendente',atrasado:'Atrasado'};
+  return`<span class="badge ${m[s]||'badge-gray'}"><span class="badge-dot"></span>${l[s]||s}</span>`;
+}
+function statusTarefaBadge(s){
+  const m={aberta:'badge-red',em_andamento:'badge-blue',concluida:'badge-green'};
+  const l={aberta:'Aberta',em_andamento:'Em andamento',concluida:'Concluída'};
+  return`<span class="badge ${m[s]||'badge-gray'}"><span class="badge-dot"></span>${l[s]||s}</span>`;
+}
+function prioridadeHtml(p){
+  if(p==='alta')return`<span class="priority-wrap priority-high"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>Alta</span>`;
+  if(p==='media')return`<span class="priority-wrap priority-med"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>Média</span>`;
+  return`<span class="priority-wrap priority-low"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>Baixa</span>`;
+}
+function emptyState(icon,msg){
+  return`<tr><td colspan="10"><div class="empty-state"><div class="empty-state-icon">${icon}</div><div class="empty-title">Nenhum registro encontrado</div><div class="empty-desc">${msg}</div></div></td></tr>`;
+}
+const emptyIcon=(ic)=>`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#94a3b8" stroke-width="1.5">${ic}</svg>`;
+
+// ════════════════════════════════
+// POPULATE SELECTS
+// ════════════════════════════════
+function populateClienteSelects(){
+  ['pgt-cliente','tar-cliente','doc-cliente','int-cliente','lem-cliente','filter-cliente-docs','filter-cliente-hist'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const isFilter=id.startsWith('filter');const hasEmpty=isFilter||id==='lem-cliente';
+    const cur=el.value;
+    el.innerHTML=hasEmpty?`<option value="">${isFilter?'Todos os clientes':'Geral (sem cliente)'}</option>`:'';
+    DB.clientes.forEach(c=>{el.innerHTML+=`<option value="${c.id}">${c.nome}</option>`});
+    if(cur)el.value=cur;
+  });
+}
+
+// ════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════
+function renderDashboard(){
+  const total=DB.clientes.length;
+  const pendentes=DB.pagamentos.filter(p=>p.status==='pendente'||p.status==='atrasado').length;
+  const tarefasAbertas=DB.tarefas.filter(t=>t.status!=='concluida').length;
+  const todayStr=today();
+  const lemsHoje=DB.lembretes.filter(l=>l.data===todayStr&&!l.feito).length;
+  document.getElementById('kpi-total-clientes').textContent=total;
+  document.getElementById('kpi-delta-clientes').textContent=total>0?`${total} cadastrados`:'Nenhum cliente ainda';
+  document.getElementById('kpi-pendentes').textContent=pendentes;
+  document.getElementById('kpi-delta-pendentes').textContent=pendentes>0?`${pendentes} aguardando`:'Tudo em dia';
+  document.getElementById('kpi-tarefas').textContent=tarefasAbertas;
+  document.getElementById('kpi-delta-tarefas').textContent=tarefasAbertas>0?`${tarefasAbertas} pendentes`:'Nenhuma pendência';
+  document.getElementById('kpi-lembretes').textContent=lemsHoje;
+  document.getElementById('kpi-delta-lembretes').textContent=lemsHoje>0?'Para hoje':'Sem lembretes hoje';
+
+  const tbody=document.getElementById('tbody-dashboard');
+  const recent=[...DB.clientes].slice(-8).reverse();
+  if(recent.length===0){
+    tbody.innerHTML=emptyState(emptyIcon('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'), 'Cadastre o primeiro cliente para começar');
+    document.getElementById('dashboard-count').textContent='Nenhum cliente cadastrado';
+    return;
+  }
+  tbody.innerHTML=recent.map(c=>{
+    const pgtos=DB.pagamentos.filter(p=>p.clienteId===c.id);
+    const atrasado=pgtos.some(p=>p.status==='atrasado');
+    const pendente=pgtos.some(p=>p.status==='pendente');
+    const statusPgto=atrasado?'atrasado':pendente?'pendente':'pago';
+    const tarefas=DB.tarefas.filter(t=>t.clienteId===c.id&&t.status!=='concluida').length;
+    const lastInt=DB.interacoes.filter(i=>i.clienteId===c.id).sort((a,b)=>b.data.localeCompare(a.data))[0];
+    const color=avatarColor(c.nome);
+    return`<tr onclick="navigate('clientes')">
+      <td><div class="client-cell"><div class="avatar" style="background:${color}">${getInitials(c.nome)}</div>
+      <div><div class="client-name">${c.nome}</div><div class="client-email">${c.email||''}</div></div></div></td>
+      <td>${statusPgtoBadge(pgtos.length?statusPgto:'pago')}</td>
+      <td>${tarefas>0?`<span class="badge badge-orange">${tarefas} abertas</span>`:'<span class="badge badge-green">0</span>'}</td>
+      <td style="font-size:12px">${lastInt?fmtDate(lastInt.data):'—'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('dashboard-count').textContent=`Mostrando ${recent.length} de ${DB.clientes.length} clientes`;
+
+  const alertas=document.getElementById('alertas-hoje');
+  let items=[];
+  DB.pagamentos.filter(p=>p.status==='atrasado').slice(0,3).forEach(p=>{
+    items.push({cls:'urgent',iconCls:'red',icon:IC.warn,title:`Pagamento atrasado`,desc:`${getClienteName(p.clienteId)} — ${p.descricao} · ${fmtMoney(p.valor)}`});
+  });
+  DB.lembretes.filter(l=>l.data===todayStr&&!l.feito).slice(0,3).forEach(l=>{
+    items.push({cls:'warn',iconCls:'orange',icon:IC.bell,title:l.titulo,desc:l.obs||'Lembrete do dia'});
+  });
+  DB.tarefas.filter(t=>t.prazo&&t.prazo<todayStr&&t.status!=='concluida').slice(0,2).forEach(t=>{
+    items.push({cls:'urgent',iconCls:'red',icon:IC.warn,title:`Tarefa com prazo vencido`,desc:`${t.titulo} — ${getClienteName(t.clienteId)}`});
+  });
+  if(items.length===0)items.push({cls:'ok',iconCls:'green',icon:IC.ok,title:'Tudo em ordem',desc:'Sem alertas urgentes para hoje'});
+  alertas.innerHTML=items.map(i=>`<div class="alert-item ${i.cls}"><div class="alert-icon-wrap ${i.iconCls}">${i.icon}</div><div><div class="alert-title">${i.title}</div><div class="alert-desc">${i.desc}</div></div></div>`).join('');
+}
+
+// ════════════════════════════════
+// CLIENTES
+// ════════════════════════════════
+function renderClientes(){
+  const q=(document.getElementById('search-clientes').value||'').toLowerCase();
+  const list=DB.clientes.filter(c=>c.nome.toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q)||(c.telefone||'').includes(q));
+  const tbody=document.getElementById('tbody-clientes');
+  if(list.length===0){
+    tbody.innerHTML=emptyState(emptyIcon('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'), 'Nenhum cliente encontrado. Clique em "Novo" para cadastrar.');
+    document.getElementById('clientes-count').textContent='0 clientes';return;
+  }
+  tbody.innerHTML=list.map(c=>{
+    const color=avatarColor(c.nome);
+    const nextPgto=DB.pagamentos.filter(p=>p.clienteId===c.id&&p.status==='pendente').sort((a,b)=>a.dataVencimento.localeCompare(b.dataVencimento))[0];
+    const atrasado=DB.pagamentos.some(p=>p.clienteId===c.id&&p.status==='atrasado');
+    const tarefas=DB.tarefas.filter(t=>t.clienteId===c.id&&t.status!=='concluida').length;
+    const statusPgto=atrasado?'atrasado':nextPgto?'pendente':'pago';
+    return`<tr>
+      <td><div class="client-cell"><div class="avatar" style="background:${color}">${getInitials(c.nome)}</div>
+      <div><div class="client-name">${c.nome}</div><div class="client-email">${c.email||''}</div></div></div></td>
+      <td style="font-size:13px">${c.telefone||'—'}</td>
+      <td>${nextPgto?`<span style="font-size:12px;font-weight:600">${fmtMoney(nextPgto.valor)}</span><br><span style="font-size:11px;color:var(--text-secondary)">${fmtDate(nextPgto.dataVencimento)}</span>`:'—'}</td>
+      <td>${statusPgtoBadge(statusPgto)}</td>
+      <td>${tarefas>0?`<span class="badge badge-orange">${tarefas}</span>`:'<span class="badge badge-green">0</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-icon" onclick="event.stopPropagation();editCliente('${c.id}')" title="Editar">${IC.edit}</button>
+        <button class="btn-icon danger" onclick="event.stopPropagation();confirmDelete('cliente','${c.id}')" title="Excluir">${IC.trash}</button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('clientes-count').textContent=`${list.length} cliente${list.length!==1?'s':''}`;
+}
+function filterClientes(){renderClientes()}
+function saveCliente(){
+  const nome=document.getElementById('c-nome').value.trim();
+  if(!nome){alert('Informe o nome do cliente');return}
+  const id=document.getElementById('cliente-edit-id').value||uid();
+  const data={id,nome,email:document.getElementById('c-email').value.trim(),telefone:document.getElementById('c-telefone').value.trim(),cpf:document.getElementById('c-cpf').value.trim(),nascimento:document.getElementById('c-nascimento').value,endereco:document.getElementById('c-endereco').value.trim(),obs:document.getElementById('c-obs').value.trim(),status:document.getElementById('c-status').value};
+  const idx=DB.clientes.findIndex(c=>c.id===id);
+  if(idx>=0)Object.assign(DB.clientes[idx],data);else{data.dataCadastro=today();DB.clientes.push(data)}
+  saveData(DB);closeModal('modal-cliente');populateClienteSelects();renderSection(currentSection());
+}
+function editCliente(id){
+  const c=DB.clientes.find(x=>x.id===id);if(!c)return;
+  document.getElementById('cliente-edit-id').value=c.id;
+  document.getElementById('c-nome').value=c.nome;document.getElementById('c-email').value=c.email||'';
+  document.getElementById('c-telefone').value=c.telefone||'';document.getElementById('c-cpf').value=c.cpf||'';
+  document.getElementById('c-nascimento').value=c.nascimento||'';document.getElementById('c-endereco').value=c.endereco||'';
+  document.getElementById('c-obs').value=c.obs||'';document.getElementById('c-status').value=c.status||'ativo';
+  document.getElementById('modal-cliente-title').textContent='Editar Cliente';openModal('modal-cliente');
+}
+
+// ════════════════════════════════
+// PAGAMENTOS
+// ════════════════════════════════
+function renderPagamentos(){
+  const q=(document.getElementById('search-pagamentos').value||'').toLowerCase();
+  const st=document.getElementById('filter-status-pgto').value;
+  let list=DB.pagamentos.filter(p=>{const cn=getClienteName(p.clienteId).toLowerCase();return(cn.includes(q)||(p.descricao||'').toLowerCase().includes(q))&&(!st||p.status===st)});
+  list.forEach(p=>{if(p.status==='pendente'&&isOverdue(p.dataVencimento))p.status='atrasado'});
+  const tbody=document.getElementById('tbody-pagamentos');
+  if(list.length===0){
+    tbody.innerHTML=emptyState(emptyIcon('<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>'), 'Nenhum pagamento cadastrado.');
+    document.getElementById('pagamentos-count').textContent='0 registros';return;
+  }
+  tbody.innerHTML=list.sort((a,b)=>a.dataVencimento.localeCompare(b.dataVencimento)).map(p=>`<tr>
+    <td><div class="client-cell"><div class="avatar" style="background:${avatarColor(getClienteName(p.clienteId))};width:28px;height:28px;font-size:10px">${getInitials(getClienteName(p.clienteId))}</div>${getClienteName(p.clienteId)}</div></td>
+    <td style="font-size:13px">${p.descricao||'—'}</td>
+    <td style="font-weight:700">${fmtMoney(p.valor)}</td>
+    <td style="font-size:13px">${fmtDate(p.dataVencimento)}</td>
+    <td>${statusPgtoBadge(p.status)}</td>
+    <td style="white-space:nowrap">
+      <button class="btn-icon" onclick="editPagamento('${p.id}')" title="Editar">${IC.edit}</button>
+      <button class="btn-icon danger" onclick="confirmDelete('pagamento','${p.id}')" title="Excluir">${IC.trash}</button>
+      ${p.status!=='pago'?`<button class="btn-icon" onclick="marcarPago('${p.id}')" title="Marcar como pago" style="color:var(--green)">${IC.check}</button>`:''}
+    </td>
+  </tr>`).join('');
+  document.getElementById('pagamentos-count').textContent=`${list.length} registro${list.length!==1?'s':''}`;
+}
+function filterPagamentos(){renderPagamentos()}
+function savePagamento(){
+  const clienteId=document.getElementById('pgt-cliente').value;
+  const desc=document.getElementById('pgt-desc').value.trim();
+  const valor=document.getElementById('pgt-valor').value;
+  const venc=document.getElementById('pgt-vencimento').value;
+  if(!clienteId||!desc||!valor||!venc){alert('Preencha os campos obrigatórios');return}
+  const id=document.getElementById('pgt-edit-id').value||uid();
+  const data={id,clienteId,descricao:desc,valor:parseFloat(valor),dataVencimento:venc,status:document.getElementById('pgt-status').value,obs:document.getElementById('pgt-obs').value.trim()};
+  const idx=DB.pagamentos.findIndex(p=>p.id===id);
+  if(idx>=0)Object.assign(DB.pagamentos[idx],data);else DB.pagamentos.push(data);
+  saveData(DB);closeModal('modal-pagamento');renderSection(currentSection());
+}
+function editPagamento(id){
+  const p=DB.pagamentos.find(x=>x.id===id);if(!p)return;
+  document.getElementById('pgt-edit-id').value=p.id;document.getElementById('pgt-cliente').value=p.clienteId;
+  document.getElementById('pgt-desc').value=p.descricao;document.getElementById('pgt-valor').value=p.valor;
+  document.getElementById('pgt-vencimento').value=p.dataVencimento;document.getElementById('pgt-status').value=p.status;
+  document.getElementById('pgt-obs').value=p.obs||'';document.getElementById('modal-pgt-title').textContent='Editar Pagamento';
+  openModal('modal-pagamento');
+}
+function marcarPago(id){const p=DB.pagamentos.find(x=>x.id===id);if(p){p.status='pago';saveData(DB);renderSection(currentSection())}}
+
+// ════════════════════════════════
+// TAREFAS
+// ════════════════════════════════
+function renderTarefas(){
+  const q=(document.getElementById('search-tarefas').value||'').toLowerCase();
+  const st=document.getElementById('filter-status-tarefa').value;
+  let list=DB.tarefas.filter(t=>{const cn=getClienteName(t.clienteId).toLowerCase();return((t.titulo||'').toLowerCase().includes(q)||cn.includes(q))&&(!st||t.status===st)});
+  const tbody=document.getElementById('tbody-tarefas');
+  if(list.length===0){
+    tbody.innerHTML=emptyState(emptyIcon('<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'), 'Nenhuma tarefa cadastrada.');
+    document.getElementById('tarefas-count').textContent='0 tarefas';return;
+  }
+  const po={alta:0,media:1,baixa:2};
+  tbody.innerHTML=list.sort((a,b)=>(po[a.prioridade]||1)-(po[b.prioridade]||1)).map(t=>`<tr>
+    <td><div style="font-weight:600;font-size:13px">${t.titulo}</div>${t.desc?`<div style="font-size:11px;color:var(--text-secondary);margin-top:2px">${t.desc}</div>`:''}</td>
+    <td style="font-size:13px">${getClienteName(t.clienteId)}</td>
+    <td>${prioridadeHtml(t.prioridade)}</td>
+    <td>${statusTarefaBadge(t.status)}</td>
+    <td style="font-size:12px;color:${isOverdue(t.prazo)&&t.status!=='concluida'?'var(--red)':'inherit'}">${t.prazo?fmtDate(t.prazo):'—'}</td>
+    <td style="white-space:nowrap">
+      <button class="btn-icon" onclick="editTarefa('${t.id}')" title="Editar">${IC.edit}</button>
+      <button class="btn-icon danger" onclick="confirmDelete('tarefa','${t.id}')" title="Excluir">${IC.trash}</button>
+      ${t.status!=='concluida'?`<button class="btn-icon" onclick="concluirTarefa('${t.id}')" title="Concluir" style="color:var(--green)">${IC.check}</button>`:''}
+    </td>
+  </tr>`).join('');
+  document.getElementById('tarefas-count').textContent=`${list.length} tarefa${list.length!==1?'s':''}`;
+}
+function filterTarefas(){renderTarefas()}
+function saveTarefa(){
+  const titulo=document.getElementById('tar-titulo').value.trim();
+  if(!titulo){alert('Informe o título da tarefa');return}
+  const id=document.getElementById('tar-edit-id').value||uid();
+  const data={id,clienteId:document.getElementById('tar-cliente').value,titulo,desc:document.getElementById('tar-desc').value.trim(),prioridade:document.getElementById('tar-prioridade').value,status:document.getElementById('tar-status').value,prazo:document.getElementById('tar-prazo').value,responsavel:document.getElementById('tar-responsavel').value.trim()};
+  const idx=DB.tarefas.findIndex(t=>t.id===id);
+  if(idx>=0)Object.assign(DB.tarefas[idx],data);else DB.tarefas.push(data);
+  saveData(DB);closeModal('modal-tarefa');renderSection(currentSection());
+}
+function editTarefa(id){
+  const t=DB.tarefas.find(x=>x.id===id);if(!t)return;
+  document.getElementById('tar-edit-id').value=t.id;document.getElementById('tar-cliente').value=t.clienteId||'';
+  document.getElementById('tar-titulo').value=t.titulo;document.getElementById('tar-desc').value=t.desc||'';
+  document.getElementById('tar-prioridade').value=t.prioridade||'media';document.getElementById('tar-status').value=t.status||'aberta';
+  document.getElementById('tar-prazo').value=t.prazo||'';document.getElementById('tar-responsavel').value=t.responsavel||'';
+  document.getElementById('modal-tar-title').textContent='Editar Tarefa';openModal('modal-tarefa');
+}
+function concluirTarefa(id){const t=DB.tarefas.find(x=>x.id===id);if(t){t.status='concluida';saveData(DB);renderSection(currentSection())}}
+
+// ════════════════════════════════
+// DOCUMENTOS
+// ════════════════════════════════
+function renderDocumentos(){
+  const clienteId=document.getElementById('filter-cliente-docs').value;
+  let list=clienteId?DB.documentos.filter(d=>d.clienteId===clienteId):DB.documentos;
+  const container=document.getElementById('doc-list');
+  if(list.length===0){
+    container.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyIcon('<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>')}</div><div class="empty-title">Nenhum documento</div><div class="empty-desc">Clique em "Adicionar" para cadastrar documentos</div></div>`;return;
+  }
+  container.innerHTML=list.map(d=>`
+    <div class="doc-item">
+      <div class="doc-icon-wrap">${IC.file}</div>
+      <div>
+        <div class="doc-nome">${d.nome}</div>
+        <div class="doc-meta">${d.tipo} · ${getClienteName(d.clienteId)} · ${fmtDate(d.dataUpload)}${d.arquivo?` · ${d.arquivo}`:''}</div>
+        ${d.obs?`<div class="doc-meta" style="margin-top:2px">${d.obs}</div>`:''}
+      </div>
+      <div class="doc-actions"><button class="btn-icon danger" onclick="confirmDelete('documento','${d.id}')" title="Excluir">${IC.trash}</button></div>
+    </div>`).join('');
+}
+function filterDocumentos(){renderDocumentos()}
+function saveDocumento(){
+  const clienteId=document.getElementById('doc-cliente').value;
+  const nome=document.getElementById('doc-nome').value.trim();
+  if(!nome){alert('Informe o nome do documento');return}
+  DB.documentos.push({id:uid(),clienteId,nome,tipo:document.getElementById('doc-tipo').value,arquivo:document.getElementById('doc-arquivo').value.trim(),obs:document.getElementById('doc-obs').value.trim(),dataUpload:today()});
+  saveData(DB);closeModal('modal-documento');renderSection(currentSection());
+}
+
+// ════════════════════════════════
+// HISTÓRICO
+// ════════════════════════════════
+function renderHistorico(){
+  const clienteId=document.getElementById('filter-cliente-hist').value;
+  let list=clienteId?DB.interacoes.filter(i=>i.clienteId===clienteId):DB.interacoes;
+  list=list.sort((a,b)=>b.data.localeCompare(a.data));
+  const container=document.getElementById('timeline-historico');
+  if(list.length===0){
+    container.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyIcon('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>')}</div><div class="empty-title">Sem interações registradas</div><div class="empty-desc">Registre a primeira interação com um cliente</div></div>`;return;
+  }
+  const tipoIcon={ligacao:IC.phone,reuniao:IC.users,email:IC.mail,whatsapp:IC.msg,outro:IC.pin};
+  const tipoLabel={ligacao:'Ligação',reuniao:'Reunião',email:'E-mail',whatsapp:'WhatsApp',outro:'Contato'};
+  const tipoColor={ligacao:'blue',reuniao:'green',email:'orange',whatsapp:'green',outro:'purple'};
+  container.innerHTML=list.map(i=>`
+    <div class="timeline-item">
+      <div class="timeline-dot ${tipoColor[i.tipo]||'blue'}">${tipoIcon[i.tipo]||IC.pin}</div>
+      <div class="timeline-content">
+        <div class="timeline-header">
+          <span class="timeline-action">${tipoLabel[i.tipo]||'Contato'} — ${getClienteName(i.clienteId)}</span>
+          <span class="timeline-date">${fmtDate(i.data)}</span>
+          <button class="btn-icon danger" onclick="confirmDelete('interacao','${i.id}')" style="margin-left:auto" title="Excluir">${IC.trash}</button>
+        </div>
+        <div class="timeline-desc">${i.desc||''}</div>
+        ${i.resolucao?`<div class="timeline-desc" style="margin-top:4px;color:var(--green);font-weight:500">Resolução: ${i.resolucao}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+function saveInteracao(){
+  const clienteId=document.getElementById('int-cliente').value;
+  const desc=document.getElementById('int-desc').value.trim();
+  const data=document.getElementById('int-data').value;
+  if(!clienteId||!desc||!data){alert('Preencha os campos obrigatórios');return}
+  DB.interacoes.push({id:uid(),clienteId,tipo:document.getElementById('int-tipo').value,data,desc,resolucao:document.getElementById('int-resolucao').value.trim()});
+  saveData(DB);closeModal('modal-interacao');renderSection(currentSection());
+}
+
+// ════════════════════════════════
+// LEMBRETES
+// ════════════════════════════════
+function renderLembretes(){
+  const todayStr=today();
+  const ativos=DB.lembretes.filter(l=>!l.feito).sort((a,b)=>a.data.localeCompare(b.data));
+  const container=document.getElementById('lembretes-list');
+  const prioCls={alta:'red',media:'orange',baixa:'green'};
+  if(ativos.length===0){
+    container.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyIcon('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>')}</div><div class="empty-title">Sem lembretes ativos</div></div>`;
+  } else {
+    container.innerHTML=ativos.map(l=>{
+      const overdue=l.data<todayStr,isToday=l.data===todayStr;
+      const cls=overdue?'urgent':isToday?'warn':'ok';
+      const iconCls=prioCls[l.prioridade]||'orange';
+      return`<div class="alert-item ${cls}">
+        <div class="alert-icon-wrap ${iconCls}">${IC.bell}</div>
+        <div style="flex:1">
+          <div class="alert-title">${l.titulo}</div>
+          <div class="alert-desc">${l.clienteId?getClienteName(l.clienteId)+' · ':''} ${fmtDate(l.data)}</div>
+          ${l.obs?`<div class="alert-desc">${l.obs}</div>`:''}
+        </div>
+        <button class="btn-icon" onclick="marcarLembreteFeito('${l.id}')" title="Marcar como feito" style="color:var(--green)">${IC.check}</button>
+        <button class="btn-icon danger" onclick="confirmDelete('lembrete','${l.id}')" title="Excluir">${IC.trash}</button>
+      </div>`;
+    }).join('');
+  }
+  const venc=DB.pagamentos.filter(p=>p.status==='pendente').sort((a,b)=>a.dataVencimento.localeCompare(b.dataVencimento)).slice(0,5);
+  const vContainer=document.getElementById('vencimentos-list');
+  if(venc.length===0){
+    vContainer.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyIcon('<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>')}</div><div class="empty-title">Sem vencimentos pendentes</div></div>`;
+  } else {
+    vContainer.innerHTML=venc.map(p=>{
+      const overdue=isOverdue(p.dataVencimento);
+      return`<div class="alert-item ${overdue?'urgent':'warn'}">
+        <div class="alert-icon-wrap ${overdue?'red':'orange'}">${IC.card}</div>
+        <div style="flex:1">
+          <div class="alert-title">${getClienteName(p.clienteId)}</div>
+          <div class="alert-desc">${p.descricao} · ${fmtMoney(p.valor)} · ${fmtDate(p.dataVencimento)}</div>
+        </div>
+        <button class="btn-icon" onclick="marcarPago('${p.id}')" title="Marcar como pago" style="color:var(--green)">${IC.check}</button>
+      </div>`;
+    }).join('');
+  }
+}
+function saveLembrete(){
+  const titulo=document.getElementById('lem-titulo').value.trim();
+  const data=document.getElementById('lem-data').value;
+  if(!titulo||!data){alert('Preencha título e data');return}
+  DB.lembretes.push({id:uid(),clienteId:document.getElementById('lem-cliente').value,titulo,data,prioridade:document.getElementById('lem-prioridade').value,obs:document.getElementById('lem-obs').value.trim(),feito:false});
+  saveData(DB);closeModal('modal-lembrete');renderSection(currentSection());
+}
+function marcarLembreteFeito(id){const l=DB.lembretes.find(x=>x.id===id);if(l){l.feito=true;saveData(DB);renderSection(currentSection())}}
+
+// ════════════════════════════════
+// DELETE
+// ════════════════════════════════
+function confirmDelete(type,id){
+  document.getElementById('confirm-delete-btn').onclick=()=>{
+    const map={cliente:'clientes',pagamento:'pagamentos',tarefa:'tarefas',documento:'documentos',interacao:'interacoes',lembrete:'lembretes'};
+    DB[map[type]]=DB[map[type]].filter(x=>x.id!==id);
+    saveData(DB);closeModal('modal-confirm');populateClienteSelects();renderSection(currentSection());
+  };
+  openModal('modal-confirm');
+}
+
+// ════════════════════════════════
+// MODALS
+// ════════════════════════════════
+function openModal(id){
+  if(id==='modal-cliente'){document.getElementById('cliente-edit-id').value='';document.getElementById('modal-cliente-title').textContent='Novo Cliente';['c-nome','c-email','c-telefone','c-cpf','c-nascimento','c-endereco','c-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('c-status').value='ativo'}
+  if(id==='modal-pagamento'){document.getElementById('pgt-edit-id').value='';document.getElementById('modal-pgt-title').textContent='Novo Pagamento';['pgt-desc','pgt-valor','pgt-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('pgt-vencimento').value=today();document.getElementById('pgt-status').value='pendente'}
+  if(id==='modal-tarefa'){document.getElementById('tar-edit-id').value='';document.getElementById('modal-tar-title').textContent='Nova Tarefa';['tar-titulo','tar-desc','tar-prazo','tar-responsavel'].forEach(f=>document.getElementById(f).value='');document.getElementById('tar-prioridade').value='media';document.getElementById('tar-status').value='aberta'}
+  if(id==='modal-documento'){['doc-nome','doc-arquivo','doc-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('doc-tipo').value='Contrato'}
+  if(id==='modal-interacao'){['int-desc','int-resolucao'].forEach(f=>document.getElementById(f).value='');document.getElementById('int-data').value=today();document.getElementById('int-tipo').value='ligacao'}
+  if(id==='modal-lembrete'){['lem-titulo','lem-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('lem-data').value=today();document.getElementById('lem-prioridade').value='media';document.getElementById('lem-cliente').value=''}
+  populateClienteSelects();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')})});
+
+// ════════════════════════════════
+// SECTION ROUTER
+// ════════════════════════════════
+function currentSection(){const a=document.querySelector('.section.active');return a?a.id.replace('section-',''):'dashboard'}
+function renderSection(s){switch(s){case'dashboard':renderDashboard();break;case'clientes':renderClientes();break;case'pagamentos':renderPagamentos();break;case'tarefas':renderTarefas();break;case'documentos':renderDocumentos();break;case'historico':renderHistorico();break;case'lembretes':renderLembretes();break}}
+
+// ════════════════════════════════
+// EXPORT
+// ════════════════════════════════
+function exportData(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='soma_concierge_backup.json';a.click();
+}
+
+// INIT
+populateClienteSelects();
+renderDashboard();
+</script>
+</body>
+</html>
