@@ -6,6 +6,7 @@
 <title>Concierge — Soma Partners</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -214,6 +215,16 @@ textarea.form-control{resize:vertical;min-height:80px}
 </style>
 </head>
 <body>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="position:fixed;inset:0;background:rgba(15,23,42,0.75);z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.15);border-top-color:#818cf8;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+    <span style="color:rgba(255,255,255,0.7);font-size:13px;font-family:'Montserrat',sans-serif">Carregando...</span>
+  </div>
+</div>
+<div id="toast" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:none;background:#1e293b;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-family:'Montserrat',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.4);border-left:3px solid #10b981"></div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <!-- SIDEBAR -->
 <aside id="sidebar">
@@ -673,11 +684,48 @@ const IC = {
 // ════════════════════════════════
 // DATA LAYER
 // ════════════════════════════════
-const STORAGE_KEY = 'soma_concierge_v1';
-function loadData(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)return JSON.parse(r)}catch(e){}return{clientes:[],pagamentos:[],tarefas:[],documentos:[],interacoes:[],lembretes:[]}}
-function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d))}
+// ════ SUPABASE ════
+const SUPA_URL = 'https://fqdhaaslmiprvifttmpb.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZGhhYXNsbWlwcnZpZnR0bXBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDkxNTcsImV4cCI6MjA5MzQ4NTE1N30.iJouT1ztgAnmxpowiWFusoaMbIIZYWathTcW4w_ToVc';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
 function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5)}
-let DB=loadData();
+let DB={clientes:[],pagamentos:[],tarefas:[],documentos:[],interacoes:[],lembretes:[]};
+
+function showLoading(v){const el=document.getElementById('loading-overlay');if(el)el.style.display=v?'flex':'none'}
+let _toastTimer;
+function showToast(msg,type='success'){
+  const el=document.getElementById('toast');if(!el)return;
+  el.textContent=msg;el.style.borderLeftColor=type==='error'?'#ef4444':'#10b981';
+  el.style.display='block';clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>{el.style.display='none'},3000);
+}
+async function dbGet(table){
+  const {data,error}=await sb.from(table).select('id,data').order('created_at');
+  if(error){showToast('Erro ao carregar dados','error');return[]}
+  return(data||[]).map(r=>r.data);
+}
+async function dbUpsert(table,obj){
+  const {error}=await sb.from(table).upsert({id:obj.id,data:obj});
+  if(error){showToast('Erro ao salvar','error');return false}
+  return true;
+}
+async function dbDelete(table,id){
+  const {error}=await sb.from(table).delete().eq('id',id);
+  if(error){showToast('Erro ao excluir','error');return false}
+  return true;
+}
+async function initDB(){
+  showLoading(true);
+  const [c,p,t,d,i,l]=await Promise.all([
+    dbGet('concierge_clientes'),dbGet('concierge_pagamentos'),dbGet('concierge_tarefas'),
+    dbGet('concierge_documentos'),dbGet('concierge_interacoes'),dbGet('concierge_lembretes')
+  ]);
+  DB={clientes:c,pagamentos:p,tarefas:t,documentos:d,interacoes:i,lembretes:l};
+  showLoading(false);
+  populateClienteSelects();
+  navigate('dashboard');
+}
 
 // ════════════════════════════════
 // NAVIGATION
@@ -844,14 +892,16 @@ function renderClientes(){
   document.getElementById('clientes-count').textContent=`${list.length} cliente${list.length!==1?'s':''}`;
 }
 function filterClientes(){renderClientes()}
-function saveCliente(){
+async function saveCliente(){
   const nome=document.getElementById('c-nome').value.trim();
   if(!nome){alert('Informe o nome do cliente');return}
   const id=document.getElementById('cliente-edit-id').value||uid();
   const data={id,nome,email:document.getElementById('c-email').value.trim(),telefone:document.getElementById('c-telefone').value.trim(),cpf:document.getElementById('c-cpf').value.trim(),nascimento:document.getElementById('c-nascimento').value,endereco:document.getElementById('c-endereco').value.trim(),obs:document.getElementById('c-obs').value.trim(),status:document.getElementById('c-status').value};
   const idx=DB.clientes.findIndex(c=>c.id===id);
-  if(idx>=0)Object.assign(DB.clientes[idx],data);else{data.dataCadastro=today();DB.clientes.push(data)}
-  saveData(DB);closeModal('modal-cliente');populateClienteSelects();renderSection(currentSection());
+  if(idx<0)data.dataCadastro=today();
+  if(!await dbUpsert('concierge_clientes',data))return;
+  if(idx>=0)Object.assign(DB.clientes[idx],data);else DB.clientes.push(data);
+  closeModal('modal-cliente');populateClienteSelects();renderSection(currentSection());
 }
 function editCliente(id){
   const c=DB.clientes.find(x=>x.id===id);if(!c)return;
@@ -891,7 +941,7 @@ function renderPagamentos(){
   document.getElementById('pagamentos-count').textContent=`${list.length} registro${list.length!==1?'s':''}`;
 }
 function filterPagamentos(){renderPagamentos()}
-function savePagamento(){
+async function savePagamento(){
   const clienteId=document.getElementById('pgt-cliente').value;
   const desc=document.getElementById('pgt-desc').value.trim();
   const valor=document.getElementById('pgt-valor').value;
@@ -899,9 +949,10 @@ function savePagamento(){
   if(!clienteId||!desc||!valor||!venc){alert('Preencha os campos obrigatórios');return}
   const id=document.getElementById('pgt-edit-id').value||uid();
   const data={id,clienteId,descricao:desc,valor:parseFloat(valor),dataVencimento:venc,status:document.getElementById('pgt-status').value,obs:document.getElementById('pgt-obs').value.trim()};
+  if(!await dbUpsert('concierge_pagamentos',data))return;
   const idx=DB.pagamentos.findIndex(p=>p.id===id);
   if(idx>=0)Object.assign(DB.pagamentos[idx],data);else DB.pagamentos.push(data);
-  saveData(DB);closeModal('modal-pagamento');renderSection(currentSection());
+  closeModal('modal-pagamento');renderSection(currentSection());
 }
 function editPagamento(id){
   const p=DB.pagamentos.find(x=>x.id===id);if(!p)return;
@@ -911,7 +962,7 @@ function editPagamento(id){
   document.getElementById('pgt-obs').value=p.obs||'';document.getElementById('modal-pgt-title').textContent='Editar Pagamento';
   openModal('modal-pagamento');
 }
-function marcarPago(id){const p=DB.pagamentos.find(x=>x.id===id);if(p){p.status='pago';saveData(DB);renderSection(currentSection())}}
+async function marcarPago(id){const p=DB.pagamentos.find(x=>x.id===id);if(!p)return;p.status='pago';await dbUpsert('concierge_pagamentos',p);renderSection(currentSection())}
 
 // ════════════════════════════════
 // TAREFAS
@@ -941,14 +992,15 @@ function renderTarefas(){
   document.getElementById('tarefas-count').textContent=`${list.length} tarefa${list.length!==1?'s':''}`;
 }
 function filterTarefas(){renderTarefas()}
-function saveTarefa(){
+async function saveTarefa(){
   const titulo=document.getElementById('tar-titulo').value.trim();
   if(!titulo){alert('Informe o título da tarefa');return}
   const id=document.getElementById('tar-edit-id').value||uid();
   const data={id,clienteId:document.getElementById('tar-cliente').value,titulo,desc:document.getElementById('tar-desc').value.trim(),prioridade:document.getElementById('tar-prioridade').value,status:document.getElementById('tar-status').value,prazo:document.getElementById('tar-prazo').value,responsavel:document.getElementById('tar-responsavel').value.trim()};
+  if(!await dbUpsert('concierge_tarefas',data))return;
   const idx=DB.tarefas.findIndex(t=>t.id===id);
   if(idx>=0)Object.assign(DB.tarefas[idx],data);else DB.tarefas.push(data);
-  saveData(DB);closeModal('modal-tarefa');renderSection(currentSection());
+  closeModal('modal-tarefa');renderSection(currentSection());
 }
 function editTarefa(id){
   const t=DB.tarefas.find(x=>x.id===id);if(!t)return;
@@ -958,7 +1010,7 @@ function editTarefa(id){
   document.getElementById('tar-prazo').value=t.prazo||'';document.getElementById('tar-responsavel').value=t.responsavel||'';
   document.getElementById('modal-tar-title').textContent='Editar Tarefa';openModal('modal-tarefa');
 }
-function concluirTarefa(id){const t=DB.tarefas.find(x=>x.id===id);if(t){t.status='concluida';saveData(DB);renderSection(currentSection())}}
+async function concluirTarefa(id){const t=DB.tarefas.find(x=>x.id===id);if(!t)return;t.status='concluida';await dbUpsert('concierge_tarefas',t);renderSection(currentSection())}
 
 // ════════════════════════════════
 // DOCUMENTOS
@@ -982,12 +1034,14 @@ function renderDocumentos(){
     </div>`).join('');
 }
 function filterDocumentos(){renderDocumentos()}
-function saveDocumento(){
+async function saveDocumento(){
   const clienteId=document.getElementById('doc-cliente').value;
   const nome=document.getElementById('doc-nome').value.trim();
   if(!nome){alert('Informe o nome do documento');return}
-  DB.documentos.push({id:uid(),clienteId,nome,tipo:document.getElementById('doc-tipo').value,arquivo:document.getElementById('doc-arquivo').value.trim(),obs:document.getElementById('doc-obs').value.trim(),dataUpload:today()});
-  saveData(DB);closeModal('modal-documento');renderSection(currentSection());
+  const obj={id:uid(),clienteId,nome,tipo:document.getElementById('doc-tipo').value,arquivo:document.getElementById('doc-arquivo').value.trim(),obs:document.getElementById('doc-obs').value.trim(),dataUpload:today()};
+  if(!await dbUpsert('concierge_documentos',obj))return;
+  DB.documentos.push(obj);
+  closeModal('modal-documento');renderSection(currentSection());
 }
 
 // ════════════════════════════════
@@ -1018,13 +1072,15 @@ function renderHistorico(){
       </div>
     </div>`).join('');
 }
-function saveInteracao(){
+async function saveInteracao(){
   const clienteId=document.getElementById('int-cliente').value;
   const desc=document.getElementById('int-desc').value.trim();
   const data=document.getElementById('int-data').value;
   if(!clienteId||!desc||!data){alert('Preencha os campos obrigatórios');return}
-  DB.interacoes.push({id:uid(),clienteId,tipo:document.getElementById('int-tipo').value,data,desc,resolucao:document.getElementById('int-resolucao').value.trim()});
-  saveData(DB);closeModal('modal-interacao');renderSection(currentSection());
+  const obj={id:uid(),clienteId,tipo:document.getElementById('int-tipo').value,data,desc,resolucao:document.getElementById('int-resolucao').value.trim()};
+  if(!await dbUpsert('concierge_interacoes',obj))return;
+  DB.interacoes.push(obj);
+  closeModal('modal-interacao');renderSection(currentSection());
 }
 
 // ════════════════════════════════
@@ -1072,23 +1128,27 @@ function renderLembretes(){
     }).join('');
   }
 }
-function saveLembrete(){
+async function saveLembrete(){
   const titulo=document.getElementById('lem-titulo').value.trim();
   const data=document.getElementById('lem-data').value;
   if(!titulo||!data){alert('Preencha título e data');return}
-  DB.lembretes.push({id:uid(),clienteId:document.getElementById('lem-cliente').value,titulo,data,prioridade:document.getElementById('lem-prioridade').value,obs:document.getElementById('lem-obs').value.trim(),feito:false});
-  saveData(DB);closeModal('modal-lembrete');renderSection(currentSection());
+  const obj={id:uid(),clienteId:document.getElementById('lem-cliente').value,titulo,data,prioridade:document.getElementById('lem-prioridade').value,obs:document.getElementById('lem-obs').value.trim(),feito:false};
+  if(!await dbUpsert('concierge_lembretes',obj))return;
+  DB.lembretes.push(obj);
+  closeModal('modal-lembrete');renderSection(currentSection());
 }
-function marcarLembreteFeito(id){const l=DB.lembretes.find(x=>x.id===id);if(l){l.feito=true;saveData(DB);renderSection(currentSection())}}
+async function marcarLembreteFeito(id){const l=DB.lembretes.find(x=>x.id===id);if(!l)return;l.feito=true;await dbUpsert('concierge_lembretes',l);renderSection(currentSection())}
 
 // ════════════════════════════════
 // DELETE
 // ════════════════════════════════
 function confirmDelete(type,id){
-  document.getElementById('confirm-delete-btn').onclick=()=>{
-    const map={cliente:'clientes',pagamento:'pagamentos',tarefa:'tarefas',documento:'documentos',interacao:'interacoes',lembrete:'lembretes'};
-    DB[map[type]]=DB[map[type]].filter(x=>x.id!==id);
-    saveData(DB);closeModal('modal-confirm');populateClienteSelects();renderSection(currentSection());
+  const tableMap={cliente:'concierge_clientes',pagamento:'concierge_pagamentos',tarefa:'concierge_tarefas',documento:'concierge_documentos',interacao:'concierge_interacoes',lembrete:'concierge_lembretes'};
+  const keyMap={cliente:'clientes',pagamento:'pagamentos',tarefa:'tarefas',documento:'documentos',interacao:'interacoes',lembrete:'lembretes'};
+  document.getElementById('confirm-delete-btn').onclick=async()=>{
+    if(!await dbDelete(tableMap[type],id))return;
+    DB[keyMap[type]]=DB[keyMap[type]].filter(x=>x.id!==id);
+    closeModal('modal-confirm');populateClienteSelects();renderSection(currentSection());
   };
   openModal('modal-confirm');
 }
@@ -1124,8 +1184,7 @@ function exportData(){
 }
 
 // INIT
-populateClienteSelects();
-renderDashboard();
+initDB();
 </script>
 </body>
 </html>

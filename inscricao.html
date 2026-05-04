@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Inscrição — Soma Partners</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -172,7 +173,7 @@ if(evDesc){
 }
 
 // Submit
-function submitForm(e){
+async function submitForm(e){
   e.preventDefault();
   const nome     = document.getElementById('f-nome').value.trim();
   const email    = document.getElementById('f-email').value.trim();
@@ -193,28 +194,20 @@ function submitForm(e){
   if(evData)  msg += `\n*Data:* ${evData}${evHora?' às '+evHora:''}`;
   if(evLocal) msg += `\n*Local:* ${evLocal}`;
 
-  // Save to localStorage so it appears in eventos.html guest list
+  // Save guest to Supabase
   try {
-    const STORAGE_KEY = 'soma_eventos_v1';
-    const db = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{"eventos":[]}');
-    const ev = db.eventos.find(x => x.id === evId);
-    if(ev) {
-      if(!ev.convidados) ev.convidados = [];
-      // Avoid duplicate by email
-      const already = ev.convidados.find(c => c.info === email);
-      if(!already) {
-        ev.convidados.push({
-          id: Date.now().toString(36),
-          name: nome,
-          info: email,
-          telefone, cpf, empresa, obs,
-          rsvp: 'confirmado',
-          origem: 'formulario'
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    const SUPA_URL = 'https://fqdhaaslmiprvifttmpb.supabase.co';
+    const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZGhhYXNsbWlwcnZpZnR0bXBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDkxNTcsImV4cCI6MjA5MzQ4NTE1N30.iJouT1ztgAnmxpowiWFusoaMbIIZYWathTcW4w_ToVc';
+    const sbClient = supabase.createClient(SUPA_URL, SUPA_KEY);
+    if(evId) {
+      const {data:existing}=await sbClient.from('eventos_convidados').select('id').eq('evento_id',evId).eq('data->>info',email).maybeSingle();
+      if(!existing){
+        const gId=Date.now().toString(36)+Math.random().toString(36).substr(2,4);
+        const guest={id:gId,name:nome,info:email,telefone,cpf,empresa,obs,rsvp:'confirmado',origem:'formulario',_rowId:gId};
+        await sbClient.from('eventos_convidados').insert({id:gId,evento_id:evId,data:guest});
       }
     }
-  } catch(e) {}
+  } catch(e){console.warn('Supabase write failed',e)}
 
   // WhatsApp message
   const wppNumber = '5511960846592';

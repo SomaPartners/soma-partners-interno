@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Wealth — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --sidebar-bg:#0f172a;
+  --sidebar-text:rgba(255,255,255,0.55);
+  --sidebar-active:#4f46e5;
+  --sidebar-active-bg:rgba(79,70,229,0.15);
+  --content-bg:#f1f5f9;
+  --card-bg:#ffffff;
+  --border:#e2e8f0;
+  --text-primary:#0f172a;
+  --text-secondary:#64748b;
+  --indigo:#4f46e5;
+  --green:#10b981;
+  --orange:#f59e0b;
+  --red:#ef4444;
+  --blue:#3b82f6;
+  --purple:#8b5cf6;
+  --teal:#14b8a6;
+}
+html,body{height:100%;font-family:'Montserrat',sans-serif;background:var(--content-bg);color:var(--text-primary)}
+body{display:flex}
+
+/* ── SIDEBAR ── */
+#sidebar{width:240px;min-width:240px;height:100vh;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:24px 20px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:8px;cursor:pointer;text-decoration:none;transition:opacity 0.18s}
+.sidebar-logo:hover{opacity:0.8}
+.logo-soma{font-size:18px;font-weight:300;color:#fff;letter-spacing:0.5px}
+.logo-pipe{width:1px;height:24px;background:rgba(255,255,255,0.45)}
+.logo-partners{font-size:11px;font-weight:700;letter-spacing:5px;color:#fff;text-transform:uppercase}
+.sidebar-section{padding:16px 12px 4px;font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.25);text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:1px 8px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--sidebar-text);transition:all 0.18s;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:#fff}
+.nav-item.active{background:var(--sidebar-active-bg);color:#fff}
+.nav-item.active .nav-icon svg{stroke:#818cf8}
+.nav-icon{display:flex;align-items:center;width:18px;flex-shrink:0}
+.nav-icon svg{width:15px;height:15px;stroke:var(--sidebar-text);stroke-width:1.8;fill:none;transition:stroke 0.18s}
+.nav-item:hover .nav-icon svg{stroke:#fff}
+.sidebar-footer{margin-top:auto;padding:12px 8px;border-top:1px solid rgba(255,255,255,0.07)}
+.back-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;color:rgba(255,255,255,0.35);font-size:12px;cursor:pointer;transition:all 0.18s}
+.back-btn:hover{color:#fff;background:rgba(255,255,255,0.06)}
+.back-btn svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none}
+
+/* ── MAIN ── */
+#main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:20px;font-weight:700;color:var(--text-primary)}
+.topbar-sub{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+.content-area{padding:28px 32px;flex:1}
+.section{display:none}.section.active{display:block}
+
+/* ── KPI ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.kpi-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:16px}
+.kpi-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-icon svg{width:20px;height:20px;stroke-width:1.8;fill:none}
+.kpi-icon.blue{background:#eff6ff}.kpi-icon.blue svg{stroke:#3b82f6}
+.kpi-icon.green{background:#ecfdf5}.kpi-icon.green svg{stroke:#10b981}
+.kpi-icon.orange{background:#fffbeb}.kpi-icon.orange svg{stroke:#f59e0b}
+.kpi-icon.red{background:#fff0f0}.kpi-icon.red svg{stroke:#ef4444}
+.kpi-icon.purple{background:#f5f3ff}.kpi-icon.purple svg{stroke:#8b5cf6}
+.kpi-label{font-size:12px;color:var(--text-secondary);font-weight:500;margin-bottom:4px}
+.kpi-value{font-size:22px;font-weight:800;color:var(--text-primary)}
+.kpi-delta{font-size:11px;margin-top:3px;color:var(--text-secondary)}
+
+/* ── CARD ── */
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.card-header{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.card-title{font-size:15px;font-weight:700}
+.card-body{padding:0}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-orange{background:#fef3c7;color:#92400e}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-gray{background:#f1f5f9;color:#475569}
+.badge-purple{background:#f5f3ff;color:#5b21b6}
+.badge-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.badge-green .badge-dot{background:#10b981}
+.badge-orange .badge-dot{background:#f59e0b}
+.badge-red .badge-dot{background:#ef4444}
+.badge-blue .badge-dot{background:#3b82f6}
+.badge-gray .badge-dot{background:#94a3b8}
+.badge-purple .badge-dot{background:#8b5cf6}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all 0.18s}
+.btn svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
+.btn-primary{background:var(--indigo);color:#fff}.btn-primary:hover{background:#4338ca}
+.btn-outline{background:#fff;color:var(--text-primary);border:1px solid var(--border)}.btn-outline:hover{background:#f8fafc}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-icon{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all 0.18s}
+.btn-icon:hover{background:#f1f5f9}
+.btn-icon svg{width:13px;height:13px;stroke:var(--text-secondary);stroke-width:2;fill:none}
+.btn-icon:hover svg{stroke:var(--text-primary)}
+.btn-icon.danger:hover{background:#fee2e2;border-color:#fca5a5}.btn-icon.danger:hover svg{stroke:var(--red)}
+
+/* ── TABLE ── */
+.table-toolbar{display:flex;gap:10px;align-items:center}
+.search-box{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;padding:7px 12px;background:#fff;font-size:13px}
+.search-box svg{width:14px;height:14px;stroke:var(--text-secondary);stroke-width:2;fill:none;flex-shrink:0}
+.search-box input{border:none;outline:none;font-family:'Montserrat',sans-serif;font-size:13px;width:180px;color:var(--text-primary)}
+.search-box input::placeholder{color:var(--text-secondary)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;background:#f8fafc;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid #f1f5f9;transition:background 0.15s;cursor:pointer}
+tbody tr:hover{background:#f8fafc}
+tbody tr:last-child{border-bottom:none}
+td{padding:13px 16px;font-size:13px;color:var(--text-primary)}
+.table-footer{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary)}
+.avatar{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:#fff}
+.lead-cell{display:flex;align-items:center;gap:10px}
+.lead-name{font-weight:600;font-size:13px}
+.lead-phone{font-size:11px;color:var(--text-secondary);margin-top:1px}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,0.25)}
+.modal-header{padding:24px 28px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:17px;font-weight:700}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:4px 8px;border-radius:6px;display:flex;align-items:center}
+.modal-close:hover{background:#f1f5f9}
+.modal-close svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none}
+.modal-body{padding:20px 28px}
+.modal-footer{padding:0 28px 24px;display:flex;gap:10px;justify-content:flex-end}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.form-control{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Montserrat',sans-serif;color:var(--text-primary);outline:none;transition:border 0.18s}
+.form-control:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+select.form-control{cursor:pointer;background:#fff}
+textarea.form-control{resize:vertical;min-height:80px}
+
+/* ── KANBAN ── */
+.kanban-board{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px;align-items:flex-start}
+.kanban-col{flex:0 0 240px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column}
+.kanban-col-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.kanban-col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary)}
+.kanban-col-count{font-size:11px;font-weight:700;background:rgba(79,70,229,0.1);color:var(--indigo);padding:2px 7px;border-radius:10px}
+.kanban-cards{padding:10px;display:flex;flex-direction:column;gap:8px;min-height:60px}
+.kanban-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:box-shadow 0.18s,border-color 0.18s;position:relative}
+.kanban-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.kanban-card.overdue{border-left:3px solid var(--red)}
+.kanban-card.soon{border-left:3px solid var(--orange)}
+.kcard-name{font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text-primary)}
+.kcard-pat{font-size:11px;color:var(--text-secondary);margin-bottom:8px}
+.kcard-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.kcard-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.kcard-resp{font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px}
+.kcard-resp svg{width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none}
+.kcard-due{font-size:11px;display:flex;align-items:center;gap:4px;font-weight:600}
+.kcard-due svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.2;fill:none}
+.kcard-due.overdue{color:var(--red)}
+.kcard-due.soon{color:var(--orange)}
+.kcard-due.ok{color:var(--text-secondary)}
+.kcard-actions{display:flex;gap:4px;margin-top:8px}
+.badge-temp-quente{background:#fee2e2;color:#991b1b}
+.badge-temp-morno{background:#fef3c7;color:#92400e}
+.badge-temp-frio{background:#dbeafe;color:#1e40af}
+
+/* ── FOLLOWUPS ── */
+.fu-list{display:flex;flex-direction:column;gap:10px}
+.fu-item{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;align-items:flex-start;gap:14px}
+.fu-item.overdue{border-left:3px solid var(--red)}
+.fu-item.today{border-left:3px solid var(--orange)}
+.fu-item.soon{border-left:3px solid var(--blue)}
+.fu-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fu-icon svg{width:15px;height:15px;stroke-width:2;fill:none}
+.fu-icon.red{background:#fee2e2}.fu-icon.red svg{stroke:var(--red)}
+.fu-icon.orange{background:#fef3c7}.fu-icon.orange svg{stroke:var(--orange)}
+.fu-icon.blue{background:#dbeafe}.fu-icon.blue svg{stroke:var(--blue)}
+.fu-content{flex:1}
+.fu-lead{font-size:13px;font-weight:700;margin-bottom:2px}
+.fu-desc{font-size:12px;color:var(--text-secondary);margin-bottom:4px}
+.fu-meta{font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:6px}
+.fu-actions{display:flex;gap:6px;align-items:center}
+
+/* ── ALERTS ── */
+.alert-list{display:flex;flex-direction:column;gap:10px}
+.alert-item{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
+.alert-item.urgent{border-left:3px solid var(--red)}
+.alert-item.warn{border-left:3px solid var(--orange)}
+.alert-item.ok{border-left:3px solid var(--green)}
+.alert-icon-wrap{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alert-icon-wrap svg{width:15px;height:15px;stroke-width:2;fill:none}
+.alert-icon-wrap.red{background:#fee2e2}.alert-icon-wrap.red svg{stroke:var(--red)}
+.alert-icon-wrap.orange{background:#fef3c7}.alert-icon-wrap.orange svg{stroke:var(--orange)}
+.alert-icon-wrap.green{background:#d1fae5}.alert-icon-wrap.green svg{stroke:var(--green)}
+.alert-icon-wrap.blue{background:#dbeafe}.alert-icon-wrap.blue svg{stroke:var(--blue)}
+.alert-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.alert-desc{font-size:11px;color:var(--text-secondary);line-height:1.4}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:48px 24px;color:var(--text-secondary)}
+.empty-state-icon{width:48px;height:48px;border-radius:12px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.empty-state-icon svg{width:22px;height:22px;stroke:#94a3b8;stroke-width:1.5;fill:none}
+.empty-title{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+.empty-desc{font-size:12px}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-overlay" style="position:fixed;inset:0;background:rgba(15,23,42,0.75);z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.15);border-top-color:#818cf8;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+    <span style="color:rgba(255,255,255,0.7);font-size:13px;font-family:'Montserrat',sans-serif">Carregando...</span>
+  </div>
+</div>
+<div id="toast" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:none;background:#1e293b;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-family:'Montserrat',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.4);border-left:3px solid #10b981"></div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <a class="sidebar-logo" href="soma-partners.html">
+    <span class="logo-soma">Soma</span>
+    <div class="logo-pipe"></div>
+    <span class="logo-partners">Partners</span>
+  </a>
+
+  <div class="nav-item active" data-section="dashboard">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+    Visão Geral
+  </div>
+
+  <div class="sidebar-section">Pipeline</div>
+  <div class="nav-item" data-section="pipeline">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="13" rx="1"/><rect x="17" y="3" width="5" height="8" rx="1"/></svg></span>
+    Pipeline
+  </div>
+  <div class="nav-item" data-section="followups">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+    Follow-ups
+  </div>
+
+  <div class="sidebar-section">Cadastro</div>
+  <div class="nav-item" data-section="leads">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+    Leads
+  </div>
+
+  <div class="sidebar-footer">
+    <a class="back-btn" href="soma-partners.html">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Voltar ao início
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Visão Geral</div>
+      <div class="topbar-sub" id="topbar-sub">Pipeline comercial e follow-ups</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary" id="btn-primary-action" onclick="openModal('modal-lead')">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo Lead
+      </button>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="section active" id="section-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          <div><div class="kpi-label">Leads Ativos</div><div class="kpi-value" id="kpi-leads">0</div><div class="kpi-delta" id="kpi-leads-d">—</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon orange"><svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M12 6v6l4 2"/></svg></div>
+          <div><div class="kpi-label">Follow-ups Vencidos</div><div class="kpi-value" id="kpi-vencidos">0</div><div class="kpi-delta" id="kpi-vencidos-d">—</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon red"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+          <div><div class="kpi-label">Leads Quentes</div><div class="kpi-value" id="kpi-quentes">0</div><div class="kpi-delta" id="kpi-quentes-d">—</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><div class="kpi-label">Patrimônio em Pipeline</div><div class="kpi-value" id="kpi-patrimonio">R$ 0</div><div class="kpi-delta" id="kpi-patrimonio-d">—</div></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Follow-ups de Hoje</div></div>
+          <div class="card-body" style="padding:16px"><div class="alert-list" id="dash-followups"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Leads Quentes</div></div>
+          <div class="card-body" style="padding:16px"><div class="alert-list" id="dash-quentes"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PIPELINE ── -->
+    <div class="section" id="section-pipeline">
+      <div class="kanban-board" id="kanban-board"></div>
+    </div>
+
+    <!-- ── FOLLOWUPS ── -->
+    <div class="section" id="section-followups">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Follow-ups Pendentes</div>
+          <span id="fu-count" style="font-size:12px;color:var(--text-secondary)"></span>
+        </div>
+        <div class="card-body" style="padding:16px">
+          <div class="fu-list" id="fu-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LEADS ── -->
+    <div class="section" id="section-leads">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Leads</div>
+          <div class="table-toolbar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-leads" placeholder="Buscar..." oninput="renderLeads()">
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead><tr>
+              <th>Lead</th><th>Patrimônio</th><th>Origem</th><th>Temperatura</th><th>Estágio</th><th>Responsável</th><th>Próxima Ação</th><th></th>
+            </tr></thead>
+            <tbody id="tbody-leads"></tbody>
+          </table>
+          <div class="table-footer"><span id="leads-count">0 leads</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: NOVO/EDITAR LEAD -->
+<div class="modal-overlay" id="modal-lead">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-lead-title">Novo Lead</div>
+      <button class="modal-close" onclick="closeModal('modal-lead')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="lead-edit-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nome completo *</label><input class="form-control" id="l-nome" placeholder="Nome do lead"></div>
+        <div class="form-group"><label class="form-label">Telefone / WhatsApp</label><input class="form-control" id="l-telefone" placeholder="(11) 99999-9999"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Patrimônio estimado</label><input class="form-control" id="l-patrimonio" placeholder="Ex: R$ 2.000.000"></div>
+        <div class="form-group"><label class="form-label">Origem do contato</label>
+          <select class="form-control" id="l-origem">
+            <option value="indicacao">Indicação</option>
+            <option value="evento">Evento</option>
+            <option value="redes_sociais">Redes Sociais</option>
+            <option value="prospecção_ativa">Prospecção Ativa</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Responsável</label><input class="form-control" id="l-responsavel" placeholder="Nome do responsável"></div>
+        <div class="form-group"><label class="form-label">Temperatura</label>
+          <select class="form-control" id="l-temperatura">
+            <option value="frio">Frio</option>
+            <option value="morno">Morno</option>
+            <option value="quente">Quente</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Estágio</label>
+          <select class="form-control" id="l-estagio">
+            <option value="prospeccao">Prospecção</option>
+            <option value="qualificacao">Qualificação</option>
+            <option value="reuniao">Reunião</option>
+            <option value="proposta">Proposta</option>
+            <option value="fechado">Fechado</option>
+            <option value="perdido">Perdido</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Data da próxima ação</label><input type="date" class="form-control" id="l-data-acao"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Próxima ação</label><input class="form-control" id="l-proxima-acao" placeholder="Ex: Ligar para agendar reunião"></div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="l-obs" rows="3" placeholder="Notas adicionais sobre o lead..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-lead')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveLead()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FOLLOW-UP -->
+<div class="modal-overlay" id="modal-followup">
+  <div class="modal" style="width:480px">
+    <div class="modal-header">
+      <div class="modal-title">Registrar Follow-up</div>
+      <button class="modal-close" onclick="closeModal('modal-followup')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="fu-lead-id">
+      <div class="form-group"><div style="font-size:13px;font-weight:600;margin-bottom:8px" id="fu-lead-name"></div></div>
+      <div class="form-group"><label class="form-label">Descrição da ação realizada *</label><textarea class="form-control" id="fu-desc" rows="3" placeholder="O que foi feito?"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tipo</label>
+          <select class="form-control" id="fu-tipo">
+            <option value="ligacao">Ligação</option>
+            <option value="reuniao">Reunião</option>
+            <option value="email">E-mail</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Data realizada</label><input type="date" class="form-control" id="fu-realizada"></div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+        <div style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Próxima Ação</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Descrição</label><input class="form-control" id="fu-proxima" placeholder="Próxima ação a realizar"></div>
+          <div class="form-group"><label class="form-label">Data prevista</label><input type="date" class="form-control" id="fu-proxima-data"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-followup')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveFollowup()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: MOVER ESTÁGIO -->
+<div class="modal-overlay" id="modal-mover">
+  <div class="modal" style="width:400px">
+    <div class="modal-header">
+      <div class="modal-title">Mover Lead</div>
+      <button class="modal-close" onclick="closeModal('modal-mover')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;font-weight:600;margin-bottom:16px" id="mover-lead-name"></div>
+      <div class="form-group"><label class="form-label">Novo estágio</label>
+        <select class="form-control" id="mover-estagio">
+          <option value="prospeccao">Prospecção</option>
+          <option value="qualificacao">Qualificação</option>
+          <option value="reuniao">Reunião</option>
+          <option value="proposta">Proposta</option>
+          <option value="fechado">Fechado</option>
+          <option value="perdido">Perdido</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-mover')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarMover()">Mover</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAR DELETE -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="width:380px">
+    <div class="modal-header"><div class="modal-title">Confirmar exclusão</div><button class="modal-close" onclick="closeModal('modal-confirm')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body"><p style="font-size:13px;color:var(--text-secondary);line-height:1.6">Tem certeza que deseja excluir este lead? Todos os follow-ups associados serão removidos.</p></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-confirm')">Cancelar</button><button class="btn btn-danger" id="confirm-delete-btn">Excluir</button></div>
+  </div>
+</div>
+
+<script>
+// ════ SUPABASE ════
+const SUPA_URL = 'https://fqdhaaslmiprvifttmpb.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZGhhYXNsbWlwcnZpZnR0bXBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDkxNTcsImV4cCI6MjA5MzQ4NTE1N30.iJouT1ztgAnmxpowiWFusoaMbIIZYWathTcW4w_ToVc';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5)}
+let DB = {leads:[], followups:[]};
+
+function showLoading(v){const el=document.getElementById('loading-overlay');if(el)el.style.display=v?'flex':'none'}
+let _toastTimer;
+function showToast(msg,type='success'){
+  const el=document.getElementById('toast');if(!el)return;
+  el.textContent=msg;el.style.borderLeftColor=type==='error'?'#ef4444':'#10b981';
+  el.style.display='block';clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>{el.style.display='none'},3000);
+}
+async function dbGet(table){
+  const {data,error}=await sb.from(table).select('id,data').order('created_at');
+  if(error){showToast('Erro ao carregar dados','error');return[]}
+  return(data||[]).map(r=>r.data);
+}
+async function dbUpsert(table,obj,extra){
+  const row={id:obj.id,data:obj,...(extra||{})};
+  const {error}=await sb.from(table).upsert(row);
+  if(error){showToast('Erro ao salvar','error');return false}
+  return true;
+}
+async function dbDelete(table,id){
+  const {error}=await sb.from(table).delete().eq('id',id);
+  if(error){showToast('Erro ao excluir','error');return false}
+  return true;
+}
+async function initDB(){
+  showLoading(true);
+  const [leads,followups]=await Promise.all([dbGet('wealth_leads'),dbGet('wealth_followups')]);
+  DB={leads,followups};
+  showLoading(false);
+  navigate('dashboard');
+}
+
+// ════ HELPERS ════
+const AVATAR_COLORS=['#4f46e5','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6'];
+function getInitials(n){const p=(n||'?').trim().split(' ');return(p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase()}
+function avatarColor(n){let h=0;for(let c of(n||'x'))h=(h+c.charCodeAt(0))%AVATAR_COLORS.length;return AVATAR_COLORS[h]}
+function today(){return new Date().toISOString().split('T')[0]}
+function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
+
+const ESTAGIO_LABELS={prospeccao:'Prospecção',qualificacao:'Qualificação',reuniao:'Reunião',proposta:'Proposta',fechado:'Fechado',perdido:'Perdido'};
+const ORIGEM_LABELS={indicacao:'Indicação',evento:'Evento',redes_sociais:'Redes Sociais',prospecção_ativa:'Prospecção Ativa',outro:'Outro'};
+const TEMP_CLASS={quente:'badge-temp-quente',morno:'badge-temp-morno',frio:'badge-temp-frio'};
+const TEMP_LABELS={quente:'Quente',morno:'Morno',frio:'Frio'};
+const TIPO_LABELS={ligacao:'Ligação',reuniao:'Reunião',email:'E-mail',whatsapp:'WhatsApp',outro:'Contato'};
+
+function tempBadge(t){return`<span class="badge ${TEMP_CLASS[t]||'badge-gray'}">${TEMP_LABELS[t]||t}</span>`}
+
+function cardUrgency(lead){
+  if(!lead.data_proxima_acao)return'none';
+  const diff=Math.ceil((new Date(lead.data_proxima_acao)-new Date(today()))/(1000*60*60*24));
+  if(diff<0)return'overdue';
+  if(diff<=2)return'soon';
+  return'ok';
+}
+
+function getLeadFollowups(leadId){return DB.followups.filter(f=>f.lead_id===leadId)}
+
+// ════ NAVIGATION ════
+const SECTION_META={
+  dashboard:{title:'Visão Geral',sub:'Resumo do pipeline e alertas',btn:'Novo Lead',action:()=>openModal('modal-lead')},
+  pipeline:{title:'Pipeline',sub:'Gestão visual de leads por estágio',btn:'Novo Lead',action:()=>openModal('modal-lead')},
+  followups:{title:'Follow-ups',sub:'Ações pendentes ordenadas por urgência',btn:'Novo Lead',action:()=>openModal('modal-lead')},
+  leads:{title:'Leads',sub:'Cadastro completo de leads e oportunidades',btn:'Novo Lead',action:()=>openModal('modal-lead')},
+};
+let currentSection='dashboard';
+function navigate(section){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('section-'+section).classList.add('active');
+  document.querySelector(`[data-section="${section}"]`).classList.add('active');
+  const m=SECTION_META[section];
+  document.getElementById('topbar-title').textContent=m.title;
+  document.getElementById('topbar-sub').textContent=m.sub;
+  const btn=document.getElementById('btn-primary-action');
+  btn.innerHTML=`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> ${m.btn}`;
+  btn.onclick=m.action;
+  currentSection=section;
+  renderSection(section);
+}
+document.querySelectorAll('.nav-item[data-section]').forEach(el=>{el.addEventListener('click',()=>navigate(el.dataset.section))});
+
+function renderSection(s){
+  switch(s){
+    case'dashboard':renderDashboard();break;
+    case'pipeline':renderPipeline();break;
+    case'followups':renderFollowups();break;
+    case'leads':renderLeads();break;
+  }
+}
+
+// ════ DASHBOARD ════
+function renderDashboard(){
+  const activeLeads=DB.leads.filter(l=>l.estagio!=='perdido');
+  const quentes=activeLeads.filter(l=>l.temperatura==='quente');
+  const todayStr=today();
+  const vencidos=DB.followups.filter(f=>!f.data_realizada&&f.data_prevista&&f.data_prevista<todayStr);
+  const hoje=DB.followups.filter(f=>!f.data_realizada&&f.data_prevista===todayStr);
+
+  // KPIs
+  document.getElementById('kpi-leads').textContent=activeLeads.length;
+  document.getElementById('kpi-leads-d').textContent=`${DB.leads.length} total cadastrado${DB.leads.length!==1?'s':''}`;
+  document.getElementById('kpi-vencidos').textContent=vencidos.length;
+  document.getElementById('kpi-vencidos-d').textContent=vencidos.length>0?'Necessitam atenção':'Tudo em dia';
+  document.getElementById('kpi-quentes').textContent=quentes.length;
+  document.getElementById('kpi-quentes-d').textContent=quentes.length>0?'Alta prioridade':'Nenhum lead quente';
+
+  // Patrimônio total (parse numeric from string)
+  const patrimonioTotal=activeLeads.reduce((sum,l)=>{
+    const v=parseFloat((l.patrimonio_estimado||'0').replace(/[^\d.,]/g,'').replace(',','.'));
+    return sum+(isNaN(v)?0:v);
+  },0);
+  document.getElementById('kpi-patrimonio').textContent=patrimonioTotal>0?'R$ '+patrimonioTotal.toLocaleString('pt-BR',{maximumFractionDigits:0}):'—';
+  document.getElementById('kpi-patrimonio-d').textContent=`${activeLeads.length} leads ativos`;
+
+  // Follow-ups de hoje
+  const fuContainer=document.getElementById('dash-followups');
+  const fuHoje=[...vencidos.slice(0,3),...hoje.slice(0,3)].slice(0,5);
+  if(fuHoje.length===0){
+    fuContainer.innerHTML=`<div class="alert-item ok"><div class="alert-icon-wrap green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="alert-title">Tudo em dia</div><div class="alert-desc">Sem follow-ups urgentes</div></div></div>`;
+  } else {
+    fuContainer.innerHTML=fuHoje.map(f=>{
+      const lead=DB.leads.find(l=>l.id===f.lead_id);
+      const isVenc=f.data_prevista<todayStr;
+      return`<div class="alert-item ${isVenc?'urgent':'warn'}">
+        <div class="alert-icon-wrap ${isVenc?'red':'orange'}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div style="flex:1"><div class="alert-title">${lead?.nome||'Lead'}</div><div class="alert-desc">${f.descricao||'—'} · ${fmtDate(f.data_prevista)}</div></div>
+        <button class="btn btn-sm btn-outline" onclick="openFollowupModal('${f.lead_id}')">Feito</button>
+      </div>`;
+    }).join('');
+  }
+
+  // Leads quentes
+  const qContainer=document.getElementById('dash-quentes');
+  if(quentes.length===0){
+    qContainer.innerHTML=`<div class="alert-item ok"><div class="alert-icon-wrap blue"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="alert-title">Sem leads quentes</div><div class="alert-desc">Aquecimentos pendentes</div></div></div>`;
+  } else {
+    qContainer.innerHTML=quentes.slice(0,5).map(l=>`<div class="alert-item warn">
+      <div class="alert-icon-wrap red"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+      <div style="flex:1"><div class="alert-title">${l.nome}</div><div class="alert-desc">${ESTAGIO_LABELS[l.estagio]||l.estagio} · ${l.patrimonio_estimado||'—'}</div></div>
+      <button class="btn btn-sm btn-outline" onclick="editLead('${l.id}')">Ver</button>
+    </div>`).join('');
+  }
+}
+
+// ════ PIPELINE ════
+const STAGES=[
+  {id:'prospeccao',label:'Prospecção'},
+  {id:'qualificacao',label:'Qualificação'},
+  {id:'reuniao',label:'Reunião'},
+  {id:'proposta',label:'Proposta'},
+  {id:'fechado',label:'Fechado'},
+  {id:'perdido',label:'Perdido'},
+];
+function renderPipeline(){
+  const board=document.getElementById('kanban-board');
+  const todayStr=today();
+  board.innerHTML=STAGES.map(stage=>{
+    const cards=DB.leads.filter(l=>l.estagio===stage.id);
+    return`<div class="kanban-col">
+      <div class="kanban-col-header">
+        <span class="kanban-col-title">${stage.label}</span>
+        <span class="kanban-col-count">${cards.length}</span>
+      </div>
+      <div class="kanban-cards">
+        ${cards.length===0?`<div style="font-size:12px;color:var(--text-secondary);text-align:center;padding:16px 0">Sem leads</div>`:
+        cards.map(l=>{
+          const urgency=cardUrgency(l);
+          return`<div class="kanban-card ${urgency==='overdue'?'overdue':urgency==='soon'?'soon':''}" onclick="editLead('${l.id}')">
+            <div class="kcard-name">${l.nome}</div>
+            ${l.patrimonio_estimado?`<div class="kcard-pat">${l.patrimonio_estimado}</div>`:''}
+            <div class="kcard-tags">
+              ${tempBadge(l.temperatura)}
+            </div>
+            <div class="kcard-bottom">
+              <span class="kcard-resp"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${l.responsavel||'—'}</span>
+              ${l.data_proxima_acao?`<span class="kcard-due ${urgency==='none'?'ok':urgency}">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                ${urgency==='overdue'?'Vencido':fmtDate(l.data_proxima_acao)}
+              </span>`:''}
+            </div>
+            <div class="kcard-actions" onclick="event.stopPropagation()">
+              <button class="btn btn-sm btn-outline" onclick="openMoverModal('${l.id}')">Mover</button>
+              <button class="btn btn-sm btn-outline" onclick="openFollowupModal('${l.id}')">Follow-up</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════ FOLLOW-UPS ════
+function renderFollowups(){
+  const todayStr=today();
+  const pending=DB.followups.filter(f=>!f.data_realizada);
+  const sorted=[
+    ...pending.filter(f=>f.data_prevista&&f.data_prevista<todayStr).sort((a,b)=>a.data_prevista.localeCompare(b.data_prevista)),
+    ...pending.filter(f=>f.data_prevista===todayStr),
+    ...pending.filter(f=>f.data_prevista&&f.data_prevista>todayStr).sort((a,b)=>a.data_prevista.localeCompare(b.data_prevista)),
+    ...pending.filter(f=>!f.data_prevista),
+  ];
+
+  document.getElementById('fu-count').textContent=`${sorted.length} pendente${sorted.length!==1?'s':''}`;
+  const container=document.getElementById('fu-list');
+
+  if(sorted.length===0){
+    container.innerHTML=`<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="empty-title">Sem follow-ups pendentes</div><div class="empty-desc">Todos os follow-ups foram concluídos</div></div>`;
+    return;
+  }
+
+  container.innerHTML=sorted.map(f=>{
+    const lead=DB.leads.find(l=>l.id===f.lead_id);
+    const isVenc=f.data_prevista&&f.data_prevista<todayStr;
+    const isHoje=f.data_prevista===todayStr;
+    const cls=isVenc?'overdue':isHoje?'today':'soon';
+    const iconCls=isVenc?'red':isHoje?'orange':'blue';
+    return`<div class="fu-item ${cls}">
+      <div class="fu-icon ${iconCls}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="fu-content">
+        <div class="fu-lead">${lead?.nome||'Lead removido'}</div>
+        <div class="fu-desc">${f.descricao||'—'}</div>
+        <div class="fu-meta">
+          <span>${TIPO_LABELS[f.tipo]||'Ação'}</span>
+          ${f.data_prevista?`<span>·</span><span style="color:${isVenc?'var(--red)':isHoje?'var(--orange)':'inherit'};font-weight:${isVenc||isHoje?'700':'400'}">${isVenc?'Vencido em':isHoje?'Hoje:':''} ${fmtDate(f.data_prevista)}</span>`:''}
+          ${lead?`<span>·</span><span>${ESTAGIO_LABELS[lead.estagio]||lead.estagio}</span>`:''}
+        </div>
+      </div>
+      <div class="fu-actions">
+        <button class="btn btn-sm btn-primary" onclick="openFollowupModal('${f.lead_id}','${f.id}')">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Feito
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════ LEADS TABLE ════
+function renderLeads(){
+  const q=(document.getElementById('search-leads').value||'').toLowerCase();
+  const list=DB.leads.filter(l=>(l.nome||'').toLowerCase().includes(q)||(l.telefone||'').includes(q)||(l.responsavel||'').toLowerCase().includes(q));
+  const tbody=document.getElementById('tbody-leads');
+  if(list.length===0){
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="empty-title">Nenhum lead encontrado</div><div class="empty-desc">Clique em "Novo Lead" para cadastrar</div></div></td></tr>`;
+    document.getElementById('leads-count').textContent='0 leads';return;
+  }
+  const todayStr=today();
+  tbody.innerHTML=list.map(l=>{
+    const urgency=cardUrgency(l);
+    const color=avatarColor(l.nome);
+    return`<tr onclick="editLead('${l.id}')">
+      <td><div class="lead-cell"><div class="avatar" style="background:${color}">${getInitials(l.nome)}</div><div><div class="lead-name">${l.nome}</div><div class="lead-phone">${l.telefone||''}</div></div></div></td>
+      <td style="font-size:13px;font-weight:600">${l.patrimonio_estimado||'—'}</td>
+      <td style="font-size:12px;color:var(--text-secondary)">${ORIGEM_LABELS[l.origem]||l.origem||'—'}</td>
+      <td>${tempBadge(l.temperatura)}</td>
+      <td><span class="badge badge-gray">${ESTAGIO_LABELS[l.estagio]||l.estagio}</span></td>
+      <td style="font-size:13px">${l.responsavel||'—'}</td>
+      <td style="font-size:12px;color:${urgency==='overdue'?'var(--red)':urgency==='soon'?'var(--orange)':'inherit'};font-weight:${urgency==='overdue'||urgency==='soon'?'600':'400'}">${l.data_proxima_acao?fmtDate(l.data_proxima_acao):'—'}</td>
+      <td style="white-space:nowrap" onclick="event.stopPropagation()">
+        <button class="btn-icon" onclick="editLead('${l.id}')" title="Editar"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="btn-icon danger" onclick="confirmDeleteLead('${l.id}')" title="Excluir"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('leads-count').textContent=`${list.length} lead${list.length!==1?'s':''}`;
+}
+
+// ════ SAVE LEAD ════
+async function saveLead(){
+  const nome=document.getElementById('l-nome').value.trim();
+  if(!nome){alert('Informe o nome do lead');return}
+  const id=document.getElementById('lead-edit-id').value||uid();
+  const data={
+    id,nome,
+    telefone:document.getElementById('l-telefone').value.trim(),
+    patrimonio_estimado:document.getElementById('l-patrimonio').value.trim(),
+    origem:document.getElementById('l-origem').value,
+    responsavel:document.getElementById('l-responsavel').value.trim(),
+    temperatura:document.getElementById('l-temperatura').value,
+    estagio:document.getElementById('l-estagio').value,
+    proxima_acao:document.getElementById('l-proxima-acao').value.trim(),
+    data_proxima_acao:document.getElementById('l-data-acao').value,
+    obs:document.getElementById('l-obs').value.trim(),
+  };
+  if(!await dbUpsert('wealth_leads',data))return;
+  const idx=DB.leads.findIndex(l=>l.id===id);
+  if(idx>=0)Object.assign(DB.leads[idx],data);else DB.leads.push(data);
+  closeModal('modal-lead');renderSection(currentSection);
+}
+
+function editLead(id){
+  const l=DB.leads.find(x=>x.id===id);if(!l)return;
+  document.getElementById('lead-edit-id').value=l.id;
+  document.getElementById('l-nome').value=l.nome||'';
+  document.getElementById('l-telefone').value=l.telefone||'';
+  document.getElementById('l-patrimonio').value=l.patrimonio_estimado||'';
+  document.getElementById('l-origem').value=l.origem||'indicacao';
+  document.getElementById('l-responsavel').value=l.responsavel||'';
+  document.getElementById('l-temperatura').value=l.temperatura||'frio';
+  document.getElementById('l-estagio').value=l.estagio||'prospeccao';
+  document.getElementById('l-proxima-acao').value=l.proxima_acao||'';
+  document.getElementById('l-data-acao').value=l.data_proxima_acao||'';
+  document.getElementById('l-obs').value=l.obs||'';
+  document.getElementById('modal-lead-title').textContent='Editar Lead';
+  openModal('modal-lead');
+}
+
+function confirmDeleteLead(id){
+  document.getElementById('confirm-delete-btn').onclick=async()=>{
+    const fus=DB.followups.filter(f=>f.lead_id===id);
+    await Promise.all(fus.map(f=>dbDelete('wealth_followups',f.id)));
+    if(!await dbDelete('wealth_leads',id))return;
+    DB.leads=DB.leads.filter(l=>l.id!==id);
+    DB.followups=DB.followups.filter(f=>f.lead_id!==id);
+    closeModal('modal-confirm');renderSection(currentSection);
+  };
+  openModal('modal-confirm');
+}
+
+// ════ MOVER ESTÁGIO ════
+let _moverLeadId=null;
+function openMoverModal(id){
+  const l=DB.leads.find(x=>x.id===id);if(!l)return;
+  _moverLeadId=id;
+  document.getElementById('mover-lead-name').textContent=l.nome;
+  document.getElementById('mover-estagio').value=l.estagio||'prospeccao';
+  openModal('modal-mover');
+}
+async function confirmarMover(){
+  const l=DB.leads.find(x=>x.id===_moverLeadId);if(!l)return;
+  l.estagio=document.getElementById('mover-estagio').value;
+  if(!await dbUpsert('wealth_leads',l))return;
+  closeModal('modal-mover');renderSection(currentSection);
+  showToast('Lead movido para '+ESTAGIO_LABELS[l.estagio]);
+}
+
+// ════ FOLLOW-UP ════
+let _fuCurrentId=null;
+function openFollowupModal(leadId,fuId){
+  const l=DB.leads.find(x=>x.id===leadId);if(!l)return;
+  _fuCurrentId=fuId||null;
+  document.getElementById('fu-lead-id').value=leadId;
+  document.getElementById('fu-lead-name').textContent=l.nome;
+  document.getElementById('fu-desc').value='';
+  document.getElementById('fu-tipo').value='ligacao';
+  document.getElementById('fu-realizada').value=today();
+  document.getElementById('fu-proxima').value=l.proxima_acao||'';
+  document.getElementById('fu-proxima-data').value='';
+  openModal('modal-followup');
+}
+async function saveFollowup(){
+  const leadId=document.getElementById('fu-lead-id').value;
+  const desc=document.getElementById('fu-desc').value.trim();
+  if(!desc){alert('Descreva a ação realizada');return}
+  const dataRealizada=document.getElementById('fu-realizada').value;
+  const proximaAcao=document.getElementById('fu-proxima').value.trim();
+  const proximaData=document.getElementById('fu-proxima-data').value;
+
+  // Save follow-up record
+  const fuId=_fuCurrentId||uid();
+  const fuObj={id:fuId,lead_id:leadId,descricao:desc,tipo:document.getElementById('fu-tipo').value,data_prevista:document.getElementById('fu-proxima-data').value||null,data_realizada:dataRealizada};
+  if(!await dbUpsert('wealth_followups',fuObj,{lead_id:leadId}))return;
+  const fuIdx=DB.followups.findIndex(f=>f.id===fuId);
+  if(fuIdx>=0)Object.assign(DB.followups[fuIdx],fuObj);else DB.followups.push(fuObj);
+
+  // Update lead's next action
+  const lead=DB.leads.find(l=>l.id===leadId);
+  if(lead&&(proximaAcao||proximaData)){
+    lead.proxima_acao=proximaAcao;
+    lead.data_proxima_acao=proximaData;
+    await dbUpsert('wealth_leads',lead);
+  }
+
+  closeModal('modal-followup');
+  showToast('Follow-up registrado');
+  renderSection(currentSection);
+}
+
+// ════ MODALS ════
+function openModal(id){
+  if(id==='modal-lead'){
+    document.getElementById('lead-edit-id').value='';
+    document.getElementById('modal-lead-title').textContent='Novo Lead';
+    ['l-nome','l-telefone','l-patrimonio','l-responsavel','l-proxima-acao','l-data-acao','l-obs'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('l-origem').value='indicacao';
+    document.getElementById('l-temperatura').value='frio';
+    document.getElementById('l-estagio').value='prospeccao';
+  }
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')})});
+
+// INIT
+initDB();
+</script>
+</body>
+</html>

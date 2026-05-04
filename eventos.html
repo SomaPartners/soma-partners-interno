@@ -6,6 +6,7 @@
 <title>Eventos — Soma Partners</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -254,6 +255,15 @@ textarea.form-control-dark{resize:vertical;min-height:80px}
 </style>
 </head>
 <body>
+
+<div id="loading-overlay" style="position:fixed;inset:0;background:rgba(11,30,48,0.85);z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.15);border-top-color:#818cf8;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+    <span style="color:rgba(255,255,255,0.7);font-size:13px;font-family:'Montserrat',sans-serif">Carregando...</span>
+  </div>
+</div>
+<div id="toast" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:none;background:#1e293b;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-family:'Montserrat',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.4);border-left:3px solid #10b981"></div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <!-- TOP NAV -->
 <nav class="topnav">
@@ -515,12 +525,52 @@ textarea.form-control-dark{resize:vertical;min-height:80px}
 </div>
 
 <script>
-// ════ DATA ════
-const KEY = 'soma_eventos_v1';
-function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return{eventos:[]}}
-function save(d){localStorage.setItem(KEY,JSON.stringify(d))}
+// ════ SUPABASE ════
+const SUPA_URL = 'https://fqdhaaslmiprvifttmpb.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZGhhYXNsbWlwcnZpZnR0bXBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDkxNTcsImV4cCI6MjA5MzQ4NTE1N30.iJouT1ztgAnmxpowiWFusoaMbIIZYWathTcW4w_ToVc';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
 function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5)}
-let DB = load();
+let DB = {eventos:[]};
+
+function showLoading(v){const el=document.getElementById('loading-overlay');if(el)el.style.display=v?'flex':'none'}
+let _toastTimer;
+function showToast(msg,type='success'){
+  const el=document.getElementById('toast');if(!el)return;
+  el.textContent=msg;el.style.borderLeftColor=type==='error'?'#ef4444':'#10b981';
+  el.style.display='block';clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>{el.style.display='none'},3000);
+}
+async function dbGet(table){
+  const {data,error}=await sb.from(table).select('id,data').order('created_at');
+  if(error){showToast('Erro ao carregar dados','error');return[]}
+  return(data||[]).map(r=>r.data);
+}
+async function dbUpsert(table,obj,extra){
+  const row={id:obj.id,data:obj,...(extra||{})};
+  const {error}=await sb.from(table).upsert(row);
+  if(error){showToast('Erro ao salvar','error');return false}
+  return true;
+}
+async function dbDelete(table,id){
+  const {error}=await sb.from(table).delete().eq('id',id);
+  if(error){showToast('Erro ao excluir','error');return false}
+  return true;
+}
+async function saveEventoToSupabase(e){
+  const {convidados,...eData}=e;
+  return dbUpsert('eventos',eData);
+}
+async function initDB(){
+  showLoading(true);
+  const eventos=await dbGet('eventos');
+  const {data:convRows}=await sb.from('eventos_convidados').select('id,evento_id,data').order('created_at');
+  const convMap={};
+  (convRows||[]).forEach(r=>{if(!convMap[r.evento_id])convMap[r.evento_id]=[];convMap[r.evento_id].push({...r.data,_rowId:r.id})});
+  DB.eventos=eventos.map(e=>({...e,convidados:convMap[e.id]||[]}));
+  showLoading(false);
+  renderGrid();
+}
 
 // ════ GRADIENTS ════
 const GRADS = [
@@ -606,7 +656,7 @@ function renderGrid(){
 }
 
 // ════ SAVE EVENT ════
-function saveEvento(){
+async function saveEvento(){
   const nome = document.getElementById('ev-nome').value.trim();
   if(!nome){alert('Informe o nome do evento');return}
   const id = document.getElementById('ev-edit-id').value || uid();
@@ -626,13 +676,13 @@ function saveEvento(){
     patrocinios: existing?.patrocinios||[],
     checklist: existing?.checklist||[],
     compras: existing?.compras||[],
-    convidados: existing?.convidados||[],
     equipe: existing?.equipe||[],
     createdAt: existing?.createdAt||today(),
   };
+  if(!await dbUpsert('eventos',data))return;
   const idx = DB.eventos.findIndex(e=>e.id===id);
-  if(idx>=0) Object.assign(DB.eventos[idx],data); else DB.eventos.push(data);
-  save(DB);
+  const full = {...data, convidados: existing?.convidados||[]};
+  if(idx>=0) Object.assign(DB.eventos[idx],full); else DB.eventos.push(full);
   closeModal('modal-evento');
   renderGrid();
   if(currentEventId===id) openDetail(id);
@@ -724,9 +774,13 @@ function editCurrentEvent(){
 }
 
 function deleteCurrentEvent(){
-  document.getElementById('confirm-delete-btn').onclick=()=>{
+  document.getElementById('confirm-delete-btn').onclick=async()=>{
+    const e=DB.eventos.find(x=>x.id===currentEventId);
+    const guests=e?.convidados||[];
+    await Promise.all(guests.map(g=>dbDelete('eventos_convidados',g._rowId||g.id)));
+    if(!await dbDelete('eventos',currentEventId))return;
     DB.eventos=DB.eventos.filter(x=>x.id!==currentEventId);
-    save(DB);closeModal('modal-confirm');closeDetail();
+    closeModal('modal-confirm');closeDetail();renderGrid();
   };
   openModal('modal-confirm');
 }
@@ -749,22 +803,23 @@ function renderChecklist(e){
       </button>
     </div>`).join('');
 }
-function addCheckItem(){
+async function addCheckItem(){
   const text=document.getElementById('new-check-text').value.trim();
   if(!text)return;
   const e=DB.eventos.find(x=>x.id===currentEventId);
   if(!e.checklist)e.checklist=[];
   e.checklist.push({id:uid(),text,resp:document.getElementById('new-check-resp').value.trim(),done:false});
-  save(DB);document.getElementById('new-check-text').value='';document.getElementById('new-check-resp').value='';
+  await saveEventoToSupabase(e);
+  document.getElementById('new-check-text').value='';document.getElementById('new-check-resp').value='';
   renderChecklist(e);refreshStats();
 }
-function toggleCheck(i){
+async function toggleCheck(i){
   const e=DB.eventos.find(x=>x.id===currentEventId);
-  e.checklist[i].done=!e.checklist[i].done;save(DB);renderChecklist(e);refreshStats();
+  e.checklist[i].done=!e.checklist[i].done;await saveEventoToSupabase(e);renderChecklist(e);refreshStats();
 }
-function removeCheck(i){
+async function removeCheck(i){
   const e=DB.eventos.find(x=>x.id===currentEventId);
-  e.checklist.splice(i,1);save(DB);renderChecklist(e);refreshStats();
+  e.checklist.splice(i,1);await saveEventoToSupabase(e);renderChecklist(e);refreshStats();
 }
 
 // ════ COMPRAS ════
@@ -785,15 +840,16 @@ function renderCompras(e){
       </button>
     </div>`).join('');
 }
-function addShopItem(){
+async function addShopItem(){
   const name=document.getElementById('new-shop-item').value.trim();if(!name)return;
   const e=DB.eventos.find(x=>x.id===currentEventId);if(!e.compras)e.compras=[];
   e.compras.push({id:uid(),name,qty:document.getElementById('new-shop-qty').value||1,obs:document.getElementById('new-shop-obs').value.trim(),comprado:false});
-  save(DB);['new-shop-item','new-shop-qty','new-shop-obs'].forEach(f=>document.getElementById(f).value='');
+  await saveEventoToSupabase(e);
+  ['new-shop-item','new-shop-qty','new-shop-obs'].forEach(f=>document.getElementById(f).value='');
   renderCompras(e);refreshStats();
 }
-function toggleShop(i){const e=DB.eventos.find(x=>x.id===currentEventId);e.compras[i].comprado=!e.compras[i].comprado;save(DB);renderCompras(e);refreshStats()}
-function removeShop(i){const e=DB.eventos.find(x=>x.id===currentEventId);e.compras.splice(i,1);save(DB);renderCompras(e);refreshStats()}
+async function toggleShop(i){const e=DB.eventos.find(x=>x.id===currentEventId);e.compras[i].comprado=!e.compras[i].comprado;await saveEventoToSupabase(e);renderCompras(e);refreshStats()}
+async function removeShop(i){const e=DB.eventos.find(x=>x.id===currentEventId);e.compras.splice(i,1);await saveEventoToSupabase(e);renderCompras(e);refreshStats()}
 
 // ════ CONVIDADOS ════
 function renderGuests(e){
@@ -818,15 +874,32 @@ function renderGuests(e){
       </button>
     </div>`).join('');
 }
-function addGuest(){
+async function addGuest(){
   const name=document.getElementById('new-guest-name').value.trim();if(!name)return;
-  const e=DB.eventos.find(x=>x.id===currentEventId);if(!e.convidados)e.convidados=[];
-  e.convidados.push({id:uid(),name,info:document.getElementById('new-guest-info').value.trim(),rsvp:document.getElementById('new-guest-rsvp').value});
-  save(DB);['new-guest-name','new-guest-info'].forEach(f=>document.getElementById(f).value='');
+  const e=DB.eventos.find(x=>x.id===currentEventId);if(!e)return;
+  if(!e.convidados)e.convidados=[];
+  const gId=uid();
+  const guest={id:gId,name,info:document.getElementById('new-guest-info').value.trim(),rsvp:document.getElementById('new-guest-rsvp').value,_rowId:gId};
+  const {error}=await sb.from('eventos_convidados').upsert({id:gId,evento_id:e.id,data:guest});
+  if(error){showToast('Erro ao adicionar convidado','error');return}
+  e.convidados.push(guest);
+  ['new-guest-name','new-guest-info'].forEach(f=>document.getElementById(f).value='');
   renderGuests(e);refreshStats();
 }
-function updateGuestRSVP(i,val){const e=DB.eventos.find(x=>x.id===currentEventId);e.convidados[i].rsvp=val;save(DB);renderGuests(e);refreshStats()}
-function removeGuest(i){const e=DB.eventos.find(x=>x.id===currentEventId);e.convidados.splice(i,1);save(DB);renderGuests(e);refreshStats()}
+async function updateGuestRSVP(i,val){
+  const e=DB.eventos.find(x=>x.id===currentEventId);if(!e)return;
+  e.convidados[i].rsvp=val;
+  const g=e.convidados[i];
+  await sb.from('eventos_convidados').update({data:g}).eq('id',g._rowId||g.id);
+  renderGuests(e);refreshStats();
+}
+async function removeGuest(i){
+  const e=DB.eventos.find(x=>x.id===currentEventId);if(!e)return;
+  const g=e.convidados[i];
+  await dbDelete('eventos_convidados',g._rowId||g.id);
+  e.convidados.splice(i,1);
+  renderGuests(e);refreshStats();
+}
 
 // ════ EQUIPE ════
 function renderTeam(e){
@@ -841,14 +914,15 @@ function renderTeam(e){
       </button>
     </div>`).join('');
 }
-function addTeamMember(){
+async function addTeamMember(){
   const name=document.getElementById('new-team-name').value.trim();if(!name)return;
   const e=DB.eventos.find(x=>x.id===currentEventId);if(!e.equipe)e.equipe=[];
   e.equipe.push({id:uid(),name,role:document.getElementById('new-team-role').value.trim()});
-  save(DB);['new-team-name','new-team-role'].forEach(f=>document.getElementById(f).value='');
+  await saveEventoToSupabase(e);
+  ['new-team-name','new-team-role'].forEach(f=>document.getElementById(f).value='');
   renderTeam(e);
 }
-function removeTeam(i){const e=DB.eventos.find(x=>x.id===currentEventId);e.equipe.splice(i,1);save(DB);renderTeam(e)}
+async function removeTeam(i){const e=DB.eventos.find(x=>x.id===currentEventId);e.equipe.splice(i,1);await saveEventoToSupabase(e);renderTeam(e)}
 
 // ════ REFRESH STATS ════
 function refreshStats(){
@@ -912,19 +986,20 @@ function renderCronograma(e){
       </button>
     </div>`).join('');
 }
-function addCronoItem(){
+async function addCronoItem(){
   const time=document.getElementById('new-crono-time').value.trim();
   const desc=document.getElementById('new-crono-desc').value.trim();
   if(!desc){return}
   const e=DB.eventos.find(x=>x.id===currentEventId);
   if(!e.cronograma)e.cronograma=[];
   e.cronograma.push({id:uid(),time:time||'—',desc,obs:document.getElementById('new-crono-obs').value.trim()});
-  save(DB);['new-crono-time','new-crono-desc','new-crono-obs'].forEach(f=>document.getElementById(f).value='');
+  await saveEventoToSupabase(e);
+  ['new-crono-time','new-crono-desc','new-crono-obs'].forEach(f=>document.getElementById(f).value='');
   renderCronograma(e);
 }
-function removeCrono(i){
+async function removeCrono(i){
   const e=DB.eventos.find(x=>x.id===currentEventId);
-  e.cronograma.splice(i,1);save(DB);renderCronograma(e);
+  e.cronograma.splice(i,1);await saveEventoToSupabase(e);renderCronograma(e);
 }
 
 // ════ PATROCÍNIOS ════
@@ -940,16 +1015,16 @@ function renderPatrocinios(e){
       </button>
     </div>`).join('');
 }
-function addSponsor(){
+async function addSponsor(){
   const name=document.getElementById('new-sponsor').value.trim();if(!name)return;
   const e=DB.eventos.find(x=>x.id===currentEventId);
   if(!e.patrocinios)e.patrocinios=[];
-  e.patrocinios.push(name);save(DB);
+  e.patrocinios.push(name);await saveEventoToSupabase(e);
   document.getElementById('new-sponsor').value='';renderPatrocinios(e);
 }
-function removeSponsor(i){
+async function removeSponsor(i){
   const e=DB.eventos.find(x=>x.id===currentEventId);
-  e.patrocinios.splice(i,1);save(DB);renderPatrocinios(e);
+  e.patrocinios.splice(i,1);await saveEventoToSupabase(e);renderPatrocinios(e);
 }
 
 // ════ TABS ════
@@ -969,7 +1044,7 @@ function closeModal(id){document.getElementById(id).classList.remove('open')}
 document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')})});
 
 // INIT
-renderGrid();
+initDB();
 </script>
 </body>
 </html>
