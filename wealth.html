@@ -317,24 +317,24 @@ textarea.fc{resize:vertical;min-height:70px}
       </div>
       <div class="fr">
         <div class="fg"><label class="fl">Responsável</label><input class="fc" id="l-responsavel" placeholder="Nome do responsável"></div>
-        <div class="fg"><label class="fl">Temperatura</label>
-          <select class="fc" id="l-temperatura" onchange="updateProspSugestao()">
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fc" id="l-temperatura" onchange="onStatusChange()">
             <option value="frio">Frio</option>
             <option value="morno">Morno</option>
             <option value="quente">Quente</option>
+            <option value="ativo">Ativo</option>
+            <option value="perdido">Perdido</option>
+            <option value="descartado">Descartado</option>
           </select>
         </div>
       </div>
-      <div class="fr">
+      <div class="fr" id="row-estagio">
         <div class="fg"><label class="fl">Estágio</label>
           <select class="fc" id="l-estagio" onchange="updateProspSugestao()">
             <option value="prospeccao">Prospecção</option>
             <option value="qualificacao">Qualificação</option>
             <option value="reuniao">Reunião</option>
             <option value="proposta">Proposta</option>
-            <option value="fechado">Fechado</option>
-            <option value="perdido">Perdido</option>
-            <option value="descartado">Descartado</option>
           </select>
         </div>
         <div class="fg"><label class="fl">Data do primeiro contato</label><input class="fc" id="l-data" type="date" onchange="updateProspSugestao()"></div>
@@ -549,6 +549,16 @@ function renderLeads(){
   document.getElementById('leads-count').textContent=`${list.length} lead${list.length!==1?'s':''}`;
 }
 
+function onStatusChange(){
+  const v=document.getElementById('l-temperatura').value;
+  const rowEstagio=document.getElementById('row-estagio');
+  if(v==='ativo'){rowEstagio.style.display='';document.getElementById('l-estagio').value='fechado';}
+  else if(v==='perdido'){rowEstagio.style.display='none';document.getElementById('l-estagio').value='perdido';}
+  else if(v==='descartado'){rowEstagio.style.display='none';document.getElementById('l-estagio').value='descartado';}
+  else{rowEstagio.style.display='';if(['fechado','perdido','descartado'].includes(document.getElementById('l-estagio').value))document.getElementById('l-estagio').value='prospeccao';}
+  updateProspSugestao();
+}
+
 function toggleIndicadoPor(){
   const v=document.getElementById('l-origem').value;
   document.getElementById('row-indicado').style.display=v==='indicacao'?'':'none';
@@ -632,11 +642,14 @@ function editLead(id){
   document.getElementById('l-indicado-por').value=l.indicado_por||'';
   toggleIndicadoPor();
   document.getElementById('l-responsavel').value=l.responsavel||'';
-  document.getElementById('l-temperatura').value=l.temperatura||'frio';
+  // Status: estágio encerrado sobrepõe a temperatura
+  const statusVal=l.estagio==='fechado'?'ativo':l.estagio==='perdido'?'perdido':l.estagio==='descartado'?'descartado':l.temperatura||'frio';
+  document.getElementById('l-temperatura').value=statusVal;
   document.getElementById('l-estagio').value=l.estagio||'prospeccao';
   document.getElementById('l-proxima-acao').value=l.proxima_acao||'';
   document.getElementById('l-data').value=l.data_primeiro_contato||'';
   document.getElementById('l-obs').value=l.obs||'';
+  onStatusChange();
   updateProspSugestao();
   openModalEdit('modal-lead');
 }
@@ -683,7 +696,7 @@ function confirmDelete(id){
 
 // ── MODALS ──
 function openModal(id){
-  if(id==='modal-lead'){document.getElementById('lead-edit-id').value='';document.getElementById('mt-lead').textContent='Novo Lead';['l-nome','l-tel','l-email','l-cpf','l-patrimonio','l-indicado-por','l-responsavel','l-proxima-acao','l-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('l-temperatura').value='frio';document.getElementById('l-estagio').value='prospeccao';document.getElementById('l-origem').value='indicacao';document.getElementById('l-origem').style.display='';document.getElementById('l-origem-display').style.display='none';toggleIndicadoPor();document.getElementById('l-data').value=today();document.getElementById('prosp-box').style.display='none';}
+  if(id==='modal-lead'){document.getElementById('lead-edit-id').value='';document.getElementById('mt-lead').textContent='Novo Lead';['l-nome','l-tel','l-email','l-cpf','l-patrimonio','l-indicado-por','l-responsavel','l-proxima-acao','l-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('l-temperatura').value='frio';document.getElementById('l-estagio').value='prospeccao';document.getElementById('l-origem').value='indicacao';document.getElementById('l-origem').style.display='';document.getElementById('l-origem-display').style.display='none';toggleIndicadoPor();onStatusChange();document.getElementById('l-data').value=today();document.getElementById('prosp-box').style.display='none';}
   if(id==='modal-followup'){['fu-desc'].forEach(f=>document.getElementById(f).value='');document.getElementById('fu-data').value=today();document.getElementById('fu-tipo').value='ligacao';populateLeadSelect();}
   document.getElementById(id).classList.add('open');
 }
