@@ -296,8 +296,11 @@ textarea.fc{resize:vertical;min-height:70px}
       <div class="fr">
         <div class="fg"><label class="fl">Patrimônio estimado</label><input class="fc" id="l-patrimonio" placeholder="Ex: R$ 2.000.000"></div>
         <div class="fg"><label class="fl">Origem do contato</label>
-          <select class="fc" id="l-origem"><option value="indicacao">Indicação</option><option value="evento">Evento</option><option value="redes_sociais">Redes Sociais</option><option value="prospecção">Prospecção Ativa</option><option value="outro">Outro</option></select>
+          <select class="fc" id="l-origem" onchange="toggleIndicadoPor()"><option value="indicacao">Indicação</option><option value="evento">Evento</option><option value="redes_sociais">Redes Sociais</option><option value="prospecção">Prospecção Ativa</option><option value="outro">Outro</option></select>
         </div>
+      </div>
+      <div class="fr" id="row-indicado" style="display:none">
+        <div class="fg" style="flex:1"><label class="fl">Indicado por</label><input class="fc" id="l-indicado-por" placeholder="Nome de quem indicou"></div>
       </div>
       <div class="fr">
         <div class="fg"><label class="fl">Responsável</label><input class="fc" id="l-responsavel" placeholder="Nome do responsável"></div>
@@ -515,6 +518,12 @@ function renderLeads(){
   document.getElementById('leads-count').textContent=`${list.length} lead${list.length!==1?'s':''}`;
 }
 
+function toggleIndicadoPor(){
+  const v=document.getElementById('l-origem').value;
+  document.getElementById('row-indicado').style.display=v==='indicacao'?'':'none';
+  if(v!=='indicacao')document.getElementById('l-indicado-por').value='';
+}
+
 // ── SAVE LEAD ──
 async function saveLead(){
   const nome=document.getElementById('l-nome').value.trim();
@@ -526,6 +535,7 @@ async function saveLead(){
     cpf:document.getElementById('l-cpf').value.trim(),
     patrimonio:document.getElementById('l-patrimonio').value.trim(),
     origem:document.getElementById('l-origem').value,
+    indicado_por:document.getElementById('l-indicado-por').value.trim(),
     responsavel:document.getElementById('l-responsavel').value.trim(),
     temperatura:document.getElementById('l-temperatura').value,
     estagio:document.getElementById('l-estagio').value,
@@ -572,6 +582,8 @@ function editLead(id){
   document.getElementById('l-cpf').value=l.cpf||'';
   document.getElementById('l-patrimonio').value=l.patrimonio||'';
   document.getElementById('l-origem').value=l.origem||'indicacao';
+  document.getElementById('l-indicado-por').value=l.indicado_por||'';
+  toggleIndicadoPor();
   document.getElementById('l-responsavel').value=l.responsavel||'';
   document.getElementById('l-temperatura').value=l.temperatura||'frio';
   document.getElementById('l-estagio').value=l.estagio||'prospeccao';
@@ -624,7 +636,7 @@ function confirmDelete(id){
 
 // ── MODALS ──
 function openModal(id){
-  if(id==='modal-lead'){document.getElementById('lead-edit-id').value='';document.getElementById('mt-lead').textContent='Novo Lead';['l-nome','l-tel','l-email','l-cpf','l-patrimonio','l-responsavel','l-proxima-acao','l-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('l-temperatura').value='frio';document.getElementById('l-estagio').value='prospeccao';document.getElementById('l-origem').value='indicacao';document.getElementById('l-data').value=today();document.getElementById('prosp-box').style.display='none';}
+  if(id==='modal-lead'){document.getElementById('lead-edit-id').value='';document.getElementById('mt-lead').textContent='Novo Lead';['l-nome','l-tel','l-email','l-cpf','l-patrimonio','l-indicado-por','l-responsavel','l-proxima-acao','l-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('l-temperatura').value='frio';document.getElementById('l-estagio').value='prospeccao';document.getElementById('l-origem').value='indicacao';toggleIndicadoPor();document.getElementById('l-data').value=today();document.getElementById('prosp-box').style.display='none';}
   if(id==='modal-followup'){['fu-desc'].forEach(f=>document.getElementById(f).value='');document.getElementById('fu-data').value=today();document.getElementById('fu-tipo').value='ligacao';populateLeadSelect();}
   document.getElementById(id).classList.add('open');
 }
