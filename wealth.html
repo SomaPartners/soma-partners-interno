@@ -577,10 +577,11 @@ function editLead(id){
   document.getElementById('lead-edit-id').value=l.id;
   document.getElementById('mt-lead').textContent='Editar Lead';
   document.getElementById('l-nome').value=l.nome||'';
-  document.getElementById('l-tel').value=l.telefone||'';
+  document.getElementById('l-tel').value=l.telefone?maskTel(l.telefone):'';
   document.getElementById('l-email').value=l.email||'';
-  document.getElementById('l-cpf').value=l.cpf||'';
-  document.getElementById('l-patrimonio').value=l.patrimonio||'';
+  document.getElementById('l-cpf').value=l.cpf?maskCPF(l.cpf):'';
+  document.getElementById('l-patrimonio').value=l.patrimonio?maskMoeda(l.patrimonio.replace(/\D/g,'').padEnd(3,'0')):'';
+
   document.getElementById('l-origem').value=l.origem||'indicacao';
   document.getElementById('l-indicado-por').value=l.indicado_por||'';
   toggleIndicadoPor();
@@ -646,6 +647,45 @@ document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('cli
 
 // INIT
 loadAll();
+
+// ── MÁSCARAS ──
+function maskTel(v){
+  v=v.replace(/\D/g,'').slice(0,11);
+  if(v.length<=10) return v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3').replace(/-$/,'');
+  return v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3').replace(/-$/,'');
+}
+function maskCPF(v){
+  v=v.replace(/\D/g,'').slice(0,11);
+  return v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4').replace(/[.-]$/g,'').replace(/\.$/,'');
+}
+function maskMoeda(v){
+  v=v.replace(/\D/g,'');
+  if(!v)return '';
+  const n=parseInt(v,10)/100;
+  return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2});
+}
+
+document.getElementById('l-nome').addEventListener('input',function(){
+  const p=this.selectionStart;this.value=this.value.toUpperCase();try{this.setSelectionRange(p,p);}catch(e){}
+});
+document.getElementById('l-indicado-por').addEventListener('input',function(){
+  const p=this.selectionStart;this.value=this.value.toUpperCase();try{this.setSelectionRange(p,p);}catch(e){}
+});
+document.getElementById('l-responsavel').addEventListener('input',function(){
+  const p=this.selectionStart;this.value=this.value.toUpperCase();try{this.setSelectionRange(p,p);}catch(e){}
+});
+document.getElementById('l-tel').addEventListener('input',function(){
+  const p=this.selectionStart;const v=maskTel(this.value);
+  this.value=v;try{this.setSelectionRange(p,p);}catch(e){}
+});
+document.getElementById('l-cpf').addEventListener('input',function(){
+  const p=this.selectionStart;const v=maskCPF(this.value);
+  this.value=v;try{this.setSelectionRange(p,p);}catch(e){}
+});
+document.getElementById('l-patrimonio').addEventListener('input',function(){
+  this.value=maskMoeda(this.value);
+  this.setSelectionRange(this.value.length,this.value.length);
+});
 </script>
 </body>
 </html>
