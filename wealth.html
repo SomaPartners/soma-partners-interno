@@ -255,6 +255,9 @@ textarea.fc{resize:vertical;min-height:70px}
             </div>
             <select style="appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Montserrat',sans-serif;color:var(--muted);cursor:pointer;outline:none" id="filter-status" onchange="renderLeads()">
               <option value="">Todos status</option>
+              <option value="frio">Frio</option>
+              <option value="morno">Morno</option>
+              <option value="quente">Quente</option>
               <option value="ativo">Ativo</option>
               <option value="perdido">Perdido</option>
               <option value="descartado">Descartado</option>
@@ -505,7 +508,20 @@ function renderLeads(){
   const q=(document.getElementById('search-leads')?.value||'').toLowerCase();
   const fs=document.getElementById('filter-status')?.value||'';
   const fe=document.getElementById('filter-estagio')?.value||'';
-  const statusLead=l=>ESTAGIO_INATIVOS.includes(l.estagio)?l.estagio:'ativo';
+  const statusLead=l=>{
+    if(l.estagio==='perdido')return'perdido';
+    if(l.estagio==='descartado')return'descartado';
+    if(l.estagio==='fechado')return'ativo';
+    return l.temperatura||'frio';
+  };
+  const STATUS_BADGE={
+    frio:'<span class="temp-badge temp-frio">FRIO</span>',
+    morno:'<span class="temp-badge temp-morno">MORNO</span>',
+    quente:'<span class="temp-badge temp-quente">QUENTE</span>',
+    ativo:'<span class="estagio-badge estagio-fechado">ATIVO</span>',
+    perdido:'<span class="estagio-badge estagio-perdido">PERDIDO</span>',
+    descartado:'<span class="estagio-badge estagio-descartado">DESCARTADO</span>',
+  };
   let list=leads.filter(l=>{
     if(q&&!(l.nome||'').toLowerCase().includes(q)&&!(l.telefone||'').includes(q))return false;
     if(fs&&statusLead(l)!==fs)return false;
@@ -524,7 +540,7 @@ function renderLeads(){
         <td><div class="lead-cell"><div class="lead-av" style="background:${acol(l.nome)}">${initials(l.nome)}</div><div><div class="lead-name">${l.nome}</div><div class="lead-sub">${l.telefone||''}${l.email?` · ${l.email}`:''}</div></div></div></td>
         <td style="font-size:12px">${l.patrimonio||'—'}</td>
         <td>${origemBadge(l.origem)}</td>
-        <td>${statusLead(l)==='ativo'?'<span class="estagio-badge estagio-fechado">Ativo</span>':statusLead(l)==='perdido'?'<span class="estagio-badge estagio-perdido">Perdido</span>':'<span class="estagio-badge estagio-descartado">Descartado</span>'}</td>
+        <td>${STATUS_BADGE[statusLead(l)]||''}</td>
         <td><span class="estagio-badge${l.estagio==='fechado'?' estagio-fechado':l.estagio==='perdido'?' estagio-perdido':l.estagio==='descartado'?' estagio-descartado':''}">${ESTAGIO_LABELS[l.estagio]||l.estagio||'—'}</span></td>
         <td style="font-size:12px;color:var(--muted)">${l.responsavel||'—'}</td>
         <td class="${ov?'proxima-vencida':td?'proxima-hoje':'proxima-ok'}" style="font-size:12px">${nextFu?fmtDate(nextFu.data):fmtDate(l.data_proxima_acao)}</td>
