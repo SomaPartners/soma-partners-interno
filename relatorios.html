@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Central de Relatórios — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--navy2:#0d2035;--white:#fff;--border:rgba(255,255,255,0.09);--indigo:#4f46e5;--green:#10b981;--orange:#f59e0b;--red:#ef4444;--blue:#3b82f6;--muted:rgba(255,255,255,0.45);--muted2:rgba(255,255,255,0.22)}
+html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-serif;color:var(--white)}
+
+/* NAV */
+.topnav{position:sticky;top:0;z-index:100;background:rgba(11,30,48,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:62px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:13px;cursor:pointer;text-decoration:none}
+.logo-soma{font-size:17px;font-weight:300;color:#fff;letter-spacing:0.5px}
+.logo-pipe{width:1px;height:20px;background:rgba(255,255,255,0.4)}
+.logo-partners{font-size:10px;font-weight:700;letter-spacing:5px;color:#fff;text-transform:uppercase}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all 0.18s}
+.btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none}
+.btn-outline{background:transparent;color:#fff;border:1px solid var(--border)}.btn-outline:hover{background:rgba(255,255,255,0.08)}
+.btn-primary{background:var(--indigo);color:#fff}.btn-primary:hover{background:#4338ca}
+.btn-sm{padding:5px 12px;font-size:11px}
+.action-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:rgba(255,255,255,0.7);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.18s}
+.action-btn:hover{background:rgba(255,255,255,0.12);color:#fff}
+
+/* PAGE */
+.page{padding:32px 40px 60px}
+.page-title{font-size:clamp(26px,3vw,38px);font-weight:900;letter-spacing:1px;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+
+/* TABS */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.tab{background:transparent;border:none;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:var(--muted);padding:10px 20px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.18s}
+.tab:hover{color:#fff}
+.tab.active{color:#fff;border-bottom-color:var(--indigo)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* KPI CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:20px 22px;cursor:pointer;transition:all 0.18s}
+.kpi:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.15)}
+.kpi-val{font-size:32px;font-weight:800;line-height:1;margin-bottom:6px}
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2)}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* FILTER BAR */
+.filter-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.period-chip{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.18s}
+.period-chip:hover{background:rgba(255,255,255,0.1);color:#fff}
+.period-chip.active{background:rgba(79,70,229,0.2);border-color:rgba(79,70,229,0.4);color:#a5b4fc}
+.filter-select{appearance:none;-webkit-appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 26px 6px 10px;font-size:11px;font-weight:600;color:var(--muted);font-family:'Montserrat',sans-serif;cursor:pointer;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.filter-select:focus{border-color:var(--indigo);color:#fff}
+.filter-select option{background:#0d2035;color:#fff}
+.filter-input{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;color-scheme:dark}
+.filter-input:focus{border-color:var(--indigo)}
+
+/* TABLE */
+.rep-table-wrap{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.rep-table{width:100%;border-collapse:collapse}
+.rep-table thead tr{background:rgba(255,255,255,0.04);border-bottom:1px solid var(--border)}
+.rep-table thead th{padding:10px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted2);text-align:left}
+.rep-table tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;cursor:pointer}
+.rep-table tbody tr:hover{background:rgba(255,255,255,0.04)}
+.rep-table tbody tr:last-child{border-bottom:none}
+.rep-table td{padding:10px 14px;font-size:12px;vertical-align:middle}
+.client-chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700}
+.client-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff;flex-shrink:0}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.b-pago{background:rgba(16,185,129,0.18);color:#6ee7b7}
+.b-aberto{background:rgba(239,68,68,0.15);color:#fca5a5}
+.b-agendando{background:rgba(245,158,11,0.15);color:#fcd34d}
+.b-alta{background:rgba(239,68,68,0.15);color:#fca5a5}
+.b-media{background:rgba(245,158,11,0.15);color:#fcd34d}
+.b-baixa{background:rgba(16,185,129,0.15);color:#6ee7b7}
+.b-concluida{background:rgba(16,185,129,0.18);color:#6ee7b7}
+.b-aberta{background:rgba(148,163,184,0.15);color:#94a3b8}
+.b-andamento{background:rgba(245,158,11,0.15);color:#fcd34d}
+.urgencia-hoje{color:var(--orange);font-weight:700}
+.urgencia-vencido{color:var(--red);font-weight:700}
+.urgencia-ok{color:var(--muted)}
+.table-empty{text-align:center;padding:40px;font-size:13px;color:var(--muted2);font-style:italic}
+.table-footer{padding:10px 14px;font-size:11px;color:var(--muted2);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.cal-nav-btn{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:7px;padding:7px 10px;cursor:pointer;color:#fff;display:flex;align-items:center;transition:all 0.18s}
+.cal-nav-btn:hover{background:rgba(255,255,255,0.12)}
+.cal-nav-btn svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
+.cal-month{font-size:16px;font-weight:800;text-transform:capitalize}
+.cal-grid-wrap{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border)}
+.cal-weekdays div{padding:9px 0;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2)}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
+.cal-day{background:var(--navy);min-height:90px;padding:8px;transition:background 0.15s}
+.cal-day:hover{background:rgba(255,255,255,0.02)}
+.cal-day.other{background:#080f17}.cal-day.other .cal-num{color:rgba(255,255,255,0.1)}
+.cal-day.today{background:rgba(79,70,229,0.08)}
+.cal-day.today .cal-num{background:var(--indigo);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:800}
+.cal-num{font-size:11px;font-weight:600;color:#64748b;margin-bottom:5px;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.cal-events{display:flex;flex-direction:column;gap:2px}
+.cal-ev{font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+.ev-pgto{background:rgba(239,68,68,0.2);color:#fca5a5}
+.ev-aniv{background:rgba(245,158,11,0.2);color:#fcd34d}
+.ev-tarefa{background:rgba(59,130,246,0.18);color:#93c5fd}
+.ev-cnh{background:rgba(139,92,246,0.18);color:#c4b5fd}
+.ev-entrada{background:rgba(16,185,129,0.2);color:#6ee7b7}
+
+/* TOAST/LOADER */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;padding:10px 18px;border-radius:9px;font-size:12px;font-weight:600;font-family:'Montserrat',sans-serif;opacity:0;transition:all 0.3s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:#065f46}
+.loader-wrap{position:fixed;inset:0;background:rgba(11,30,48,0.75);display:none;align-items:center;justify-content:center;z-index:5000}
+.loader-spin{width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="nav-logo" href="soma-partners.html">
+    <span class="logo-soma">Soma</span><div class="logo-pipe"></div><span class="logo-partners">Partners</span>
+  </a>
+  <div style="font-size:13px;font-weight:700;color:var(--muted)">Central de Relatórios</div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-outline btn-sm" onclick="window.location.href='concierge.html'">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Clientes
+    </button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-title">Central de Relatórios</div>
+  <div class="page-sub">Visão consolidada de todos os clientes — pagamentos, tarefas, eventos e alertas</div>
+
+  <!-- KPIs GERAIS -->
+  <div class="kpi-row" id="kpi-row"></div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('vencimentos',this)">Vencimentos</button>
+    <button class="tab" onclick="switchTab('calendario',this)">Calendário</button>
+    <button class="tab" onclick="switchTab('tarefas',this)">Tarefas</button>
+    <button class="tab" onclick="switchTab('alertas',this)">Alertas</button>
+  </div>
+
+  <!-- ══ VENCIMENTOS ══ -->
+  <div class="tab-panel active" id="panel-vencimentos">
+    <div class="filter-row">
+      <div class="period-chip active" data-p="hoje" onclick="setPeriod(this,'hoje')">Hoje</div>
+      <div class="period-chip" data-p="semana" onclick="setPeriod(this,'semana')">Esta semana</div>
+      <div class="period-chip" data-p="mes" onclick="setPeriod(this,'mes')">Este mês</div>
+      <div class="period-chip" data-p="custom" onclick="setPeriod(this,'custom')">Personalizado</div>
+      <div id="custom-dates" style="display:none;gap:8px;align-items:center">
+        <input type="date" class="filter-input" id="venc-de">
+        <span style="font-size:11px;color:var(--muted2)">até</span>
+        <input type="date" class="filter-input" id="venc-ate">
+        <button class="btn btn-primary btn-sm" onclick="renderVencimentos()">Aplicar</button>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <select class="filter-select" id="venc-status" onchange="renderVencimentos()">
+          <option value="">Todos os status</option>
+          <option value="em_aberto">Em Aberto</option>
+          <option value="agendando">Agendando</option>
+          <option value="pago">Pago</option>
+        </select>
+        <select class="filter-select" id="venc-pagador" onchange="renderVencimentos()">
+          <option value="">Quem pagou</option>
+          <option value="familia">Família</option>
+          <option value="soma">Soma Partners</option>
+        </select>
+        <select class="filter-select" id="venc-cliente" onchange="renderVencimentos()"><option value="">Todos os clientes</option></select>
+        <button class="action-btn" onclick="exportVencPDF()"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF</button>
+        <button class="action-btn" onclick="exportVencExcel()"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Excel</button>
+      </div>
+    </div>
+    <div class="rep-table-wrap">
+      <table class="rep-table">
+        <thead><tr><th>Data</th><th>Família</th><th>Descrição</th><th style="text-align:right">Valor</th><th>Status</th><th>Pago por</th><th>Urgência</th></tr></thead>
+        <tbody id="tbody-venc"></tbody>
+      </table>
+      <div class="table-footer"><span id="venc-count">—</span></div>
+    </div>
+  </div>
+
+  <!-- ══ CALENDÁRIO ══ -->
+  <div class="tab-panel" id="panel-calendario">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calPrev()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <span class="cal-month" id="cal-month-lbl"></span>
+        <button class="cal-nav-btn" onclick="calNext()"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="period-chip" onclick="calToday()" style="margin-left:8px">Hoje</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="filter-select" id="cal-filtro-familia" onchange="renderCalendario()" style="min-width:180px">
+          <option value="">Todas as famílias</option>
+        </select>
+        <select class="filter-select" id="cal-filtro-tipo" onchange="renderCalendario()">
+          <option value="">Todos os tipos</option>
+          <option value="pgto">Pagamentos</option>
+          <option value="aniv">Aniversários</option>
+          <option value="tarefa">Tarefas</option>
+          <option value="cnh">CNH</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:12px;font-size:11px;font-weight:600;color:var(--muted);align-items:center">
+        <span>💳 Pagamento</span>
+        <span>💰 Entrada</span>
+        <span>🎂 Aniversário</span>
+        <span>✓ Tarefa</span>
+        <span>🪪 CNH</span>
+        <span style="font-size:10px;color:var(--muted2);margin-left:4px">Cores = cliente</span>
+      </div>
+    </div>
+    <div class="cal-grid-wrap">
+      <div class="cal-weekdays"><div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div></div>
+      <div class="cal-days" id="cal-days-global"></div>
+    </div>
+  </div>
+
+  <!-- ══ TAREFAS ══ -->
+  <div class="tab-panel" id="panel-tarefas">
+    <div class="filter-row">
+      <select class="filter-select" id="tar-cliente" onchange="renderTarefas()"><option value="">Todos os clientes</option></select>
+      <select class="filter-select" id="tar-status" onchange="renderTarefas()">
+        <option value="">Todos os status</option>
+        <option value="a_fazer">A Fazer</option>
+        <option value="em_andamento">Em Andamento</option>
+        <option value="concluido">Concluído</option>
+      </select>
+      <select class="filter-select" id="tar-prio" onchange="renderTarefas()">
+        <option value="">Todas as prioridades</option>
+        <option value="alta">Alta</option>
+        <option value="media">Média</option>
+        <option value="baixa">Baixa</option>
+      </select>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="action-btn" onclick="exportTarPDF()"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF</button>
+        <button class="action-btn" onclick="exportTarExcel()"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Excel</button>
+      </div>
+    </div>
+    <div class="rep-table-wrap">
+      <table class="rep-table">
+        <thead><tr><th>Família</th><th>Tarefa</th><th>Prioridade</th><th>Status</th><th>Prazo</th><th>Criação</th></tr></thead>
+        <tbody id="tbody-tar"></tbody>
+      </table>
+      <div class="table-footer"><span id="tar-count">—</span></div>
+    </div>
+  </div>
+
+  <!-- ══ ALERTAS ══ -->
+  <div class="tab-panel" id="panel-alertas">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="alertas-grid"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="loader-wrap" class="loader-wrap"><div class="loader-spin"></div></div>
+
+<script>
+const _sb = supabase.createClient('https://fqdhaaslmiprvifttmpb.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZGhhYXNsbWlwcnZpZnR0bXBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDkxNTcsImV4cCI6MjA5MzQ4NTE1N30.iJouT1ztgAnmxpowiWFusoaMbIIZYWathTcW4w_ToVc');
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const ACOLS = ['#4f46e5','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4'];
+function acol(n){let h=0;for(let c of(n||'x'))h=(h+c.charCodeAt(0))%ACOLS.length;return ACOLS[h]}
+function initials(n){const p=(n||'?').trim().split(' ');return(p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase()}
+function today(){return new Date().toISOString().split('T')[0]}
+function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
+function fmtMoney(v){return'R$ '+parseFloat(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
+function showToast(m,t=''){const el=document.getElementById('toast');el.textContent=m;el.className='toast show '+t;setTimeout(()=>el.className='toast',3000)}
+function showLoader(on){document.getElementById('loader-wrap').style.display=on?'flex':'none'}
+function isOverdue(d){return d&&d<today()}
+
+let allClientes=[], allPagamentos=[], allTarefas=[];
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+let currentPeriod='hoje';
+
+// ── LOAD ──
+async function loadAll(){
+  showLoader(true);
+  try{
+    const[cl,pg,tar]=await Promise.all([
+      _sb.from('concierge_clientes').select('id,data').order('created_at',{ascending:false}),
+      _sb.from('concierge_pagamentos').select('id,data').order('created_at'),
+      _sb.from('concierge_tarefas').select('id,data').order('created_at'),
+    ]);
+    allClientes=(cl.data||[]).map(r=>({id:r.id,...r.data}));
+    allPagamentos=(pg.data||[]).map(r=>({id:r.id,...r.data}));
+    allTarefas=(tar.data||[]).map(r=>({id:r.id,...r.data}));
+  }catch(e){showToast('Erro ao carregar dados')}
+  showLoader(false);
+  populateSelects();
+  renderKPIs();
+  renderVencimentos();
+  renderCalendario();
+  renderAlertas();
+}
+
+function populateCalFamiliaSelect(){
+  const sel=document.getElementById('cal-filtro-familia');
+  if(!sel)return;
+  sel.innerHTML='<option value="">Todas as famílias</option>';
+  allClientes.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.nome||c.id;sel.appendChild(o);});
+}
+
+function populateSelects(){
+  populateCalFamiliaSelect();
+  ['venc-cliente','tar-cliente'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML='<option value="">Todos os clientes</option>';
+    allClientes.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.nome||c.id;el.appendChild(o);});
+  });
+}
+
+// ── KPIs ──
+function renderKPIs(){
+  const hoje = today();
+  const fim7 = new Date(); fim7.setDate(fim7.getDate()+7); const fim7s=fim7.toISOString().split('T')[0];
+  
+  // Vencimentos hoje (recorrentes de todos os clientes)
+  let vencHoje=0, vencSemana=0;
+  allClientes.forEach(c=>{
+    (c.recorrentes||[]).forEach(r=>{
+      const dia=parseInt(r.dia)||1;
+      const ds=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+      if(ds===hoje) vencHoje++;
+      if(ds>=hoje && ds<=fim7s) vencSemana++;
+    });
+  });
+  const tarefasAbertas=allTarefas.filter(t=>t.status!=='concluido'&&t.status!=='concluida').length;
+  const tarefasAtrasadas=allTarefas.filter(t=>isOverdue(t.prazo)&&t.status!=='concluido'&&t.status!=='concluida').length;
+
+  document.getElementById('kpi-row').innerHTML=`
+    <div class="kpi" onclick="switchTab('vencimentos',document.querySelector('[data-tab=vencimentos]'));setPeriod(document.querySelector('[data-p=hoje]'),'hoje')">
+      <div class="kpi-val" style="color:${vencHoje>0?'#ef4444':'#10b981'}">${vencHoje}</div>
+      <div class="kpi-label">Vencimentos Hoje</div>
+      <div class="kpi-sub">${vencSemana} esta semana</div>
+    </div>
+    <div class="kpi" onclick="switchTab('tarefas',document.querySelector('[data-tab=tarefas]'))">
+      <div class="kpi-val" style="color:${tarefasAtrasadas>0?'#ef4444':'#f59e0b'}">${tarefasAbertas}</div>
+      <div class="kpi-label">Tarefas em Aberto</div>
+      <div class="kpi-sub">${tarefasAtrasadas} atrasadas</div>
+    </div>
+    <div class="kpi" onclick="switchTab('alertas',document.querySelector('[data-tab=alertas]'))">
+      <div class="kpi-val" style="color:#8b5cf6">${allClientes.length}</div>
+      <div class="kpi-label">Clientes Ativos</div>
+      <div class="kpi-sub">${allClientes.filter(c=>c.status==='ativo').length} ativos</div>
+    </div>
+    <div class="kpi" onclick="switchTab('calendario',document.querySelector('[data-tab=calendario]'))">
+      <div class="kpi-val" style="color:#f59e0b">${allTarefas.filter(t=>t.dataCriacao===hoje).length}</div>
+      <div class="kpi-label">Tarefas Criadas Hoje</div>
+      <div class="kpi-sub">Clique para ver o calendário</div>
+    </div>`;
+}
+
+// ── VENCIMENTOS ──
+function getDateRange(){
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  if(currentPeriod==='hoje'){const ate=new Date(hoje);ate.setHours(23,59,59,999);return{de:hoje,ate};}
+  if(currentPeriod==='semana'){
+    // Segunda a domingo da semana atual
+    const diaSemana=hoje.getDay(); // 0=dom, 1=seg...
+    const seg=new Date(hoje);seg.setDate(hoje.getDate()-(diaSemana===0?6:diaSemana-1));seg.setHours(0,0,0,0);
+    const dom=new Date(seg);dom.setDate(seg.getDate()+6);dom.setHours(23,59,59,999);
+    return{de:seg,ate:dom};
+  }
+  if(currentPeriod==='mes'){
+    // Mês inteiro — do dia 1 ao último dia do mês
+    const ate=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);ate.setHours(23,59,59,999);
+    return{de:new Date(hoje.getFullYear(),hoje.getMonth(),1),ate};
+  }
+  if(currentPeriod==='semestre'){return{de:new Date(hoje.getFullYear(),hoje.getMonth(),1),ate:new Date(hoje.getFullYear(),hoje.getMonth()+6,0)}}
+  if(currentPeriod==='ano'){return{de:new Date(hoje.getFullYear(),0,1),ate:new Date(hoje.getFullYear(),11,31)}}
+  if(currentPeriod==='custom'){
+    const de=document.getElementById('venc-de').value;
+    const ate=document.getElementById('venc-ate').value;
+    return{de:de?new Date(de+'T00:00:00'):hoje,ate:ate?new Date(ate+'T23:59:59'):hoje}
+  }
+  return{de:hoje,ate:hoje};
+}
+
+function getAllVencimentos(){
+  const {de, ate} = getDateRange();
+  const items=[];
+  const todayStr=today();
+  const freqMap={mensal:1,bimestral:2,trimestral:3,semestral:6,anual:12};
+
+  // Transações reais
+  allPagamentos.forEach(p=>{
+    const d=p.data||p.dataVencimento||'';
+    if(!d)return;
+    const dt=new Date(d+'T12:00:00');
+    if(dt<de||dt>ate)return;
+    const cli=allClientes.find(c=>c.id===p.clienteId);
+    const diff=Math.ceil((dt-new Date(todayStr+'T00:00:00'))/(1000*60*60*24));
+    items.push({
+      dateStr:d, clienteId:p.clienteId, clienteNome:cli?.nome||'—',
+      desc:p.carac||p.caracteristica||'—', tipo:p.tipo||'—',
+      valor:fmtMoney(p.valor), descricao:p.descricao||'SAÍDA',
+      status:p.status||'em_aberto', pagador:p.pagador||'familia', diff,
+      _real:true
+    });
+  });
+
+  // Recorrentes de todos os clientes no período
+  allClientes.forEach(c=>{
+    (c.recorrentes||[]).forEach(r=>{
+      const dia=parseInt(r.dia)||1;
+      const interval=freqMap[r.freq]||1;
+      const startYM=de.getFullYear()*12+de.getMonth();
+      const endYM=ate.getFullYear()*12+ate.getMonth();
+      for(let ym=startYM;ym<=endYM;ym++){
+        const yr=Math.floor(ym/12),mo=ym%12;
+        const d=new Date(yr,mo,Math.min(dia,new Date(yr,mo+1,0).getDate()),12,0,0);
+        if(d<de||d>ate) continue;
+        const ds=d.toISOString().split('T')[0];
+        if(r.dataInicio&&(yr*12+mo)<(new Date(r.dataInicio).getFullYear()*12+new Date(r.dataInicio).getMonth())) continue;
+        if(r.dataFim&&ds>r.dataFim) continue;
+        if(r.dataInicio){const sd=new Date(r.dataInicio);if((yr*12+mo-(sd.getFullYear()*12+sd.getMonth()))%interval!==0)continue;}
+        // Não duplica se já existe transação real com mesmo nome e data
+        const jaExiste=allPagamentos.some(p=>{const pd=p.data||p.dataVencimento||'';return pd===ds&&(p.carac||p.caracteristica||'').toLowerCase()===r.nome.toLowerCase()&&p.clienteId===c.id;});
+        if(jaExiste) continue;
+        const diff=Math.ceil((d-new Date(todayStr+'T00:00:00'))/(1000*60*60*24));
+        items.push({
+          dateStr:ds, clienteId:c.id, clienteNome:c.nome||'—',
+          desc:r.nome, tipo:r.cat||r.freq,
+          valor:r.valor, descricao:r.tipo||'SAÍDA',
+          status:'recorrente', pagador:'familia', diff,
+          _recorrente:true
+        });
+      }
+    });
+  });
+
+  return items.sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
+}
+
+function renderVencimentos(){
+  const filtCliente=document.getElementById('venc-cliente')?.value||'';
+  const filtStatus=document.getElementById('venc-status')?.value||'';
+  const filtPagador=document.getElementById('venc-pagador')?.value||'';
+  let items=getAllVencimentos();
+  if(filtCliente) items=items.filter(v=>v.clienteId===filtCliente);
+  if(filtStatus) items=items.filter(v=>v.status===filtStatus);
+  if(filtPagador) items=items.filter(v=>(v.pagador||'familia')===filtPagador);
+  const tbody=document.getElementById('tbody-venc');
+  if(items.length===0){tbody.innerHTML=`<tr><td colspan="6" class="table-empty">Nenhum pagamento encontrado</td></tr>`;document.getElementById('venc-count').textContent='0 registros';return;}
+  const statusMap={'pago':'b-pago','em_aberto':'b-aberto','recorrente':'b-agendando'};
+  const statusLabel={'pago':'Pago','em_aberto':'Em Aberto','recorrente':'Recorrente'};
+  tbody.innerHTML=items.map(v=>{
+    const entrada=v.descricao==='ENTRADA';
+    const diff=v.diff;
+    const urgClass=diff<0?'urgencia-vencido':diff===0?'urgencia-hoje':'urgencia-ok';
+    const urgLabel=diff<0?`${Math.abs(diff)}d atraso`:diff===0?'Hoje':diff===1?'Amanhã':`${diff} dias`;
+    return`<tr onclick="window.location.href='cliente.html?id=${v.clienteId}'">
+      <td style="font-weight:700;font-size:12px">${fmtDate(v.dateStr)}</td>
+      <td><div class="client-chip"><div class="client-av" style="background:${acol(v.clienteNome)}">${initials(v.clienteNome)}</div>${v.clienteNome}</div></td>
+      <td style="font-weight:600">${v.desc}</td>
+      <td style="text-align:right;font-weight:800;color:${entrada?'#6ee7b7':'#fca5a5'}">${entrada?'+':'-'}${v.valor}</td>
+      <td><span class="badge ${statusMap[v.status]||'b-aberto'}">${statusLabel[v.status]||v.status}</span></td>
+      <td><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;${v.pagador==='soma'?'background:rgba(79,70,229,0.18);color:#a5b4fc':'background:rgba(16,185,129,0.12);color:#6ee7b7'}">${v.pagador==='soma'?'Soma Partners':'Família'}</span></td>
+      <td class="${urgClass}">${urgLabel}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('venc-count').textContent=`${items.length} vencimento${items.length!==1?'s':''}`;
+}
+
+function setPeriod(el,p){
+  document.querySelectorAll('.period-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  currentPeriod=p;
+  document.getElementById('custom-dates').style.display=p==='custom'?'flex':'none';
+  if(p!=='custom') renderVencimentos();
+}
+
+// ── CALENDÁRIO GLOBAL ──
+function renderCalendario(){
+  document.getElementById('cal-month-lbl').textContent=`${MONTHS[calMonth]} ${calYear}`;
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev=new Date(calYear,calMonth,0).getDate();
+  const todayStr=today();
+  const total=Math.ceil((firstDay+daysInMonth)/7)*7;
+  const evMap={};
+  const addEv=(ds,ev)=>{if(!evMap[ds])evMap[ds]=[];evMap[ds].push(ev)};
+  const monthStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}`;
+
+  // Filtros
+  const filtFamilia = document.getElementById('cal-filtro-familia')?.value||'';
+  const filtTipo = document.getElementById('cal-filtro-tipo')?.value||'';
+
+  // Helper: chip limpo por tipo com avatar do cliente
+  function evChip(clienteId, clienteNome, label, tipo, extra){
+    if(filtFamilia && clienteId !== filtFamilia) return null;
+    if(filtTipo && tipo !== filtTipo) return null;
+    const cor = acol(clienteNome||'?');
+    const ini = (initials(clienteNome||'?')||'?')[0]||'?';
+    const typeBg = {pgto:'rgba(239,68,68,0.18)',entrada:'rgba(16,185,129,0.18)',aniv:'rgba(245,158,11,0.18)',tarefa:'rgba(59,130,246,0.18)',cnh:'rgba(139,92,246,0.18)'};
+    const typeColor = {pgto:'#fca5a5',entrada:'#6ee7b7',aniv:'#fcd34d',tarefa:'#93c5fd',cnh:'#c4b5fd'};
+    const bg = typeBg[tipo]||'rgba(255,255,255,0.08)';
+    const tc = typeColor[tipo]||'#fff';
+    // Safe label (remove special chars from display)
+    const shortLabel = (label.includes(':')?label.split(':').slice(1).join(':').trim():label).replace(/"/g,"'").replace(/`/g,"'");
+    const safeTitle = (extra||label).replace(/"/g,"'").replace(/`/g,"'");
+    return `<div class="cal-ev" title="${safeTitle}" style="background:${bg};color:${tc};border-left:2px solid ${cor};display:flex;align-items:center;gap:4px;font-weight:600">
+      <span style="width:14px;height:14px;border-radius:50%;background:${cor};flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#fff">${ini}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${shortLabel}</span>
+    </div>`;
+  }
+
+  // Recorrentes
+  allClientes.forEach(c=>{
+    (c.recorrentes||[]).forEach(r=>{
+      const dia=parseInt(r.dia)||1;
+      if(dia>daysInMonth)return;
+      const ds=`${monthStr}-${String(dia).padStart(2,'0')}`;
+      if(r.dataInicio&&ds.substring(0,7)<r.dataInicio.substring(0,7))return;
+      if(r.dataFim&&ds>r.dataFim)return;
+      const tipo=r.tipo==='ENTRADA'?'entrada':'pgto';
+      const chip1=evChip(c.id,c.nome||'?',`${c.nome?.split(' ')[0]}: ${r.nome}`,tipo);if(chip1)addEv(ds,{chip:chip1,tipo});
+    });
+    // Pagamentos reais do mês
+    allPagamentos.filter(p=>p.clienteId===c.id&&(p.data||'').startsWith(monthStr)).forEach(p=>{
+      const tipo=p.descricao==='ENTRADA'?'entrada':'pgto';
+      const chip2=evChip(c.id,c.nome||'?',`${c.nome?.split(' ')[0]}: ${p.carac||p.caracteristica||'—'}`,tipo,`${p.carac||'—'} — ${p.descricao||'SAÍDA'} — ${p.status||'em_aberto'}`);if(chip2)addEv(p.data,{chip:chip2,tipo});
+    });
+    // Aniversários
+    (c.membros||[]).forEach(m=>{
+      if(!m.nasc)return;
+      const p=m.nasc.split('-');
+      const ds=`${calYear}-${p[1]}-${p[2]}`;
+      if(ds.substring(0,7)===monthStr){const chip3=evChip(c.id,c.nome||'?',`${m.nome.split(' ')[0]} (${calYear-parseInt(p[0])} anos)`,'aniv',`Aniversário de ${m.nome}`);if(chip3)addEv(ds,{chip:chip3,tipo:'aniv'});}
+      if(m.cnh?.venc&&m.cnh.venc.substring(0,7)===monthStr){const chip4=evChip(c.id,c.nome||'?',`CNH: ${m.nome.split(' ')[0]}`,'cnh');if(chip4)addEv(m.cnh.venc,{chip:chip4,tipo:'cnh'});}
+    });
+  });
+  // Tarefas
+  allTarefas.forEach(t=>{
+    if(t.prazo&&t.prazo.startsWith(monthStr)&&t.status!=='concluido'){
+      const cli=allClientes.find(c=>c.id===t.clienteId);
+      const chip5=evChip(t.clienteId,cli?.nome||'?',`${cli?.nome?.split(' ')[0]||'?'}: ${t.titulo}`,'tarefa');if(chip5)addEv(t.prazo,{chip:chip5,tipo:'tarefa'});
+    }
+  });
+
+  let html='';
+  for(let i=0;i<total;i++){
+    let day,ds,other=false;
+    if(i<firstDay){day=daysInPrev-firstDay+i+1;other=true;const m2=calMonth===0?12:calMonth;const y2=calMonth===0?calYear-1:calYear;ds=`${y2}-${String(m2).padStart(2,'0')}-${String(day).padStart(2,'0')}`;}
+    else if(i>=firstDay+daysInMonth){day=i-firstDay-daysInMonth+1;other=true;const m2=calMonth===11?1:calMonth+2;const y2=calMonth===11?calYear+1:calYear;ds=`${y2}-${String(m2).padStart(2,'0')}-${String(day).padStart(2,'0')}`;}
+    else{day=i-firstDay+1;ds=`${monthStr}-${String(day).padStart(2,'0')}`;}
+    const isToday=ds===todayStr;
+    const evs=evMap[ds]||[];
+    const chips=evs.slice(0,3).map(e=>e.chip||'').join('');
+    const moreCount=evs.length-3;
+    // Store overflow events in global map keyed by date
+    if(moreCount>0) _calOverflow[ds]=evs.slice(3).map(e=>e.chip||'').join('');
+    const more=moreCount>0?`<div onclick="showMoreEvents(event,'${ds}')" style="font-size:9px;font-weight:700;color:#a5b4fc;padding:2px 6px;cursor:pointer;background:rgba(79,70,229,0.15);border-radius:4px;margin-top:2px;display:inline-block;transition:background 0.15s" onmouseover="this.style.background='rgba(79,70,229,0.3)'" onmouseout="this.style.background='rgba(79,70,229,0.15)'">+${moreCount} mais</div>`:'';
+    html+=`<div class="cal-day${other?' other':''}${isToday?' today':''}"><div class="cal-num">${day}</div><div class="cal-events">${chips}${more}</div></div>`;
+  }
+  document.getElementById('cal-days-global').innerHTML=html;
+}
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendario()}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendario()}
+function calToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();renderCalendario()}
+
+// ── TAREFAS ──
+function renderTarefas(){
+  const fCli=document.getElementById('tar-cliente')?.value||'';
+  const fSt=document.getElementById('tar-status')?.value||'';
+  const fPr=document.getElementById('tar-prio')?.value||'';
+  const SL={a_fazer:'A Fazer',em_andamento:'Em Andamento',concluido:'Concluído',aberta:'A Fazer',concluida:'Concluído'};
+  const SC={a_fazer:'b-aberta',em_andamento:'b-andamento',concluido:'b-concluida',aberta:'b-aberta',concluida:'b-concluida'};
+  const PL={alta:'Alta',media:'Média',baixa:'Baixa'};
+  const PC={alta:'b-alta',media:'b-media',baixa:'b-baixa'};
+  let list=[...allTarefas];
+  if(fCli) list=list.filter(t=>t.clienteId===fCli);
+  if(fSt){
+    const map={a_fazer:['a_fazer','aberta'],em_andamento:['em_andamento'],concluido:['concluido','concluida']};
+    list=list.filter(t=>(map[fSt]||[fSt]).includes(t.status||'a_fazer'));
+  }
+  if(fPr) list=list.filter(t=>(t.prioridade||'media')===fPr);
+  list.sort((a,b)=>{const p={alta:0,media:1,baixa:2};return(p[a.prioridade]||1)-(p[b.prioridade]||1)});
+  const tbody=document.getElementById('tbody-tar');
+  if(list.length===0){tbody.innerHTML=`<tr><td colspan="6" class="table-empty">Nenhuma tarefa encontrada</td></tr>`;document.getElementById('tar-count').textContent='0 tarefas';return;}
+  tbody.innerHTML=list.map(t=>{
+    const cli=allClientes.find(c=>c.id===t.clienteId);
+    const st=t.status==='aberta'?'a_fazer':t.status==='concluida'?'concluido':t.status||'a_fazer';
+    return`<tr onclick="window.location.href='cliente.html?id=${t.clienteId}'">
+      <td><div class="client-chip"><div class="client-av" style="background:${acol(cli?.nome||'?')}">${initials(cli?.nome||'?')}</div>${cli?.nome||'—'}</div></td>
+      <td style="font-weight:600">${t.titulo}</td>
+      <td><span class="badge ${PC[t.prioridade||'media']}">${PL[t.prioridade||'media']}</span></td>
+      <td><span class="badge ${SC[st]}">${SL[st]||st}</span></td>
+      <td style="font-size:12px;color:${isOverdue(t.prazo)&&st!=='concluido'?'#fca5a5':'var(--muted)'}">${fmtDate(t.prazo)}</td>
+      <td style="font-size:11px;color:var(--muted)">${fmtDate(t.dataCriacao)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tar-count').textContent=`${list.length} tarefa${list.length!==1?'s':''}`;
+}
+
+// ── ALERTAS ──
+function renderAlertas(){
+  const grid=document.getElementById('alertas-grid');
+  const hoje=today();
+  const fim30=new Date();fim30.setDate(fim30.getDate()+30);const fim30s=fim30.toISOString().split('T')[0];
+  const alertas=[];
+  // CNH vencendo
+  allClientes.forEach(c=>{
+    (c.membros||[]).forEach(m=>{
+      if(m.cnh?.venc&&m.cnh.venc<=fim30s){
+        const diff=Math.ceil((new Date(m.cnh.venc)-new Date(hoje))/(1000*60*60*24));
+        alertas.push({tipo:'cnh',urgencia:diff<0?'vencido':diff<=7?'urgente':'atencao',titulo:`CNH vencendo — ${m.nome}`,desc:`Família ${c.nome} · Vence: ${fmtDate(m.cnh.venc)}`,diff,clienteId:c.id});
+      }
+    });
+    // Aniversários próximos
+    (c.membros||[]).forEach(m=>{
+      if(!m.nasc)return;
+      const p=m.nasc.split('-');
+      const aniv=`${new Date().getFullYear()}-${p[1]}-${p[2]}`;
+      const diff=Math.ceil((new Date(aniv)-new Date(hoje))/(1000*60*60*24));
+      if(diff>=0&&diff<=14) alertas.push({tipo:'aniv',urgencia:'info',titulo:`🎂 Aniversário de ${m.nome}`,desc:`Família ${c.nome} · ${fmtDate(aniv)} · ${new Date().getFullYear()-parseInt(p[0])} anos`,diff,clienteId:c.id});
+    });
+    // Tarefas atrasadas
+  });
+  const tarefasAtrasadas=allTarefas.filter(t=>isOverdue(t.prazo)&&t.status!=='concluido'&&t.status!=='concluida');
+  tarefasAtrasadas.forEach(t=>{
+    const cli=allClientes.find(c=>c.id===t.clienteId);
+    const diff=Math.ceil((new Date(t.prazo)-new Date(hoje))/(1000*60*60*24));
+    alertas.push({tipo:'tarefa',urgencia:'urgente',titulo:`Tarefa atrasada: ${t.titulo}`,desc:`${cli?.nome||'?'} · Prazo: ${fmtDate(t.prazo)}`,diff,clienteId:t.clienteId});
+  });
+  alertas.sort((a,b)=>a.diff-b.diff);
+  const urgColors={vencido:'var(--red)',urgente:'var(--orange)',atencao:'var(--orange)',info:'#3b82f6'};
+  const tipoIcons={cnh:'🪪',aniv:'🎂',tarefa:'✓'};
+  if(alertas.length===0){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted2);font-size:13px">Nenhum alerta ativo. Tudo em ordem!</div>`;return;}
+  grid.innerHTML=alertas.map(a=>`
+    <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-left:3px solid ${urgColors[a.urgencia]||'var(--muted)'};border-radius:10px;padding:16px 18px;cursor:pointer;transition:background 0.15s" onclick="window.location.href='cliente.html?id=${a.clienteId}'">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="font-size:20px">${tipoIcons[a.tipo]||'!'}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">${a.titulo}</div>
+          <div style="font-size:11px;color:var(--muted)">${a.desc}</div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:${urgColors[a.urgencia]}">${a.diff<0?Math.abs(a.diff)+'d atraso':a.diff===0?'Hoje':a.diff+'d'}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── EXPORT ──
+function exportVencExcel(){
+  const items=getAllVencimentos();
+  const rows=items.map(v=>({'Data':fmtDate(v.dateStr),'Família':v.clienteNome,'Descrição':v.desc,'Tipo':v.tipo,'Valor':v.valor,'Status':v.status}));
+  const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:12},{wch:24},{wch:28},{wch:16},{wch:14},{wch:12}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Vencimentos');
+  XLSX.writeFile(wb,'relatorio_vencimentos.xlsx');showToast('Excel exportado!','ok');
+}
+
+function exportVencPDF(){
+  const items=getAllVencimentos();
+  if(!items.length){showToast('Nenhum item para exportar');return;}
+  const rows=items.map(v=>{
+    const diff=v.diff;
+    const urgLabel=diff<0?`<span style="color:#dc2626">${Math.abs(diff)}d atraso</span>`:diff===0?`<span style="color:#d97706">Hoje</span>`:`${diff}d`;
+    return`<tr style="border-bottom:1px solid #f1f5f9"><td>${fmtDate(v.dateStr)}</td><td style="font-weight:700">${v.clienteNome}</td><td>${v.desc}</td><td style="color:#64748b">${v.tipo}</td><td style="text-align:right;font-weight:800;color:${v.descricao==='ENTRADA'?'#059669':'#dc2626'}">${v.descricao==='ENTRADA'?'+':'-'}${v.valor}</td><td>${urgLabel}</td></tr>`;
+  }).join('');
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Vencimentos</title><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',sans-serif;background:#fff;color:#0f172a;padding:28px}.header{display:flex;justify-content:space-between;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid #0b1e30}.logo{font-size:18px;font-weight:300}.logo strong{font-weight:800}h1{font-size:18px;font-weight:900}table{width:100%;border-collapse:collapse}thead tr{background:#f8fafc;border-bottom:2px solid #e2e8f0}th{padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b}td{padding:8px 10px;font-size:12px}</style></head><body><div class="header"><div><div class="logo">Soma <strong>PARTNERS</strong></div><div style="font-size:12px;color:#64748b;margin-top:4px">Relatório de Vencimentos</div></div><div style="text-align:right"><h1>Vencimentos</h1><div style="font-size:12px;color:#64748b">Gerado em ${fmtDate(today())}</div></div></div><table><thead><tr><th>Data</th><th>Família</th><th>Descrição</th><th>Tipo</th><th style="text-align:right">Valor</th><th>Urgência</th></tr></thead><tbody>${rows}</tbody></table>
+</body></html>`);
+  win.document.close();setTimeout(()=>win.print(),500);
+}
+
+function exportTarExcel(){
+  const SL={a_fazer:'A Fazer',em_andamento:'Em Andamento',concluido:'Concluído',aberta:'A Fazer',concluida:'Concluído'};
+  const rows=allTarefas.map(t=>{
+    const cli=allClientes.find(c=>c.id===t.clienteId);
+    return{'Família':cli?.nome||'—','Tarefa':t.titulo,'Prioridade':t.prioridade||'media','Status':SL[t.status||'a_fazer'],'Prazo':fmtDate(t.prazo),'Criação':fmtDate(t.dataCriacao)};
+  });
+  const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:24},{wch:36},{wch:10},{wch:14},{wch:12},{wch:12}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tarefas');
+  XLSX.writeFile(wb,'relatorio_tarefas.xlsx');showToast('Excel exportado!','ok');
+}
+
+function exportTarPDF(){
+  const SL={a_fazer:'A Fazer',em_andamento:'Em Andamento',concluido:'Concluído',aberta:'A Fazer',concluida:'Concluído'};
+  const rows=allTarefas.map(t=>{
+    const cli=allClientes.find(c=>c.id===t.clienteId);
+    const st=t.status==='aberta'?'a_fazer':t.status==='concluida'?'concluido':t.status||'a_fazer';
+    const overdue=isOverdue(t.prazo)&&st!=='concluido';
+    return`<tr style="border-bottom:1px solid #f1f5f9"><td style="font-weight:700">${cli?.nome||'—'}</td><td>${t.titulo}</td><td>${t.prioridade||'média'}</td><td>${SL[st]}</td><td style="color:${overdue?'#dc2626':'#0f172a'}">${fmtDate(t.prazo)}</td></tr>`;
+  }).join('');
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Tarefas</title><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',sans-serif;background:#fff;color:#0f172a;padding:28px}.header{display:flex;justify-content:space-between;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid #0b1e30}.logo{font-size:18px;font-weight:300}.logo strong{font-weight:800}table{width:100%;border-collapse:collapse}thead tr{background:#f8fafc;border-bottom:2px solid #e2e8f0}th{padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b}td{padding:8px 10px;font-size:12px}</style></head><body><div class="header"><div><div class="logo">Soma <strong>PARTNERS</strong></div></div><div style="text-align:right"><h1 style="font-size:18px;font-weight:900">Relatório de Tarefas</h1><div style="font-size:12px;color:#64748b">Gerado em ${fmtDate(today())}</div></div></div><table><thead><tr><th>Família</th><th>Tarefa</th><th>Prioridade</th><th>Status</th><th>Prazo</th></tr></thead><tbody>${rows}</tbody></table>
+</body></html>`);
+  win.document.close();setTimeout(()=>win.print(),500);
+}
+
+// ── TABS ──
+function switchTab(name, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='tarefas') renderTarefas();
+  if(name==='calendario') renderCalendario();
+  if(name==='alertas') renderAlertas();
+  if(name==='vencimentos') renderVencimentos();
+}
+
+// ── POPUP MAIS EVENTOS ──
+const _calOverflow = {};
+function showMoreEvents(event, ds){
+  const chipsHtml = _calOverflow[ds]||'';
+  event.stopPropagation();
+  // Remove popup anterior
+  document.getElementById('cal-popup')?.remove();
+
+  const popup = document.createElement('div');
+  popup.id = 'cal-popup';
+  popup.style.cssText = `position:fixed;z-index:9000;background:#0d2236;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:14px;box-shadow:0 20px 40px rgba(0,0,0,0.5);min-width:220px;max-width:300px`;
+
+  const[y,m,d] = ds.split('-');
+  popup.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span style="font-size:12px;font-weight:700;color:#fff">${d}/${m}/${y}</span>
+      <button onclick="document.getElementById('cal-popup').remove()" style="background:none;border:none;cursor:pointer;color:#64748b;font-size:16px;line-height:1;padding:0">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px">${chipsHtml}</div>`;
+
+  document.body.appendChild(popup);
+
+  // Position near click
+  const x = Math.min(event.clientX, window.innerWidth - 320);
+  const y2 = Math.min(event.clientY + 10, window.innerHeight - 200);
+  popup.style.left = x + 'px';
+  popup.style.top = y2 + 'px';
+
+  // Close on outside click
+  setTimeout(()=>{
+    document.addEventListener('click', function handler(){
+      document.getElementById('cal-popup')?.remove();
+      document.removeEventListener('click', handler);
+    });
+  }, 100);
+}
+
+loadAll();
+</script>
+<script>
+document.addEventListener('input',function(e){
+  const el=e.target;
+  const skipTypes=['email','password','url','date','time','number','hidden','color','range','file'];
+  const skipIds=['email','senha','url','foto','link'];
+  if(!((el.tagName==='INPUT'&&!skipTypes.includes(el.type))||el.tagName==='TEXTAREA'))return;
+  if(el.id&&skipIds.some(s=>el.id.includes(s)))return;
+  const p=el.selectionStart;el.value=el.value.toUpperCase();
+  try{el.setSelectionRange(p,p);}catch(x){}
+});
+</script>
+
+</body>
+</html>

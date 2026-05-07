@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Calendário — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--navy2:#0d2035;--white:#fff;--border:rgba(255,255,255,0.09);--indigo:#4f46e5;--green:#10b981;--orange:#f59e0b;--red:#ef4444;--blue:#3b82f6;--purple:#8b5cf6;--muted:rgba(255,255,255,0.45);--muted2:rgba(255,255,255,0.22)}
+html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-serif;color:var(--white)}
+
+/* NAV */
+.topnav{position:sticky;top:0;z-index:100;background:rgba(11,30,48,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:13px;cursor:pointer;text-decoration:none}
+.logo-soma{font-size:17px;font-weight:300;color:#fff;letter-spacing:0.5px}
+.logo-pipe{width:1px;height:20px;background:rgba(255,255,255,0.4)}
+.logo-partners{font-size:10px;font-weight:700;letter-spacing:5px;color:#fff;text-transform:uppercase}
+.nav-right{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all 0.18s}
+.btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none}
+.btn-outline{background:transparent;color:#fff;border:1px solid var(--border)}.btn-outline:hover{background:rgba(255,255,255,0.08)}
+
+/* PAGE */
+.page{padding:32px 40px 60px}
+
+/* HEADER */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.cal-title-wrap{display:flex;align-items:center;gap:16px}
+.cal-month-title{font-size:clamp(22px,3vw,32px);font-weight:900;letter-spacing:1px;text-transform:capitalize}
+.cal-year{font-size:16px;font-weight:300;color:var(--muted);margin-left:4px}
+.cal-nav{display:flex;gap:6px}
+.cal-nav-btn{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;color:#fff;display:flex;align-items:center;transition:all 0.18s}
+.cal-nav-btn:hover{background:rgba(255,255,255,0.12)}
+.cal-nav-btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none}
+.today-btn{background:rgba(79,70,229,0.18);border:1px solid rgba(79,70,229,0.35);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:700;color:#a5b4fc;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.18s}
+.today-btn:hover{background:rgba(79,70,229,0.35);color:#fff}
+
+/* LEGEND */
+.legend{display:flex;gap:16px;align-items:center}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--muted)}
+.leg-dot{width:9px;height:9px;border-radius:50%}
+
+/* CALENDAR GRID */
+.cal-grid-wrap{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border)}
+.weekday{padding:12px 0;text-align:center;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2)}
+.days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
+
+/* DAY CELL */
+.day-cell{background:var(--navy);min-height:110px;padding:10px;position:relative;transition:background 0.15s;cursor:default}
+.day-cell:hover{background:rgba(255,255,255,0.025)}
+.day-cell.other-month{background:#080f17}
+.day-cell.other-month .day-num{color:rgba(255,255,255,0.12)}
+.day-cell.today{background:rgba(79,70,229,0.08)}
+.day-cell.today .day-num{background:var(--indigo);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:800}
+.day-num{font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);margin-bottom:6px;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+.day-events{display:flex;flex-direction:column;gap:3px}
+
+/* EVENT CHIPS */
+.ev-chip{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:filter 0.15s;line-height:1.4}
+.ev-chip:hover{filter:brightness(1.2)}
+.ev-entrada{background:rgba(16,185,129,0.2);color:#6ee7b7;border-left:2px solid #10b981}
+.ev-saida{background:rgba(239,68,68,0.15);color:#fca5a5;border-left:2px solid #ef4444}
+.ev-tarefa{background:rgba(59,130,246,0.18);color:#93c5fd;border-left:2px solid #3b82f6}
+.ev-lembrete{background:rgba(139,92,246,0.18);color:#c4b5fd;border-left:2px solid #8b5cf6}
+.ev-more{font-size:9px;color:var(--muted2);padding:1px 4px;cursor:pointer}
+.ev-more:hover{color:#fff}
+
+/* SIDEBAR */
+.layout{display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start}
+.sidebar{position:sticky;top:80px}
+.side-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.side-card-header{padding:14px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2)}
+.side-card-body{padding:12px 16px}
+.side-event-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.side-event-item:last-child{border-bottom:none}
+.side-ev-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.side-ev-name{font-size:12px;font-weight:600;line-height:1.3}
+.side-ev-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.side-ev-date{font-size:10px;font-weight:700;margin-left:auto;flex-shrink:0;padding-left:8px}
+.empty-side{font-size:12px;color:var(--muted2);font-style:italic;padding:4px 0}
+
+/* SELECTED DAY PANEL */
+.selected-day-panel{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;display:none}
+.selected-day-panel.visible{display:block}
+.sdp-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sdp-title{font-size:13px;font-weight:700}
+.sdp-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;padding:10px 18px;border-radius:9px;font-size:12px;font-weight:600;font-family:'Montserrat',sans-serif;opacity:0;transition:all 0.3s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.loader-wrap{position:fixed;inset:0;background:rgba(11,30,48,0.75);display:none;align-items:center;justify-content:center;z-index:5000}
+.loader-spin{width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="nav-logo" href="soma-partners.html">
+    <span class="logo-soma">Soma</span><div class="logo-pipe"></div><span class="logo-partners">Partners</span>
+  </a>
+  <div class="nav-right">
+    <button class="btn btn-outline" onclick="window.location.href='concierge.html'">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Concierge
+    </button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="cal-header">
+    <div class="cal-title-wrap">
+      <div>
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <span class="cal-month-title" id="cal-month-title"></span>
+          <span class="cal-year" id="cal-year-label"></span>
+        </div>
+        <div class="legend" style="margin-top:6px">
+          <div class="leg-item"><div class="leg-dot" style="background:#10b981"></div>Entrada</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Saída</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#3b82f6"></div>Tarefa</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#8b5cf6"></div>Lembrete</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="today-btn" onclick="goToday()">Hoje</button>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calPrev()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="cal-nav-btn" onclick="calNext()"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- MAIN CALENDAR -->
+    <div>
+      <div class="cal-grid-wrap">
+        <div class="weekdays">
+          <div class="weekday">Dom</div><div class="weekday">Seg</div><div class="weekday">Ter</div>
+          <div class="weekday">Qua</div><div class="weekday">Qui</div><div class="weekday">Sex</div><div class="weekday">Sáb</div>
+        </div>
+        <div class="days-grid" id="days-grid"></div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <!-- Selected Day -->
+      <div class="selected-day-panel" id="selected-day-panel">
+        <div class="sdp-header">
+          <span class="sdp-title" id="sdp-title">Dia selecionado</span>
+          <button class="sdp-close" onclick="clearSelection()">×</button>
+        </div>
+        <div class="side-card-body" id="sdp-body"></div>
+      </div>
+
+      <!-- Próximos eventos -->
+      <div class="side-card">
+        <div class="side-card-header">Próximos Eventos</div>
+        <div class="side-card-body" id="proximos-eventos"></div>
+      </div>
+
+      <!-- Recorrentes do mês -->
+      <div class="side-card">
+        <div class="side-card-header">Recorrentes deste mês</div>
+        <div class="side-card-body" id="recorrentes-mes"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="loader-wrap" class="loader-wrap"><div class="loader-spin"></div></div>
+
+<script>
+const _sb = supabase.createClient('https://fqdhaaslmiprvifttmpb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZGhhYXNsbWlwcnZpZnR0bXBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDkxNTcsImV4cCI6MjA5MzQ4NTE1N30.iJouT1ztgAnmxpowiWFusoaMbIIZYWathTcW4w_ToVc');
+function showLoader(on){document.getElementById('loader-wrap').style.display=on?'flex':'none'}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.className='toast show';setTimeout(()=>t.className='toast',3000)}
+function today(){return new Date().toISOString().split('T')[0]}
+function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
+function fmtDateLong(d){if(!d)return'—';const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}
+
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let allData = { clientes:[], pagamentos:[], tarefas:[], lembretes:[] };
+let selectedDay = null;
+
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// ── LOAD ALL DATA ──
+async function loadAll(){
+  showLoader(true);
+  try{
+    const [cl, pg, tar, lem] = await Promise.all([
+      _sb.from('concierge_clientes').select('id,data'),
+      _sb.from('concierge_pagamentos').select('id,data'),
+      _sb.from('concierge_tarefas').select('id,data'),
+      _sb.from('concierge_lembretes').select('id,data'),
+    ]);
+    allData.clientes = (cl.data||[]).map(r=>({id:r.id,...r.data}));
+    allData.pagamentos = (pg.data||[]).map(r=>({id:r.id,...r.data}));
+    allData.tarefas = (tar.data||[]).map(r=>({id:r.id,...r.data}));
+    allData.lembretes = (lem.data||[]).map(r=>({id:r.id,...r.data}));
+  }catch(e){showToast('Erro ao carregar dados')}
+  showLoader(false);
+  renderCalendar();
+  renderSidebar();
+}
+
+// ── BUILD EVENTS MAP ──
+function buildEventsMap(year, month){
+  const map = {};
+  const add = (dateStr, ev) => {
+    if(!map[dateStr]) map[dateStr] = [];
+    map[dateStr].push(ev);
+  };
+
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+
+  // Pagamentos reais com data no mês
+  allData.pagamentos.forEach(p => {
+    const d = p.data||p.dataVencimento||'';
+    if(d.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)){
+      const clientNome = allData.clientes.find(c=>c.id===p.clienteId)?.nome||'';
+      add(d, {type: p.descricao==='ENTRADA'?'entrada':'saida', label:`${p.carac||p.caracteristica||p.descricao} ${clientNome?'('+clientNome+')':''}`, val:p.valor, clienteId:p.clienteId});
+    }
+  });
+
+  // Recorrentes de todos os clientes
+  allData.clientes.forEach(c => {
+    (c.recorrentes||[]).forEach(r => {
+      const dia = parseInt(r.dia)||1;
+      if(dia > daysInMonth) return;
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+      // Check dataInicio and dataFim
+      if(r.dataInicio && dateStr < r.dataInicio.substring(0,7)+'-01') return;
+      if(r.dataFim && dateStr > r.dataFim) return;
+      // Frequency check
+      const freqMap = {mensal:1, bimestral:2, trimestral:3, semestral:6, anual:12};
+      const interval = freqMap[r.freq]||1;
+      if(r.dataInicio){
+        const startDate = new Date(r.dataInicio);
+        const diffMonths = (year-startDate.getFullYear())*12+(month-startDate.getMonth());
+        if(diffMonths % interval !== 0) return;
+      }
+      // Don't duplicate if real transaction exists
+      const jaExiste = allData.pagamentos.some(p=>{
+        const pd=p.data||p.dataVencimento||'';return pd===dateStr&&(p.carac||p.caracteristica||'').toLowerCase()===r.nome.toLowerCase()&&p.clienteId===c.id;
+      });
+      if(!jaExiste){
+        add(dateStr, {type:r.tipo==='ENTRADA'?'entrada':'saida', label:`${r.nome} (${c.nome})`, val:r.valor, recorrente:true, clienteId:c.id});
+      }
+    });
+  });
+
+  // Tarefas com prazo no mês
+  allData.tarefas.forEach(t => {
+    if(!t.prazo||t.status==='concluido'||t.status==='concluida') return;
+    if(t.prazo.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)){
+      const clientNome = allData.clientes.find(c=>c.id===t.clienteId)?.nome||'';
+      add(t.prazo, {type:'tarefa', label:`${t.titulo} ${clientNome?'('+clientNome+')':''}`, clienteId:t.clienteId});
+    }
+  });
+
+  // Lembretes no mês
+  allData.lembretes.forEach(l => {
+    if(!l.data||l.feito) return;
+    if(l.data.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)){
+      const clientNome = allData.clientes.find(c=>c.id===l.clienteId)?.nome||'';
+      add(l.data, {type:'lembrete', label:`${l.titulo} ${clientNome?'('+clientNome+')':''}`, clienteId:l.clienteId});
+    }
+  });
+
+  return map;
+}
+
+// ── RENDER CALENDAR ──
+function renderCalendar(){
+  document.getElementById('cal-month-title').textContent = MONTHS[calMonth];
+  document.getElementById('cal-year-label').textContent = calYear;
+
+  const evMap = buildEventsMap(calYear, calMonth);
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+  const todayStr = today();
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+  let html = '';
+  for(let i=0; i<totalCells; i++){
+    let day, dateStr, isOther=false;
+    if(i < firstDay){ day=daysInPrev-firstDay+i+1; const m=calMonth===0?12:calMonth; const y=calMonth===0?calYear-1:calYear; dateStr=`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`; isOther=true; }
+    else if(i >= firstDay+daysInMonth){ day=i-firstDay-daysInMonth+1; const m=calMonth===11?1:calMonth+2; const y=calMonth===11?calYear+1:calYear; dateStr=`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`; isOther=true; }
+    else { day=i-firstDay+1; dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; }
+
+    const isToday = dateStr===todayStr;
+    const isSelected = dateStr===selectedDay;
+    const events = evMap[dateStr]||[];
+    const MAX_SHOW = 3;
+
+    const chipsCss = {entrada:'ev-chip ev-entrada', saida:'ev-chip ev-saida', tarefa:'ev-chip ev-tarefa', lembrete:'ev-chip ev-lembrete'};
+    const chips = events.slice(0,MAX_SHOW).map(ev=>`<div class="${chipsCss[ev.type]||'ev-chip ev-lembrete'}" title="${ev.label}">${ev.label}</div>`).join('');
+    const more = events.length>MAX_SHOW ? `<div class="ev-more">+${events.length-MAX_SHOW} mais</div>` : '';
+
+    html += `<div class="day-cell${isOther?' other-month':''}${isToday?' today':''}${isSelected?' selected':''}" 
+      style="${isSelected?'background:rgba(79,70,229,0.12);outline:1px solid rgba(79,70,229,0.4)':''}"
+      onclick="selectDay('${dateStr}')">
+      <div class="day-num">${day}</div>
+      <div class="day-events">${chips}${more}</div>
+    </div>`;
+  }
+  document.getElementById('days-grid').innerHTML = html;
+  renderSidebar();
+}
+
+// ── SELECT DAY ──
+function selectDay(dateStr){
+  selectedDay = dateStr;
+  renderCalendar();
+  const evMap = buildEventsMap(calYear, calMonth);
+  const events = evMap[dateStr]||[];
+  const panel = document.getElementById('selected-day-panel');
+  document.getElementById('sdp-title').textContent = fmtDateLong(dateStr);
+  if(events.length===0){
+    document.getElementById('sdp-body').innerHTML='<div class="empty-side">Nenhum evento neste dia</div>';
+  } else {
+    const colors={entrada:'#10b981',saida:'#ef4444',tarefa:'#3b82f6',lembrete:'#8b5cf6'};
+    const labels={entrada:'Entrada',saida:'Saída',tarefa:'Tarefa',lembrete:'Lembrete'};
+    document.getElementById('sdp-body').innerHTML = events.map(ev=>`
+      <div class="side-event-item">
+        <div class="side-ev-dot" style="background:${colors[ev.type]||'#8b5cf6'}"></div>
+        <div>
+          <div class="side-ev-name">${ev.label}</div>
+          <div class="side-ev-meta">${labels[ev.type]||''}${ev.recorrente?' · Recorrente':''}${ev.val?' · '+ev.val:''}</div>
+        </div>
+      </div>`).join('');
+  }
+  panel.classList.add('visible');
+}
+
+function clearSelection(){ selectedDay=null; document.getElementById('selected-day-panel').classList.remove('visible'); renderCalendar(); }
+
+// ── SIDEBAR ──
+function renderSidebar(){
+  const todayDate = new Date();
+  const evMap = buildEventsMap(calYear, calMonth);
+
+  // Próximos 7 dias
+  const proximos=[];
+  for(let d=0; d<14; d++){
+    const dt=new Date(todayDate);dt.setDate(dt.getDate()+d);
+    const ds=dt.toISOString().split('T')[0];
+    (evMap[ds]||[]).forEach(ev=>proximos.push({...ev, dateStr:ds}));
+  }
+  const colors={entrada:'#10b981',saida:'#ef4444',tarefa:'#3b82f6',lembrete:'#8b5cf6'};
+  document.getElementById('proximos-eventos').innerHTML = proximos.length===0?'<div class="empty-side">Nenhum evento próximo</div>':
+    proximos.slice(0,8).map(ev=>`
+      <div class="side-event-item">
+        <div class="side-ev-dot" style="background:${colors[ev.type]||'#8b5cf6'}"></div>
+        <div style="flex:1">
+          <div class="side-ev-name">${ev.label}</div>
+          <div class="side-ev-meta">${ev.type==='entrada'?'Entrada':ev.type==='saida'?'Saída':ev.type==='tarefa'?'Tarefa':'Lembrete'}</div>
+        </div>
+        <div class="side-ev-date">${fmtDate(ev.dateStr)}</div>
+      </div>`).join('');
+
+  // Recorrentes do mês
+  const recMes=[];
+  allData.clientes.forEach(c=>{
+    (c.recorrentes||[]).forEach(r=>{
+      const dia=parseInt(r.dia)||1;
+      const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+      if(dia>daysInMonth) return;
+      const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+      if(r.dataInicio && dateStr<r.dataInicio.substring(0,7)+'-01') return;
+      if(r.dataFim && dateStr>r.dataFim) return;
+      recMes.push({...r, clienteNome:c.nome, dateStr});
+    });
+  });
+  recMes.sort((a,b)=>a.dia-b.dia);
+  document.getElementById('recorrentes-mes').innerHTML = recMes.length===0?'<div class="empty-side">Nenhum recorrente este mês</div>':
+    recMes.map(r=>`
+      <div class="side-event-item">
+        <div class="side-ev-dot" style="background:${r.tipo==='ENTRADA'?'#10b981':'#ef4444'}"></div>
+        <div style="flex:1">
+          <div class="side-ev-name">${r.nome}</div>
+          <div class="side-ev-meta">${r.clienteNome} · ${r.freq}</div>
+        </div>
+        <div class="side-ev-date" style="color:${r.tipo==='ENTRADA'?'#6ee7b7':'#fca5a5'}">${r.tipo==='ENTRADA'?'+':'-'}${r.valor}</div>
+      </div>`).join('');
+}
+
+function calPrev(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} selectedDay=null; renderCalendar(); }
+function calNext(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} selectedDay=null; renderCalendar(); }
+function goToday(){ calYear=new Date().getFullYear(); calMonth=new Date().getMonth(); selectedDay=null; renderCalendar(); }
+
+loadAll();
+</script>
+</body>
+</html>
