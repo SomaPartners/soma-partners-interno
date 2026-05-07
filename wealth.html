@@ -80,8 +80,12 @@ td{padding:12px 16px;font-size:12px;vertical-align:middle}
 .temp-morno{background:rgba(245,158,11,0.18);border:1px solid rgba(245,158,11,0.35);color:#fcd34d}
 .temp-quente{background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.35);color:#fca5a5}
 .estagio-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;background:rgba(255,255,255,0.07);color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
-.origem-evento{background:rgba(139,92,246,0.15);color:#c4b5fd;border-radius:6px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-.origem-manual{background:rgba(255,255,255,0.08);color:var(--muted2);border-radius:6px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.origem-badge{border-radius:6px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.ob-evento{background:rgba(139,92,246,0.15);color:#c4b5fd}
+.ob-indicacao{background:rgba(16,185,129,0.12);color:#6ee7b7}
+.ob-redes_sociais{background:rgba(59,130,246,0.15);color:#93c5fd}
+.ob-prospeccao{background:rgba(245,158,11,0.12);color:#fcd34d}
+.ob-outro{background:rgba(255,255,255,0.08);color:var(--muted2)}
 .proxima-acao{font-size:11px}
 .proxima-vencida{color:var(--red);font-weight:700}
 .proxima-hoje{color:var(--orange);font-weight:700}
@@ -297,6 +301,7 @@ textarea.fc{resize:vertical;min-height:70px}
         <div class="fg"><label class="fl">Patrimônio estimado</label><input class="fc" id="l-patrimonio" placeholder="Ex: R$ 2.000.000"></div>
         <div class="fg"><label class="fl">Origem do contato</label>
           <select class="fc" id="l-origem" onchange="toggleIndicadoPor()"><option value="indicacao">Indicação</option><option value="evento">Evento</option><option value="redes_sociais">Redes Sociais</option><option value="prospecção">Prospecção Ativa</option><option value="outro">Outro</option></select>
+          <div id="l-origem-display" style="display:none;padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:13px;color:var(--muted)"></div>
         </div>
       </div>
       <div class="fr" id="row-indicado" style="display:none">
@@ -378,6 +383,8 @@ function initials(n){const p=(n||'?').trim().split(' ');return(p[0][0]+(p.length
 let leads=[], followups=[];
 
 const ESTAGIO_LABELS={prospeccao:'Prospecção',qualificacao:'Qualificação',reuniao:'Reunião',proposta:'Proposta',fechado:'Fechado',perdido:'Perdido'};
+const ORIGEM_LABELS={evento:'Evento',indicacao:'Indicação',redes_sociais:'Redes Sociais','prospecção':'Prospecção Ativa',outro:'Outro'};
+function origemBadge(o){return`<span class="origem-badge ob-${o||'outro'}">${ORIGEM_LABELS[o]||o||'—'}</span>`}
 const TEMP_PROSP={
   frio:{dias:30,texto:'<strong>Lead Frio</strong> — Nutrição gradual.<br>Semana 1: envie conteúdo de valor (artigo, panorama de mercado). Semana 2: conecte no LinkedIn. Semana 3: convite para evento. Semana 4: ligação de aquecimento.',acao:'Enviar conteúdo de valor por WhatsApp ou e-mail'},
   morno:{dias:15,texto:'<strong>Lead Morno</strong> — Relacionamento ativo.<br>Dias 1-3: ligação de qualificação (10 min). Dias 4-7: envio de material exclusivo. Dias 8-12: proposta de reunião de diagnóstico. Dias 13-15: confirmação de reunião.',acao:'Ligar para qualificação de 10 minutos'},
@@ -508,7 +515,7 @@ function renderLeads(){
       return`<tr onclick="editLead('${l.id}')">
         <td><div class="lead-cell"><div class="lead-av" style="background:${acol(l.nome)}">${initials(l.nome)}</div><div><div class="lead-name">${l.nome}</div><div class="lead-sub">${l.telefone||''}${l.email?` · ${l.email}`:''}</div></div></div></td>
         <td style="font-size:12px">${l.patrimonio||'—'}</td>
-        <td><span class="${l.origem==='evento'?'origem-evento':'origem-manual'}">${l.origem==='evento'?'Evento':'Manual'}</span></td>
+        <td>${origemBadge(l.origem)}</td>
         <td><span class="temp-badge ${TEMP_CLS[l.temperatura]||'temp-frio'}">${l.temperatura||'frio'}</span></td>
         <td><span class="estagio-badge">${ESTAGIO_LABELS[l.estagio]||l.estagio||'—'}</span></td>
         <td style="font-size:12px;color:var(--muted)">${l.responsavel||'—'}</td>
@@ -582,7 +589,11 @@ function editLead(id){
   document.getElementById('l-cpf').value=l.cpf?maskCPF(l.cpf):'';
   document.getElementById('l-patrimonio').value=l.patrimonio?maskMoeda(l.patrimonio.replace(/\D/g,'').padEnd(3,'0')):'';
 
-  document.getElementById('l-origem').value=l.origem||'indicacao';
+  const origVal=l.origem||'indicacao';
+  document.getElementById('l-origem').value=origVal;
+  document.getElementById('l-origem').style.display='none';
+  const disp=document.getElementById('l-origem-display');
+  disp.style.display='block';disp.textContent=ORIGEM_LABELS[origVal]||origVal;
   document.getElementById('l-indicado-por').value=l.indicado_por||'';
   toggleIndicadoPor();
   document.getElementById('l-responsavel').value=l.responsavel||'';
@@ -637,7 +648,7 @@ function confirmDelete(id){
 
 // ── MODALS ──
 function openModal(id){
-  if(id==='modal-lead'){document.getElementById('lead-edit-id').value='';document.getElementById('mt-lead').textContent='Novo Lead';['l-nome','l-tel','l-email','l-cpf','l-patrimonio','l-indicado-por','l-responsavel','l-proxima-acao','l-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('l-temperatura').value='frio';document.getElementById('l-estagio').value='prospeccao';document.getElementById('l-origem').value='indicacao';toggleIndicadoPor();document.getElementById('l-data').value=today();document.getElementById('prosp-box').style.display='none';}
+  if(id==='modal-lead'){document.getElementById('lead-edit-id').value='';document.getElementById('mt-lead').textContent='Novo Lead';['l-nome','l-tel','l-email','l-cpf','l-patrimonio','l-indicado-por','l-responsavel','l-proxima-acao','l-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('l-temperatura').value='frio';document.getElementById('l-estagio').value='prospeccao';document.getElementById('l-origem').value='indicacao';document.getElementById('l-origem').style.display='';document.getElementById('l-origem-display').style.display='none';toggleIndicadoPor();document.getElementById('l-data').value=today();document.getElementById('prosp-box').style.display='none';}
   if(id==='modal-followup'){['fu-desc'].forEach(f=>document.getElementById(f).value='');document.getElementById('fu-data').value=today();document.getElementById('fu-tipo').value='ligacao';populateLeadSelect();}
   document.getElementById(id).classList.add('open');
 }
