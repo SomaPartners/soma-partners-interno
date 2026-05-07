@@ -1053,12 +1053,13 @@ function renderGuests(e){
         ${g.cpf?`<div class="guest-info">CPF: ${g.cpf}</div>`:''}
         ${g.obs?`<div class="guest-info" style="font-style:italic">${g.obs}</div>`:''}
       </div>
-      <button class="rsvp-badge ${rsvpClass[g.rsvp||'pendente']||'rsvp-pendente'}"
-        onclick="updateGuestRSVP(${i},{pendente:'confirmado',confirmado:'recusou',recusou:'pendente'}[g.rsvp||'pendente'])"
-        style="margin-left:auto;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.18s;border:none"
-        onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter=''">
-        ${rsvpLabel[g.rsvp||'pendente']||'Pendente'}
-      </button>
+      <select class="rsvp-badge ${rsvpClass[g.rsvp||'pendente']||'rsvp-pendente'}"
+        onchange="updateGuestRSVP(${i},this.value)"
+        style="margin-left:auto;cursor:pointer;font-family:'Montserrat',sans-serif;border:none;outline:none;appearance:none;-webkit-appearance:none;padding-right:18px;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 4px center">
+        <option value="pendente" ${(g.rsvp||'pendente')==='pendente'?'selected':''}>Pendente</option>
+        <option value="confirmado" ${g.rsvp==='confirmado'?'selected':''}>Confirmado</option>
+        <option value="recusou" ${g.rsvp==='recusou'?'selected':''}>Recusou</option>
+      </select>
       <button class="btn-icon-dark danger" onclick="removeGuest(${i})" title="Remover">
         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
