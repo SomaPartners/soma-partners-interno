@@ -520,7 +520,7 @@ textarea.fc{resize:vertical;min-height:70px}
 <script>
 const _sb=supabase.createClient('https://fqdhaaslmiprvifttmpb.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZGhhYXNsbWlwcnZpZnR0bXBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDkxNTcsImV4cCI6MjA5MzQ4NTE1N30.iJouT1ztgAnmxpowiWFusoaMbIIZYWathTcW4w_ToVc');
 function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5)}
-function today(){return new Date().toISOString().split('T')[0]}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
 function isOverdue(d){return d&&d<today()}
 function isToday(d){return d===today()}
@@ -575,6 +575,7 @@ async function loadAll(){
   }catch(e){showToast('Erro ao carregar dados','err')}
   showLoader(false);
   renderVisao();
+  renderFollowups();
   populateLeadSelect();
 }
 
@@ -680,11 +681,13 @@ function fuPainelCardHTML(f,tipo){
   </div>`;
 }
 
+function toDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function semanaAtual(){
-  const d=new Date(today()+'T12:00:00');
-  const start=new Date(d);start.setDate(d.getDate()-d.getDay()+1);
+  const d=new Date();
+  const dow=d.getDay()||7; // 1=seg ... 7=dom
+  const start=new Date(d);start.setDate(d.getDate()-dow+1);
   const end=new Date(start);end.setDate(start.getDate()+6);
-  return{start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
+  return{start:toDateStr(start),end:toDateStr(end)};
 }
 
 function renderFollowups(){
