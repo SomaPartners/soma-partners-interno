@@ -194,10 +194,7 @@ textarea.fc{resize:vertical;min-height:70px}
       <div class="topbar-sub" id="topbar-sub">Dashboard de leads e oportunidades</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn btn-outline btn-sm" onclick="importarDeEventos()">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Importar de Eventos
-      </button>
+
       <button class="btn btn-primary btn-sm" onclick="openModal('modal-lead')">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Novo Lead
@@ -345,18 +342,6 @@ textarea.fc{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- MODAL IMPORTAR EVENTOS -->
-<div class="modal-overlay" id="modal-importar">
-  <div class="modal" style="width:500px">
-    <div class="mh"><div class="mt">Importar Leads de Eventos</div><button class="mc" onclick="closeModal('modal-importar')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-    <div class="mb">
-      <div class="fg"><label class="fl">Selecionar evento</label><select class="fc" id="import-evento-id"></select></div>
-      <p style="font-size:12px;color:var(--muted);margin-top:6px">Todos os convidados com RSVP <strong style="color:#6ee7b7">Confirmado</strong> serão importados como leads com temperatura Morno.</p>
-      <div id="import-preview" style="margin-top:12px"></div>
-    </div>
-    <div class="mf"><button class="btn btn-outline" onclick="closeModal('modal-importar')">Cancelar</button><button class="btn btn-primary" onclick="confirmarImport()">Importar</button></div>
-  </div>
-</div>
 
 <!-- MODAL CONFIRM DELETE -->
 <div class="modal-overlay" id="modal-confirm">
@@ -628,42 +613,6 @@ function confirmDelete(id){
   openModal('modal-confirm');
 }
 
-// ── IMPORTAR DE EVENTOS ──
-async function importarDeEventos(){
-  const{data:evs}=await _sb.from('eventos').select('id,data').order('created_at',{ascending:false});
-  const{data:convs}=await _sb.from('eventos_convidados').select('id,evento_id,data');
-  const sel=document.getElementById('import-evento-id');
-  sel.innerHTML=(evs||[]).map(e=>`<option value="${e.id}">${e.data?.nome||'Evento '+e.id.substring(0,8)}</option>`).join('');
-  sel._evData=evs||[];sel._convData=convs||[];
-  document.getElementById('import-preview').innerHTML='';
-  sel.onchange=()=>{
-    const eid=sel.value;
-    const conf=(sel._convData||[]).filter(c=>c.evento_id===eid&&c.data?.rsvp==='confirmado');
-    document.getElementById('import-preview').innerHTML=conf.length===0?'<p style="font-size:12px;color:var(--muted)">Nenhum convidado confirmado neste evento.</p>':
-      `<p style="font-size:12px;color:var(--muted);margin-bottom:8px"><strong style="color:#6ee7b7">${conf.length}</strong> convidados confirmados serão importados.</p>
-      <div style="max-height:120px;overflow-y:auto">${conf.map(c=>`<div style="font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05)">${c.data?.name||'—'} · ${c.data?.info||''}</div>`).join('')}</div>`;
-  };
-  if(evs?.length) sel.dispatchEvent(new Event('change'));
-  openModal('modal-importar');
-}
-
-async function confirmarImport(){
-  const sel=document.getElementById('import-evento-id');
-  const eid=sel.value;
-  const conv=(sel._convData||[]).filter(c=>c.evento_id===eid&&c.data?.rsvp==='confirmado');
-  let imported=0;
-  for(const c of conv){
-    const nome=c.data?.name||'—';
-    const jaExiste=leads.some(l=>l.nome.toLowerCase()===nome.toLowerCase());
-    if(jaExiste)continue;
-    const id=uid();
-    const data={id,nome,telefone:c.data?.telefone||'',patrimonio:'',origem:'evento',temperatura:'morno',estagio:'prospeccao',responsavel:'',data_primeiro_contato:today()};
-    const{error}=await _sb.from('wealth_leads').upsert({id,data});
-    if(!error){leads.unshift(data);imported++;}
-  }
-  showToast(`${imported} leads importados!`,'ok');
-  closeModal('modal-importar');renderLeads();renderVisao();populateLeadSelect();
-}
 
 // ── MODALS ──
 function openModal(id){

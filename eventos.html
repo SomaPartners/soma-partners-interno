@@ -1083,6 +1083,23 @@ async function addGuest(){
   ['new-guest-name','new-guest-email','new-guest-tel','new-guest-cpf','new-guest-empresa','new-guest-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('new-guest-rsvp').value='pendente';
   renderGuests(e);refreshStats();
+  // ── AUTO-LEAD NO WEALTH ──
+  autoAddLead(name,tel,email);
+}
+
+async function autoAddLead(nome,telefone,email){
+  // Verifica se já existe lead com mesmo telefone
+  const {data:rows}=await sb.from('wealth_leads').select('id,data');
+  const telNorm=telefone.replace(/\D/g,'');
+  const jaExiste=(rows||[]).some(r=>{
+    const t=(r.data?.telefone||'').replace(/\D/g,'');
+    return t&&t===telNorm;
+  });
+  if(jaExiste)return;
+  const id=uid();
+  const today=()=>new Date().toISOString().slice(0,10);
+  const data={id,nome,telefone,email,patrimonio:'',origem:'evento',temperatura:'frio',estagio:'prospeccao',responsavel:'',data_primeiro_contato:today(),proxima_acao:'',obs:''};
+  await sb.from('wealth_leads').upsert({id,data});
 }
 async function updateGuestRSVP(i,val){
   const e=DB.eventos.find(x=>x.id===currentEventId);if(!e)return;
