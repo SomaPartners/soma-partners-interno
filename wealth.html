@@ -253,11 +253,11 @@ textarea.fc{resize:vertical;min-height:70px}
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input type="text" id="search-leads" placeholder="Buscar..." oninput="renderLeads()">
             </div>
-            <select style="appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Montserrat',sans-serif;color:var(--muted);cursor:pointer;outline:none" id="filter-temp" onchange="renderLeads()">
-              <option value="">Todas temperaturas</option>
-              <option value="quente">Quente</option>
-              <option value="morno">Morno</option>
-              <option value="frio">Frio</option>
+            <select style="appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Montserrat',sans-serif;color:var(--muted);cursor:pointer;outline:none" id="filter-status" onchange="renderLeads()">
+              <option value="">Todos status</option>
+              <option value="ativo">Ativo</option>
+              <option value="perdido">Perdido</option>
+              <option value="descartado">Descartado</option>
             </select>
             <select style="appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Montserrat',sans-serif;color:var(--muted);cursor:pointer;outline:none" id="filter-estagio" onchange="renderLeads()">
               <option value="">Todos estágios</option>
@@ -272,7 +272,7 @@ textarea.fc{resize:vertical;min-height:70px}
           </div>
         </div>
         <table>
-          <thead><tr><th>Lead</th><th>Patrimônio</th><th>Origem</th><th>Temperatura</th><th>Estágio</th><th>Responsável</th><th>Próxima Ação</th><th></th></tr></thead>
+          <thead><tr><th>Lead</th><th>Patrimônio</th><th>Origem</th><th>Status</th><th>Estágio</th><th>Responsável</th><th>Próxima Ação</th><th></th></tr></thead>
           <tbody id="tbody-leads"></tbody>
         </table>
         <div class="table-footer"><span id="leads-count">0 leads</span></div>
@@ -503,12 +503,12 @@ function renderFollowups(){
 // ── LEADS TABLE ──
 function renderLeads(){
   const q=(document.getElementById('search-leads')?.value||'').toLowerCase();
-  const ft=document.getElementById('filter-temp')?.value||'';
+  const fs=document.getElementById('filter-status')?.value||'';
   const fe=document.getElementById('filter-estagio')?.value||'';
-  const TEMP_CLS={frio:'temp-frio',morno:'temp-morno',quente:'temp-quente'};
+  const statusLead=l=>ESTAGIO_INATIVOS.includes(l.estagio)?l.estagio:'ativo';
   let list=leads.filter(l=>{
     if(q&&!(l.nome||'').toLowerCase().includes(q)&&!(l.telefone||'').includes(q))return false;
-    if(ft&&l.temperatura!==ft)return false;
+    if(fs&&statusLead(l)!==fs)return false;
     if(fe&&l.estagio!==fe)return false;
     return true;
   });
@@ -524,7 +524,7 @@ function renderLeads(){
         <td><div class="lead-cell"><div class="lead-av" style="background:${acol(l.nome)}">${initials(l.nome)}</div><div><div class="lead-name">${l.nome}</div><div class="lead-sub">${l.telefone||''}${l.email?` · ${l.email}`:''}</div></div></div></td>
         <td style="font-size:12px">${l.patrimonio||'—'}</td>
         <td>${origemBadge(l.origem)}</td>
-        <td><span class="temp-badge ${TEMP_CLS[l.temperatura]||'temp-frio'}">${l.temperatura||'frio'}</span></td>
+        <td>${statusLead(l)==='ativo'?'<span class="estagio-badge estagio-fechado">Ativo</span>':statusLead(l)==='perdido'?'<span class="estagio-badge estagio-perdido">Perdido</span>':'<span class="estagio-badge estagio-descartado">Descartado</span>'}</td>
         <td><span class="estagio-badge${l.estagio==='fechado'?' estagio-fechado':l.estagio==='perdido'?' estagio-perdido':l.estagio==='descartado'?' estagio-descartado':''}">${ESTAGIO_LABELS[l.estagio]||l.estagio||'—'}</span></td>
         <td style="font-size:12px;color:var(--muted)">${l.responsavel||'—'}</td>
         <td class="${ov?'proxima-vencida':td?'proxima-hoje':'proxima-ok'}" style="font-size:12px">${nextFu?fmtDate(nextFu.data):fmtDate(l.data_proxima_acao)}</td>
