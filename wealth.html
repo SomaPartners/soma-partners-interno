@@ -290,6 +290,10 @@ textarea.fc{resize:vertical;min-height:70px}
         <div class="fg"><label class="fl">Telefone / WhatsApp *</label><input class="fc" id="l-tel" placeholder="(11) 99999-9999"></div>
       </div>
       <div class="fr">
+        <div class="fg"><label class="fl">E-mail</label><input class="fc" id="l-email" type="email" placeholder="email@exemplo.com"></div>
+        <div class="fg"><label class="fl">CPF</label><input class="fc" id="l-cpf" placeholder="000.000.000-00"></div>
+      </div>
+      <div class="fr">
         <div class="fg"><label class="fl">Patrimônio estimado</label><input class="fc" id="l-patrimonio" placeholder="Ex: R$ 2.000.000"></div>
         <div class="fg"><label class="fl">Origem do contato</label>
           <select class="fc" id="l-origem"><option value="indicacao">Indicação</option><option value="evento">Evento</option><option value="redes_sociais">Redes Sociais</option><option value="prospecção">Prospecção Ativa</option><option value="outro">Outro</option></select>
@@ -499,7 +503,7 @@ function renderLeads(){
       const nextFu=followups.filter(f=>f.lead_id===l.id&&!f.feito).sort((a,b)=>a.data?.localeCompare(b.data||''))[0];
       const ov=isOverdue(l.data_proxima_acao);const td=isToday(l.data_proxima_acao);
       return`<tr onclick="editLead('${l.id}')">
-        <td><div class="lead-cell"><div class="lead-av" style="background:${acol(l.nome)}">${initials(l.nome)}</div><div><div class="lead-name">${l.nome}</div><div class="lead-sub">${l.telefone||''}</div></div></div></td>
+        <td><div class="lead-cell"><div class="lead-av" style="background:${acol(l.nome)}">${initials(l.nome)}</div><div><div class="lead-name">${l.nome}</div><div class="lead-sub">${l.telefone||''}${l.email?` · ${l.email}`:''}</div></div></div></td>
         <td style="font-size:12px">${l.patrimonio||'—'}</td>
         <td><span class="${l.origem==='evento'?'origem-evento':'origem-manual'}">${l.origem==='evento'?'Evento':'Manual'}</span></td>
         <td><span class="temp-badge ${TEMP_CLS[l.temperatura]||'temp-frio'}">${l.temperatura||'frio'}</span></td>
@@ -518,6 +522,8 @@ async function saveLead(){
   const id=document.getElementById('lead-edit-id').value||uid();
   const data={id,nome,
     telefone:document.getElementById('l-tel').value.trim(),
+    email:document.getElementById('l-email').value.trim(),
+    cpf:document.getElementById('l-cpf').value.trim(),
     patrimonio:document.getElementById('l-patrimonio').value.trim(),
     origem:document.getElementById('l-origem').value,
     responsavel:document.getElementById('l-responsavel').value.trim(),
@@ -562,6 +568,8 @@ function editLead(id){
   document.getElementById('mt-lead').textContent='Editar Lead';
   document.getElementById('l-nome').value=l.nome||'';
   document.getElementById('l-tel').value=l.telefone||'';
+  document.getElementById('l-email').value=l.email||'';
+  document.getElementById('l-cpf').value=l.cpf||'';
   document.getElementById('l-patrimonio').value=l.patrimonio||'';
   document.getElementById('l-origem').value=l.origem||'indicacao';
   document.getElementById('l-responsavel').value=l.responsavel||'';
@@ -616,7 +624,7 @@ function confirmDelete(id){
 
 // ── MODALS ──
 function openModal(id){
-  if(id==='modal-lead'){document.getElementById('lead-edit-id').value='';document.getElementById('mt-lead').textContent='Novo Lead';['l-nome','l-tel','l-patrimonio','l-responsavel','l-proxima-acao','l-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('l-temperatura').value='frio';document.getElementById('l-estagio').value='prospeccao';document.getElementById('l-origem').value='indicacao';document.getElementById('l-data').value=today();document.getElementById('prosp-box').style.display='none';}
+  if(id==='modal-lead'){document.getElementById('lead-edit-id').value='';document.getElementById('mt-lead').textContent='Novo Lead';['l-nome','l-tel','l-email','l-cpf','l-patrimonio','l-responsavel','l-proxima-acao','l-obs'].forEach(f=>document.getElementById(f).value='');document.getElementById('l-temperatura').value='frio';document.getElementById('l-estagio').value='prospeccao';document.getElementById('l-origem').value='indicacao';document.getElementById('l-data').value=today();document.getElementById('prosp-box').style.display='none';}
   if(id==='modal-followup'){['fu-desc'].forEach(f=>document.getElementById(f).value='');document.getElementById('fu-data').value=today();document.getElementById('fu-tipo').value='ligacao';populateLeadSelect();}
   document.getElementById(id).classList.add('open');
 }
