@@ -1113,6 +1113,17 @@ async function removeGuest(i){
   await dbDelete('eventos_convidados',g._rowId||g.id);
   e.convidados.splice(i,1);
   renderGuests(e);refreshStats();
+  // Remove lead correspondente no Wealth (pelo telefone)
+  autoRemoveLead(g.telefone);
+}
+
+async function autoRemoveLead(telefone){
+  if(!telefone)return;
+  const telNorm=telefone.replace(/\D/g,'');
+  const {data:rows}=await sb.from('wealth_leads').select('id,data');
+  const row=(rows||[]).find(r=>(r.data?.telefone||'').replace(/\D/g,'')===telNorm&&r.data?.origem==='evento');
+  if(!row)return;
+  await sb.from('wealth_leads').delete().eq('id',row.id);
 }
 
 // ════ EQUIPE ════
