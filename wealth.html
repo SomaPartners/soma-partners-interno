@@ -80,6 +80,9 @@ td{padding:12px 16px;font-size:12px;vertical-align:middle}
 .temp-morno{background:rgba(245,158,11,0.18);border:1px solid rgba(245,158,11,0.35);color:#fcd34d}
 .temp-quente{background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.35);color:#fca5a5}
 .estagio-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;background:rgba(255,255,255,0.07);color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.estagio-fechado{background:rgba(16,185,129,0.15);color:#6ee7b7}
+.estagio-perdido{background:rgba(239,68,68,0.12);color:#fca5a5}
+.estagio-descartado{background:rgba(100,116,139,0.15);color:#94a3b8}
 .origem-badge{border-radius:6px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
 .ob-evento{background:rgba(139,92,246,0.15);color:#c4b5fd}
 .ob-indicacao{background:rgba(16,185,129,0.12);color:#6ee7b7}
@@ -319,12 +322,14 @@ textarea.fc{resize:vertical;min-height:70px}
       </div>
       <div class="fr">
         <div class="fg"><label class="fl">Estágio</label>
-          <select class="fc" id="l-estagio">
+          <select class="fc" id="l-estagio" onchange="updateProspSugestao()">
             <option value="prospeccao">Prospecção</option>
             <option value="qualificacao">Qualificação</option>
             <option value="reuniao">Reunião</option>
             <option value="proposta">Proposta</option>
             <option value="fechado">Fechado</option>
+            <option value="perdido">Perdido</option>
+            <option value="descartado">Descartado</option>
           </select>
         </div>
         <div class="fg"><label class="fl">Data do primeiro contato</label><input class="fc" id="l-data" type="date" onchange="updateProspSugestao()"></div>
@@ -382,7 +387,8 @@ function initials(n){const p=(n||'?').trim().split(' ');return(p[0][0]+(p.length
 
 let leads=[], followups=[];
 
-const ESTAGIO_LABELS={prospeccao:'Prospecção',qualificacao:'Qualificação',reuniao:'Reunião',proposta:'Proposta',fechado:'Fechado',perdido:'Perdido'};
+const ESTAGIO_LABELS={prospeccao:'Prospecção',qualificacao:'Qualificação',reuniao:'Reunião',proposta:'Proposta',fechado:'Fechado',perdido:'Perdido',descartado:'Descartado'};
+const ESTAGIO_INATIVOS=['perdido','descartado'];
 const ORIGEM_LABELS={evento:'Evento',indicacao:'Indicação',redes_sociais:'Redes Sociais','prospecção':'Prospecção Ativa',outro:'Outro'};
 function origemBadge(o){return`<span class="origem-badge ob-${o||'outro'}">${ORIGEM_LABELS[o]||o||'—'}</span>`}
 const TEMP_PROSP={
@@ -517,7 +523,7 @@ function renderLeads(){
         <td style="font-size:12px">${l.patrimonio||'—'}</td>
         <td>${origemBadge(l.origem)}</td>
         <td><span class="temp-badge ${TEMP_CLS[l.temperatura]||'temp-frio'}">${l.temperatura||'frio'}</span></td>
-        <td><span class="estagio-badge">${ESTAGIO_LABELS[l.estagio]||l.estagio||'—'}</span></td>
+        <td><span class="estagio-badge${l.estagio==='fechado'?' estagio-fechado':l.estagio==='perdido'?' estagio-perdido':l.estagio==='descartado'?' estagio-descartado':''}">${ESTAGIO_LABELS[l.estagio]||l.estagio||'—'}</span></td>
         <td style="font-size:12px;color:var(--muted)">${l.responsavel||'—'}</td>
         <td class="${ov?'proxima-vencida':td?'proxima-hoje':'proxima-ok'}" style="font-size:12px">${nextFu?fmtDate(nextFu.data):fmtDate(l.data_proxima_acao)}</td>
         <td><button class="del-btn" onclick="event.stopPropagation();confirmDelete('${l.id}')">×</button></td>
@@ -569,8 +575,19 @@ function calcProxData(temp,dataContato){
 
 function updateProspSugestao(){
   const temp=document.getElementById('l-temperatura').value;
+  const estagio=document.getElementById('l-estagio').value;
   const data=document.getElementById('l-data').value;
   const box=document.getElementById('prosp-box');
+  if(estagio==='descartado'){
+    document.getElementById('prosp-text').innerHTML='<strong>Lead Descartado</strong> — Sem tentativa de contato ativo.<br>Este lead foi encerrado sem conversão. Pode ser reativado futuramente se houver nova oportunidade.';
+    document.getElementById('prosp-next').innerHTML='';
+    box.style.display='block';return;
+  }
+  if(estagio==='perdido'){
+    document.getElementById('prosp-text').innerHTML='<strong>Cliente Perdido</strong> — Negociação encerrada sem fechamento.<br>Registre o motivo nas observações. Considere um contato de retomada em 3 a 6 meses.';
+    document.getElementById('prosp-next').innerHTML='';
+    box.style.display='block';return;
+  }
   if(!data){box.style.display='none';return;}
   const p=TEMP_PROSP[temp];if(!p){box.style.display='none';return;}
   const proxData=calcProxData(temp,data);
