@@ -579,7 +579,7 @@ function editLead(id){
   document.getElementById('l-data').value=l.data_primeiro_contato||'';
   document.getElementById('l-obs').value=l.obs||'';
   updateProspSugestao();
-  openModal('modal-lead');
+  openModalEdit('modal-lead');
 }
 
 // ── FOLLOW-UP SAVE ──
@@ -628,6 +628,7 @@ function openModal(id){
   if(id==='modal-followup'){['fu-desc'].forEach(f=>document.getElementById(f).value='');document.getElementById('fu-data').value=today();document.getElementById('fu-tipo').value='ligacao';populateLeadSelect();}
   document.getElementById(id).classList.add('open');
 }
+function openModalEdit(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')}));
 
