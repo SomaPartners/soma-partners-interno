@@ -602,7 +602,7 @@ async function migrarFollowupsAuto(){
   const ativos=leads.filter(l=>['frio','morno','quente'].includes(l.temperatura)&&!['perdido','descartado'].includes(l.estagio));
   for(const lead of ativos){
     // 1. Remove todos os follow-ups auto que diferem da data sugerida atual
-    const dataSugerida=calcProxData(lead.temperatura,lead.data_primeiro_contato);
+    const dataSugerida=calcProxData(lead.temperatura,lead.data_primeiro_contato,lead.origem);
     const antigos=followups.filter(f=>f.lead_id===lead.id&&!f.feito&&f.auto&&f.data!==dataSugerida);
     for(const a of antigos){
       await _sb.from('wealth_followups').delete().eq('id',a.id);
@@ -924,8 +924,15 @@ async function saveLead(){
   renderVisao();renderLeads();renderFollowups();renderPipeline();populateLeadSelect();
 }
 
-function calcProxData(temp,dataContato){
+function calcProxDataEvento(dataEvento){
+  if(!dataEvento)return '';
+  const d=new Date(dataEvento+'T12:00:00');
+  d.setDate(d.getDate()+1);
+  return toDateStr(d);
+}
+function calcProxData(temp,dataContato,origem){
   if(!dataContato)return '';
+  if(origem==='evento') return calcProxDataEvento(dataContato);
   const dias={frio:30,morno:15,quente:7};
   const d=new Date(dataContato+'T12:00:00');
   d.setDate(d.getDate()+(dias[temp]||15));
@@ -949,9 +956,11 @@ function updateProspSugestao(){
   }
   if(!data){box.style.display='none';return;}
   const p=TEMP_PROSP[temp];if(!p){box.style.display='none';return;}
-  const proxData=calcProxData(temp,data);
-  document.getElementById('prosp-text').innerHTML=p.texto;
-  document.getElementById('prosp-next').innerHTML=`Próximo contato sugerido: ${fmtDate(proxData)} — ${p.acao}`;
+  const origVal=document.getElementById('l-origem').value;
+  const proxData=calcProxData(temp,data,origVal);
+  const acaoTexto=origVal==='evento'?'Fazer contato no dia seguinte ao evento':p.acao;
+  document.getElementById('prosp-text').innerHTML=origVal==='evento'?`<strong>Lead de Evento</strong> — Contato imediato no dia seguinte.<br>Aproveite o contexto do evento para iniciar a conversa.`:p.texto;
+  document.getElementById('prosp-next').innerHTML=`Próximo contato sugerido: ${fmtDate(proxData)} — ${acaoTexto}`;
   box.style.display='block';
 }
 
@@ -1027,7 +1036,7 @@ async function autoFollowup(lead,usarHoje=false){
     const d=new Date();d.setDate(d.getDate()+p.dias);
     dataFu=toDateStr(d);
   } else {
-    dataFu=calcProxData(lead.temperatura,lead.data_primeiro_contato)||today();
+    dataFu=calcProxData(lead.temperatura,lead.data_primeiro_contato,lead.origem)||today();
   }
   const fId=uid();
   const rec={id:fId,lead_id:lead.id,data:dataFu,tipo:TIPO_MAP[lead.temperatura]||'ligacao',desc:p.acao,feito:false,auto:true};
