@@ -595,25 +595,26 @@ async function loadAll(){
 }
 
 async function migrarFollowupsAuto(){
-  // Prazos iniciais curtos: frio=7d, morno=3d, quente=hoje
   const DIAS_INICIAL={frio:7,morno:3,quente:0};
   const TIPO_MAP={frio:'whatsapp',morno:'ligacao',quente:'ligacao'};
   const ativos=leads.filter(l=>['frio','morno','quente'].includes(l.temperatura)&&!['perdido','descartado'].includes(l.estagio));
   for(const lead of ativos){
+    // 1. Remove PRIMEIRO todos os follow-ups futuros auto (de migrações antigas)
+    const antigos=followups.filter(f=>f.lead_id===lead.id&&!f.feito&&f.auto&&f.data>today());
+    for(const a of antigos){
+      await _sb.from('wealth_followups').delete().eq('id',a.id);
+      followups.splice(followups.indexOf(a),1);
+    }
+    // 2. Agora verifica se ainda tem algum pendente (manual ou vencido)
     const temPendente=followups.some(f=>f.lead_id===lead.id&&!f.feito);
     if(temPendente)continue;
+    // 3. Cria novo follow-up com prazo adequado
     const p=TEMP_PROSP[lead.temperatura];if(!p)continue;
     const dias=DIAS_INICIAL[lead.temperatura]??7;
     const d=new Date();d.setDate(d.getDate()+dias);
     const dataFu=dias===0?today():toDateStr(d);
     const fId=uid();
     const rec={id:fId,lead_id:lead.id,data:dataFu,tipo:TIPO_MAP[lead.temperatura]||'ligacao',desc:p.acao,feito:false,auto:true};
-    // Remove follow-ups futuros antigos deste lead (da migração anterior)
-    const antigos=followups.filter(f=>f.lead_id===lead.id&&!f.feito&&f.auto&&f.data>today());
-    for(const a of antigos){
-      await _sb.from('wealth_followups').delete().eq('id',a.id);
-      followups.splice(followups.indexOf(a),1);
-    }
     const{error}=await _sb.from('wealth_followups').upsert({id:fId,lead_id:lead.id,data:rec});
     if(!error)followups.push(rec);
   }
