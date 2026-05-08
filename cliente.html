@@ -2156,14 +2156,37 @@ function renderDados(){
     </div>`).join('');
 }
 
+// ── SYNC LEAD WEALTH ──
+async function syncLeadWealth(){
+  const membros=CLIENT.membros||[];
+  const titular=membros.find(m=>m.rel==='titular')||membros[0]||null;
+  if(!titular)return;
+  const nome=titular.nome||CLIENT.nome;
+  const telefone=titular.tel||'';
+  const email=titular.email||'';
+  const cpf=titular.cpf||'';
+  const hoje=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+  const{data:rows}=await _sb.from('wealth_leads').select('id,data');
+  const existing=(rows||[]).find(r=>r.data?.concierge_id===CLIENT.id);
+  const leadId=existing?.id||(()=>{const s='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';return s.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)})})();
+  const data={id:leadId,nome,telefone,email,cpf,
+    patrimonio:CLIENT.patrimonio||'',
+    origem:'concierge',concierge_id:CLIENT.id,
+    temperatura:'ativo',estagio:'fechado',
+    responsavel:'',
+    data_primeiro_contato:existing?.data?.data_primeiro_contato||hoje(),
+    proxima_acao:'',obs:''};
+  await _sb.from('wealth_leads').upsert({id:leadId,data});
+}
+
 // ── CRUD ──
 async function saveCliente(){
   const nome=document.getElementById('e-nome').value.trim();if(!nome){alert('Informe o nome');return}
   Object.assign(CLIENT,{nome,status:document.getElementById('e-status').value,foto:document.getElementById('e-foto').value.trim(),patrimonio:document.getElementById('e-patrimonio').value.trim()});
-  // Optimistic: update UI first
   closeModal('modal-cliente');renderAll();
   const{error}=await _sb.from('concierge_clientes').upsert({id:CLIENT.id,data:CLIENT});
   if(error){showToast('Erro ao salvar — tente novamente','err');return;}
+  syncLeadWealth();
   showToast('Salvo!','ok');
 }
 
@@ -2174,10 +2197,10 @@ async function saveMembro(){
   const gv=id=>{const el=document.getElementById(id);return el?el.value.trim():''};
   const rec={nome,rel:gv('m-rel'),cpf:gv('m-cpf'),nasc:gv('m-nasc'),nascLocal:gv('m-nasc-local'),pai:gv('m-pai'),mae:gv('m-mae'),tel:gv('m-tel'),email:gv('m-email'),email2:gv('m-email2'),endereco:gv('m-end'),profissao:gv('m-profissao'),foto:gv('m-foto'),cnh:{num:gv('m-cnh-num'),cat:gv('m-cnh-cat'),emissao:gv('m-cnh-emissao'),venc:gv('m-cnh-venc'),orgao:gv('m-cnh-orgao'),primeiraHab:gv('m-cnh-1hab')},veiculo:gv('m-veiculo'),placa:gv('m-placa'),obs:gv('m-obs')};
   if(idx>=0)CLIENT.membros[idx]=rec;else CLIENT.membros.push(rec);
-  // Optimistic: close modal and render immediately, save in background
   closeModal('modal-membro');renderDados();renderCounters();
   const{error}=await _sb.from('concierge_clientes').upsert({id:CLIENT.id,data:CLIENT});
   if(error){showToast('Erro ao salvar — tente novamente','err');return;}
+  syncLeadWealth();
   showToast('Salvo!','ok');
 }
 function editMembro(i){
