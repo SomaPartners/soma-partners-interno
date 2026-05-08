@@ -42,6 +42,15 @@ html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-
 /* CARDS GRID */
 .clients-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 @media(max-width:900px){.clients-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){
+  .topnav{padding:0 16px;height:54px}
+  .page{padding:24px 16px 40px}
+  .page-title{font-size:32px;letter-spacing:2px}
+  .clients-grid{grid-template-columns:1fr}
+  .search-bar{flex-wrap:wrap}
+  .nav-right .btn span{display:none}
+  .btn-sm{padding:6px 10px}
+}
 
 /* CLIENT CARD */
 .client-card{position:relative;aspect-ratio:4/3;border-radius:2px;overflow:hidden;cursor:pointer;transition:transform 0.3s,box-shadow 0.3s}

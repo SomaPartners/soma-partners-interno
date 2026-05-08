@@ -177,6 +177,18 @@
       margin-top: 5px;
     }
 
+  @media(max-width:768px){
+    body{overflow-y:auto;height:auto}
+    .logo-bar{padding:24px 0 0}
+    .hero{padding:0 16px;margin:20px 0}
+    .hero-thin{font-size:clamp(22px,6vw,36px)}
+    .hero-bold{font-size:clamp(26px,7vw,42px)}
+    .cards-row{flex-direction:column;max-height:none;padding:0 16px;gap:8px;margin-bottom:32px}
+    .card{aspect-ratio:16/9;flex:none}
+    .card-footer{opacity:1;transform:none}
+    .card-title{font-size:13px;letter-spacing:3px}
+    .card-subtitle{font-size:10px}
+  }
   </style>
 </head>
 <body>
