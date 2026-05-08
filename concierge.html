@@ -191,6 +191,7 @@ textarea.form-control{resize:vertical;min-height:72px}
           <input type="file" id="c-foto-file" accept="image/*" style="display:none" onchange="cFotoUpload(this)">
         </div>
       </div>
+      <div class="form-group"><label class="form-label">Endereço</label><input class="form-control" id="c-endereco" placeholder="Rua, número, bairro, cidade, CEP"></div>
       <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="c-obs" rows="2" placeholder="Informações relevantes sobre a família..."></textarea></div>
 
       <!-- MEMBROS -->
@@ -439,6 +440,7 @@ async function saveCliente(){
     status:document.getElementById('c-status').value,
     foto:document.getElementById('c-foto').value.trim(),
     patrimonio:document.getElementById('c-patrimonio')?.value.trim()||'',
+    endereco:document.getElementById('c-endereco')?.value.trim()||'',
     obs:document.getElementById('c-obs').value.trim(),
     membros:collectMembros(),
     senhas:collectSenhas(),
@@ -506,7 +508,7 @@ function setCFotoPreview(src){ const i=document.getElementById('cfoto-preview-im
 function clearCFotoPreview(){ const i=document.getElementById('cfoto-preview-img'),ic=document.getElementById('cfoto-preview-icon'),w=document.getElementById('cfoto-preview-wrap'); i.src='';i.style.display='none';ic.style.display='block';w.style.borderColor='rgba(255,255,255,0.2)'; }
 
 function openModal(c=null){
-  ['c-nome','c-foto','c-obs','c-patrimonio'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});
+  ['c-nome','c-foto','c-obs','c-patrimonio','c-endereco'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});
   document.getElementById('senhas-form-list').innerHTML=''; senhaCount=0;
   clearCFotoPreview();
   document.getElementById('c-status').value='ativo';
@@ -523,6 +525,7 @@ function openModal(c=null){
     if(c.foto) setCFotoPreview(c.foto); else clearCFotoPreview();
     const _cp=document.getElementById('c-patrimonio');if(_cp){_cp.value=c.patrimonio||'';}
     document.getElementById('c-obs').value=c.obs||'';
+    const _cend=document.getElementById('c-endereco');if(_cend)_cend.value=c.endereco||'';
     document.getElementById('modal-title').textContent='Editar Família / Projeto';
     // Recarrega membros existentes
     (c.membros||[]).forEach(m=>addMembroForm(m));
