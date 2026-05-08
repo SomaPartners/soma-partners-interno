@@ -2222,7 +2222,7 @@ function editMembro(i){
   if(m.cnh){sv('m-cnh-num',m.cnh.num);sv('m-cnh-cat',m.cnh.cat);sv('m-cnh-emissao',m.cnh.emissao);sv('m-cnh-venc',m.cnh.venc);sv('m-cnh-orgao',m.cnh.orgao);sv('m-cnh-1hab',m.cnh.primeiraHab);}
   sv('m-veiculo',m.veiculo);sv('m-placa',m.placa);
   if(m.foto)setMembroFotoPreview(m.foto);else clearMembroFotoPreview();
-  openModal('modal-membro');
+  document.getElementById('modal-membro').classList.add('open');
 }
 async function delMembro(i){CLIENT.membros.splice(i,1);await _sb.from('concierge_clientes').upsert({id:CLIENT.id,data:CLIENT});renderDados();renderCounters()}
 

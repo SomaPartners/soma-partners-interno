@@ -97,13 +97,6 @@ textarea.form-control{resize:vertical;min-height:72px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:3px}
-
-/* MEMBROS INLINE */
-.membro-form{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;margin-bottom:10px;position:relative}
-.membro-form-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.membro-form-num{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px}
-.membro-remove{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.3);font-size:18px;line-height:1;padding:0 4px;transition:color 0.18s}
-.membro-remove:hover{color:#fca5a5}
 </style>
 </head>
 <body>
@@ -115,10 +108,6 @@ textarea.form-control{resize:vertical;min-height:72px}
     <span class="logo-partners">Partners</span>
   </div>
   <div class="nav-right">
-    <button class="btn btn-outline btn-sm" onclick="window.location.href='relatorios.html'">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-      Relatórios
-    </button>
     <button class="btn btn-outline btn-sm" onclick="exportData()">
       <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Exportar
@@ -153,74 +142,34 @@ textarea.form-control{resize:vertical;min-height:72px}
 
 <!-- MODAL NOVO CLIENTE -->
 <div class="modal-overlay" id="modal-cliente">
-  <div class="modal" style="width:640px">
+  <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="modal-title">Nova Família / Projeto</div>
+      <div class="modal-title" id="modal-title">Novo Cliente</div>
       <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="edit-id">
-
-      <!-- NOME DA FAMÍLIA -->
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Nome da família / projeto *</label>
-          <input class="form-control" id="c-nome" placeholder="Ex: Família Silva, Projeto Construção...">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Status</label>
+        <div class="form-group"><label class="form-label">Nome completo *</label><input class="form-control" id="c-nome" placeholder="Ex: Família Silva"></div>
+        <div class="form-group"><label class="form-label">E-mail *</label><input class="form-control" id="c-email" type="email" placeholder="contato@email.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Telefone</label><input class="form-control" id="c-telefone" placeholder="(11) 99999-9999"></div>
+        <div class="form-group"><label class="form-label">CPF / CNPJ</label><input class="form-control" id="c-cpf" placeholder="000.000.000-00"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Data de nascimento</label><input class="form-control" id="c-nascimento" type="date"></div>
+        <div class="form-group"><label class="form-label">Status</label>
           <select class="form-control" id="c-status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Patrimônio estimado</label><input class="form-control" id="c-patrimonio" placeholder="Ex: 2.000.000,00" inputmode="numeric" oninput="fmtPatrimonio(this)"></div>
-        <div class="form-group">
-          <label class="form-label">Foto da família</label>
-          <div style="display:flex;align-items:center;gap:14px">
-            <div id="cfoto-preview-wrap" onclick="document.getElementById('c-foto-file').click()" style="width:64px;height:64px;border-radius:50%;border:2px dashed rgba(255,255,255,0.2);cursor:pointer;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);transition:border-color 0.18s" title="Clique para escolher foto">
-              <img id="cfoto-preview-img" src="" style="width:100%;height:100%;object-fit:cover;display:none">
-              <svg id="cfoto-preview-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            </div>
-            <div style="flex:1">
-              <button type="button" onclick="document.getElementById('c-foto-file').click()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:'Montserrat',sans-serif;width:100%;margin-bottom:7px;transition:background 0.18s" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
-                Escolher foto do computador
-              </button>
-              <input class="form-control" id="c-foto" placeholder="Ou cole uma URL..." style="font-size:11px;padding:7px 10px" oninput="cFotoFromUrl()">
-            </div>
-          </div>
-          <input type="file" id="c-foto-file" accept="image/*" style="display:none" onchange="cFotoUpload(this)">
-        </div>
-      </div>
-      <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="c-obs" rows="2" placeholder="Informações relevantes sobre a família..."></textarea></div>
-
-      <!-- MEMBROS -->
-      <div style="border-top:1px solid rgba(255,255,255,0.08);margin:16px 0 14px"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <label class="form-label" style="margin:0">Membros da família</label>
-        <button type="button" onclick="addMembroForm()" style="background:rgba(79,70,229,0.2);border:1px solid rgba(79,70,229,0.4);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;color:#a5b4fc;cursor:pointer;font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:5px">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Adicionar pessoa
-        </button>
-      </div>
-      <div id="membros-form-list"></div>
-
-      <!-- SENHAS -->
-      <div style="border-top:1px solid rgba(255,255,255,0.08);margin:16px 0 14px"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <label class="form-label" style="margin:0">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Senhas e Acessos
-        </label>
-        <button type="button" onclick="addSenhaForm()" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.35);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;color:#fcd34d;cursor:pointer;font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:5px">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Adicionar senha
-        </button>
-      </div>
-      <div id="senhas-form-list"></div>
+      <div class="form-group"><label class="form-label">Foto da família (URL)</label><input class="form-control" id="c-foto" placeholder="https://... (opcional)"></div>
+      <div class="form-group"><label class="form-label">Endereço</label><input class="form-control" id="c-endereco" placeholder="Rua, número, cidade"></div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea class="form-control" id="c-obs" placeholder="Informações relevantes..."></textarea></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveCliente()">Salvar</button>
+      <button class="btn btn-primary" onclick="saveCliente()">Salvar Cliente</button>
     </div>
   </div>
 </div>
@@ -307,227 +256,43 @@ function renderGrid(){
   }).join('');
 }
 
-// ── MEMBROS INLINE ──
-let membroCount = 0;
-
-function addMembroForm(m=null){
-  const idx = membroCount++;
-  const div = document.createElement('div');
-  div.className = 'membro-form';
-  div.id = `mf-${idx}`;
-  const g = (id,val) => val ? `value="${val}"` : '';
-  div.innerHTML = `
-    <div class="membro-form-header">
-      <span class="membro-form-num">Pessoa ${document.querySelectorAll('.membro-form').length + 1}</span>
-      <button type="button" class="membro-remove" onclick="document.getElementById('mf-${idx}').remove();renumberMembros()" title="Remover">×</button>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div><label class="form-label">Nome completo *</label><input class="form-control" id="mn-${idx}" placeholder="Nome completo" ${g('',m?.nome)}></div>
-      <div><label class="form-label">Parentesco</label>
-        <select class="form-control" id="mr-${idx}">
-          <option value="titular"${m?.rel==='titular'?' selected':''}>Titular</option>
-          <option value="conjuge"${m?.rel==='conjuge'?' selected':''}>Cônjuge</option>
-          <option value="filho"${m?.rel==='filho'?' selected':''}>Filho(a)</option>
-          <option value="outro"${m?.rel==='outro'?' selected':''}>Outro</option>
-        </select>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div><label class="form-label">CPF</label><input class="form-control" id="mc-${idx}" placeholder="000.000.000-00" value="${m?.cpf||''}"></div>
-      <div><label class="form-label">Data de nascimento</label><input class="form-control" type="date" id="md-${idx}" value="${m?.nasc||''}"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div><label class="form-label">Local de nascimento</label><input class="form-control" id="mnl-${idx}" placeholder="Ex: São Paulo, SP" value="${m?.nascLocal||''}"></div>
-      <div><label class="form-label">Profissão</label><input class="form-control" id="mpr-${idx}" placeholder="Ex: Empresário..." value="${m?.profissao||''}"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div><label class="form-label">Nome do pai</label><input class="form-control" id="mpai-${idx}" placeholder="Nome completo" value="${m?.pai||''}"></div>
-      <div><label class="form-label">Nome da mãe</label><input class="form-control" id="mmae-${idx}" placeholder="Nome completo" value="${m?.mae||''}"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div><label class="form-label">Telefone / WhatsApp</label><input class="form-control" id="mt-${idx}" placeholder="(11) 99999-9999" value="${m?.tel||''}"></div>
-      <div><label class="form-label">E-mail principal</label><input class="form-control" type="email" id="me-${idx}" placeholder="email@email.com" value="${m?.email||''}"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div><label class="form-label">E-mail secundário</label><input class="form-control" type="email" id="me2-${idx}" placeholder="outro@email.com" value="${m?.email2||''}"></div>
-      <div><label class="form-label">Endereço</label><input class="form-control" id="mend-${idx}" placeholder="Rua, número, cidade, CEP" value="${m?.endereco||''}"></div>
-    </div>
-
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.25);margin:12px 0 8px">CNH</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
-      <div><label class="form-label">Número CNH</label><input class="form-control" id="mcnh-${idx}" placeholder="00000000000" value="${m?.cnh?.num||''}"></div>
-      <div><label class="form-label">Categoria</label><input class="form-control" id="mcnhcat-${idx}" placeholder="Ex: B, AB..." value="${m?.cnh?.cat||''}"></div>
-      <div><label class="form-label">1ª Habilitação</label><input class="form-control" type="date" id="mcnh1-${idx}" value="${m?.cnh?.primeiraHab||''}"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
-      <div><label class="form-label">Emissão</label><input class="form-control" type="date" id="mcnhem-${idx}" value="${m?.cnh?.emissao||''}"></div>
-      <div><label class="form-label">Vencimento</label><input class="form-control" type="date" id="mcnhv-${idx}" value="${m?.cnh?.venc||''}"></div>
-      <div><label class="form-label">Órgão / UF</label><input class="form-control" id="mcnhorg-${idx}" placeholder="Ex: DETRAN RJ" value="${m?.cnh?.orgao||''}"></div>
-    </div>
-
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.25);margin:12px 0 8px">Veículo</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div><label class="form-label">Modelo</label><input class="form-control" id="mvei-${idx}" placeholder="Ex: BMW X6, Honda Civic..." value="${m?.veiculo||''}"></div>
-      <div><label class="form-label">Placa</label><input class="form-control" id="mplaca-${idx}" placeholder="Ex: GHN6C61" value="${m?.placa||''}"></div>
-    </div>`;
-  document.getElementById('membros-form-list').appendChild(div);
-  div.querySelector(`#mn-${idx}`).focus();
-}
-
-// ── SENHAS ──
-let senhaCount = 0;
-function addSenhaForm(s=null){
-  const idx = senhaCount++;
-  const div = document.createElement('div');
-  div.id = `sf-${idx}`;
-  div.style.cssText = 'background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:14px;margin-bottom:10px;position:relative';
-  div.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <span style="font-size:11px;font-weight:700;color:rgba(245,158,11,0.7);text-transform:uppercase;letter-spacing:1px">Acesso ${document.querySelectorAll('[id^=sf-]').length}</span>
-      <button type="button" onclick="document.getElementById('sf-${idx}').remove()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.3);font-size:18px;line-height:1;transition:color 0.18s" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">×</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-      <div><label class="form-label">Título *</label><input class="form-control" id="st-${idx}" placeholder="Ex: Banco, Netflix, Email..." value="${s?.titulo||''}"></div>
-      <div><label class="form-label">Login / Usuário</label><input class="form-control" id="sl-${idx}" placeholder="email@exemplo.com" value="${s?.login||''}"></div>
-      <div><label class="form-label">Senha</label>
-        <div style="position:relative">
-          <input class="form-control" id="ss-${idx}" type="password" placeholder="••••••••" value="${s?.senha||''}" style="padding-right:36px">
-          <button type="button" onclick="toggleSenhaVis('ss-${idx}')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.4);display:flex;align-items:center">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>`;
-  document.getElementById('senhas-form-list').appendChild(div);
-}
-
-function toggleSenhaVis(id){
-  const el = document.getElementById(id);
-  if(el) el.type = el.type==='password' ? 'text' : 'password';
-}
-
-function collectSenhas(){
-  return Array.from(document.querySelectorAll('[id^="sf-"]')).map(div=>{
-    const idx = div.id.replace('sf-','');
-    const titulo = document.getElementById(`st-${idx}`)?.value.trim();
-    if(!titulo) return null;
-    return {titulo, login: document.getElementById(`sl-${idx}`)?.value.trim()||'', senha: document.getElementById(`ss-${idx}`)?.value||''};
-  }).filter(Boolean);
-}
-
-function renumberMembros(){
-  document.querySelectorAll('.membro-form .membro-form-num').forEach((el,i)=>{el.textContent=`Pessoa ${i+1}`});
-}
-
-function collectMembros(){
-  return Array.from(document.querySelectorAll('.membro-form')).map(div=>{
-    const idx = div.id.replace('mf-','');
-    const nome = document.getElementById(`mn-${idx}`)?.value.trim();
-    if(!nome) return null;
-    const gv = id => document.getElementById(id)?.value?.trim()||'';
-    return {nome, rel:gv(`mr-${idx}`)||'outro', cpf:gv(`mc-${idx}`), nasc:gv(`md-${idx}`), nascLocal:gv(`mnl-${idx}`), profissao:gv(`mpr-${idx}`), pai:gv(`mpai-${idx}`), mae:gv(`mmae-${idx}`), tel:gv(`mt-${idx}`), email:gv(`me-${idx}`), email2:gv(`me2-${idx}`), endereco:gv(`mend-${idx}`), cnh:{num:gv(`mcnh-${idx}`),cat:gv(`mcnhcat-${idx}`),primeiraHab:gv(`mcnh1-${idx}`),emissao:gv(`mcnhem-${idx}`),venc:gv(`mcnhv-${idx}`),orgao:gv(`mcnhorg-${idx}`)}, veiculo:gv(`mvei-${idx}`), placa:gv(`mplaca-${idx}`)};
-  }).filter(Boolean);
-}
-
 async function saveCliente(){
   const nome=document.getElementById('c-nome').value.trim();
-  if(!nome){alert('Informe o nome da família ou projeto');return}
+  if(!nome){alert('Informe o nome');return}
   const id=document.getElementById('edit-id').value||uid();
-  const existente = clients.find(c=>c.id===id);
-  const record={id,nome,
+  const record={id,nome,email:document.getElementById('c-email').value.trim(),
+    telefone:document.getElementById('c-telefone').value.trim(),
+    cpf:document.getElementById('c-cpf').value.trim(),
+    nascimento:document.getElementById('c-nascimento').value,
     status:document.getElementById('c-status').value,
     foto:document.getElementById('c-foto').value.trim(),
-    patrimonio:document.getElementById('c-patrimonio')?.value.trim()||'',
+    endereco:document.getElementById('c-endereco').value.trim(),
     obs:document.getElementById('c-obs').value.trim(),
-    membros:collectMembros(),
-    senhas:collectSenhas(),
-    dataCadastro:existente?.dataCadastro||today()};
+    dataCadastro:today()};
   const{error}=await _sb.from('concierge_clientes').upsert({id,data:record});
   if(error){showToast('Erro ao salvar');return}
   const idx=clients.findIndex(c=>c.id===id);
   if(idx>=0)clients[idx]=record;else clients.unshift(record);
-  autoLeadConcierge(record);
   showToast('Salvo!','ok');closeModal();renderGrid();
 }
 
-// ── AUTO-LEAD WEALTH ──
-async function autoLeadConcierge(record){
-  const membros=record.membros||[];
-  const titulares=membros.filter(m=>m.rel==='titular');
-  const alvo=titulares.length>0?titulares:[membros[0]].filter(Boolean);
-  if(alvo.length===0)return;
-  const hoje=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-  const{data:rows}=await _sb.from('wealth_leads').select('id,data');
-  const existentes=(rows||[]).filter(r=>r.data?.concierge_id===record.id);
-  for(const m of alvo){
-    const chave=record.id+'::'+m.nome;
-    const existing=existentes.find(r=>r.data?.concierge_key===chave);
-    const leadId=existing?.id||uid();
-    const data={id:leadId,nome:m.nome||record.nome,telefone:m.tel||'',email:m.email||'',cpf:m.cpf||'',
-      patrimonio:record.patrimonio||'',origem:'concierge',concierge_id:record.id,concierge_key:chave,
-      temperatura:'ativo',estagio:'fechado',responsavel:'',
-      data_primeiro_contato:existing?.data?.data_primeiro_contato||hoje(),proxima_acao:'',obs:''};
-    await _sb.from('wealth_leads').upsert({id:leadId,data});
-  }
-}
-
-// ── FOTO UPLOAD ──
-function cFotoUpload(input){
-  const file = input.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const MAX = 300;
-      let w = img.width, h = img.height;
-      if(w > h){ if(w>MAX){h=h*(MAX/w);w=MAX} } else { if(h>MAX){w=w*(MAX/h);h=MAX} }
-      canvas.width=w; canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      const src = canvas.toDataURL('image/jpeg', 0.65);
-      document.getElementById('c-foto').value = src;
-      setCFotoPreview(src);
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-function fmtPatrimonio(el){
-  let digits = el.value.replace(/\D/g,'');
-  if(!digits){el.value='';return;}
-  digits = digits.padStart(3,'0');
-  const cents = digits.slice(-2);
-  const reais = parseInt(digits.slice(0,-2),10)||0;
-  el.value = 'R$ ' + reais.toLocaleString('pt-BR') + ',' + cents;
-}
-function cFotoFromUrl(){ const u=document.getElementById('c-foto').value.trim(); if(u)setCFotoPreview(u); else clearCFotoPreview(); }
-function setCFotoPreview(src){ const i=document.getElementById('cfoto-preview-img'),ic=document.getElementById('cfoto-preview-icon'),w=document.getElementById('cfoto-preview-wrap'); i.src=src;i.style.display='block';ic.style.display='none';w.style.borderColor='rgba(79,70,229,0.5)'; }
-function clearCFotoPreview(){ const i=document.getElementById('cfoto-preview-img'),ic=document.getElementById('cfoto-preview-icon'),w=document.getElementById('cfoto-preview-wrap'); i.src='';i.style.display='none';ic.style.display='block';w.style.borderColor='rgba(255,255,255,0.2)'; }
-
 function openModal(c=null){
-  ['c-nome','c-foto','c-obs','c-patrimonio'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});
-  document.getElementById('senhas-form-list').innerHTML=''; senhaCount=0;
-  clearCFotoPreview();
+  ['c-nome','c-email','c-telefone','c-cpf','c-nascimento','c-foto','c-endereco','c-obs'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('c-status').value='ativo';
   document.getElementById('edit-id').value='';
-  document.getElementById('modal-title').textContent='Nova Família / Projeto';
-  // Limpa membros
-  document.getElementById('membros-form-list').innerHTML='';
-  membroCount=0;
+  document.getElementById('modal-title').textContent='Novo Cliente';
   if(c){
     document.getElementById('edit-id').value=c.id;
     document.getElementById('c-nome').value=c.nome||'';
+    document.getElementById('c-email').value=c.email||'';
+    document.getElementById('c-telefone').value=c.telefone||'';
+    document.getElementById('c-cpf').value=c.cpf||'';
+    document.getElementById('c-nascimento').value=c.nascimento||'';
     document.getElementById('c-status').value=c.status||'ativo';
     document.getElementById('c-foto').value=c.foto||'';
-    if(c.foto) setCFotoPreview(c.foto); else clearCFotoPreview();
-    const _cp=document.getElementById('c-patrimonio');if(_cp){_cp.value=c.patrimonio||'';}
+    document.getElementById('c-endereco').value=c.endereco||'';
     document.getElementById('c-obs').value=c.obs||'';
-    document.getElementById('modal-title').textContent='Editar Família / Projeto';
-    // Recarrega membros existentes
-    (c.membros||[]).forEach(m=>addMembroForm(m));
-    document.getElementById('senhas-form-list').innerHTML=''; senhaCount=0;
-    (c.senhas||[]).forEach(s=>addSenhaForm(s));
+    document.getElementById('modal-title').textContent='Editar Cliente';
   }
   document.getElementById('modal-cliente').classList.add('open');
 }
@@ -541,17 +306,5 @@ function exportData(){
 
 loadClients();
 </script>
-<script>
-document.addEventListener('input',function(e){
-  const el=e.target;
-  const skipTypes=['email','password','url','date','time','number','hidden','color','range','file'];
-  const skipIds=['email','senha','url','foto','link'];
-  if(!((el.tagName==='INPUT'&&!skipTypes.includes(el.type))||el.tagName==='TEXTAREA'))return;
-  if(el.id&&skipIds.some(s=>el.id.includes(s)))return;
-  const p=el.selectionStart;el.value=el.value.toUpperCase();
-  try{el.setSelectionRange(p,p);}catch(x){}
-});
-</script>
-
 </body>
 </html>
