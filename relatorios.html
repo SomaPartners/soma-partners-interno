@@ -115,6 +115,17 @@ html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-
 .loader-spin{width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+
+@media(max-width:768px){
+  .topnav{padding:0 14px;height:52px}
+  .page{padding:16px 14px 40px}
+  .kpi-row{grid-template-columns:repeat(2,1fr);gap:10px}
+  .tabs{flex-wrap:wrap}
+  .tab{font-size:11px;padding:8px 12px}
+  .filter-row{flex-wrap:wrap;gap:6px}
+  .rep-table-wrap{overflow-x:auto}
+  .rep-table{min-width:500px}
+}
 </style>
 </head>
 <body>
