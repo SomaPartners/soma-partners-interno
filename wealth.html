@@ -72,6 +72,17 @@ body.painel-mode #main{margin-left:56px}
 .table-wrap{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .table-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
 .table-title{font-size:14px;font-weight:700}
+
+/* BULK SELECT */
+.lead-checkbox{width:16px;height:16px;accent-color:var(--indigo);cursor:pointer;flex-shrink:0}
+.bulk-bar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid rgba(79,70,229,0.4);border-radius:12px;padding:10px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 20px 40px rgba(0,0,0,0.4);z-index:400;white-space:nowrap;transition:all 0.2s}
+.bulk-bar-count{font-size:12px;font-weight:700;color:#a5b4fc}
+.bulk-sep{width:1px;height:20px;background:rgba(255,255,255,0.1)}
+.bulk-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.15s}
+.bulk-btn:hover{background:rgba(255,255,255,0.14)}
+.bulk-btn-danger{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#fca5a5}
+.bulk-btn-danger:hover{background:rgba(239,68,68,0.25)}
+.bulk-btn svg{width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none}
 .search-wrap{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:7px 12px}
 .search-wrap svg{width:13px;height:13px;stroke:var(--muted);stroke-width:2;fill:none;flex-shrink:0}
 .search-wrap input{background:none;border:none;outline:none;font-family:'Montserrat',sans-serif;font-size:12px;color:#fff;width:160px}
@@ -433,7 +444,7 @@ textarea.fc{resize:vertical;min-height:70px}
           </div>
         </div>
         <table>
-          <thead><tr><th>Lead</th><th>Patrimônio</th><th>Origem</th><th>Status</th><th>Estágio</th><th>Responsável</th><th>Indicado por</th><th></th></tr></thead>
+          <thead><tr><th style="width:36px"><input type="checkbox" class="lead-checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th><th>Lead</th><th>Patrimônio</th><th>Origem</th><th>Status</th><th>Estágio</th><th>Responsável</th><th>Indicado por</th><th></th></tr></thead>
           <tbody id="tbody-leads"></tbody>
         </table>
         <div class="table-footer"><span id="leads-count">0 leads</span></div>
@@ -861,14 +872,15 @@ function renderLeads(){
       const nextFu=followups.filter(f=>f.lead_id===l.id&&!f.feito).sort((a,b)=>a.data?.localeCompare(b.data||''))[0];
       const fuData=nextFu?.data||'';
       const ov=isOverdue(fuData);const td=isToday(fuData);
-      return`<tr onclick="editLead('${l.id}')">
-        <td><div class="lead-cell"><div class="lead-av" style="background:${acol(l.nome)}">${initials(l.nome)}</div><div><div class="lead-name">${l.nome}</div><div class="lead-sub">${l.telefone||''}${l.email?` · ${l.email}`:''}</div></div></div></td>
-        <td style="font-size:12px">${l.patrimonio||'—'}</td>
-        <td>${origemBadge(l.origem)}</td>
-        <td>${STATUS_BADGE[statusLead(l)]||''}</td>
-        <td><span class="estagio-badge${l.estagio==='fechado'?' estagio-fechado':l.estagio==='perdido'?' estagio-perdido':l.estagio==='descartado'?' estagio-descartado':''}">${ESTAGIO_LABELS[l.estagio]||l.estagio||'—'}</span></td>
-        <td style="font-size:12px;color:var(--muted)">${l.responsavel||'—'}</td>
-        <td style="font-size:12px;color:var(--muted)">${l.indicado_por||'—'}</td>
+      return`<tr>
+        <td onclick="event.stopPropagation()"><input type="checkbox" class="lead-checkbox chk-lead" data-id="${l.id}" onchange="toggleSelect('${l.id}',this.checked)" ${_selected.has(l.id)?'checked':''}></td>
+        <td onclick="editLead('${l.id}')" style="cursor:pointer"><div class="lead-cell"><div class="lead-av" style="background:${acol(l.nome)}">${initials(l.nome)}</div><div><div class="lead-name">${l.nome}</div><div class="lead-sub">${l.telefone||''}${l.email?` · ${l.email}`:''}</div></div></div></td>
+        <td onclick="editLead('${l.id}')" style="cursor:pointer;font-size:12px">${l.patrimonio||'—'}</td>
+        <td onclick="editLead('${l.id}')" style="cursor:pointer">${origemBadge(l.origem)}</td>
+        <td onclick="editLead('${l.id}')" style="cursor:pointer">${STATUS_BADGE[statusLead(l)]||''}</td>
+        <td onclick="editLead('${l.id}')" style="cursor:pointer"><span class="estagio-badge${l.estagio==='fechado'?' estagio-fechado':l.estagio==='perdido'?' estagio-perdido':l.estagio==='descartado'?' estagio-descartado':''}">${ESTAGIO_LABELS[l.estagio]||l.estagio||'—'}</span></td>
+        <td onclick="editLead('${l.id}')" style="cursor:pointer;font-size:12px;color:var(--muted)">${l.responsavel||'—'}</td>
+        <td onclick="editLead('${l.id}')" style="cursor:pointer;font-size:12px;color:var(--muted)">${l.indicado_por||'—'}</td>
         <td><button class="del-btn" onclick="event.stopPropagation();confirmDelete('${l.id}')">×</button></td>
       </tr>`;}).join('');
   document.getElementById('leads-count').textContent=`${list.length} lead${list.length!==1?'s':''}`;
@@ -1144,6 +1156,123 @@ document.getElementById('l-patrimonio').addEventListener('input',function(){
   this.value=maskMoeda(this.value);
   this.setSelectionRange(this.value.length,this.value.length);
 });
+
+// ── BULK SELECT ──
+let _selected=new Set();
+
+function toggleSelectAll(checked){
+  document.querySelectorAll('.chk-lead').forEach(c=>{
+    c.checked=checked;
+    if(checked)_selected.add(c.dataset.id);else _selected.delete(c.dataset.id);
+  });
+  updateBulkBar();
+}
+
+function toggleSelect(id,checked){
+  if(checked)_selected.add(id);else _selected.delete(id);
+  const all=document.querySelectorAll('.chk-lead');
+  document.getElementById('chk-all').checked=all.length>0&&[...all].every(c=>c.checked);
+  updateBulkBar();
+}
+
+function updateBulkBar(){
+  const bar=document.getElementById('bulk-bar');
+  if(!bar)return;
+  if(_selected.size===0){bar.style.display='none';return;}
+  bar.style.display='flex';
+  document.getElementById('bulk-count').textContent=`${_selected.size} lead${_selected.size>1?'s':''} selecionado${_selected.size>1?'s':''}`;
+}
+
+function clearSelection(){
+  _selected.clear();
+  document.querySelectorAll('.chk-lead').forEach(c=>c.checked=false);
+  const ca=document.getElementById('chk-all');if(ca)ca.checked=false;
+  updateBulkBar();
+}
+
+async function bulkAcao(campo,valor){
+  if(_selected.size===0)return;
+  const ids=[..._selected];
+  for(const id of ids){
+    const l=leads.find(x=>x.id===id);if(!l)continue;
+    l[campo]=valor;
+    if(campo==='temperatura'){
+      if(valor==='ativo'){l.estagio='fechado';}
+      else if(valor==='perdido'){l.estagio='perdido';}
+      else if(valor==='descartado'){l.estagio='descartado';}
+      else if(['frio','morno','quente'].includes(valor)&&['fechado','perdido','descartado'].includes(l.estagio)){l.estagio='prospeccao';}
+    }
+    await _sb.from('wealth_leads').upsert({id,data:l});
+  }
+  clearSelection();
+  renderLeads();renderVisao();renderPipeline();
+  showToast(`${ids.length} lead(s) atualizados`,'ok');
+}
+
+async function bulkDelete(){
+  if(_selected.size===0)return;
+  if(!confirm(`Excluir ${_selected.size} lead(s)? Esta ação não pode ser desfeita.`))return;
+  const ids=[..._selected];
+  for(const id of ids){
+    await _sb.from('wealth_leads').delete().eq('id',id);
+    await _sb.from('wealth_followups').delete().eq('lead_id',id);
+    const i=leads.findIndex(l=>l.id===id);if(i>=0)leads.splice(i,1);
+  }
+  clearSelection();renderLeads();renderVisao();
+  showToast(`${ids.length} lead(s) excluídos`,'ok');
+}
+
+function showBulkSelect(tipo){
+  const ops={
+    status:['frio','morno','quente','ativo','perdido','descartado'],
+    estagio:['prospeccao','em_conversa','proposta','fechado','perdido','descartado'],
+    responsavel:null
+  };
+  if(tipo==='responsavel'){
+    const nome=prompt('Nome do responsável:');
+    if(nome!==null)bulkAcao('responsavel',nome);
+    return;
+  }
+  const labels={
+    status:{frio:'Frio',morno:'Morno',quente:'Quente',ativo:'Ativo',perdido:'Perdido',descartado:'Descartado'},
+    estagio:ESTAGIO_LABELS
+  };
+  const menu=document.getElementById('bulk-menu');
+  menu.innerHTML=ops[tipo].map(v=>`<div class="bulk-menu-item" onclick="bulkAcao('${tipo==='status'?'temperatura':'estagio'}','${v}');closeBulkMenu()">${labels[tipo][v]||v}</div>`).join('');
+  menu.style.display='block';
+}
+
+function closeBulkMenu(){document.getElementById('bulk-menu').style.display='none';}
+document.addEventListener('click',e=>{if(!e.target.closest('#bulk-menu')&&!e.target.closest('.bulk-btn'))closeBulkMenu();});
 </script>
+
+<!-- BARRA BULK -->
+<div id="bulk-bar" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid rgba(79,70,229,0.4);border-radius:12px;padding:10px 20px;display:none;align-items:center;gap:12px;box-shadow:0 20px 40px rgba(0,0,0,0.4);z-index:400">
+  <span id="bulk-count" class="bulk-bar-count"></span>
+  <div class="bulk-sep"></div>
+  <button class="bulk-btn" onclick="showBulkSelect('status')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    Status
+  </button>
+  <button class="bulk-btn" onclick="showBulkSelect('estagio')">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Estágio
+  </button>
+  <button class="bulk-btn" onclick="showBulkSelect('responsavel')">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Responsável
+  </button>
+  <div class="bulk-sep"></div>
+  <button class="bulk-btn" onclick="clearSelection()">Cancelar</button>
+  <button class="bulk-btn bulk-btn-danger" onclick="bulkDelete()">
+    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+    Excluir
+  </button>
+  <div id="bulk-menu" style="display:none;position:absolute;bottom:52px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid var(--border);border-radius:8px;padding:6px;min-width:160px;box-shadow:0 10px 30px rgba(0,0,0,0.4)"></div>
+</div>
+<style>
+.bulk-menu-item{padding:7px 12px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;border-radius:5px;font-family:'Montserrat',sans-serif;transition:background 0.15s}
+.bulk-menu-item:hover{background:rgba(79,70,229,0.2)}
+</style>
 </body>
 </html>
