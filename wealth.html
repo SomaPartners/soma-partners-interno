@@ -639,7 +639,7 @@ function renderVisao(){
     quList.map(l=>`<tr>
       <td><div style="display:flex;align-items:center;gap:8px"><div class="lead-av" style="background:${acol(l.nome)};width:26px;height:26px;font-size:9px">${initials(l.nome)}</div><span style="font-size:12px;font-weight:600">${l.nome}</span></div></td>
       <td><span class="estagio-badge">${ESTAGIO_LABELS[l.estagio]||l.estagio}</span></td>
-      <td class="${isOverdue(l.data_proxima_acao)?'proxima-vencida':isToday(l.data_proxima_acao)?'proxima-hoje':'proxima-ok'}">${fmtDate(l.data_proxima_acao)}</td>
+      <td class="${(()=>{const f=followups.filter(x=>x.lead_id===l.id&&!x.feito).sort((a,b)=>a.data?.localeCompare(b.data||''))[0];return isOverdue(f?.data)?'proxima-vencida':isToday(f?.data)?'proxima-hoje':'proxima-ok'})()}">${(()=>{const f=followups.filter(x=>x.lead_id===l.id&&!x.feito).sort((a,b)=>a.data?.localeCompare(b.data||''))[0];return f?fmtDate(f.data):'—'})()}</td>
     </tr>`).join('');
 
   const fuH=followups.filter(f=>!f.feito&&(f.data===today()||f.data<today())).slice(0,5);
@@ -861,7 +861,8 @@ function renderLeads(){
     list.map(l=>{
       const fuPend=followups.filter(f=>f.lead_id===l.id&&!f.feito).length;
       const nextFu=followups.filter(f=>f.lead_id===l.id&&!f.feito).sort((a,b)=>a.data?.localeCompare(b.data||''))[0];
-      const ov=isOverdue(l.data_proxima_acao);const td=isToday(l.data_proxima_acao);
+      const fuData=nextFu?.data||'';
+      const ov=isOverdue(fuData);const td=isToday(fuData);
       return`<tr onclick="editLead('${l.id}')">
         <td><div class="lead-cell"><div class="lead-av" style="background:${acol(l.nome)}">${initials(l.nome)}</div><div><div class="lead-name">${l.nome}</div><div class="lead-sub">${l.telefone||''}${l.email?` · ${l.email}`:''}</div></div></div></td>
         <td style="font-size:12px">${l.patrimonio||'—'}</td>
@@ -869,7 +870,7 @@ function renderLeads(){
         <td>${STATUS_BADGE[statusLead(l)]||''}</td>
         <td><span class="estagio-badge${l.estagio==='fechado'?' estagio-fechado':l.estagio==='perdido'?' estagio-perdido':l.estagio==='descartado'?' estagio-descartado':''}">${ESTAGIO_LABELS[l.estagio]||l.estagio||'—'}</span></td>
         <td style="font-size:12px;color:var(--muted)">${l.responsavel||'—'}</td>
-        <td class="${ov?'proxima-vencida':td?'proxima-hoje':'proxima-ok'}" style="font-size:12px">${nextFu?fmtDate(nextFu.data):fmtDate(l.data_proxima_acao)}</td>
+        <td class="${ov?'proxima-vencida':td?'proxima-hoje':'proxima-ok'}" style="font-size:12px">${nextFu?`<div style="font-size:11px">${fmtDate(nextFu.data)}</div><div style="font-size:10px;color:var(--muted)">${nextFu.desc||''}</div>`:'<span style="color:var(--muted2)">—</span>'}</td>
         <td><button class="del-btn" onclick="event.stopPropagation();confirmDelete('${l.id}')">×</button></td>
       </tr>`;}).join('');
   document.getElementById('leads-count').textContent=`${list.length} lead${list.length!==1?'s':''}`;
@@ -907,7 +908,6 @@ async function saveLead(){
     temperatura:document.getElementById('l-temperatura').value,
     estagio:document.getElementById('l-estagio').value,
     proxima_acao:document.getElementById('l-proxima-acao').value.trim(),
-    data_proxima_acao:calcProxData(document.getElementById('l-temperatura').value,document.getElementById('l-data').value),
     data_primeiro_contato:document.getElementById('l-data').value,
     obs:document.getElementById('l-obs').value.trim(),
   };
