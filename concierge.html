@@ -445,28 +445,39 @@ async function saveCliente(){
     dataCadastro:existente?.dataCadastro||today()};
   const{error}=await _sb.from('concierge_clientes').upsert({id,data:record});
   if(error){showToast('Erro ao salvar');return}
-  const isNovo=!existente;
   const idx=clients.findIndex(c=>c.id===id);
   if(idx>=0)clients[idx]=record;else clients.unshift(record);
-  if(isNovo) autoLeadConcierge(record);
+  autoLeadConcierge(record);
   showToast('Salvo!','ok');closeModal();renderGrid();
 }
 
 // ── AUTO-LEAD WEALTH ──
 async function autoLeadConcierge(record){
-  const telefone=(record.membros||[]).map(m=>m.telefone||'').find(t=>t.replace(/\D/g,'').length>0)||'';
-  const telNorm=telefone.replace(/\D/g,'');
-  // Verifica duplicata por telefone (se tiver) ou por nome
-  const{data:rows}=await _sb.from('wealth_leads').select('id,data');
-  const jaExiste=(rows||[]).some(r=>{
-    if(telNorm&&(r.data?.telefone||'').replace(/\D/g,'')===telNorm)return true;
-    return(r.data?.nome||'').toLowerCase()===(record.nome||'').toLowerCase();
-  });
-  if(jaExiste)return;
-  const id=uid();
+  // Usa o Titular; se não houver, usa o primeiro membro
+  const membros=record.membros||[];
+  const titular=membros.find(m=>m.rel==='titular')||membros[0]||null;
+  const nome=titular?.nome||record.nome;
+  const telefone=titular?.tel||'';
+  const email=titular?.email||'';
+  const cpf=titular?.cpf||'';
   const hoje=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-  const data={id,nome:record.nome,telefone,email:'',cpf:'',patrimonio:record.patrimonio||'',origem:'concierge',temperatura:'ativo',estagio:'fechado',responsavel:'',data_primeiro_contato:hoje(),proxima_acao:'',obs:''};
-  await _sb.from('wealth_leads').upsert({id,data});
+
+  // Verifica se já existe lead vinculado a este cliente do concierge
+  const{data:rows}=await _sb.from('wealth_leads').select('id,data');
+  const existing=(rows||[]).find(r=>r.data?.concierge_id===record.id);
+
+  const leadId=existing?.id||uid();
+  const data={id:leadId,nome,telefone,email,cpf,
+    patrimonio:record.patrimonio||'',
+    origem:'concierge',
+    concierge_id:record.id,
+    temperatura:'ativo',
+    estagio:'fechado',
+    responsavel:'',
+    data_primeiro_contato:existing?.data?.data_primeiro_contato||hoje(),
+    proxima_acao:'',
+    obs:''};
+  await _sb.from('wealth_leads').upsert({id:leadId,data});
 }
 
 // ── FOTO UPLOAD ──
