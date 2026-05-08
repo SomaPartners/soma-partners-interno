@@ -401,5 +401,6 @@ function goToday(){ calYear=new Date().getFullYear(); calMonth=new Date().getMon
 
 loadAll();
 </script>
+<script>if(sessionStorage.getItem("soma_auth")!=="1"){window.location.href="login.html";}</script>
 </body>
 </html>

@@ -370,7 +370,7 @@ textarea.fc{resize:vertical;min-height:70px}
           <span id="fu-count-concluido" style="font-size:11px;font-weight:700;color:var(--muted2)">0</span>
           <svg id="concluidos-arrow" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--muted2)" stroke-width="2" style="margin-left:2px;transition:transform 0.2s"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
-        <div id="fu-cards-concluido" style="display:none;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
+        <div id="fu-cards-concluido" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
       </div>
     </div>
 
@@ -469,7 +469,7 @@ textarea.fc{resize:vertical;min-height:70px}
       <div class="fr">
         <div class="fg"><label class="fl">Patrimônio estimado</label><input class="fc" id="l-patrimonio" placeholder="Ex: R$ 2.000.000"></div>
         <div class="fg"><label class="fl">Origem do contato</label>
-          <select class="fc" id="l-origem" onchange="toggleIndicadoPor()"><option value="indicacao">Indicação</option><option value="evento">Evento</option><option value="redes_sociais">Redes Sociais</option><option value="prospecção">Prospecção Ativa</option><option value="cold_call">Cold Call</option><option value="outro">Outro</option></select>
+          <select class="fc" id="l-origem" onchange="toggleIndicadoPor()"><option value="indicacao">Indicação</option><option value="evento">Evento</option><option value="redes_sociais">Redes Sociais</option><option value="prospeccao">Prospecção Ativa</option><option value="cold_call">Cold Call</option><option value="outro">Outro</option></select>
           <div id="l-origem-display" style="display:none;padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:13px;color:var(--muted)"></div>
         </div>
       </div>
@@ -554,7 +554,7 @@ let leads=[], followups=[];
 
 const ESTAGIO_LABELS={prospeccao:'Prospecção',em_conversa:'Em Conversa',proposta:'Proposta',fechado:'Cliente Ativo',perdido:'Perdido',descartado:'Descartado'};
 const ESTAGIO_INATIVOS=['perdido','descartado'];
-const ORIGEM_LABELS={evento:'Evento',indicacao:'Indicação',redes_sociais:'Redes Sociais','prospecção':'Prospecção Ativa',cold_call:'Cold Call',concierge:'Concierge',outro:'Outro'};
+const ORIGEM_LABELS={evento:'Evento',indicacao:'Indicação',redes_sociais:'Redes Sociais',prospeccao:'Prospecção Ativa',cold_call:'Cold Call',concierge:'Concierge',outro:'Outro'};
 function origemBadge(o){return`<span class="origem-badge ob-${o||'outro'}">${ORIGEM_LABELS[o]||o||'—'}</span>`}
 const TEMP_PROSP={
   frio:{dias:30,texto:'<strong>Lead Frio</strong> — Nutrição gradual.<br>Semana 1: envie conteúdo de valor (artigo, panorama de mercado). Semana 2: conecte no LinkedIn. Semana 3: convite para evento. Semana 4: ligação de aquecimento.',acao:'Enviar conteúdo de valor por WhatsApp ou e-mail'},
@@ -1241,7 +1241,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('#bulk-menu')&&!e.tar
 </script>
 
 <!-- BARRA BULK -->
-<div id="bulk-bar" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid rgba(79,70,229,0.4);border-radius:12px;padding:10px 20px;display:none;align-items:center;gap:12px;box-shadow:0 20px 40px rgba(0,0,0,0.4);z-index:400">
+<div id="bulk-bar" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid rgba(79,70,229,0.4);border-radius:12px;padding:10px 20px;align-items:center;gap:12px;box-shadow:0 20px 40px rgba(0,0,0,0.4);z-index:400">
   <span id="bulk-count" class="bulk-bar-count"></span>
   <div class="bulk-sep"></div>
   <button class="bulk-btn" onclick="showBulkSelect('status')">
@@ -1268,5 +1268,6 @@ document.addEventListener('click',e=>{if(!e.target.closest('#bulk-menu')&&!e.tar
 .bulk-menu-item{padding:7px 12px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;border-radius:5px;font-family:'Montserrat',sans-serif;transition:background 0.15s}
 .bulk-menu-item:hover{background:rgba(79,70,229,0.2)}
 </style>
+<script>if(sessionStorage.getItem("soma_auth")!=="1"){window.location.href="login.html";}</script>
 </body>
 </html>

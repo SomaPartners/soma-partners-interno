@@ -1555,6 +1555,7 @@ function exportarProximosPDF(){
       <tbody>${rows}</tbody>
     </table>
   
+<script>if(sessionStorage.getItem("soma_auth")!=="1"){window.location.href="login.html";}</script>
 </body></html>`);
   win.document.close();
   setTimeout(()=>win.print(),600);
@@ -2602,6 +2603,7 @@ function exportarPDF(){
     <table><thead><tr><th>Data</th><th>Característica</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor</th><th style="text-align:right">Saldo</th></tr></thead>
     <tbody>${rows}</tbody></table>
   
+<script>if(sessionStorage.getItem("soma_auth")!=="1"){window.location.href="login.html";}</script>
 </body></html>`);
   win.document.close();
   setTimeout(()=>win.print(),600);
@@ -3251,5 +3253,6 @@ document.addEventListener('input',function(e){
 </div>
 
 
+<script>if(sessionStorage.getItem("soma_auth")!=="1"){window.location.href="login.html";}</script>
 </body>
 </html>
