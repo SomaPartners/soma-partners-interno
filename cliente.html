@@ -2158,25 +2158,27 @@ function renderDados(){
 
 // ── SYNC LEAD WEALTH ──
 async function syncLeadWealth(){
-  const membros=CLIENT.membros||[];
-  const titular=membros.find(m=>m.rel==='titular')||membros[0]||null;
-  if(!titular)return;
-  const nome=titular.nome||CLIENT.nome;
-  const telefone=titular.tel||'';
-  const email=titular.email||'';
-  const cpf=titular.cpf||'';
-  const hoje=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-  const{data:rows}=await _sb.from('wealth_leads').select('id,data');
-  const existing=(rows||[]).find(r=>r.data?.concierge_id===CLIENT.id);
-  const leadId=existing?.id||(()=>{const s='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';return s.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)})})();
-  const data={id:leadId,nome,telefone,email,cpf,
-    patrimonio:CLIENT.patrimonio||'',
-    origem:'concierge',concierge_id:CLIENT.id,
-    temperatura:'ativo',estagio:'fechado',
-    responsavel:'',
-    data_primeiro_contato:existing?.data?.data_primeiro_contato||hoje(),
-    proxima_acao:'',obs:''};
-  await _sb.from('wealth_leads').upsert({id:leadId,data});
+  try{
+    const membros=CLIENT.membros||[];
+    const titular=membros.find(m=>m.rel==='titular')||membros[0]||null;
+    const nome=(titular?.nome)||CLIENT.nome;
+    const telefone=titular?.tel||'';
+    const email=titular?.email||'';
+    const cpf=titular?.cpf||'';
+    const dHoje=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+    const{data:rows}=await _sb.from('wealth_leads').select('id,data');
+    const existing=(rows||[]).find(r=>r.data?.concierge_id===CLIENT.id);
+    const leadId=existing?.id||crypto.randomUUID();
+    const data={id:leadId,nome,telefone,email,cpf,
+      patrimonio:CLIENT.patrimonio||'',
+      origem:'concierge',concierge_id:CLIENT.id,
+      temperatura:'ativo',estagio:'fechado',
+      responsavel:'',
+      data_primeiro_contato:existing?.data?.data_primeiro_contato||dHoje(),
+      proxima_acao:'',obs:''};
+    const{error}=await _sb.from('wealth_leads').upsert({id:leadId,data});
+    if(error)console.error('syncLeadWealth error:',error);
+  }catch(e){console.error('syncLeadWealth exception:',e);}
 }
 
 // ── CRUD ──
@@ -2186,7 +2188,7 @@ async function saveCliente(){
   closeModal('modal-cliente');renderAll();
   const{error}=await _sb.from('concierge_clientes').upsert({id:CLIENT.id,data:CLIENT});
   if(error){showToast('Erro ao salvar — tente novamente','err');return;}
-  syncLeadWealth();
+  await syncLeadWealth();
   showToast('Salvo!','ok');
 }
 
@@ -2200,7 +2202,7 @@ async function saveMembro(){
   closeModal('modal-membro');renderDados();renderCounters();
   const{error}=await _sb.from('concierge_clientes').upsert({id:CLIENT.id,data:CLIENT});
   if(error){showToast('Erro ao salvar — tente novamente','err');return;}
-  syncLeadWealth();
+  await syncLeadWealth();
   showToast('Salvo!','ok');
 }
 function editMembro(i){
