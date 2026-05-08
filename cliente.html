@@ -2270,15 +2270,29 @@ async function savePgto(){
 async function delPgto(id){await _sb.from('concierge_pagamentos').delete().eq('id',id);pagamentos=pagamentos.filter(p=>p.id!==id);renderFinanceiro();renderCounters()}
 
 async function saveTarefa(){
-  const titulo=document.getElementById('tar-titulo').value.trim();if(!titulo){alert('Informe o título');return}
-  const id=document.getElementById('tar-id').value||uid();
-  const forcedStatus=document.getElementById('tar-id').dataset.forcedStatus||null;delete document.getElementById('tar-id').dataset.forcedStatus;
-  const rec={id,clienteId:urlId,titulo,prioridade:document.getElementById('tar-prio').value,prazo:document.getElementById('tar-prazo').value,status:forcedStatus||'a_fazer',dataCriacao:today()};
-  const{error}=await _sb.from('concierge_tarefas').upsert({id,data:rec});
-  if(error){showToast('Erro ao salvar');return}
-  const idx=tarefas.findIndex(t=>t.id===id);if(idx>=0)tarefas[idx]=rec;else tarefas.push(rec);
-  await criarLembreteAuto(rec);
-  showToast(`Tarefa salva — lembrete ${rec.prioridade==='alta'?'24h':rec.prioridade==='media'?'48h':'72h'} criado`,'ok');closeModal('modal-tarefa');renderLista();renderQuadro();
+  try{
+    const titulo=document.getElementById('tar-titulo').value.trim();if(!titulo){alert('Informe o título');return}
+    const id=document.getElementById('tar-id').value||uid();
+    const tarIdEl=document.getElementById('tar-id');
+    const forcedStatus=tarIdEl.dataset.forcedStatus||null;
+    if(tarIdEl.dataset.forcedStatus)delete tarIdEl.dataset.forcedStatus;
+    const rec={id,clienteId:urlId,titulo,
+      prioridade:document.getElementById('tar-prio').value,
+      prazo:document.getElementById('tar-prazo').value||calcLembreteData(document.getElementById('tar-prio').value),
+      status:forcedStatus||'a_fazer',
+      dataCriacao:today()};
+    const{error}=await _sb.from('concierge_tarefas').upsert({id,data:rec});
+    if(error){showToast('Erro ao salvar: '+error.message);return}
+    const idx=tarefas.findIndex(t=>t.id===id);if(idx>=0)tarefas[idx]=rec;else tarefas.push(rec);
+    try{await criarLembreteAuto(rec);}catch(e){console.warn('criarLembreteAuto error:',e)}
+    showToast('Tarefa salva!','ok');
+    closeModal('modal-tarefa');
+    try{renderLista();}catch(e){console.warn('renderLista error:',e)}
+    try{renderQuadro();}catch(e){console.warn('renderQuadro error:',e)}
+  }catch(e){
+    console.error('saveTarefa error:',e);
+    showToast('Erro ao salvar tarefa');
+  }
 }
 async function concluirTarefa(id){const t=tarefas.find(x=>x.id===id);if(!t)return;t.status='concluida';await _sb.from('concierge_tarefas').upsert({id,data:t});renderInteracoes();renderLembretes()}
 
