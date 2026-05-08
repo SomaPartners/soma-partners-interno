@@ -585,10 +585,10 @@ function renderVisao(){
   const fuHoje=followups.filter(f=>!f.feito&&f.data===today()).length;
   const fuVencidos=followups.filter(f=>!f.feito&&f.data<today()).length;
   document.getElementById('kpi-grid').innerHTML=`
-    <div class="kpi-card"><div class="kpi-val" style="color:#a5b4fc">${leads.length}</div><div class="kpi-label">Total de Leads</div><div class="kpi-sub">${leads.filter(l=>l.estagio!=='fechado'&&l.estagio!=='perdido').length} ativos</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:#a5b4fc">${leads.length}</div><div class="kpi-label">Total de Leads</div><div class="kpi-sub">${leads.filter(l=>!['fechado','perdido','descartado'].includes(l.estagio)).length} em prospecção</div></div>
     <div class="kpi-card"><div class="kpi-val" style="color:#fca5a5">${quentes}</div><div class="kpi-label">Leads Quentes</div><div class="kpi-sub">Prioridade máxima</div></div>
     <div class="kpi-card"><div class="kpi-val" style="color:${fuVencidos>0?'#fca5a5':'#fcd34d'}">${fuHoje+fuVencidos}</div><div class="kpi-label">Follow-ups Pendentes</div><div class="kpi-sub">${fuVencidos} atrasados</div></div>
-    <div class="kpi-card"><div class="kpi-val" style="color:#6ee7b7">${leads.filter(l=>l.estagio==='fechado').length}</div><div class="kpi-label">Fechados</div><div class="kpi-sub">Convertidos</div></div>`;
+    <div class="kpi-card"><div class="kpi-val" style="color:#6ee7b7">${leads.filter(l=>l.estagio==='fechado').length}</div><div class="kpi-label">Clientes Ativos</div><div class="kpi-sub">Convertidos</div></div>`;
 
   const quList=leads.filter(l=>l.temperatura==='quente').slice(0,5);
   document.getElementById('tbody-quentes').innerHTML=quList.length===0?'<tr><td colspan="3" style="text-align:center;padding:20px;font-size:12px;color:var(--muted2)">Nenhum lead quente</td></tr>':
