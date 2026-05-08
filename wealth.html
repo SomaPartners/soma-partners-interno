@@ -35,17 +35,9 @@ body{display:flex}
 .back-btn:hover{color:#fff;background:rgba(255,255,255,0.06)}
 .back-btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none}
 
-/* SIDEBAR COLLAPSED */
-body.painel-mode #sidebar{width:56px;min-width:56px}
-body.painel-mode .sidebar-logo{padding:14px 0;justify-content:center}
-body.painel-mode .logo-pipe,body.painel-mode .logo-soma,body.painel-mode .logo-partners{display:none}
-body.painel-mode .sidebar-logo::after{content:'S';font-size:15px;font-weight:800;color:#fff}
-body.painel-mode .nav-item{margin:1px 4px;padding:10px;justify-content:center}
-body.painel-mode .nav-item span,body.painel-mode .nav-item>:not(svg){display:none}
-body.painel-mode .sidebar-section{display:none}
-body.painel-mode .back-btn span{display:none}
-body.painel-mode .back-btn{padding:10px;justify-content:center}
-body.painel-mode #main{margin-left:56px}
+/* PAINEL MODE — sidebar oculta */
+body.painel-mode #sidebar{display:none}
+body.painel-mode #main{margin-left:0}
 
 /* MAIN */
 #main{margin-left:230px;flex:1;display:flex;flex-direction:column;min-height:100vh}
@@ -826,14 +818,16 @@ function togglePainel(){
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     document.getElementById('section-painel').style.display='block';
     document.getElementById('topbar-title').textContent='Painel de Prospecção';
-    document.getElementById('topbar-sub').textContent='Follow-ups e Pipeline — visão do escritório';
+    document.getElementById('topbar-sub').textContent='Atualiza automaticamente a cada 5 minutos';
+    btn.innerHTML=`<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Sair do Painel`;
     btn.style.background='rgba(79,70,229,0.3)';btn.style.borderColor='rgba(79,70,229,0.5)';btn.style.color='#a5b4fc';
     renderPainel();
     _painelInterval=setInterval(()=>{loadAll().then(renderPainel);},5*60*1000);
   } else {
     document.getElementById('section-painel').style.display='none';
-    navigate('visao',document.querySelector('.nav-item[data-section="visao"]'));
+    btn.innerHTML=`<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Modo Painel`;
     btn.style='';
+    navigate('visao',document.querySelector('.nav-item[data-section="visao"]'));
     if(_painelInterval){clearInterval(_painelInterval);_painelInterval=null;}
   }
 }
