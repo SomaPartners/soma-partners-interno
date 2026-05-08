@@ -917,6 +917,9 @@ async function saveLead(){
   const temPendente=followups.some(f=>f.lead_id===id&&!f.feito);
   if(!temPendente&&['frio','morno','quente'].includes(data.temperatura))
     await autoFollowup(data);
+  // Recarrega follow-ups do banco para garantir sincronismo
+  const{data:fRows}=await _sb.from('wealth_followups').select('id,lead_id,data').order('created_at');
+  if(fRows) followups=fRows.map(r=>({id:r.id,lead_id:r.lead_id,...r.data}));
   showToast('Salvo!','ok');closeModal('modal-lead');
   renderVisao();renderLeads();renderFollowups();renderPipeline();populateLeadSelect();
 }
