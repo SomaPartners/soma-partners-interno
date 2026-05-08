@@ -42,14 +42,28 @@ html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-
 /* CARDS GRID */
 .clients-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 @media(max-width:900px){.clients-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){
-  .topnav{padding:0 16px;height:54px}
-  .page{padding:24px 16px 40px}
-  .page-title{font-size:32px;letter-spacing:2px}
-  .clients-grid{grid-template-columns:1fr}
-  .search-bar{flex-wrap:wrap}
-  .nav-right .btn span{display:none}
-  .btn-sm{padding:6px 10px}
+@media(max-width:640px){
+  body{overflow-x:hidden}
+  .topnav{padding:0 14px;height:52px}
+  .nav-right .btn-outline:not(:last-child){display:none}
+  .btn-sm{padding:5px 10px;font-size:11px}
+  .page{padding:16px 14px 80px}
+  .page-header{flex-direction:column;align-items:flex-start;gap:12px;margin-bottom:20px}
+  .page-title{font-size:28px;letter-spacing:1px}
+  .clients-grid{grid-template-columns:1fr;gap:8px}
+  .client-card{aspect-ratio:16/9}
+  .card-footer{opacity:1;transform:none}
+  .search-bar{flex-wrap:wrap;gap:8px}
+  .search-dark{max-width:100%;flex:1}
+  /* Modals */
+  .modal{width:96vw!important;max-width:96vw!important;max-height:90vh;margin:0 auto}
+  .modal-body{padding:14px 16px}
+  .modal-header{padding:16px 16px 0}
+  .modal-footer{padding:0 16px 16px}
+  .form-row{grid-template-columns:1fr}
+  .membro-form{padding:10px}
+  /* Senhas */
+  .modal div[style*="grid-template-columns:1fr 1fr 1fr"]{display:flex;flex-direction:column;gap:10px}
 }
 
 /* CLIENT CARD */
