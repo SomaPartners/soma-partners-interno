@@ -93,7 +93,7 @@
       gap: 5px;
       flex: 1;
       max-height: 52vh;
-      margin-bottom: 0;
+      margin-bottom: 48px;
     }
 
     .card {
@@ -120,21 +120,21 @@
       inset: 0;
     }
 
-    /* Concierge — luxury dark office feel */
+    /* Concierge */
     .card-concierge .card-placeholder {
       background:
         radial-gradient(ellipse at 60% 30%, rgba(30,55,80,0.9) 0%, rgba(8,18,28,1) 70%),
         linear-gradient(135deg, #1c3349 0%, #0a1a28 50%, #060f1a 100%);
     }
 
-    /* Wealth — trading screens, green/teal tint */
+    /* Wealth */
     .card-wealth .card-placeholder {
       background:
         radial-gradient(ellipse at 40% 60%, rgba(0,30,20,0.95) 0%, rgba(5,12,10,1) 70%),
         linear-gradient(135deg, #0a1f10 0%, #060d08 60%, #040b0a 100%);
     }
 
-    /* Eventos — warm morning meeting */
+    /* Eventos */
     .card-eventos .card-placeholder {
       background:
         radial-gradient(ellipse at 50% 40%, rgba(40,38,48,0.95) 0%, rgba(12,15,22,1) 70%),
@@ -176,7 +176,6 @@
       color: rgba(255,255,255,0.65);
       margin-top: 5px;
     }
-
 
   </style>
 </head>
@@ -235,6 +234,12 @@
 
   </div>
 
+  <!-- SAIR -->
+  <button onclick="logout()" style="position:fixed;bottom:20px;right:24px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:7px 14px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);cursor:pointer;letter-spacing:0.5px;transition:all 0.18s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">SAIR</button>
 
+<script>
+if(sessionStorage.getItem('soma_auth')!=='1')window.location.href='login.html';
+function logout(){sessionStorage.removeItem('soma_auth');window.location.href='login.html';}
+</script>
 </body>
 </html>

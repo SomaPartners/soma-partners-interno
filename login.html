@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Soma Partners — Acesso</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--white:#fff;--indigo:#4f46e5;--border:rgba(255,255,255,0.09);--muted:rgba(255,255,255,0.45)}
+html,body{height:100%;font-family:'Montserrat',sans-serif;background:var(--navy);color:var(--white);display:flex;align-items:center;justify-content:center;overflow:hidden}
+
+/* FUNDO */
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(79,70,229,0.12) 0%,transparent 60%);pointer-events:none}
+
+/* CARD */
+.card{width:380px;display:flex;flex-direction:column;align-items:center;gap:0}
+
+/* LOGO */
+.logo{display:flex;align-items:center;gap:16px;margin-bottom:48px}
+.logo-soma{font-size:22px;font-weight:300;letter-spacing:0.5px}
+.logo-pipe{width:1px;height:28px;background:rgba(255,255,255,0.4)}
+.logo-partners{font-size:12px;font-weight:700;letter-spacing:5px;text-transform:uppercase}
+
+/* FORM */
+.form{width:100%;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4)}
+.input{width:100%;padding:13px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;font-family:'Montserrat',sans-serif;font-size:14px;color:#fff;outline:none;transition:all 0.2s}
+.input:focus{border-color:rgba(79,70,229,0.6);background:rgba(79,70,229,0.06)}
+.input::placeholder{color:rgba(255,255,255,0.2)}
+
+/* SENHA TOGGLE */
+.pass-wrap{position:relative}
+.pass-wrap .input{padding-right:44px}
+.pass-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.3);display:flex;align-items:center;transition:color 0.18s;padding:0}
+.pass-toggle:hover{color:rgba(255,255,255,0.7)}
+.pass-toggle svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none}
+
+/* BOTÃO */
+.btn-login{width:100%;padding:14px;background:var(--indigo);border:none;border-radius:10px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#fff;letter-spacing:1px;cursor:pointer;transition:all 0.2s;margin-top:4px}
+.btn-login:hover{background:#4338ca;transform:translateY(-1px);box-shadow:0 8px 24px rgba(79,70,229,0.35)}
+.btn-login:active{transform:translateY(0)}
+
+/* ERRO */
+.err{font-size:11px;font-weight:600;color:#fca5a5;text-align:center;min-height:16px;transition:opacity 0.2s}
+.err.hide{opacity:0}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <span class="logo-soma">Soma</span>
+    <div class="logo-pipe"></div>
+    <span class="logo-partners">Partners</span>
+  </div>
+
+  <form class="form" onsubmit="handleLogin(event)">
+    <div class="field">
+      <label class="label">E-mail</label>
+      <input class="input" id="inp-email" type="email" placeholder="seu@email.com" autocomplete="email" required>
+    </div>
+    <div class="field">
+      <label class="label">Senha</label>
+      <div class="pass-wrap">
+        <input class="input" id="inp-senha" type="password" placeholder="••••••••" autocomplete="current-password" required data-no-upper="1">
+        <button type="button" class="pass-toggle" onclick="togglePass()">
+          <svg id="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="err hide" id="err-msg">E-mail ou senha incorretos</div>
+    <button type="submit" class="btn-login">ENTRAR</button>
+  </form>
+</div>
+
+<script>
+// ── CREDENCIAIS ──
+// Para alterar, mude os valores abaixo
+const USUARIOS=[
+  {email:'atendimento@somapartners.co', senha:'soma@2024'},
+  {email:'guilherme@somapartners.co',   senha:'soma@2024'},
+];
+
+function handleLogin(e){
+  e.preventDefault();
+  const email=document.getElementById('inp-email').value.trim().toLowerCase();
+  const senha=document.getElementById('inp-senha').value;
+  const ok=USUARIOS.some(u=>u.email===email&&u.senha===senha);
+  const err=document.getElementById('err-msg');
+  if(ok){
+    sessionStorage.setItem('soma_auth','1');
+    window.location.href='soma-partners.html';
+  } else {
+    err.classList.remove('hide');
+    document.getElementById('inp-senha').value='';
+    document.getElementById('inp-senha').focus();
+    setTimeout(()=>err.classList.add('hide'),3000);
+  }
+}
+
+function togglePass(){
+  const inp=document.getElementById('inp-senha');
+  inp.type=inp.type==='password'?'text':'password';
+}
+
+// Se já autenticado, vai direto
+if(sessionStorage.getItem('soma_auth')==='1'){
+  window.location.href='soma-partners.html';
+}
+</script>
+</body>
+</html>
