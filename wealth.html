@@ -598,24 +598,22 @@ async function loadAll(){
 }
 
 async function migrarFollowupsAuto(){
-  const DIAS_INICIAL={frio:7,morno:3,quente:0};
   const TIPO_MAP={frio:'whatsapp',morno:'ligacao',quente:'ligacao'};
   const ativos=leads.filter(l=>['frio','morno','quente'].includes(l.temperatura)&&!['perdido','descartado'].includes(l.estagio));
   for(const lead of ativos){
-    // 1. Remove PRIMEIRO todos os follow-ups futuros auto (de migrações antigas)
-    const antigos=followups.filter(f=>f.lead_id===lead.id&&!f.feito&&f.auto&&f.data>today());
+    // 1. Remove todos os follow-ups auto que diferem da data sugerida atual
+    const dataSugerida=calcProxData(lead.temperatura,lead.data_primeiro_contato);
+    const antigos=followups.filter(f=>f.lead_id===lead.id&&!f.feito&&f.auto&&f.data!==dataSugerida);
     for(const a of antigos){
       await _sb.from('wealth_followups').delete().eq('id',a.id);
       followups.splice(followups.indexOf(a),1);
     }
-    // 2. Agora verifica se ainda tem algum pendente (manual ou vencido)
+    // 2. Verifica se ainda tem pendente na data certa
     const temPendente=followups.some(f=>f.lead_id===lead.id&&!f.feito);
     if(temPendente)continue;
-    // 3. Cria novo follow-up com prazo adequado
+    // 3. Cria follow-up na mesma data da sugestão de prospecção
     const p=TEMP_PROSP[lead.temperatura];if(!p)continue;
-    const dias=DIAS_INICIAL[lead.temperatura]??7;
-    const d=new Date();d.setDate(d.getDate()+dias);
-    const dataFu=dias===0?today():toDateStr(d);
+    const dataFu=dataSugerida||today();
     const fId=uid();
     const rec={id:fId,lead_id:lead.id,data:dataFu,tipo:TIPO_MAP[lead.temperatura]||'ligacao',desc:p.acao,feito:false,auto:true};
     const{error}=await _sb.from('wealth_followups').upsert({id:fId,lead_id:lead.id,data:rec});
