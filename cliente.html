@@ -3215,6 +3215,7 @@ document.addEventListener('input',function(e){
   const skipTypes=['email','password','url','date','time','number','hidden','color','range','file'];
   const skipIds=['email','senha','url','foto','link','login','usuario','pass','user'];
   if(!((el.tagName==='INPUT'&&!skipTypes.includes(el.type))||el.tagName==='TEXTAREA'))return;
+  if(el.dataset.noUpper)return;
   if(el.id&&skipIds.some(s=>el.id.includes(s)))return;
   const p=el.selectionStart;el.value=el.value.toUpperCase();
   try{el.setSelectionRange(p,p);}catch(x){}

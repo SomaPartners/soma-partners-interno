@@ -389,10 +389,10 @@ function addSenhaForm(s=null){
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
       <div><label class="form-label">Título *</label><input class="form-control" id="st-${idx}" placeholder="Ex: Banco, Netflix, Email..." value="${s?.titulo||''}"></div>
-      <div><label class="form-label">Login / Usuário</label><input class="form-control" id="sl-${idx}" placeholder="email@exemplo.com" value="${s?.login||''}"></div>
+      <div><label class="form-label">Login / Usuário</label><input class="form-control" id="sl-${idx}" placeholder="email@exemplo.com" value="${s?.login||''}" data-no-upper="1"></div>
       <div><label class="form-label">Senha</label>
         <div style="position:relative">
-          <input class="form-control" id="ss-${idx}" type="password" placeholder="••••••••" value="${s?.senha||''}" style="padding-right:36px">
+          <input class="form-control" id="ss-${idx}" type="password" placeholder="••••••••" value="${s?.senha||''}" style="padding-right:36px" data-no-upper="1">
           <button type="button" onclick="toggleSenhaVis('ss-${idx}')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.4);display:flex;align-items:center">
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
@@ -547,6 +547,7 @@ document.addEventListener('input',function(e){
   const skipTypes=['email','password','url','date','time','number','hidden','color','range','file'];
   const skipIds=['email','senha','url','foto','link','login','usuario','pass','user'];
   if(!((el.tagName==='INPUT'&&!skipTypes.includes(el.type))||el.tagName==='TEXTAREA'))return;
+  if(el.dataset.noUpper)return;
   if(el.id&&skipIds.some(s=>el.id.includes(s)))return;
   const p=el.selectionStart;el.value=el.value.toUpperCase();
   try{el.setSelectionRange(p,p);}catch(x){}
