@@ -152,6 +152,9 @@ tbody tr:hover .del-btn{color:var(--muted2)}
 .fu-done-btn:hover{background:rgba(16,185,129,0.2);border-color:#6ee7b7;color:#6ee7b7}
 .fu-done-btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
 .fu-empty{text-align:center;padding:24px 16px;font-size:11px;color:var(--muted2)}
+.fu-card-concluido{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 13px;opacity:0.6;display:flex;gap:10px;align-items:flex-start}
+.fu-check-done{width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,0.2);border:2px solid rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#6ee7b7}
+.fu-check-done svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
 .fu-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04)}
 .fu-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
 .fu-vencido{background:var(--red)}.fu-hoje{background:var(--orange)}.fu-futuro{background:var(--green)}
@@ -352,6 +355,16 @@ textarea.fc{resize:vertical;min-height:70px}
           <div class="fu-col-head"><span class="fu-col-title">Esta Semana</span><span class="fu-col-count" id="fu-count-semana">0</span></div>
           <div class="fu-cards" id="fu-cards-semana"></div>
         </div>
+      </div>
+
+      <!-- CONCLUÍDOS -->
+      <div style="margin-top:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="toggleConcluidos()">
+          <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted2)">Concluídos</div>
+          <span id="fu-count-concluido" style="font-size:11px;font-weight:700;color:var(--muted2)">0</span>
+          <svg id="concluidos-arrow" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--muted2)" stroke-width="2" style="margin-left:2px;transition:transform 0.2s"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div id="fu-cards-concluido" style="display:none;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
       </div>
     </div>
 
@@ -732,13 +745,35 @@ function renderFollowups(){
   const hoje=pending.filter(f=>isToday(f.data));
   const semana=pending.filter(f=>!isOverdue(f.data)&&!isToday(f.data)&&f.data>=start&&f.data<=end);
 
+  const concluidos=followups.filter(f=>f.feito).sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,30);
+
   const empty='<div class="fu-empty">Nenhuma ação</div>';
   document.getElementById('fu-count-atrasado').textContent=atrasados.length;
   document.getElementById('fu-count-hoje').textContent=hoje.length;
   document.getElementById('fu-count-semana').textContent=semana.length;
+  document.getElementById('fu-count-concluido').textContent=concluidos.length;
   document.getElementById('fu-cards-atrasado').innerHTML=atrasados.length?atrasados.map(f=>fuCardHTML(f,'atrasado')).join(''):empty;
   document.getElementById('fu-cards-hoje').innerHTML=hoje.length?hoje.map(f=>fuCardHTML(f,'hoje')).join(''):empty;
   document.getElementById('fu-cards-semana').innerHTML=semana.length?semana.map(f=>fuCardHTML(f,'semana')).join(''):empty;
+  document.getElementById('fu-cards-concluido').innerHTML=concluidos.length?concluidos.map(f=>{
+    const l=leads.find(x=>x.id===f.lead_id);
+    return`<div class="fu-card-concluido">
+      <div class="fu-check-done"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;margin-bottom:2px">${l?.nome||'—'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${f.desc||''}</div>
+        <div style="font-size:10px;color:var(--muted2)">${TIPO_TAG[f.tipo]||''} ${fmtDate(f.data)}</div>
+      </div>
+    </div>`;}).join(''):'<div class="fu-empty" style="grid-column:1/-1">Nenhum concluído ainda</div>';
+}
+
+let _concluidos_aberto=false;
+function toggleConcluidos(){
+  _concluidos_aberto=!_concluidos_aberto;
+  const el=document.getElementById('fu-cards-concluido');
+  const arrow=document.getElementById('concluidos-arrow');
+  el.style.display=_concluidos_aberto?'grid':'none';
+  if(arrow)arrow.style.transform=_concluidos_aberto?'rotate(180deg)':'';
 }
 
 function renderPainel(){
