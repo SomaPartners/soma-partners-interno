@@ -148,8 +148,9 @@ tbody tr:hover .del-btn{color:var(--muted2)}
 .fu-tag-wpp{background:rgba(16,185,129,0.15);color:#6ee7b7}
 .fu-tag-eml{background:rgba(245,158,11,0.15);color:#fcd34d}
 .fu-tag-out{background:rgba(255,255,255,0.08);color:var(--muted)}
-.fu-done-btn{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;color:#6ee7b7;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.15s}
-.fu-done-btn:hover{background:rgba(16,185,129,0.25)}
+.fu-done-btn{width:28px;height:28px;border-radius:50%;border:2px solid rgba(16,185,129,0.4);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.18s;color:transparent}
+.fu-done-btn:hover{background:rgba(16,185,129,0.2);border-color:#6ee7b7;color:#6ee7b7}
+.fu-done-btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
 .fu-empty{text-align:center;padding:24px 16px;font-size:11px;color:var(--muted2)}
 .fu-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04)}
 .fu-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
@@ -651,19 +652,22 @@ function renderPipeline(){
 
 // ── FOLLOW-UPS ──
 const TIPO_TAG={ligacao:'<span class="fu-tag fu-tag-lig">Ligação</span>',reuniao:'<span class="fu-tag fu-tag-reu">Reunião</span>',whatsapp:'<span class="fu-tag fu-tag-wpp">WhatsApp</span>',email:'<span class="fu-tag fu-tag-eml">E-mail</span>'};
+const CHECKSVG=`<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
 function fuCardHTML(f,tipo){
   const l=leads.find(x=>x.id===f.lead_id);
   const ov=isOverdue(f.data);const td=isToday(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
-  return`<div class="fu-card fu-card-${tipo}">
-    <div class="fu-card-lead">${l?.nome||'—'}${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||'Outro'}</span>`}</div>
-    <div class="fu-card-desc">${f.desc||''}</div>
-    <div class="fu-card-footer">
-      <div class="fu-card-meta">
-        ${l?.responsavel?`<span>${l.responsavel}</span>`:''}
-        <span style="color:${ov?'#fca5a5':td?'#fcd34d':'var(--muted2)'}">${ov?`${dias}d atraso`:fmtDate(f.data)}</span>
+  return`<div class="fu-card fu-card-${tipo}" style="display:flex;gap:10px;align-items:flex-start">
+    <button class="fu-done-btn" onclick="event.stopPropagation();marcarFuFeito('${f.id}')" title="Marcar como feito">${CHECKSVG}</button>
+    <div style="flex:1;min-width:0">
+      <div class="fu-card-lead">${l?.nome||'—'}${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||'Outro'}</span>`}</div>
+      <div class="fu-card-desc">${f.desc||''}</div>
+      <div class="fu-card-footer">
+        <div class="fu-card-meta">
+          ${l?.responsavel?`<span>${l.responsavel}</span>`:''}
+          <span style="color:${ov?'#fca5a5':td?'#fcd34d':'var(--muted2)'}">${ov?`${dias}d atraso`:fmtDate(f.data)}</span>
+        </div>
       </div>
-      <button class="fu-done-btn" onclick="event.stopPropagation();marcarFuFeito('${f.id}')">✓ Feito</button>
     </div>
   </div>`;
 }
@@ -672,16 +676,18 @@ function fuPainelCardHTML(f,tipo){
   const l=leads.find(x=>x.id===f.lead_id);
   const ov=isOverdue(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
-  return`<div class="painel-fu-card ${tipo}">
-    <div class="painel-fu-lead">${l?.nome||'—'}</div>
-    <div class="painel-fu-desc">${f.desc||''}</div>
-    <div class="painel-fu-footer">
-      <div style="display:flex;gap:8px;align-items:center">
-        ${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||''}</span>`}
-        ${l?.responsavel?`<span style="font-size:10px;color:var(--muted2)">${l.responsavel}</span>`:''}
-        <span style="font-size:10px;color:${ov?'#fca5a5':'var(--muted2)'}">${ov?`${dias}d atraso`:fmtDate(f.data)}</span>
+  return`<div class="painel-fu-card ${tipo}" style="display:flex;gap:10px;align-items:flex-start">
+    <button class="fu-done-btn" onclick="marcarFuFeito('${f.id}')" title="Marcar como feito">${CHECKSVG}</button>
+    <div style="flex:1;min-width:0">
+      <div class="painel-fu-lead">${l?.nome||'—'}</div>
+      <div class="painel-fu-desc">${f.desc||''}</div>
+      <div class="painel-fu-footer">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          ${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||''}</span>`}
+          ${l?.responsavel?`<span style="font-size:10px;color:var(--muted2)">${l.responsavel}</span>`:''}
+          <span style="font-size:10px;color:${ov?'#fca5a5':'var(--muted2)'}">${ov?`${dias}d atraso`:fmtDate(f.data)}</span>
+        </div>
       </div>
-      <button class="fu-done-btn" onclick="marcarFuFeito('${f.id}')">✓ Feito</button>
     </div>
   </div>`;
 }
@@ -844,8 +850,12 @@ async function saveLead(){
   if(error){showToast('Erro ao salvar','err');return;}
   const idx=leads.findIndex(l=>l.id===id);
   if(idx>=0)leads[idx]=data;else leads.unshift(data);
+  // Auto follow-up se não houver nenhum pendente para este lead
+  const temPendente=followups.some(f=>f.lead_id===id&&!f.feito);
+  if(!temPendente&&['frio','morno','quente'].includes(data.temperatura))
+    await autoFollowup(data);
   showToast('Salvo!','ok');closeModal('modal-lead');
-  renderVisao();renderLeads();populateLeadSelect();
+  renderVisao();renderLeads();renderFollowups();populateLeadSelect();
 }
 
 function calcProxData(temp,dataContato){
@@ -933,7 +943,25 @@ async function marcarFuFeito(id){
   const f=followups.find(x=>x.id===id);if(!f)return;
   f.feito=true;
   await _sb.from('wealth_followups').upsert({id,lead_id:f.lead_id,data:f});
+  // Agenda próximo follow-up automático baseado na temperatura do lead
+  const lead=leads.find(l=>l.id===f.lead_id);
+  if(lead&&['frio','morno','quente'].includes(lead.temperatura)){
+    const temOutroPendente=followups.some(x=>x.lead_id===f.lead_id&&!x.feito&&x.id!==id);
+    if(!temOutroPendente) await autoFollowup(lead);
+  }
   renderFollowups();renderVisao();if(document.body.classList.contains('painel-mode'))renderPainel();
+}
+
+async function autoFollowup(lead){
+  const p=TEMP_PROSP[lead.temperatura];if(!p)return;
+  const TIPO_MAP={frio:'whatsapp',morno:'ligacao',quente:'ligacao'};
+  const dataBase=today();
+  const d=new Date(dataBase+'T12:00:00');d.setDate(d.getDate()+p.dias);
+  const dataFu=toDateStr(d);
+  const fId=uid();
+  const rec={id:fId,lead_id:lead.id,data:dataFu,tipo:TIPO_MAP[lead.temperatura]||'ligacao',desc:p.acao,feito:false,auto:true};
+  const{error}=await _sb.from('wealth_followups').upsert({id:fId,lead_id:lead.id,data:rec});
+  if(!error){followups.push(rec);}
 }
 
 // ── DELETE ──
