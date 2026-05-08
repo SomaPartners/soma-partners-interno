@@ -1010,17 +1010,22 @@ async function marcarFuFeito(id){
   const lead=leads.find(l=>l.id===f.lead_id);
   if(lead&&['frio','morno','quente'].includes(lead.temperatura)){
     const temOutroPendente=followups.some(x=>x.lead_id===f.lead_id&&!x.feito&&x.id!==id);
-    if(!temOutroPendente) await autoFollowup(lead);
+    if(!temOutroPendente) await autoFollowup(lead,true);
   }
   renderFollowups();renderVisao();if(document.body.classList.contains('painel-mode'))renderPainel();
 }
 
-async function autoFollowup(lead){
+async function autoFollowup(lead,usarHoje=false){
   const p=TEMP_PROSP[lead.temperatura];if(!p)return;
   const TIPO_MAP={frio:'whatsapp',morno:'ligacao',quente:'ligacao'};
-  const dataBase=today();
-  const d=new Date(dataBase+'T12:00:00');d.setDate(d.getDate()+p.dias);
-  const dataFu=toDateStr(d);
+  // Usa data_primeiro_contato + dias (igual à sugestão); após marcar feito usa hoje + dias
+  let dataFu;
+  if(usarHoje){
+    const d=new Date();d.setDate(d.getDate()+p.dias);
+    dataFu=toDateStr(d);
+  } else {
+    dataFu=calcProxData(lead.temperatura,lead.data_primeiro_contato)||today();
+  }
   const fId=uid();
   const rec={id:fId,lead_id:lead.id,data:dataFu,tipo:TIPO_MAP[lead.temperatura]||'ligacao',desc:p.acao,feito:false,auto:true};
   const{error}=await _sb.from('wealth_followups').upsert({id:fId,lead_id:lead.id,data:rec});
