@@ -2160,24 +2160,34 @@ function renderDados(){
 async function syncLeadWealth(){
   try{
     const membros=CLIENT.membros||[];
-    const titular=membros.find(m=>m.rel==='titular')||membros[0]||null;
-    const nome=(titular?.nome)||CLIENT.nome;
-    const telefone=titular?.tel||'';
-    const email=titular?.email||'';
-    const cpf=titular?.cpf||'';
+    const titulares=membros.filter(m=>m.rel==='titular');
+    // Se não houver nenhum titular, usa o primeiro membro
+    const alvo=titulares.length>0?titulares:[membros[0]].filter(Boolean);
+    if(alvo.length===0)return;
     const dHoje=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
     const{data:rows}=await _sb.from('wealth_leads').select('id,data');
-    const existing=(rows||[]).find(r=>r.data?.concierge_id===CLIENT.id);
-    const leadId=existing?.id||crypto.randomUUID();
-    const data={id:leadId,nome,telefone,email,cpf,
-      patrimonio:CLIENT.patrimonio||'',
-      origem:'concierge',concierge_id:CLIENT.id,
-      temperatura:'ativo',estagio:'fechado',
-      responsavel:'',
-      data_primeiro_contato:existing?.data?.data_primeiro_contato||dHoje(),
-      proxima_acao:'',obs:''};
-    const{error}=await _sb.from('wealth_leads').upsert({id:leadId,data});
-    if(error)console.error('syncLeadWealth error:',error);
+    const existentes=(rows||[]).filter(r=>r.data?.concierge_id===CLIENT.id);
+    for(const m of alvo){
+      // Chave única por concierge_id + nome do membro
+      const chave=CLIENT.id+'::'+m.nome;
+      const existing=existentes.find(r=>r.data?.concierge_key===chave);
+      const leadId=existing?.id||crypto.randomUUID();
+      const data={id:leadId,
+        nome:m.nome||CLIENT.nome,
+        telefone:m.tel||'',
+        email:m.email||'',
+        cpf:m.cpf||'',
+        patrimonio:CLIENT.patrimonio||'',
+        origem:'concierge',
+        concierge_id:CLIENT.id,
+        concierge_key:chave,
+        temperatura:'ativo',estagio:'fechado',
+        responsavel:'',
+        data_primeiro_contato:existing?.data?.data_primeiro_contato||dHoje(),
+        proxima_acao:'',obs:''};
+      const{error}=await _sb.from('wealth_leads').upsert({id:leadId,data});
+      if(error)console.error('syncLeadWealth error:',error);
+    }
   }catch(e){console.error('syncLeadWealth exception:',e);}
 }
 
