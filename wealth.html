@@ -120,6 +120,9 @@ tbody tr:hover .del-btn{color:var(--muted2)}
 .pipeline-cards{padding:8px;display:flex;flex-direction:column;gap:6px;flex:1;min-height:60px}
 .pipeline-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:background 0.15s}
 .pipeline-card:hover{background:rgba(255,255,255,0.08)}
+.pipeline-card[draggable]{cursor:grab}.pipeline-card[draggable]:active{cursor:grabbing;opacity:0.7}
+.pipeline-col.drag-over{background:rgba(79,70,229,0.08);border-color:rgba(79,70,229,0.4)}
+.pipeline-col.drag-over .pipeline-cards{border:2px dashed rgba(79,70,229,0.4);border-radius:6px}
 .pipeline-card-name{font-size:12px;font-weight:700;margin-bottom:4px}
 .pipeline-card-meta{font-size:10px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
 
@@ -633,7 +636,7 @@ function renderVisao(){
 
   const quList=leads.filter(l=>l.temperatura==='quente').slice(0,5);
   document.getElementById('tbody-quentes').innerHTML=quList.length===0?'<tr><td colspan="3" style="text-align:center;padding:20px;font-size:12px;color:var(--muted2)">Nenhum lead quente</td></tr>':
-    quList.map(l=>`<tr onclick="editLead('${l.id}')">
+    quList.map(l=>`<tr>
       <td><div style="display:flex;align-items:center;gap:8px"><div class="lead-av" style="background:${acol(l.nome)};width:26px;height:26px;font-size:9px">${initials(l.nome)}</div><span style="font-size:12px;font-weight:600">${l.nome}</span></div></td>
       <td><span class="estagio-badge">${ESTAGIO_LABELS[l.estagio]||l.estagio}</span></td>
       <td class="${isOverdue(l.data_proxima_acao)?'proxima-vencida':isToday(l.data_proxima_acao)?'proxima-hoje':'proxima-ok'}">${fmtDate(l.data_proxima_acao)}</td>
@@ -656,7 +659,7 @@ function pipelineCardHTML(l,mini=false){
   const nextFu=followups.filter(f=>f.lead_id===l.id&&!f.feito).sort((a,b)=>a.data?.localeCompare(b.data||''))[0];
   const fuOv=nextFu&&isOverdue(nextFu.data);
   const statusBadge=STATUS_BADGE[statusLead(l)]||'';
-  if(mini) return`<div class="painel-pipe-card" onclick="editLead('${l.id}')">
+  if(mini) return`<div class="painel-pipe-card" draggable="true" ondragstart="dragStart(event,'${l.id}')">
     <div class="painel-pipe-name">${l.nome}</div>
     <div class="painel-pipe-meta">
       ${statusBadge}
@@ -664,7 +667,7 @@ function pipelineCardHTML(l,mini=false){
     </div>
     ${l.responsavel?`<div style="font-size:9px;color:var(--muted2);margin-top:3px">${l.responsavel}</div>`:''}
   </div>`;
-  return`<div class="pipeline-card" onclick="editLead('${l.id}')">
+  return`<div class="pipeline-card" draggable="true" ondragstart="dragStart(event,'${l.id}')">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div class="pipeline-card-name" style="margin-bottom:0">${l.nome}</div>
       ${statusBadge}
@@ -682,9 +685,9 @@ function renderPipeline(){
   const cols={};estagios.forEach(e=>cols[e]=[]);
   leads.forEach(l=>{if(cols[l.estagio])cols[l.estagio].push(l);});
   document.getElementById('pipeline-board').innerHTML=estagios.map(e=>`
-    <div class="pipeline-col">
+    <div class="pipeline-col" ondragover="event.preventDefault()" ondrop="dropLead(event,'${e}')" ondragenter="this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
       <div class="pipeline-col-head"><span class="pipeline-col-title">${ESTAGIO_LABELS[e]}</span><span class="pipeline-col-count">${cols[e].length}</span></div>
-      <div class="pipeline-cards">${cols[e].length===0?'<div style="text-align:center;padding:12px;font-size:10px;color:var(--muted2)">Vazio</div>':
+      <div class="pipeline-cards">${cols[e].length===0?'<div style="text-align:center;padding:12px;font-size:10px;color:var(--muted2)">Arraste um lead aqui</div>':
         cols[e].map(l=>pipelineCardHTML(l,false)).join('')}
       </div>
     </div>`).join('');
@@ -697,7 +700,7 @@ function fuCardHTML(f,tipo){
   const l=leads.find(x=>x.id===f.lead_id);
   const ov=isOverdue(f.data);const td=isToday(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
-  return`<div class="fu-card fu-card-${tipo}" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer" onclick="editLead('${f.lead_id}')">
+  return`<div class="fu-card fu-card-${tipo}" style="display:flex;gap:10px;align-items:flex-start">
     <button class="fu-done-btn" onclick="event.stopPropagation();marcarFuFeito('${f.id}')" title="Marcar como feito">${CHECKSVG}</button>
     <div style="flex:1;min-width:0">
       <div class="fu-card-lead">${l?.nome||'—'}${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||'Outro'}</span>`}</div>
@@ -716,7 +719,7 @@ function fuPainelCardHTML(f,tipo){
   const l=leads.find(x=>x.id===f.lead_id);
   const ov=isOverdue(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
-  return`<div class="painel-fu-card ${tipo}" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer" onclick="editLead('${f.lead_id}')">
+  return`<div class="painel-fu-card ${tipo}" style="display:flex;gap:10px;align-items:flex-start">
     <button class="fu-done-btn" onclick="event.stopPropagation();marcarFuFeito('${f.id}')" title="Marcar como feito">${CHECKSVG}</button>
     <div style="flex:1;min-width:0">
       <div class="painel-fu-lead">${l?.nome||'—'}</div>
@@ -1048,6 +1051,31 @@ function openModal(id){
 function openModalEdit(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')}));
+
+// ── DRAG AND DROP PIPELINE ──
+let _dragLeadId=null;
+function dragStart(event,leadId){
+  _dragLeadId=leadId;
+  event.dataTransfer.effectAllowed='move';
+  event.dataTransfer.setData('text/plain',leadId);
+}
+async function dropLead(event,estagio){
+  event.preventDefault();
+  document.querySelectorAll('.pipeline-col').forEach(c=>c.classList.remove('drag-over'));
+  const id=_dragLeadId||event.dataTransfer.getData('text/plain');
+  if(!id)return;
+  const lead=leads.find(l=>l.id===id);
+  if(!lead||lead.estagio===estagio)return;
+  lead.estagio=estagio;
+  // Se moveu para Cliente Ativo, ajusta status
+  if(estagio==='fechado'){lead.temperatura='ativo';}
+  else if(lead.temperatura==='ativo'){lead.temperatura='frio';}
+  const{error}=await _sb.from('wealth_leads').upsert({id:lead.id,data:lead});
+  if(error){showToast('Erro ao mover','err');return;}
+  showToast(`Movido para ${ESTAGIO_LABELS[estagio]}`,'ok');
+  renderPipeline();renderLeads();renderVisao();
+  _dragLeadId=null;
+}
 
 // RELÓGIO
 function tickClock(){
