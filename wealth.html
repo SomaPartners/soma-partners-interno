@@ -575,9 +575,33 @@ async function loadAll(){
     followups=(f.data||[]).map(r=>({id:r.id,lead_id:r.lead_id,...r.data}));
   }catch(e){showToast('Erro ao carregar dados','err')}
   showLoader(false);
+  await migrarFollowupsAuto();
   renderVisao();
   renderFollowups();
   populateLeadSelect();
+}
+
+async function migrarFollowupsAuto(){
+  // Para cada lead ativo sem follow-up pendente, cria um automaticamente
+  const ativos=leads.filter(l=>['frio','morno','quente'].includes(l.temperatura)&&!['perdido','descartado'].includes(l.estagio));
+  const criados=[];
+  for(const lead of ativos){
+    const temPendente=followups.some(f=>f.lead_id===lead.id&&!f.feito);
+    if(temPendente)continue;
+    const p=TEMP_PROSP[lead.temperatura];if(!p)continue;
+    const TIPO_MAP={frio:'whatsapp',morno:'ligacao',quente:'ligacao'};
+    // Calcula data a partir do primeiro contato (pode já estar vencida se lead é antigo)
+    const base=lead.data_primeiro_contato||today();
+    const d=new Date(base+'T12:00:00');
+    d.setDate(d.getDate()+p.dias);
+    // Se a data calculada já passou, usa hoje
+    const dataFu=toDateStr(d)<today()?today():toDateStr(d);
+    const fId=uid();
+    const rec={id:fId,lead_id:lead.id,data:dataFu,tipo:TIPO_MAP[lead.temperatura]||'ligacao',desc:p.acao,feito:false,auto:true};
+    const{error}=await _sb.from('wealth_followups').upsert({id:fId,lead_id:lead.id,data:rec});
+    if(!error){followups.push(rec);criados.push(lead.nome);}
+  }
+  if(criados.length>0)console.log(`Auto follow-ups criados para: ${criados.join(', ')}`);
 }
 
 // ── VISÃO GERAL ──
