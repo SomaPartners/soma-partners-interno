@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Inscrição — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0b1e30;
+  --navy-card:#0d2238;
+  --white:#fff;
+  --border:rgba(255,255,255,0.10);
+  --indigo:#4f46e5;
+  --green:#10b981;
+  --text-muted:rgba(255,255,255,0.55);
+}
+html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-serif;color:var(--white)}
+
+/* TOPBAR */
+.topbar{padding:24px 40px;display:flex;align-items:center;gap:14px}
+.logo-soma{font-size:18px;font-weight:300;letter-spacing:0.5px}
+.logo-pipe{width:1px;height:22px;background:rgba(255,255,255,0.4)}
+.logo-partners{font-size:11px;font-weight:700;letter-spacing:5px;text-transform:uppercase}
+
+/* HERO */
+.hero{padding:0 40px 40px;max-width:780px;margin:0 auto}
+.event-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(79,70,229,0.2);border:1px solid rgba(79,70,229,0.4);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#a5b4fc;margin-bottom:20px}
+.event-name{font-size:clamp(28px,4vw,42px);font-weight:900;letter-spacing:1px;line-height:1.1;margin-bottom:16px}
+.event-meta{display:flex;flex-wrap:wrap;gap:20px;margin-bottom:8px}
+.meta-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);font-weight:500}
+.meta-item svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
+.divider-line{border:none;border-top:1px solid var(--border);margin:32px 0}
+
+/* FORM */
+.form-wrap{max-width:780px;margin:0 auto;padding:0 40px 60px}
+.form-card{background:var(--navy-card);border:1px solid var(--border);border-radius:16px;padding:32px}
+.form-title{font-size:16px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.form-sub{font-size:12px;color:var(--text-muted);margin-bottom:28px;line-height:1.5}
+.form-group{margin-bottom:18px}
+.form-label{display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px}
+.form-control{width:100%;padding:11px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;font-size:13px;font-family:'Montserrat',sans-serif;color:#fff;outline:none;transition:border 0.18s}
+.form-control:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79,70,229,0.15)}
+.form-control::placeholder{color:rgba(255,255,255,0.2)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:540px){.form-row{grid-template-columns:1fr}}
+.form-check{display:flex;align-items:flex-start;gap:10px;margin-top:4px;cursor:pointer}
+.form-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--indigo);cursor:pointer;flex-shrink:0;margin-top:1px}
+.form-check-label{font-size:12px;color:var(--text-muted);line-height:1.5}
+.btn-submit{width:100%;padding:14px;background:var(--indigo);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:24px;transition:all 0.2s}
+.btn-submit:hover{background:#4338ca;transform:translateY(-1px)}
+.btn-submit:active{transform:translateY(0)}
+
+/* SUCCESS */
+.success-wrap{display:none;text-align:center;padding:60px 40px;max-width:600px;margin:0 auto}
+.success-icon{width:72px;height:72px;border-radius:50%;background:rgba(16,185,129,0.15);border:2px solid rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+.success-icon svg{width:32px;height:32px;stroke:var(--green);stroke-width:2;fill:none}
+.success-title{font-size:24px;font-weight:900;letter-spacing:1px;margin-bottom:10px}
+.success-desc{font-size:14px;color:var(--text-muted);line-height:1.6;max-width:400px;margin:0 auto 28px}
+.btn-wpp{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#25d366;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;transition:all 0.18s}
+.btn-wpp:hover{background:#1fba59}
+.btn-wpp svg{width:18px;height:18px;fill:currentColor}
+
+/* FOOTER */
+.footer{text-align:center;padding:24px;border-top:1px solid var(--border);font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo-soma">Soma</span>
+  <div class="logo-pipe"></div>
+  <span class="logo-partners">Partners</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="event-badge">Inscrição</div>
+  <div class="event-name" id="ev-name">Carregando evento...</div>
+  <div class="event-meta" id="ev-meta"></div>
+  <div id="ev-desc-wrap" style="display:none">
+    <hr class="divider-line">
+    <p id="ev-desc-text" style="font-size:13px;color:var(--text-muted);line-height:1.7;max-width:680px"></p>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="form-wrap" id="form-section">
+  <div class="form-card">
+    <div class="form-title">Confirmar Presença</div>
+    <div class="form-sub">Preencha os dados abaixo para garantir sua vaga no evento. Nossa equipe entrará em contato para confirmar.</div>
+    <form id="reg-form" onsubmit="submitForm(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nome completo *</label>
+          <input class="form-control" id="f-nome" placeholder="Seu nome" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">E-mail *</label>
+          <input class="form-control" id="f-email" type="email" placeholder="seu@email.com" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Telefone / WhatsApp *</label>
+          <input class="form-control" id="f-telefone" placeholder="(11) 99999-9999" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">CPF</label>
+          <input class="form-control" id="f-cpf" placeholder="000.000.000-00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Empresa / Organização</label>
+        <input class="form-control" id="f-empresa" placeholder="Onde você trabalha?">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Observações</label>
+        <textarea class="form-control" id="f-obs" rows="2" placeholder="Alguma necessidade especial ou informação adicional?"></textarea>
+      </div>
+      <div class="form-check">
+        <input type="checkbox" id="f-termos" required>
+        <label class="form-check-label" for="f-termos">Concordo em compartilhar meus dados com a equipe Soma Partners para fins de confirmação de presença neste evento.</label>
+      </div>
+      <button type="submit" class="btn-submit">Confirmar Presença</button>
+    </form>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-wrap" id="success-section">
+  <div class="success-icon">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <div class="success-title">Inscrição Enviada!</div>
+  <div class="success-desc" id="success-msg">Seus dados foram enviados para a equipe Soma Partners. Entraremos em contato em breve para confirmar sua presença.</div>
+  <a href="#" class="btn-wpp" id="wpp-btn" target="_blank">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Enviar via WhatsApp
+  </a>
+</div>
+
+<div class="footer">SOMA PARTNERS · SITE INTERNO</div>
+
+<script>
+// Read URL params
+function getParam(name){
+  const url = new URL(window.location.href);
+  return url.searchParams.get(name)||'';
+}
+
+const evId    = getParam('id');
+const evNome  = getParam('nome');
+const evData  = getParam('data');
+const evHora  = getParam('hora');
+const evLocal = getParam('local');
+const evDesc  = getParam('desc');
+const evEmail = getParam('email') || 'atendimento@somapartners.co';
+
+// Render event info
+document.getElementById('ev-name').textContent = evNome || 'Evento Soma Partners';
+
+const metaItems = [];
+if(evData) metaItems.push(`<span class="meta-item"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${evData}${evHora?' às '+evHora:''}</span>`);
+if(evLocal) metaItems.push(`<span class="meta-item"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${evLocal}</span>`);
+document.getElementById('ev-meta').innerHTML = metaItems.join('');
+
+if(evDesc){
+  document.getElementById('ev-desc-wrap').style.display='block';
+  document.getElementById('ev-desc-text').textContent = evDesc;
+}
+
+// Submit
+async function submitForm(e){
+  e.preventDefault();
+  const nome     = document.getElementById('f-nome').value.trim();
+  const email    = document.getElementById('f-email').value.trim();
+  const telefone = document.getElementById('f-telefone').value.trim();
+  const cpf      = document.getElementById('f-cpf').value.trim();
+  const empresa  = document.getElementById('f-empresa').value.trim();
+  const obs      = document.getElementById('f-obs').value.trim();
+
+  // Build WhatsApp message
+  let msg = `*Nova inscrição — ${evNome}*\n\n`;
+  msg += `*Nome:* ${nome}\n`;
+  msg += `*E-mail:* ${email}\n`;
+  msg += `*Telefone:* ${telefone}\n`;
+  if(cpf)    msg += `*CPF:* ${cpf}\n`;
+  if(empresa) msg += `*Empresa:* ${empresa}\n`;
+  if(obs)    msg += `*Observações:* ${obs}\n`;
+  msg += `\n*Evento:* ${evNome}`;
+  if(evData)  msg += `\n*Data:* ${evData}${evHora?' às '+evHora:''}`;
+  if(evLocal) msg += `\n*Local:* ${evLocal}`;
+
+  // Save guest to Supabase
+  try {
+    const SUPA_URL = 'https://mdftseanzfganeiyotlf.supabase.co';
+    const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
+    const sbClient = supabase.createClient(SUPA_URL, SUPA_KEY);
+    if(evId) {
+      const {data:existing}=await sbClient.from('eventos_convidados').select('id').eq('evento_id',evId).eq('data->>info',email).maybeSingle();
+      if(!existing){
+        const gId=Date.now().toString(36)+Math.random().toString(36).substr(2,4);
+        const guest={id:gId,name:nome,info:email,telefone,cpf,empresa,obs,rsvp:'confirmado',origem:'formulario',_rowId:gId};
+        await sbClient.from('eventos_convidados').insert({id:gId,evento_id:evId,data:guest});
+      }
+    }
+  } catch(e){console.warn('Supabase write failed',e)}
+
+  // WhatsApp message
+  const wppNumber = '5511960846592';
+  const wppUrl = `https://wa.me/${wppNumber}?text=${encodeURIComponent(msg)}`;
+  document.getElementById('wpp-btn').href = wppUrl;
+
+  // Mailto fallback
+  const mailSubject = `Inscrição: ${evNome}`;
+  const mailBody = msg.replace(/\*/g,'');
+  const mailUrl = `mailto:${evEmail}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`;
+  document.getElementById('success-msg').innerHTML =
+    `Inscrição registrada com sucesso! Clique no botão abaixo para também confirmar via WhatsApp, ou <a href="${mailUrl}" style="color:#a5b4fc">envie por e-mail</a>.`;
+
+  document.getElementById('form-section').style.display='none';
+  document.getElementById('success-section').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
