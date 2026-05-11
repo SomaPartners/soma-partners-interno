@@ -2232,7 +2232,7 @@ function addDocForm(d=null){
       <div><label class="fl">Número</label><input class="fc" id="dnum-${idx}" placeholder="Nº do documento" value="${d?.numero||''}"></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-      <div><label class="fl">Emissão</label><input class="fc" id="dem-${idx}" type="date" value="${d?.emissao||'}" style="color-scheme:dark"></div>
+      <div><label class="fl">Emissão</label><input class="fc" id="dem-${idx}" type="date" value="${d?.emissao||''}" style="color-scheme:dark"></div>
       <div><label class="fl">Vencimento</label><input class="fc" id="dvc-${idx}" type="date" value="${d?.vencimento||''}" style="color-scheme:dark"></div>
       <div><label class="fl">País / Órgão</label><input class="fc" id="dpais-${idx}" placeholder="Ex: Brasil, EUA..." value="${d?.pais||''}"></div>
     </div>`;
