@@ -832,6 +832,14 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
         <input type="file" id="e-foto-file" accept="image/*" style="display:none" onchange="handleFotoUpload(this)">
       </div>
       <div class="fg"><label class="fl">Patrimônio estimado</label><input class="fc" id="e-patrimonio" placeholder="Ex: R$ 2.000.000"></div>
+      <div class="fg"><label class="fl">Endereço</label><input class="fc" id="e-endereco" placeholder="Rua, número, bairro, cidade, CEP"></div>
+      <!-- SENHAS -->
+      <div style="border-top:1px solid rgba(255,255,255,0.08);margin:16px 0 12px"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <label class="fl" style="margin:0">Senhas & Acessos</label>
+        <button type="button" onclick="addSenhaFormEdit()" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.35);border-radius:6px;padding:4px 12px;font-size:11px;font-weight:700;color:#fcd34d;cursor:pointer;font-family:'Montserrat',sans-serif">+ Adicionar</button>
+      </div>
+      <div id="e-senhas-list"></div>
     </div>
     <div class="mf"><button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button><button class="btn btn-primary" onclick="saveCliente()">Salvar</button></div>
   </div>
@@ -2204,10 +2212,45 @@ async function syncLeadWealth(){
   }catch(e){console.error('syncLeadWealth exception:',e);}
 }
 
+// ── SENHAS EDIT ──
+let _senhaEditCount=0;
+function addSenhaFormEdit(s=null){
+  const idx=_senhaEditCount++;
+  const div=document.createElement('div');
+  div.id=`se-${idx}`;
+  div.style.cssText='background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:12px;margin-bottom:8px;position:relative';
+  div.innerHTML=`
+    <button type="button" onclick="document.getElementById('se-${idx}').remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.3);font-size:16px;line-height:1" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">×</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+      <div><label class="fl">Título *</label><input class="fc" id="set-${idx}" placeholder="Ex: Banco, Netflix..." value="${s?.titulo||''}"></div>
+      <div><label class="fl">Login / Usuário</label><input class="fc" id="sel-${idx}" placeholder="email@exemplo.com" value="${s?.login||''}" data-no-upper="1"></div>
+    </div>
+    <div><label class="fl">Senha</label>
+      <div style="position:relative">
+        <input class="fc" id="ses-${idx}" type="password" placeholder="••••••••" value="${s?.senha||''}" style="padding-right:36px" data-no-upper="1">
+        <button type="button" onclick="const i=document.getElementById('ses-${idx}');i.type=i.type==='password'?'text':'password'" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.4);display:flex;align-items:center">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>`;
+  document.getElementById('e-senhas-list').appendChild(div);
+}
+
+function collectSenhasEdit(){
+  return Array.from(document.querySelectorAll('#e-senhas-list [id^=se-]')).map(div=>{
+    const idx=div.id.replace('se-','');
+    const titulo=document.getElementById(`set-${idx}`)?.value.trim();
+    if(!titulo)return null;
+    return{titulo,login:document.getElementById(`sel-${idx}`)?.value.trim()||'',senha:document.getElementById(`ses-${idx}`)?.value||''};
+  }).filter(Boolean);
+}
+
 // ── CRUD ──
 async function saveCliente(){
   const nome=document.getElementById('e-nome').value.trim();if(!nome){alert('Informe o nome');return}
-  Object.assign(CLIENT,{nome,status:document.getElementById('e-status').value,foto:document.getElementById('e-foto').value.trim(),patrimonio:document.getElementById('e-patrimonio').value.trim()});
+  const endereco=document.getElementById('e-endereco')?.value.trim()||'';
+  const senhas=collectSenhasEdit();
+  Object.assign(CLIENT,{nome,status:document.getElementById('e-status').value,foto:document.getElementById('e-foto').value.trim(),patrimonio:document.getElementById('e-patrimonio').value.trim(),endereco,senhas});
   closeModal('modal-cliente');renderAll();
   const{error}=await _sb.from('concierge_clientes').upsert({id:CLIENT.id,data:CLIENT});
   if(error){showToast('Erro ao salvar — tente novamente','err');return;}
@@ -2336,7 +2379,18 @@ async function doDelete(){
 
 // ── MODALS ──
 function openModal(id){
-  if(id==='modal-cliente'&&CLIENT){['e-nome','e-patrimonio','e-foto'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});document.getElementById('e-nome').value=CLIENT.nome||'';document.getElementById('e-status').value=CLIENT.status||'ativo';document.getElementById('e-foto').value=CLIENT.foto||'';if(CLIENT.foto)setFotoPreview(CLIENT.foto);else clearFotoPreview();document.getElementById('e-patrimonio').value=CLIENT.patrimonio||'';}
+  if(id==='modal-cliente'&&CLIENT){
+    ['e-nome','e-patrimonio','e-foto','e-endereco'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});
+    document.getElementById('e-nome').value=CLIENT.nome||'';
+    document.getElementById('e-status').value=CLIENT.status||'ativo';
+    document.getElementById('e-foto').value=CLIENT.foto||'';
+    if(CLIENT.foto)setFotoPreview(CLIENT.foto);else clearFotoPreview();
+    document.getElementById('e-patrimonio').value=CLIENT.patrimonio||'';
+    const endEl=document.getElementById('e-endereco');if(endEl)endEl.value=CLIENT.endereco||'';
+    // Carrega senhas existentes
+    const sl=document.getElementById('e-senhas-list');
+    if(sl){sl.innerHTML='';_senhaEditCount=0;(CLIENT.senhas||[]).forEach(s=>addSenhaFormEdit(s));}
+  }
   if(id==='modal-membro'){document.getElementById('membro-idx').value='-1';document.getElementById('mt-membro').textContent='Adicionar Membro';['m-nome','m-cpf','m-nasc','m-nasc-local','m-pai','m-mae','m-tel','m-email','m-email2','m-end','m-profissao','m-cnh-num','m-cnh-cat','m-cnh-emissao','m-cnh-venc','m-cnh-orgao','m-cnh-1hab','m-veiculo','m-placa','m-obs','m-foto'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});document.getElementById('m-rel').value='outro';clearMembroFotoPreview();}
   if(id==='modal-pgto'){document.getElementById('pgto-id').value='';['pgto-carac','pgto-val','pgto-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});setTimeout(()=>initCurrencyInput(document.getElementById('pgto-val')),50);const pd=document.getElementById('pgto-data');if(pd)pd.value=today();const pt=document.getElementById('pgto-tipo');if(pt)pt.value='SERVIÇOS';const pd2=document.getElementById('pgto-desc');if(pd2)pd2.value='SAÍDA';// Reset toggle
     _pgtoRecorrente=false;const tog=document.getElementById('pgto-rec-toggle');const kn=document.getElementById('pgto-rec-knob');const rf=document.getElementById('pgto-rec-fields');if(tog){tog.style.background='rgba(255,255,255,0.1)';tog.style.borderColor='rgba(255,255,255,0.15)';}if(kn){kn.style.left='2px';kn.style.opacity='0.4';}if(rf)rf.style.display='none';
