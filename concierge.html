@@ -297,7 +297,7 @@ function renderGrid(){
     const mq=(c.nome||'').toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q);
     const mf=!currentFilter||c.status===currentFilter;
     return mq&&mf;
-  });
+  }).sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR',{sensitivity:'base'}));
 
   document.getElementById('page-count').textContent=`${clients.length} cliente${clients.length!==1?'s':''} cadastrado${clients.length!==1?'s':''}`;
 
