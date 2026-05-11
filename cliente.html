@@ -919,6 +919,12 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
         <div class="fg"><label class="fl">Placa</label><input class="fc" id="m-placa" placeholder="Ex: GHN6C61"></div>
       </div>
 
+      <!-- Outros Documentos -->
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin:14px 0 6px">Outros Documentos</div>
+      <div style="font-size:11px;color:var(--muted2);margin-bottom:10px">Passaporte, RNE, Green Card, Cidadania, etc.</div>
+      <div id="docs-list"></div>
+      <button type="button" onclick="addDocForm()" style="background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.3);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;color:#a5b4fc;cursor:pointer;font-family:'Montserrat',sans-serif;margin-bottom:4px">+ Adicionar documento</button>
+
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin:14px 0 10px">Observações</div>
       <div class="fg"><textarea class="fc" id="m-obs" rows="2" placeholder="Informações adicionais..."></textarea></div>
     </div>
@@ -2212,6 +2218,36 @@ async function syncLeadWealth(){
   }catch(e){console.error('syncLeadWealth exception:',e);}
 }
 
+// ── OUTROS DOCUMENTOS ──
+let _docCount=0;
+function addDocForm(d=null){
+  const idx=_docCount++;
+  const div=document.createElement('div');
+  div.id=`doc-${idx}`;
+  div.style.cssText='background:rgba(79,70,229,0.06);border:1px solid rgba(79,70,229,0.2);border-radius:8px;padding:10px 12px;margin-bottom:8px;position:relative';
+  div.innerHTML=`
+    <button type="button" onclick="document.getElementById('doc-${idx}').remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.3);font-size:16px;line-height:1" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">×</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+      <div><label class="fl">Tipo de documento</label><input class="fc" id="dtp-${idx}" placeholder="Ex: Passaporte, RNE..." value="${d?.tipo||''}"></div>
+      <div><label class="fl">Número</label><input class="fc" id="dnum-${idx}" placeholder="Nº do documento" value="${d?.numero||''}"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div><label class="fl">Emissão</label><input class="fc" id="dem-${idx}" type="date" value="${d?.emissao||'}" style="color-scheme:dark"></div>
+      <div><label class="fl">Vencimento</label><input class="fc" id="dvc-${idx}" type="date" value="${d?.vencimento||''}" style="color-scheme:dark"></div>
+      <div><label class="fl">País / Órgão</label><input class="fc" id="dpais-${idx}" placeholder="Ex: Brasil, EUA..." value="${d?.pais||''}"></div>
+    </div>`;
+  document.getElementById('docs-list').appendChild(div);
+}
+
+function collectDocs(){
+  return Array.from(document.querySelectorAll('#docs-list [id^=doc-]')).map(div=>{
+    const idx=div.id.replace('doc-','');
+    const tipo=document.getElementById(`dtp-${idx}`)?.value.trim();
+    if(!tipo)return null;
+    return{tipo,numero:document.getElementById(`dnum-${idx}`)?.value.trim()||'',emissao:document.getElementById(`dem-${idx}`)?.value||'',vencimento:document.getElementById(`dvc-${idx}`)?.value||'',pais:document.getElementById(`dpais-${idx}`)?.value.trim()||''};
+  }).filter(Boolean);
+}
+
 // ── SENHAS EDIT ──
 let _senhaEditCount=0;
 function addSenhaFormEdit(s=null){
@@ -2263,7 +2299,7 @@ async function saveMembro(){
   if(!CLIENT.membros)CLIENT.membros=[];
   const idx=parseInt(document.getElementById('membro-idx').value);
   const gv=id=>{const el=document.getElementById(id);return el?el.value.trim():''};
-  const rec={nome,rel:gv('m-rel'),cpf:gv('m-cpf'),nasc:gv('m-nasc'),nascLocal:gv('m-nasc-local'),pai:gv('m-pai'),mae:gv('m-mae'),tel:gv('m-tel'),email:gv('m-email'),email2:gv('m-email2'),endereco:gv('m-end'),profissao:gv('m-profissao'),foto:gv('m-foto'),cnh:{num:gv('m-cnh-num'),cat:gv('m-cnh-cat'),emissao:gv('m-cnh-emissao'),venc:gv('m-cnh-venc'),orgao:gv('m-cnh-orgao'),primeiraHab:gv('m-cnh-1hab')},veiculo:gv('m-veiculo'),placa:gv('m-placa'),obs:gv('m-obs')};
+  const rec={nome,rel:gv('m-rel'),cpf:gv('m-cpf'),nasc:gv('m-nasc'),nascLocal:gv('m-nasc-local'),pai:gv('m-pai'),mae:gv('m-mae'),tel:gv('m-tel'),email:gv('m-email'),email2:gv('m-email2'),endereco:gv('m-end'),profissao:gv('m-profissao'),foto:gv('m-foto'),cnh:{num:gv('m-cnh-num'),cat:gv('m-cnh-cat'),emissao:gv('m-cnh-emissao'),venc:gv('m-cnh-venc'),orgao:gv('m-cnh-orgao'),primeiraHab:gv('m-cnh-1hab')},veiculo:gv('m-veiculo'),placa:gv('m-placa'),obs:gv('m-obs'),documentos:collectDocs()};
   if(idx>=0)CLIENT.membros[idx]=rec;else CLIENT.membros.push(rec);
   closeModal('modal-membro');renderDados();renderCounters();
   const{error}=await _sb.from('concierge_clientes').upsert({id:CLIENT.id,data:CLIENT});
@@ -2278,6 +2314,9 @@ function editMembro(i){
   if(m.cnh){sv('m-cnh-num',m.cnh.num);sv('m-cnh-cat',m.cnh.cat);sv('m-cnh-emissao',m.cnh.emissao);sv('m-cnh-venc',m.cnh.venc);sv('m-cnh-orgao',m.cnh.orgao);sv('m-cnh-1hab',m.cnh.primeiraHab);}
   sv('m-veiculo',m.veiculo);sv('m-placa',m.placa);
   if(m.foto)setMembroFotoPreview(m.foto);else clearMembroFotoPreview();
+  // Carrega documentos extras
+  const dl=document.getElementById('docs-list');
+  if(dl){dl.innerHTML='';_docCount=0;(m.documentos||[]).forEach(d=>addDocForm(d));}
   document.getElementById('modal-membro').classList.add('open');
 }
 async function delMembro(i){CLIENT.membros.splice(i,1);await _sb.from('concierge_clientes').upsert({id:CLIENT.id,data:CLIENT});renderDados();renderCounters()}
@@ -2391,7 +2430,7 @@ function openModal(id){
     const sl=document.getElementById('e-senhas-list');
     if(sl){sl.innerHTML='';_senhaEditCount=0;(CLIENT.senhas||[]).forEach(s=>addSenhaFormEdit(s));}
   }
-  if(id==='modal-membro'){document.getElementById('membro-idx').value='-1';document.getElementById('mt-membro').textContent='Adicionar Membro';['m-nome','m-cpf','m-nasc','m-nasc-local','m-pai','m-mae','m-tel','m-email','m-email2','m-end','m-profissao','m-cnh-num','m-cnh-cat','m-cnh-emissao','m-cnh-venc','m-cnh-orgao','m-cnh-1hab','m-veiculo','m-placa','m-obs','m-foto'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});document.getElementById('m-rel').value='outro';clearMembroFotoPreview();}
+  if(id==='modal-membro'){document.getElementById('membro-idx').value='-1';document.getElementById('mt-membro').textContent='Adicionar Membro';['m-nome','m-cpf','m-nasc','m-nasc-local','m-pai','m-mae','m-tel','m-email','m-email2','m-end','m-profissao','m-cnh-num','m-cnh-cat','m-cnh-emissao','m-cnh-venc','m-cnh-orgao','m-cnh-1hab','m-veiculo','m-placa','m-obs','m-foto'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});document.getElementById('m-rel').value='outro';clearMembroFotoPreview();const dl=document.getElementById('docs-list');if(dl){dl.innerHTML='';_docCount=0;}}
   if(id==='modal-pgto'){document.getElementById('pgto-id').value='';['pgto-carac','pgto-val','pgto-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});setTimeout(()=>initCurrencyInput(document.getElementById('pgto-val')),50);const pd=document.getElementById('pgto-data');if(pd)pd.value=today();const pt=document.getElementById('pgto-tipo');if(pt)pt.value='SERVIÇOS';const pd2=document.getElementById('pgto-desc');if(pd2)pd2.value='SAÍDA';// Reset toggle
     _pgtoRecorrente=false;const tog=document.getElementById('pgto-rec-toggle');const kn=document.getElementById('pgto-rec-knob');const rf=document.getElementById('pgto-rec-fields');if(tog){tog.style.background='rgba(255,255,255,0.1)';tog.style.borderColor='rgba(255,255,255,0.15)';}if(kn){kn.style.left='2px';kn.style.opacity='0.4';}if(rf)rf.style.display='none';
     // Reset pagador
