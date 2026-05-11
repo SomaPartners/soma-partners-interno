@@ -2291,6 +2291,12 @@ async function saveCliente(){
   const{error}=await _sb.from('concierge_clientes').upsert({id:CLIENT.id,data:CLIENT});
   if(error){showToast('Erro ao salvar — tente novamente','err');return;}
   await syncLeadWealth();
+  if(CLIENT.status==='inativo'){
+    const{data:rows}=await _sb.from('wealth_leads').select('id,data');
+    for(const row of(rows||[]).filter(r=>r.data?.concierge_id===CLIENT.id)){
+      await _sb.from('wealth_leads').upsert({id:row.id,data:{...row.data,temperatura:'descartado',estagio:'descartado'}});
+    }
+  }
   showToast('Salvo!','ok');
 }
 

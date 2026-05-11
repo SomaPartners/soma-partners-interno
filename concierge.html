@@ -473,7 +473,19 @@ async function saveCliente(){
   const idx=clients.findIndex(c=>c.id===id);
   if(idx>=0)clients[idx]=record;else clients.unshift(record);
   autoLeadConcierge(record);
+  // Se mudou para inativo, marca leads vinculados como descartados
+  if(record.status==='inativo') syncLeadsInativo(record.id);
   showToast('Salvo!','ok');closeModal();renderGrid();
+}
+
+// ── INATIVAR LEADS DO WEALTH ──
+async function syncLeadsInativo(clienteId){
+  const{data:rows}=await _sb.from('wealth_leads').select('id,data');
+  const vinculados=(rows||[]).filter(r=>r.data?.concierge_id===clienteId);
+  for(const row of vinculados){
+    const lead={...row.data,temperatura:'descartado',estagio:'descartado'};
+    await _sb.from('wealth_leads').upsert({id:row.id,data:lead});
+  }
 }
 
 // ── AUTO-LEAD WEALTH ──
