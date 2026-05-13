@@ -470,7 +470,7 @@ function renderVencimentos(){
     const urgLabel=diff<0?`${Math.abs(diff)}d atraso`:diff===0?'Hoje':diff===1?'Amanhã':`${diff} dias`;
     return`<tr onclick="window.location.href='cliente.html?id=${v.clienteId}'">
       <td style="font-weight:700;font-size:12px">${fmtDate(v.dateStr)}</td>
-      <td><div class="client-chip"><div class="client-av" style="background:${acol(v.clienteNome)}">${initials(v.clienteNome)}</div>${v.clienteNome}</div></td>
+      <td><div style="display:flex;align-items:flex-start;gap:7px"><div class="client-av" style="background:${acol(v.clienteNome)};flex-shrink:0;margin-top:2px">${initials(v.clienteNome)}</div><div><div style="font-size:11px;font-weight:700">${v.clienteNome}</div>${(()=>{const cli=allClientes.find(c=>c.id===v.clienteId);return cli?.obs?`<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${cli.obs.replace(/"/g,'&quot;')}">${cli.obs}</div>`:''})()}</div></div></td>
       <td style="font-weight:600">${v.desc}</td>
       <td style="text-align:right;font-weight:800;color:${entrada?'#6ee7b7':'#fca5a5'}">${entrada?'+':'-'}${v.valor}</td>
       <td><span class="badge ${statusMap[v.status]||'b-aberto'}">${statusLabel[v.status]||v.status}</span></td>
