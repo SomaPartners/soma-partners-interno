@@ -644,6 +644,14 @@ function pcIsOverdue(d){return d&&d<pcToday()}
 function pcIsToday(d){return d===pcToday()}
 function pcDiff(d){if(!d)return 999;const a=new Date(d+'T12:00:00'),b=new Date(pcToday()+'T12:00:00');return Math.ceil((a-b)/(1000*60*60*24))}
 
+async function pcConcluirTarefa(tarefaId, clienteId){
+  const{data:row}=await _sb.from('concierge_tarefas').select('id,data').eq('id',tarefaId).single();
+  if(!row)return;
+  const rec={...row.data, status:'concluido'};
+  await _sb.from('concierge_tarefas').upsert({id:tarefaId, data:rec});
+  renderPainelConcierge();
+}
+
 function pcCard(titulo,subtitulo,cliente,data,cor){
   const ov=pcIsOverdue(data),td=pcIsToday(data);
   const dc=ov?'#fca5a5':td?'#fcd34d':'rgba(255,255,255,0.55)';
@@ -674,7 +682,24 @@ async function renderPainelConcierge(){
   // TAREFAS urgentes (vencidas ou prazo ≤ 7 dias)
   const urgTasks=(tasks||[]).map(r=>r.data).filter(t=>t&&t.prazo&&pcDiff(t.prazo)<=7).sort((a,b)=>a.prazo.localeCompare(b.prazo));
   document.getElementById('pc-task-count').textContent=urgTasks.length;
-  document.getElementById('pc-tasks').innerHTML=urgTasks.length?urgTasks.map(t=>pcCard(t.titulo||'Tarefa',`${t.prioridade==='alta'?'🔴':t.prioridade==='media'?'🟡':'🟢'} ${t.prioridade||'média'}`,clientMap[t.clienteId]||'—',t.prazo,'red')).join(''):'<div style="text-align:center;padding:24px;font-size:12px;color:rgba(255,255,255,0.25)">Nenhuma tarefa urgente</div>';
+  document.getElementById('pc-tasks').innerHTML=urgTasks.length?urgTasks.map(t=>{
+    const ov=pcIsOverdue(t.prazo),td=pcIsToday(t.prazo);
+    const dc=ov?'#fca5a5':td?'#fcd34d':'rgba(255,255,255,0.55)';
+    const prio=t.prioridade==='alta'?'🔴':t.prioridade==='media'?'🟡':'🟢';
+    return`<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;gap:10px;align-items:flex-start">
+      <button onclick="pcConcluirTarefa('${t.id}','${t.clienteId}')" style="width:28px;height:28px;border-radius:50%;border:2px solid rgba(16,185,129,0.4);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.18s;color:transparent" onmouseover="this.style.background='rgba(16,185,129,0.2)';this.style.borderColor='#6ee7b7';this.style.color='#6ee7b7'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(16,185,129,0.4)';this.style.color='transparent'">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;margin-bottom:3px">${t.titulo||'Tarefa'}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:5px">${prio} ${t.prioridade||'média'}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:10px;font-weight:700;background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.25);color:#a5b4fc;border-radius:4px;padding:2px 7px">${clientMap[t.clienteId]||'—'}</span>
+          <span style="font-size:10px;font-weight:700;color:${dc}">${ov?`${Math.abs(pcDiff(t.prazo))}d atraso`:td?'Hoje':pcFmtDate(t.prazo)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join(''):'<div style="text-align:center;padding:24px;font-size:12px;color:rgba(255,255,255,0.25)">Nenhuma tarefa urgente</div>';
 
   // PAGAMENTOS vencidos ou próximos 30 dias
   const urgPays=(pays||[]).map(r=>r.data).filter(p=>p&&p.vencimento&&p.status!=='pago'&&p.vencimento>=today&&p.vencimento<=limitStr).sort((a,b)=>a.vencimento.localeCompare(b.vencimento));
