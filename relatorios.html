@@ -642,6 +642,11 @@ function renderAlertas(){
     const diff=Math.ceil((new Date(t.prazo)-new Date(hoje))/(1000*60*60*24));
     alertas.push({tipo:'tarefa',urgencia:'urgente',titulo:`Tarefa atrasada: ${t.titulo}`,desc:`${cli?.nome||'?'} · Prazo: ${fmtDate(t.prazo)}`,diff,clienteId:t.clienteId});
   });
+  // Observações dos clientes
+  allClientes.forEach(c=>{
+    if(!(c.obs||'').trim())return;
+    alertas.push({tipo:'obs',urgencia:'info',titulo:`📝 ${c.nome||'Cliente'}`,desc:c.obs.trim(),diff:999,clienteId:c.id,obs:''});
+  });
   // Eventos próximos (30 dias) com observações
   allEventos.forEach(ev=>{
     if(!ev.data)return;
@@ -655,18 +660,20 @@ function renderAlertas(){
   });
   alertas.sort((a,b)=>a.diff-b.diff);
   const urgColors={vencido:'var(--red)',urgente:'var(--orange)',atencao:'var(--orange)',info:'#3b82f6'};
-  const tipoIcons={cnh:'🪪',aniv:'🎂',tarefa:'✓',evento:'📅'};
+  const tipoIcons={cnh:'🪪',aniv:'🎂',tarefa:'✓',evento:'📅',obs:'💬'};
   if(alertas.length===0){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted2);font-size:13px">Nenhum alerta ativo. Tudo em ordem!</div>`;return;}
   grid.innerHTML=alertas.map(a=>`
-    <div style="background:rgba(255,255,255,0.03);border:1px solid ${a.tipo==='evento'?'rgba(139,92,246,0.3)':'var(--border)'};border-left:3px solid ${urgColors[a.urgencia]||'var(--muted)'};border-radius:10px;padding:16px 18px;${a.clienteId?'cursor:pointer':'cursor:default'};transition:background 0.15s" ${a.clienteId?`onclick="window.location.href='cliente.html?id=${a.clienteId}'"`:''}>
+    <div style="background:rgba(255,255,255,0.03);border:1px solid ${a.tipo==='evento'?'rgba(139,92,246,0.3)':a.tipo==='obs'?'rgba(16,185,129,0.2)':'var(--border)'};border-left:3px solid ${a.tipo==='obs'?'#10b981':urgColors[a.urgencia]||'var(--muted)'};border-radius:10px;padding:16px 18px;${a.clienteId?'cursor:pointer':'cursor:default'};transition:background 0.15s" ${a.clienteId?`onclick="window.location.href='cliente.html?id=${a.clienteId}'"`:''}>
       <div style="display:flex;align-items:flex-start;gap:10px">
         <div style="font-size:20px">${tipoIcons[a.tipo]||'!'}</div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:700;margin-bottom:4px">${a.titulo}</div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:${a.obs?'6px':'0'}">${a.desc}</div>
-          ${a.obs?`<div style="font-size:11px;color:rgba(255,255,255,0.65);background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:6px;padding:6px 10px;line-height:1.5">${a.obs}</div>`:''}
+          ${a.tipo==='obs'
+            ?`<div style="font-size:12px;color:rgba(255,255,255,0.75);background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:6px;padding:8px 12px;line-height:1.6">${a.desc}</div>`
+            :`<div style="font-size:11px;color:var(--muted);margin-bottom:${a.obs?'6px':'0'}">${a.desc}</div>${a.obs?`<div style="font-size:11px;color:rgba(255,255,255,0.65);background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:6px;padding:6px 10px;line-height:1.5">${a.obs}</div>`:''}`
+          }
         </div>
-        <div style="font-size:11px;font-weight:700;color:${urgColors[a.urgencia]}">${a.diff<0?Math.abs(a.diff)+'d atrás':a.diff===0?'Hoje':a.diff+'d'}</div>
+        ${a.tipo!=='obs'?`<div style="font-size:11px;font-weight:700;color:${urgColors[a.urgencia]}">${a.diff<0?Math.abs(a.diff)+'d atrás':a.diff===0?'Hoje':a.diff+'d'}</div>`:''}
       </div>
     </div>`).join('');
 }
