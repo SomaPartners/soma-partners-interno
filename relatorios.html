@@ -284,7 +284,7 @@ function showToast(m,t=''){const el=document.getElementById('toast');el.textCont
 function showLoader(on){document.getElementById('loader-wrap').style.display=on?'flex':'none'}
 function isOverdue(d){return d&&d<today()}
 
-let allClientes=[], allPagamentos=[], allTarefas=[];
+let allClientes=[], allPagamentos=[], allTarefas=[], allEventos=[];
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
 let currentPeriod='hoje';
 
@@ -292,14 +292,16 @@ let currentPeriod='hoje';
 async function loadAll(){
   showLoader(true);
   try{
-    const[cl,pg,tar]=await Promise.all([
+    const[cl,pg,tar,ev]=await Promise.all([
       _sb.from('concierge_clientes').select('id,data').order('created_at',{ascending:false}),
       _sb.from('concierge_pagamentos').select('id,data').order('created_at'),
       _sb.from('concierge_tarefas').select('id,data').order('created_at'),
+      _sb.from('eventos').select('id,data').order('created_at',{ascending:false}),
     ]);
     allClientes=(cl.data||[]).map(r=>({id:r.id,...r.data}));
     allPagamentos=(pg.data||[]).map(r=>({id:r.id,...r.data}));
     allTarefas=(tar.data||[]).map(r=>({id:r.id,...r.data}));
+    allEventos=(ev.data||[]).map(r=>({id:r.id,...r.data}));
   }catch(e){showToast('Erro ao carregar dados')}
   showLoader(false);
   populateSelects();
@@ -640,19 +642,31 @@ function renderAlertas(){
     const diff=Math.ceil((new Date(t.prazo)-new Date(hoje))/(1000*60*60*24));
     alertas.push({tipo:'tarefa',urgencia:'urgente',titulo:`Tarefa atrasada: ${t.titulo}`,desc:`${cli?.nome||'?'} · Prazo: ${fmtDate(t.prazo)}`,diff,clienteId:t.clienteId});
   });
+  // Eventos próximos (30 dias) com observações
+  allEventos.forEach(ev=>{
+    if(!ev.data)return;
+    const diff=Math.ceil((new Date(ev.data+'T12:00:00')-new Date(hoje))/(1000*60*60*24));
+    if(diff<-7||diff>30)return; // mostra até 7 dias após e 30 dias à frente
+    const urgencia=diff<0?'atencao':diff<=3?'urgente':'info';
+    let descParts=[fmtDate(ev.data)];
+    if(ev.local)descParts.push(ev.local);
+    if(ev.desc)descParts.push(ev.desc);
+    alertas.push({tipo:'evento',urgencia,titulo:`📅 ${ev.nome||'Evento'}`,desc:descParts.join(' · '),diff,clienteId:null,obs:ev.desc||''});
+  });
   alertas.sort((a,b)=>a.diff-b.diff);
   const urgColors={vencido:'var(--red)',urgente:'var(--orange)',atencao:'var(--orange)',info:'#3b82f6'};
-  const tipoIcons={cnh:'🪪',aniv:'🎂',tarefa:'✓'};
+  const tipoIcons={cnh:'🪪',aniv:'🎂',tarefa:'✓',evento:'📅'};
   if(alertas.length===0){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted2);font-size:13px">Nenhum alerta ativo. Tudo em ordem!</div>`;return;}
   grid.innerHTML=alertas.map(a=>`
-    <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-left:3px solid ${urgColors[a.urgencia]||'var(--muted)'};border-radius:10px;padding:16px 18px;cursor:pointer;transition:background 0.15s" onclick="window.location.href='cliente.html?id=${a.clienteId}'">
+    <div style="background:rgba(255,255,255,0.03);border:1px solid ${a.tipo==='evento'?'rgba(139,92,246,0.3)':'var(--border)'};border-left:3px solid ${urgColors[a.urgencia]||'var(--muted)'};border-radius:10px;padding:16px 18px;${a.clienteId?'cursor:pointer':'cursor:default'};transition:background 0.15s" ${a.clienteId?`onclick="window.location.href='cliente.html?id=${a.clienteId}'"`:''}>
       <div style="display:flex;align-items:flex-start;gap:10px">
         <div style="font-size:20px">${tipoIcons[a.tipo]||'!'}</div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:700;margin-bottom:4px">${a.titulo}</div>
-          <div style="font-size:11px;color:var(--muted)">${a.desc}</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:${a.obs?'6px':'0'}">${a.desc}</div>
+          ${a.obs?`<div style="font-size:11px;color:rgba(255,255,255,0.65);background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:6px;padding:6px 10px;line-height:1.5">${a.obs}</div>`:''}
         </div>
-        <div style="font-size:11px;font-weight:700;color:${urgColors[a.urgencia]}">${a.diff<0?Math.abs(a.diff)+'d atraso':a.diff===0?'Hoje':a.diff+'d'}</div>
+        <div style="font-size:11px;font-weight:700;color:${urgColors[a.urgencia]}">${a.diff<0?Math.abs(a.diff)+'d atrás':a.diff===0?'Hoje':a.diff+'d'}</div>
       </div>
     </div>`).join('');
 }
