@@ -857,7 +857,7 @@ function editCurrentEvent(){
   document.getElementById('ev-inscricao').value=e.inscricao||'';
   document.getElementById('ev-credenciamento').value=e.credenciamento||'';
   document.getElementById('modal-evento-title').textContent='Editar Evento';
-  openModal('modal-evento');
+  document.getElementById('modal-evento').classList.add('open');
 }
 
 function deleteCurrentEvent(){
