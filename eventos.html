@@ -499,10 +499,13 @@ textarea.form-control-dark{resize:vertical;min-height:80px}
               <option value="confirmado">Confirmado</option>
               <option value="recusou">Recusou</option>
             </select>
+            <input class="form-control-dark" id="new-guest-indicado" placeholder="Indicado por (nome de quem indicou)">
             <textarea class="form-control-dark" id="new-guest-obs" placeholder="Observações" rows="2" style="grid-column:1/-1"></textarea>
           </div>
-          <div style="display:flex;justify-content:flex-end;margin-top:10px">
-            <button class="btn btn-primary btn-sm" onclick="addGuest()">
+          <input type="hidden" id="editing-guest-idx" value="-1">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+            <button id="btn-cancel-edit" class="btn btn-outline btn-sm" style="display:none" onclick="cancelEditGuest()">Cancelar</button>
+            <button class="btn btn-primary btn-sm" id="btn-add-guest" onclick="addGuest()" style="margin-left:auto">
               <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Adicionar convidado
             </button>
@@ -1062,6 +1065,7 @@ function renderGuests(e){
         </div>
         <div class="guest-info">${[g.info,g.telefone,g.empresa].filter(Boolean).join(' · ')||''}</div>
         ${g.cpf?`<div class="guest-info">CPF: ${g.cpf}</div>`:''}
+        ${g.indicado_por?`<div class="guest-info">Indicado por: <strong style="color:rgba(255,255,255,0.7)">${g.indicado_por}</strong></div>`:''}
         ${g.obs?`<div class="guest-info" style="font-style:italic">${g.obs}</div>`:''}
       </div>
       <select class="rsvp-badge ${rsvpClass[g.rsvp||'pendente']||'rsvp-pendente'}"
@@ -1071,6 +1075,9 @@ function renderGuests(e){
         <option value="confirmado" ${g.rsvp==='confirmado'?'selected':''}>Confirmado</option>
         <option value="recusou" ${g.rsvp==='recusou'?'selected':''}>Recusou</option>
       </select>
+      <button class="btn-icon-dark" onclick="editGuestStart(${i})" title="Editar">
+        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
       <button class="btn-icon-dark danger" onclick="removeGuest(${i})" title="Remover">
         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -1088,15 +1095,40 @@ async function addGuest(){
   const cpf=document.getElementById('new-guest-cpf')?.value.trim()||'';
   const empresa=document.getElementById('new-guest-empresa')?.value.trim()||'';
   const obs=document.getElementById('new-guest-obs')?.value.trim()||'';
-  const guest={id:gId,name,info:email,telefone:tel,cpf,empresa,obs,rsvp:document.getElementById('new-guest-rsvp').value,_rowId:gId};
+  const indicado_por=document.getElementById('new-guest-indicado')?.value.trim()||'';
+  const editIdx=parseInt(document.getElementById('editing-guest-idx')?.value??'-1');
+  const isEdit=editIdx>=0;
+  const gId=isEdit?(e.convidados[editIdx]?._rowId||e.convidados[editIdx]?.id||uid()):uid();
+  const guest={id:gId,name,info:email,telefone:tel,cpf,empresa,obs,indicado_por,rsvp:document.getElementById('new-guest-rsvp').value,_rowId:gId};
+  if(isEdit&&e.convidados[editIdx]?.origem)guest.origem=e.convidados[editIdx].origem;
   const {error}=await sb.from('eventos_convidados').upsert({id:gId,evento_id:e.id,data:guest});
-  if(error){showToast('Erro ao adicionar convidado','error');return}
-  e.convidados.push(guest);
-  ['new-guest-name','new-guest-email','new-guest-tel','new-guest-cpf','new-guest-empresa','new-guest-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  if(error){showToast('Erro ao salvar convidado','error');return}
+  if(isEdit){e.convidados[editIdx]=guest;}else{e.convidados.push(guest);}
+  ['new-guest-name','new-guest-email','new-guest-tel','new-guest-cpf','new-guest-empresa','new-guest-obs','new-guest-indicado'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('new-guest-rsvp').value='pendente';
+  cancelEditGuest();
   renderGuests(e);refreshStats();
-  // ── AUTO-LEAD NO WEALTH ──
-  autoAddLead(name,tel,email,e.data||new Date().toISOString().slice(0,10));
+  if(!isEdit) autoAddLead(name,tel,email,e.data||new Date().toISOString().slice(0,10));
+}
+
+function editGuestStart(i){
+  const e=DB.eventos.find(x=>x.id===currentEventId);if(!e)return;
+  const g=e.convidados[i];if(!g)return;
+  const sv=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
+  sv('new-guest-name',g.name);sv('new-guest-tel',g.telefone);sv('new-guest-email',g.info);
+  sv('new-guest-cpf',g.cpf);sv('new-guest-empresa',g.empresa);sv('new-guest-obs',g.obs);
+  sv('new-guest-indicado',g.indicado_por);sv('new-guest-rsvp',g.rsvp||'pendente');
+  document.getElementById('editing-guest-idx').value=i;
+  document.getElementById('btn-add-guest').innerHTML='<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar alterações';
+  document.getElementById('btn-cancel-edit').style.display='inline-flex';
+  document.getElementById('new-guest-name').focus();
+  document.getElementById('new-guest-name').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelEditGuest(){
+  document.getElementById('editing-guest-idx').value='-1';
+  document.getElementById('btn-add-guest').innerHTML='<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Adicionar convidado';
+  document.getElementById('btn-cancel-edit').style.display='none';
 }
 
 async function autoAddLead(nome,telefone,email,dataEvento){
