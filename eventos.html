@@ -1089,7 +1089,6 @@ async function addGuest(){
   if(!telCheck){alert('O telefone é obrigatório');return;}
   const e=DB.eventos.find(x=>x.id===currentEventId);if(!e)return;
   if(!e.convidados)e.convidados=[];
-  const gId=uid();
   const email=document.getElementById('new-guest-email')?.value.trim()||'';
   const tel=document.getElementById('new-guest-tel')?.value.trim()||'';
   const cpf=document.getElementById('new-guest-cpf')?.value.trim()||'';
