@@ -3186,7 +3186,7 @@ function renderLista(){
         return `<div style="border-bottom:1px solid rgba(255,255,255,0.04)">
           <div class="asana-row" style="border-bottom:none">
             <div class="a-check ${isDone?'done':''}" onclick="toggleTarefaStatus('${t.id}')">${isDone?'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
-            <div class="a-name ${isDone?'done':''}">${t.titulo}</div>
+            <div class="a-name ${isDone?'done':''}" onclick="toggleComments('comments-${t.id}')" style="cursor:pointer">${t.titulo}</div>
             <div class="a-cell">${criado}</div>
             <div class="a-cell" style="color:${isOverdue(t.prazo)&&!isDone?'var(--red)':'var(--muted)'}">${t.prazo?fmtDate(t.prazo):'—'}</div>
             <div><span class="a-prio ap-${t.prioridade||'media'}">${PRIO_LABEL[t.prioridade]||'Média'}</span></div>
