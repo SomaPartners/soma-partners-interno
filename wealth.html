@@ -1076,7 +1076,7 @@ function editLead(id){
 // ── FOLLOW-UP SAVE ──
 function populateLeadSelect(){
   const sel=document.getElementById('fu-lead-id');if(!sel)return;
-  sel.innerHTML=leads.map(l=>`<option value="${l.id}">${l.nome}</option>`).join('');
+  sel.innerHTML=[...leads].sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR',{sensitivity:'base'})).map(l=>`<option value="${l.id}">${l.nome}</option>`).join('');
 }
 
 async function saveFollowup(){
