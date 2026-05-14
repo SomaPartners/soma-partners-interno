@@ -1223,8 +1223,12 @@ async function loadAll(){
 }
 
 function renderAll(){
-  // Clear date filters so all transactions show on load
-  ['fin-f-de','fin-f-ate'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  // Default filter: from today onwards
+  const _t=today();
+  const deEl=document.getElementById('fin-f-de');const ateEl=document.getElementById('fin-f-ate');
+  if(deEl&&!deEl.value)deEl.value=_t;
+  // Also update visible inputs
+  const deVis=document.getElementById('fin-f-de-vis');if(deVis&&!deVis.value)deVis.value=_t;
   renderHero();renderCounters();renderLista();renderFinanceiro();renderDados();
 }
 
