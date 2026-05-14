@@ -1223,12 +1223,15 @@ async function loadAll(){
 }
 
 function renderAll(){
-  // Default filter: from today onwards
-  const _t=today();
-  const deEl=document.getElementById('fin-f-de');const ateEl=document.getElementById('fin-f-ate');
-  if(deEl&&!deEl.value)deEl.value=_t;
-  // Also update visible inputs
-  const deVis=document.getElementById('fin-f-de-vis');if(deVis&&!deVis.value)deVis.value=_t;
+  // Default filter: current month only
+  const now=new Date();
+  const y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
+  const primeiroDia=`${y}-${m}-01`;
+  const ultimoDia=`${y}-${m}-${String(new Date(y,now.getMonth()+1,0).getDate()).padStart(2,'0')}`;
+  const deEl=document.getElementById('fin-f-de');if(deEl&&!deEl.value)deEl.value=primeiroDia;
+  const ateEl=document.getElementById('fin-f-ate');if(ateEl&&!ateEl.value)ateEl.value=ultimoDia;
+  const deVis=document.getElementById('fin-f-de-vis');if(deVis&&!deVis.value)deVis.value=primeiroDia;
+  const ateVis=document.getElementById('fin-f-ate-vis');if(ateVis&&!ateVis.value)ateVis.value=ultimoDia;
   renderHero();renderCounters();renderLista();renderFinanceiro();renderDados();
 }
 
