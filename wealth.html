@@ -672,19 +672,19 @@ async function migrarFollowupsAuto(){
   const TIPO_MAP={frio:'whatsapp',morno:'ligacao',quente:'ligacao'};
   const ativos=leads.filter(l=>['frio','morno','quente'].includes(l.temperatura)&&!['perdido','descartado'].includes(l.estagio));
   for(const lead of ativos){
-    // 1. Remove todos os follow-ups auto que diferem da data sugerida atual
-    const dataSugerida=calcProxData(lead.temperatura,lead.data_primeiro_contato,lead.origem);
-    const antigos=followups.filter(f=>f.lead_id===lead.id&&!f.feito&&f.auto&&f.data!==dataSugerida);
+    // 1. Só remove auto follow-ups que estão no passado (já vencidos) — preserva futuros
+    const antigos=followups.filter(f=>f.lead_id===lead.id&&!f.feito&&f.auto&&f.data<today());
     for(const a of antigos){
       await _sb.from('wealth_followups').delete().eq('id',a.id);
       followups.splice(followups.indexOf(a),1);
     }
-    // 2. Verifica se ainda tem pendente na data certa
+    // 2. Verifica se ainda tem pendente (hoje ou futuro)
     const temPendente=followups.some(f=>f.lead_id===lead.id&&!f.feito);
     if(temPendente)continue;
-    // 3. Cria follow-up na mesma data da sugestão de prospecção
+    // 3. Cria follow-up baseado em data_primeiro_contato ou hoje se passado
     const p=TEMP_PROSP[lead.temperatura];if(!p)continue;
-    const dataFu=dataSugerida||today();
+    const dataSugerida=calcProxData(lead.temperatura,lead.data_primeiro_contato,lead.origem);
+    const dataFu=(dataSugerida&&dataSugerida>=today())?dataSugerida:today();
     const fId=uid();
     const rec={id:fId,lead_id:lead.id,data:dataFu,tipo:TIPO_MAP[lead.temperatura]||'ligacao',desc:p.acao,feito:false,auto:true};
     const{error}=await _sb.from('wealth_followups').upsert({id:fId,lead_id:lead.id,data:rec});
@@ -1091,13 +1091,8 @@ async function saveFollowup(){
 async function marcarFuFeito(id){
   const f=followups.find(x=>x.id===id);if(!f)return;
   f.feito=true;
-  await _sb.from('wealth_followups').upsert({id,lead_id:f.lead_id,data:f});
-  // Agenda próximo follow-up automático baseado na temperatura do lead
-  const lead=leads.find(l=>l.id===f.lead_id);
-  if(lead&&['frio','morno','quente'].includes(lead.temperatura)){
-    const temOutroPendente=followups.some(x=>x.lead_id===f.lead_id&&!x.feito&&x.id!==id);
-    if(!temOutroPendente) await autoFollowup(lead,true);
-  }
+  const{error:errSave}=await _sb.from('wealth_followups').upsert({id,lead_id:f.lead_id,data:f});
+  if(errSave){showToast('Erro ao salvar','err');return;}
   renderFollowups();renderVisao();if(document.body.classList.contains('painel-mode'))renderPainel();
 }
 
