@@ -3182,6 +3182,7 @@ function renderLista(){
             <div><span class="a-prio ap-${t.prioridade||'media'}">${PRIO_LABEL[t.prioridade]||'Média'}</span></div>
             <div><span class="a-status ${STATUS_CLS[st]||'as-a_fazer'}">${STATUS_LABEL[st]||st}</span></div>
             <div style="display:flex;align-items:center;gap:6px">
+              ${t.proxima_atualizacao&&!isDone?`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap;${t.proxima_atualizacao<today()?'background:rgba(239,68,68,0.15);color:#fca5a5':t.proxima_atualizacao===today()?'background:rgba(245,158,11,0.15);color:#fcd34d':'background:rgba(16,185,129,0.12);color:#6ee7b7'}">↻ ${t.proxima_atualizacao<today()?'Atrasada':t.proxima_atualizacao===today()?'Hoje':fmtDate(t.proxima_atualizacao)}</span>`:''}
               <button class="a-comments-btn" onclick="toggleComments('comments-${t.id}')">
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 ${comCount>0?comCount:''}
@@ -3191,6 +3192,11 @@ function renderLista(){
           </div>
           <div class="task-comments" id="comments-${t.id}">
             <div id="clist-${t.id}">${comSection}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:10px;margin-bottom:6px">
+              <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2)">Próxima atualização</span>
+              <input type="date" class="comment-input" id="cdate-${t.id}" value="${t.proxima_atualizacao||''}" style="width:150px;flex:none;color-scheme:dark" onchange="saveProximaAtualizacao('${t.id}',this.value)">
+              ${t.proxima_atualizacao?`<span style="font-size:10px;font-weight:700;color:${t.proxima_atualizacao<today()?'#fca5a5':t.proxima_atualizacao===today()?'#fcd34d':'#6ee7b7'}">${t.proxima_atualizacao<today()?'Atrasada':t.proxima_atualizacao===today()?'Hoje':fmtDate(t.proxima_atualizacao)}</span>`:''}
+            </div>
             <div class="comment-input-row">
               <input class="comment-input" id="cinput-${t.id}" placeholder="Adicionar comentário..." onkeydown="if(event.key==='Enter'){addComment('${t.id}');event.preventDefault()}">
               <button class="comment-btn" onclick="addComment('${t.id}')">Comentar</button>
@@ -3198,6 +3204,14 @@ function renderLista(){
           </div>
         </div>`;
       }).join('');
+}
+
+async function saveProximaAtualizacao(tarefaId, data){
+  const t=tarefas.find(x=>x.id===tarefaId);if(!t)return;
+  t.proxima_atualizacao=data||null;
+  await _sb.from('concierge_tarefas').upsert({id:tarefaId,data:t});
+  renderLista();
+  setTimeout(()=>{const el=document.getElementById('comments-'+tarefaId);if(el)el.classList.add('open');},50);
 }
 
 function toggleComments(id){
