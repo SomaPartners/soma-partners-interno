@@ -775,7 +775,7 @@ function fuCardHTML(f,tipo){
   const ov=isOverdue(f.data);const td=isToday(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
   return`<div class="fu-card fu-card-${tipo}" style="display:flex;gap:10px;align-items:flex-start">
-    <button class="fu-done-btn" data-fuid="${f.id}" onclick="event.stopPropagation();marcarFuFeito(this.dataset.fuid)" title="Marcar como feito">${CHECKSVG}</button>
+    <button class="fu-done-btn" data-fuid="${f.id}" onclick="event.stopPropagation();this.closest('.fu-card').style.opacity='0.3';this.closest('.fu-card').style.pointerEvents='none';marcarFuFeito(this.dataset.fuid)" title="Marcar como feito">${CHECKSVG}</button>
     <div style="flex:1;min-width:0">
       <div class="fu-card-lead">${l?.nome||'—'}${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||'Outro'}</span>`}</div>
       <div class="fu-card-desc">${f.desc||''}</div>
@@ -1116,7 +1116,16 @@ async function marcarFuFeito(id){
     const temOutroPendente=followups.some(x=>x.lead_id===f.lead_id&&!x.feito&&x.id!==id);
     if(!temOutroPendente) await autoFollowup(lead,true);
   }
-  renderFollowups();renderVisao();if(document.body.classList.contains('painel-mode'))renderPainel();
+  // Re-render para refletir estado final
+  renderFollowups();
+  renderVisao();
+  if(document.body.classList.contains('painel-mode'))renderPainel();
+  // Garante concluídos aberto e atualizado
+  _concluidos_aberto=true;
+  const el2=document.getElementById('fu-cards-concluido');
+  const ar2=document.getElementById('concluidos-arrow');
+  if(el2)el2.style.display='grid';
+  if(ar2)ar2.style.transform='rotate(180deg)';
 }
 
 async function autoFollowup(lead,usarHoje=false){
