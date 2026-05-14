@@ -365,6 +365,20 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
 .a-del{background:none;border:none;cursor:pointer;color:transparent;font-size:16px;transition:color 0.15s}
 .asana-row:hover .a-del{color:var(--muted2)}
 .a-del:hover{color:#fca5a5 !important}
+.task-comments{display:none;background:rgba(255,255,255,0.02);border-top:1px solid rgba(255,255,255,0.05);padding:12px 16px 12px 42px}
+.task-comments.open{display:block}
+.comment-item{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.comment-item:last-child{border-bottom:none}
+.comment-meta{font-size:10px;color:var(--muted2);white-space:nowrap;margin-top:2px}
+.comment-text{font-size:12px;color:rgba(255,255,255,0.75);line-height:1.5;flex:1}
+.comment-input-row{display:flex;gap:8px;margin-top:10px}
+.comment-input{flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;font-family:'Montserrat',sans-serif;color:#fff;outline:none}
+.comment-input:focus{border-color:var(--indigo)}
+.comment-input::placeholder{color:var(--muted2)}
+.comment-btn{background:rgba(79,70,229,0.2);border:1px solid rgba(79,70,229,0.35);border-radius:6px;padding:7px 12px;font-size:11px;font-weight:700;color:#a5b4fc;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap}
+.comment-btn:hover{background:rgba(79,70,229,0.35)}
+.a-comments-btn{background:none;border:none;cursor:pointer;color:var(--muted2);font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:4px;transition:color 0.15s;white-space:nowrap}
+.a-comments-btn:hover{color:#fff}
 .asana-add-row{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:12px;color:var(--muted2);cursor:pointer;transition:color 0.18s}
 .asana-add-row:hover{color:#fff}
 .asana-inline-row{display:grid;grid-template-columns:32px 1fr 130px 120px 100px 120px 32px;align-items:center;padding:0 12px 0 10px;height:40px;border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(79,70,229,0.06);border-left:2px solid var(--indigo)}
@@ -3155,16 +3169,57 @@ function renderLista(){
         const isDone = t.status==='concluido'||t.status==='concluida';
         const st = t.status==='aberta'?'a_fazer':t.status==='concluida'?'concluido':t.status||'a_fazer';
         const criado = t.dataCriacao?fmtDate(t.dataCriacao):'—';
-        return `<div class="asana-row">
-          <div class="a-check ${isDone?'done':''}" onclick="toggleTarefaStatus('${t.id}')">${isDone?'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
-          <div class="a-name ${isDone?'done':''}">${t.titulo}</div>
-          <div class="a-cell">${criado}</div>
-          <div class="a-cell" style="color:${isOverdue(t.prazo)&&!isDone?'var(--red)':'var(--muted)'}">${t.prazo?fmtDate(t.prazo):'—'}</div>
-          <div><span class="a-prio ap-${t.prioridade||'media'}">${PRIO_LABEL[t.prioridade]||'Média'}</span></div>
-          <div><span class="a-status ${STATUS_CLS[st]||'as-a_fazer'}">${STATUS_LABEL[st]||st}</span></div>
-          <button class="a-del" onclick="delTarefaLista('${t.id}')">×</button>
+        const comCount=(t.comentarios||[]).length;
+        const comSection=(t.comentarios||[]).length>0
+          ?(t.comentarios||[]).map(c=>`<div class="comment-item"><div style="flex:1"><div class="comment-text">${c.texto}</div><div class="comment-meta">${c.data||''}</div></div></div>`).join('')
+          :'<div style="font-size:11px;color:var(--muted2);padding:4px 0">Nenhum comentário ainda.</div>';
+        return `<div style="border-bottom:1px solid rgba(255,255,255,0.04)">
+          <div class="asana-row" style="border-bottom:none">
+            <div class="a-check ${isDone?'done':''}" onclick="toggleTarefaStatus('${t.id}')">${isDone?'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
+            <div class="a-name ${isDone?'done':''}">${t.titulo}</div>
+            <div class="a-cell">${criado}</div>
+            <div class="a-cell" style="color:${isOverdue(t.prazo)&&!isDone?'var(--red)':'var(--muted)'}">${t.prazo?fmtDate(t.prazo):'—'}</div>
+            <div><span class="a-prio ap-${t.prioridade||'media'}">${PRIO_LABEL[t.prioridade]||'Média'}</span></div>
+            <div><span class="a-status ${STATUS_CLS[st]||'as-a_fazer'}">${STATUS_LABEL[st]||st}</span></div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button class="a-comments-btn" onclick="toggleComments('comments-${t.id}')">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                ${comCount>0?comCount:''}
+              </button>
+              <button class="a-del" onclick="delTarefaLista('${t.id}')">×</button>
+            </div>
+          </div>
+          <div class="task-comments" id="comments-${t.id}">
+            <div id="clist-${t.id}">${comSection}</div>
+            <div class="comment-input-row">
+              <input class="comment-input" id="cinput-${t.id}" placeholder="Adicionar comentário..." onkeydown="if(event.key==='Enter'){addComment('${t.id}');event.preventDefault()}">
+              <button class="comment-btn" onclick="addComment('${t.id}')">Comentar</button>
+            </div>
+          </div>
         </div>`;
       }).join('');
+}
+
+function toggleComments(id){
+  const el=document.getElementById(id);
+  if(el)el.classList.toggle('open');
+}
+
+async function addComment(tarefaId){
+  const inp=document.getElementById('cinput-'+tarefaId);
+  if(!inp)return;
+  const texto=inp.value.trim();
+  if(!texto)return;
+  const t=tarefas.find(x=>x.id===tarefaId);if(!t)return;
+  if(!t.comentarios)t.comentarios=[];
+  const now=new Date();
+  const dataStr=`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  t.comentarios.push({texto,data:dataStr,id:uid()});
+  await _sb.from('concierge_tarefas').upsert({id:tarefaId,data:t});
+  inp.value='';
+  renderLista();
+  // Re-open the comments section
+  setTimeout(()=>{const el=document.getElementById('comments-'+tarefaId);if(el)el.classList.add('open');},50);
 }
 
 async function toggleTarefaStatus(id){
