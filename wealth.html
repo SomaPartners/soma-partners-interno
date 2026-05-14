@@ -1091,29 +1091,27 @@ async function saveFollowup(){
   followups.push(rec);
   showToast('Follow-up agendado!','ok');closeModal('modal-followup');
   renderFollowups();renderVisao();if(document.body.classList.contains('painel-mode'))renderPainel();
-  // Abre seção concluídos automaticamente
-  if(!_concluidos_aberto){
-    _concluidos_aberto=true;
-    const el=document.getElementById('fu-cards-concluido');
-    const arrow=document.getElementById('concluidos-arrow');
-    if(el)el.style.display='grid';
-    if(arrow)arrow.style.transform='rotate(180deg)';
-    // Scroll suave até concluídos
-    setTimeout(()=>{const c=document.getElementById('fu-cards-concluido');if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},100);
-  }
 }
 
 async function marcarFuFeito(id){
+  // Rebuild array com feito=true para garantir atualização
+  followups=followups.map(x=>x.id===id?{...x,feito:true}:x);
   const f=followups.find(x=>x.id===id);if(!f)return;
-  f.feito=true;
   await _sb.from('wealth_followups').upsert({id,lead_id:f.lead_id,data:f});
-  // Agenda próximo follow-up automático baseado na temperatura do lead
+  // Agenda próximo follow-up automático
   const lead=leads.find(l=>l.id===f.lead_id);
   if(lead&&['frio','morno','quente'].includes(lead.temperatura)){
     const temOutroPendente=followups.some(x=>x.lead_id===f.lead_id&&!x.feito&&x.id!==id);
     if(!temOutroPendente) await autoFollowup(lead,true);
   }
   renderFollowups();renderVisao();if(document.body.classList.contains('painel-mode'))renderPainel();
+  // Abre seção concluídos automaticamente
+  _concluidos_aberto=true;
+  const el=document.getElementById('fu-cards-concluido');
+  const arrow=document.getElementById('concluidos-arrow');
+  if(el)el.style.display='grid';
+  if(arrow)arrow.style.transform='rotate(180deg)';
+  setTimeout(()=>{const c=document.getElementById('fu-cards-concluido');if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},150);
 }
 
 async function autoFollowup(lead,usarHoje=false){
