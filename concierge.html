@@ -693,6 +693,8 @@ async function renderPainelConcierge(){
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:700;margin-bottom:3px">${t.titulo||'Tarefa'}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:5px">${prio} ${t.prioridade||'média'}</div>
+        ${(t.comentarios||[]).length>0?`<div style="font-size:11px;color:rgba(255,255,255,0.65);background:rgba(255,255,255,0.04);border-radius:6px;padding:5px 8px;margin-bottom:5px;border-left:2px solid rgba(79,70,229,0.4)">💬 ${(t.comentarios||[]).at(-1).texto}</div>`:''}
+        ${t.proxima_atualizacao?`<div style="font-size:10px;font-weight:700;margin-bottom:5px;color:${t.proxima_atualizacao<pcToday()?'#fca5a5':t.proxima_atualizacao===pcToday()?'#fcd34d':'#6ee7b7'}">↻ Próx. atualização: ${t.proxima_atualizacao<pcToday()?'Atrasada':t.proxima_atualizacao===pcToday()?'Hoje':pcFmtDate(t.proxima_atualizacao)}</div>`:''}
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span style="font-size:10px;font-weight:700;background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.25);color:#a5b4fc;border-radius:4px;padding:2px 7px">${clientMap[t.clienteId]||'—'}</span>
           <span style="font-size:10px;font-weight:700;color:${dc}">${ov?`${Math.abs(pcDiff(t.prazo))}d atraso`:td?'Hoje':pcFmtDate(t.prazo)}</span>
