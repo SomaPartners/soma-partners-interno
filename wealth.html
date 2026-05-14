@@ -775,7 +775,7 @@ function fuCardHTML(f,tipo){
   const ov=isOverdue(f.data);const td=isToday(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
   return`<div class="fu-card fu-card-${tipo}" style="display:flex;gap:10px;align-items:flex-start">
-    <button class="fu-done-btn" data-fuid="${f.id}" onclick="event.stopPropagation();const card=this.closest('.fu-card');card.style.transition='all 0.3s';card.style.opacity='0';setTimeout(()=>{card.remove();document.getElementById('fu-count-'+card.closest('[id]')?.id?.replace('fu-cards-',''))&&(document.getElementById('fu-count-'+card.closest('[id]')?.id?.replace('fu-cards-','')).textContent=Math.max(0,parseInt(document.getElementById('fu-count-'+card.closest('[id]')?.id?.replace('fu-cards-',''))?.textContent||0)-1))},300);marcarFuFeito(this.dataset.fuid)" title="Marcar como feito">${CHECKSVG}</button>
+    <button class="fu-done-btn" data-fuid="${f.id}" onclick="event.stopPropagation();this.parentElement.style.display='none';marcarFuFeito(this.dataset.fuid)" title="Marcar como feito" style="pointer-events:auto">${CHECKSVG}</button>
     <div style="flex:1;min-width:0">
       <div class="fu-card-lead">${l?.nome||'—'}${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||'Outro'}</span>`}</div>
       <div class="fu-card-desc">${f.desc||''}</div>
@@ -794,7 +794,7 @@ function fuPainelCardHTML(f,tipo){
   const ov=isOverdue(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
   return`<div class="painel-fu-card ${tipo}" style="display:flex;gap:10px;align-items:flex-start">
-    <button class="fu-done-btn" data-fuid="${f.id}" onclick="event.stopPropagation();const pc=this.closest('.painel-fu-card');if(pc){pc.style.transition='all 0.3s';pc.style.opacity='0';setTimeout(()=>pc.remove(),300);}marcarFuFeito(this.dataset.fuid)" title="Marcar como feito">${CHECKSVG}</button>
+    <button class="fu-done-btn" data-fuid="${f.id}" onclick="event.stopPropagation();this.parentElement.style.display='none';marcarFuFeito(this.dataset.fuid)" title="Marcar como feito" style="pointer-events:auto">${CHECKSVG}</button>
     <div style="flex:1;min-width:0">
       <div class="painel-fu-lead">${l?.nome||'—'}</div>
       <div class="painel-fu-desc">${f.desc||''}</div>
