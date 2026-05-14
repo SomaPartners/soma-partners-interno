@@ -770,21 +770,23 @@ function renderPipeline(){
 // ── FOLLOW-UPS ──
 const TIPO_TAG={ligacao:'<span class="fu-tag fu-tag-lig">Ligação</span>',reuniao:'<span class="fu-tag fu-tag-reu">Reunião</span>',whatsapp:'<span class="fu-tag fu-tag-wpp">WhatsApp</span>',email:'<span class="fu-tag fu-tag-eml">E-mail</span>'};
 const CHECKSVG=`<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+// ── FOLLOW-UPS RENDER ──
+const TIPO_TAG={ligacao:'<span class="fu-tag fu-tag-lig">Ligação</span>',reuniao:'<span class="fu-tag fu-tag-reu">Reunião</span>',whatsapp:'<span class="fu-tag fu-tag-wpp">WhatsApp</span>',email:'<span class="fu-tag fu-tag-eml">E-mail</span>'};
+
 function fuCardHTML(f,tipo){
   const l=leads.find(x=>x.id===f.lead_id);
   const ov=isOverdue(f.data);const td=isToday(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
-  return`<div class="fu-card fu-card-${tipo}" style="display:flex;gap:10px;align-items:flex-start">
-    <button class="fu-done-btn" data-fuid="${f.id}" onclick="event.stopPropagation();this.parentElement.style.display='none';marcarFuFeito(this.dataset.fuid)" title="Marcar como feito" style="pointer-events:auto">${CHECKSVG}</button>
+  return`<div class="fu-card fu-card-${tipo}" id="fucard-${f.id}" style="display:flex;gap:10px;align-items:flex-start">
+    <button class="fu-done-btn" onclick="checkFu('${f.id}')" title="Marcar como feito">${CHECKSVG}</button>
     <div style="flex:1;min-width:0">
       <div class="fu-card-lead">${l?.nome||'—'}${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||'Outro'}</span>`}</div>
       <div class="fu-card-desc">${f.desc||''}</div>
-      <div class="fu-card-footer">
-        <div class="fu-card-meta">
-          ${l?.responsavel?`<span>${l.responsavel}</span>`:''}
-          <span style="color:${ov?'#fca5a5':td?'#fcd34d':'var(--muted2)'}">${ov?`${dias}d atraso`:fmtDate(f.data)}</span>
-        </div>
-      </div>
+      <div class="fu-card-footer"><div class="fu-card-meta">
+        ${l?.responsavel?`<span>${l.responsavel}</span>`:''}
+        <span style="color:${ov?'#fca5a5':td?'#fcd34d':'var(--muted2)'}">${ov?`${dias}d atraso`:fmtDate(f.data)}</span>
+      </div></div>
     </div>
   </div>`;
 }
@@ -793,26 +795,23 @@ function fuPainelCardHTML(f,tipo){
   const l=leads.find(x=>x.id===f.lead_id);
   const ov=isOverdue(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
-  return`<div class="painel-fu-card ${tipo}" style="display:flex;gap:10px;align-items:flex-start">
-    <button class="fu-done-btn" data-fuid="${f.id}" onclick="event.stopPropagation();this.parentElement.style.display='none';marcarFuFeito(this.dataset.fuid)" title="Marcar como feito" style="pointer-events:auto">${CHECKSVG}</button>
+  return`<div class="painel-fu-card ${tipo}" id="fucard-${f.id}" style="display:flex;gap:10px;align-items:flex-start">
+    <button class="fu-done-btn" onclick="checkFu('${f.id}')" title="Marcar como feito">${CHECKSVG}</button>
     <div style="flex:1;min-width:0">
       <div class="painel-fu-lead">${l?.nome||'—'}</div>
       <div class="painel-fu-desc">${f.desc||''}</div>
-      <div class="painel-fu-footer">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          ${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||''}</span>`}
-          ${l?.responsavel?`<span style="font-size:10px;color:var(--muted2)">${l.responsavel}</span>`:''}
-          <span style="font-size:10px;color:${ov?'#fca5a5':'var(--muted2)'}">${ov?`${dias}d atraso`:fmtDate(f.data)}</span>
-        </div>
-      </div>
+      <div class="painel-fu-footer"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        ${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||''}</span>`}
+        ${l?.responsavel?`<span style="font-size:10px;color:var(--muted2)">${l.responsavel}</span>`:''}
+        <span style="font-size:10px;color:${ov?'#fca5a5':'var(--muted2)'}">${ov?`${dias}d atraso`:fmtDate(f.data)}</span>
+      </div></div>
     </div>
   </div>`;
 }
 
-function toDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function semanaAtual(){
   const d=new Date();
-  const dow=d.getDay()||7; // 1=seg ... 7=dom
+  const dow=d.getDay()||7;
   const start=new Date(d);start.setDate(d.getDate()-dow+1);
   const end=new Date(start);end.setDate(start.getDate()+6);
   return{start:toDateStr(start),end:toDateStr(end)};
@@ -824,28 +823,20 @@ function renderFollowups(){
   const atrasados=pending.filter(f=>isOverdue(f.data));
   const hoje=pending.filter(f=>isToday(f.data));
   const semana=pending.filter(f=>!isOverdue(f.data)&&!isToday(f.data)&&f.data>=start&&f.data<=end);
-
-  const todosConc=followups.filter(f=>f.feito).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
-  const concluidos=todosConc.slice(0,50);
-
+  const concluidos=followups.filter(f=>f.feito).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
   const empty='<div class="fu-empty">Nenhuma ação</div>';
-  document.getElementById('fu-count-atrasado').textContent=atrasados.length;
-  document.getElementById('fu-count-hoje').textContent=hoje.length;
-  document.getElementById('fu-count-semana').textContent=semana.length;
-  document.getElementById('fu-count-concluido').textContent=todosConc.length;
-  document.getElementById('fu-cards-atrasado').innerHTML=atrasados.length?atrasados.map(f=>fuCardHTML(f,'atrasado')).join(''):empty;
-  document.getElementById('fu-cards-hoje').innerHTML=hoje.length?hoje.map(f=>fuCardHTML(f,'hoje')).join(''):empty;
-  document.getElementById('fu-cards-semana').innerHTML=semana.length?semana.map(f=>fuCardHTML(f,'semana')).join(''):empty;
-  document.getElementById('fu-cards-concluido').innerHTML=concluidos.length?concluidos.map(f=>{
+  const el=id=>document.getElementById(id);
+  if(el('fu-count-atrasado'))el('fu-count-atrasado').textContent=atrasados.length;
+  if(el('fu-count-hoje'))el('fu-count-hoje').textContent=hoje.length;
+  if(el('fu-count-semana'))el('fu-count-semana').textContent=semana.length;
+  if(el('fu-count-concluido'))el('fu-count-concluido').textContent=concluidos.length;
+  if(el('fu-cards-atrasado'))el('fu-cards-atrasado').innerHTML=atrasados.length?atrasados.map(f=>fuCardHTML(f,'atrasado')).join(''):empty;
+  if(el('fu-cards-hoje'))el('fu-cards-hoje').innerHTML=hoje.length?hoje.map(f=>fuCardHTML(f,'hoje')).join(''):empty;
+  if(el('fu-cards-semana'))el('fu-cards-semana').innerHTML=semana.length?semana.map(f=>fuCardHTML(f,'semana')).join(''):empty;
+  if(el('fu-cards-concluido'))el('fu-cards-concluido').innerHTML=concluidos.length?concluidos.map(f=>{
     const l=leads.find(x=>x.id===f.lead_id);
-    return`<div class="fu-card-concluido">
-      <div class="fu-check-done"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:700;margin-bottom:2px">${l?.nome||'—'}</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${f.desc||''}</div>
-        <div style="font-size:10px;color:var(--muted2)">${TIPO_TAG[f.tipo]||''} ${fmtDate(f.data)}</div>
-      </div>
-    </div>`;}).join(''):'<div class="fu-empty" style="grid-column:1/-1">Nenhum concluído ainda</div>';
+    return`<div class="fu-card-concluido"><div class="fu-check-done">${CHECKSVG}</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;margin-bottom:2px">${l?.nome||'—'}</div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">${f.desc||''}</div><div style="font-size:10px;color:var(--muted2)">${TIPO_TAG[f.tipo]||''} ${fmtDate(f.data)}</div></div></div>`;
+  }).join(''):'<div class="fu-empty" style="grid-column:1/-1">Nenhum concluído ainda</div>';
 }
 
 let _concluidos_aberto=false;
@@ -853,266 +844,40 @@ function toggleConcluidos(){
   _concluidos_aberto=!_concluidos_aberto;
   const el=document.getElementById('fu-cards-concluido');
   const arrow=document.getElementById('concluidos-arrow');
-  el.style.display=_concluidos_aberto?'grid':'none';
+  if(el)el.style.display=_concluidos_aberto?'grid':'none';
   if(arrow)arrow.style.transform=_concluidos_aberto?'rotate(180deg)':'';
 }
 
-function renderPainel(){
-  const pending=followups.filter(f=>!f.feito).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
-  const {start,end}=semanaAtual();
-  const atrasados=pending.filter(f=>isOverdue(f.data));
-  const hoje=pending.filter(f=>isToday(f.data));
-  const semana=pending.filter(f=>!isOverdue(f.data)&&!isToday(f.data)&&f.data>=start&&f.data<=end);
-
-  const empty='<div style="text-align:center;padding:16px;font-size:11px;color:var(--muted2)">Nenhuma ação</div>';
-  document.getElementById('p-count-atrasado').textContent=atrasados.length;
-  document.getElementById('p-count-hoje').textContent=hoje.length;
-  document.getElementById('p-count-semana').textContent=semana.length;
-  document.getElementById('p-fu-atrasado').innerHTML=atrasados.length?atrasados.map(f=>fuPainelCardHTML(f,'atrasado')).join(''):empty;
-  document.getElementById('p-fu-hoje').innerHTML=hoje.length?hoje.map(f=>fuPainelCardHTML(f,'hoje')).join(''):empty;
-  document.getElementById('p-fu-semana').innerHTML=semana.length?semana.map(f=>fuPainelCardHTML(f,'semana')).join(''):empty;
-
-  const estagios=['prospeccao','em_conversa','proposta','fechado'];
-  const cols={};estagios.forEach(e=>cols[e]=[]);
-  leads.forEach(l=>{if(cols[l.estagio])cols[l.estagio].push(l);});
-  document.getElementById('painel-pipeline-board').innerHTML=estagios.map(e=>`
-    <div class="painel-pipe-col">
-      <div class="painel-pipe-head"><span class="painel-pipe-title">${ESTAGIO_LABELS[e]}</span><span class="painel-pipe-count">${cols[e].length}</span></div>
-      <div class="painel-pipe-cards">${cols[e].length===0?'<div style="text-align:center;padding:12px;font-size:10px;color:var(--muted2)">Vazio</div>':cols[e].map(l=>pipelineCardHTML(l,true)).join('')}</div>
-    </div>`).join('');
-}
-
-let _painelInterval=null;
-function togglePainel(){
-  const on=!document.body.classList.contains('painel-mode');
-  document.body.classList.toggle('painel-mode',on);
-  const btn=document.getElementById('btn-painel');
-  if(on){
-    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    document.getElementById('section-painel').style.display='block';
-    document.getElementById('topbar-title').textContent='Painel de Prospecção';
-    document.getElementById('topbar-sub').textContent='Atualiza automaticamente a cada 5 minutos';
-    btn.innerHTML=`<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Sair do Painel`;
-    btn.style.background='rgba(79,70,229,0.3)';btn.style.borderColor='rgba(79,70,229,0.5)';btn.style.color='#a5b4fc';
-    renderPainel();
-    _painelInterval=setInterval(()=>{loadAll().then(renderPainel);},5*60*1000);
-  } else {
-    document.getElementById('section-painel').style.display='none';
-    btn.innerHTML=`<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Modo Painel`;
-    btn.style='';
-    navigate('visao',document.querySelector('.nav-item[data-section="visao"]'));
-    if(_painelInterval){clearInterval(_painelInterval);_painelInterval=null;}
-  }
-}
-
-// ── LEADS TABLE ──
-function renderLeads(){
-  const q=(document.getElementById('search-leads')?.value||'').toLowerCase();
-  const fs=document.getElementById('filter-status')?.value||'';
-  const fe=document.getElementById('filter-estagio')?.value||'';
-  const statusLead=l=>{
-    if(l.estagio==='perdido')return'perdido';
-    if(l.estagio==='descartado')return'descartado';
-    if(l.estagio==='fechado')return'ativo';
-    return l.temperatura||'frio';
-  };
-  const STATUS_BADGE={
-    frio:'<span class="temp-badge temp-frio">FRIO</span>',
-    morno:'<span class="temp-badge temp-morno">MORNO</span>',
-    quente:'<span class="temp-badge temp-quente">QUENTE</span>',
-    ativo:'<span class="estagio-badge estagio-fechado">ATIVO</span>',
-    perdido:'<span class="estagio-badge estagio-perdido">PERDIDO</span>',
-    descartado:'<span class="estagio-badge estagio-descartado">DESCARTADO</span>',
-  };
-  let list=leads.filter(l=>{
-    if(q&&!(l.nome||'').toLowerCase().includes(q)&&!(l.telefone||'').includes(q))return false;
-    if(fs&&statusLead(l)!==fs)return false;
-    if(fe&&l.estagio!==fe)return false;
-    return true;
-  });
-  const tbody=document.getElementById('tbody-leads');
-  tbody.innerHTML=list.length===0?`<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted2);font-size:12px">
-    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" style="display:block;margin:0 auto 10px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-    Nenhum lead encontrado</td></tr>`:
-    list.map(l=>{
-      const fuPend=followups.filter(f=>f.lead_id===l.id&&!f.feito).length;
-      const nextFu=followups.filter(f=>f.lead_id===l.id&&!f.feito).sort((a,b)=>a.data?.localeCompare(b.data||''))[0];
-      const fuData=nextFu?.data||'';
-      const ov=isOverdue(fuData);const td=isToday(fuData);
-      return`<tr>
-        <td onclick="event.stopPropagation()"><input type="checkbox" class="lead-checkbox chk-lead" data-id="${l.id}" onchange="toggleSelect('${l.id}',this.checked)" ${_selected.has(l.id)?'checked':''}></td>
-        <td onclick="editLead('${l.id}')" style="cursor:pointer"><div class="lead-cell"><div class="lead-av" style="background:${acol(l.nome)}">${initials(l.nome)}</div><div><div class="lead-name">${l.nome}</div><div class="lead-sub">${l.telefone||''}${l.email?` · ${l.email}`:''}</div></div></div></td>
-        <td onclick="editLead('${l.id}')" style="cursor:pointer;font-size:12px">${l.patrimonio||'—'}</td>
-        <td onclick="editLead('${l.id}')" style="cursor:pointer">${origemBadge(l.origem)}</td>
-        <td onclick="editLead('${l.id}')" style="cursor:pointer">${STATUS_BADGE[statusLead(l)]||''}</td>
-        <td onclick="editLead('${l.id}')" style="cursor:pointer"><span class="estagio-badge${l.estagio==='fechado'?' estagio-fechado':l.estagio==='perdido'?' estagio-perdido':l.estagio==='descartado'?' estagio-descartado':''}">${ESTAGIO_LABELS[l.estagio]||l.estagio||'—'}</span></td>
-        <td onclick="editLead('${l.id}')" style="cursor:pointer;font-size:12px;color:var(--muted)">${l.responsavel||'—'}</td>
-        <td onclick="editLead('${l.id}')" style="cursor:pointer;font-size:12px;color:var(--muted)">${l.indicado_por||'—'}</td>
-        <td><button class="del-btn" onclick="event.stopPropagation();confirmDelete('${l.id}')">×</button></td>
-      </tr>`;}).join('');
-  document.getElementById('leads-count').textContent=`${list.length} lead${list.length!==1?'s':''}`;
-}
-
-function onStatusChange(){
-  const v=document.getElementById('l-temperatura').value;
-  const rowEstagio=document.getElementById('row-estagio');
-  if(v==='ativo'){rowEstagio.style.display='';document.getElementById('l-estagio').value='fechado';}
-  else if(v==='perdido'){rowEstagio.style.display='none';document.getElementById('l-estagio').value='perdido';}
-  else if(v==='descartado'){rowEstagio.style.display='none';document.getElementById('l-estagio').value='descartado';}
-  else{rowEstagio.style.display='';if(['fechado','perdido','descartado'].includes(document.getElementById('l-estagio').value))document.getElementById('l-estagio').value='prospeccao';}
-  updateProspSugestao();
-}
-
-function toggleIndicadoPor(){
-  const v=document.getElementById('l-origem').value;
-  document.getElementById('row-indicado').style.display=v==='indicacao'?'':'none';
-  if(v!=='indicacao')document.getElementById('l-indicado-por').value='';
-}
-
-// ── SAVE LEAD ──
-async function saveLead(){
-  const nome=document.getElementById('l-nome').value.trim();
-  if(!nome){alert('Informe o nome');return;}
-  const id=document.getElementById('lead-edit-id').value||uid();
-  const data={id,nome,
-    telefone:document.getElementById('l-tel').value.trim(),
-    email:document.getElementById('l-email').value.trim(),
-    cpf:document.getElementById('l-cpf').value.trim(),
-    patrimonio:document.getElementById('l-patrimonio').value.trim(),
-    origem:document.getElementById('l-origem').value,
-    indicado_por:document.getElementById('l-indicado-por').value.trim(),
-    responsavel:document.getElementById('l-responsavel').value.trim(),
-    temperatura:document.getElementById('l-temperatura').value,
-    estagio:document.getElementById('l-estagio').value,
-    proxima_acao:document.getElementById('l-proxima-acao').value.trim(),
-    data_primeiro_contato:document.getElementById('l-data').value,
-    obs:document.getElementById('l-obs').value.trim(),
-  };
-  const{error}=await _sb.from('wealth_leads').upsert({id,data});
-  if(error){showToast('Erro ao salvar','err');return;}
-  const idx=leads.findIndex(l=>l.id===id);
-  if(idx>=0)leads[idx]=data;else leads.unshift(data);
-  // Auto follow-up se não houver nenhum pendente para este lead
-  const temPendente=followups.some(f=>f.lead_id===id&&!f.feito);
-  if(!temPendente&&['frio','morno','quente'].includes(data.temperatura))
-    await autoFollowup(data);
-  // Recarrega follow-ups do banco para garantir sincronismo
-  const{data:fRows}=await _sb.from('wealth_followups').select('id,lead_id,data').order('created_at');
-  if(fRows) followups=fRows.map(r=>({id:r.id,lead_id:r.lead_id,...r.data}));
-  showToast('Salvo!','ok');closeModal('modal-lead');
-  renderVisao();renderLeads();renderFollowups();renderPipeline();populateLeadSelect();
-}
-
-function calcProxDataEvento(dataEvento){
-  if(!dataEvento)return '';
-  const d=new Date(dataEvento+'T12:00:00');
-  d.setDate(d.getDate()+1);
-  return toDateStr(d);
-}
-function calcProxData(temp,dataContato,origem){
-  if(!dataContato)return '';
-  if(origem==='evento') return calcProxDataEvento(dataContato);
-  const dias={frio:30,morno:15,quente:7};
-  const d=new Date(dataContato+'T12:00:00');
-  d.setDate(d.getDate()+(dias[temp]||15));
-  return d.toISOString().split('T')[0];
-}
-
-function updateProspSugestao(){
-  const temp=document.getElementById('l-temperatura').value;
-  const estagio=document.getElementById('l-estagio').value;
-  const data=document.getElementById('l-data').value;
-  const box=document.getElementById('prosp-box');
-  if(estagio==='descartado'){
-    document.getElementById('prosp-text').innerHTML='<strong>Lead Descartado</strong> — Sem tentativa de contato ativo.<br>Este lead foi encerrado sem conversão. Pode ser reativado futuramente se houver nova oportunidade.';
-    document.getElementById('prosp-next').innerHTML='';
-    box.style.display='block';return;
-  }
-  if(estagio==='perdido'){
-    document.getElementById('prosp-text').innerHTML='<strong>Cliente Perdido</strong> — Negociação encerrada sem fechamento.<br>Registre o motivo nas observações. Considere um contato de retomada em 3 a 6 meses.';
-    document.getElementById('prosp-next').innerHTML='';
-    box.style.display='block';return;
-  }
-  if(!data){box.style.display='none';return;}
-  const p=TEMP_PROSP[temp];if(!p){box.style.display='none';return;}
-  const origVal=document.getElementById('l-origem').value;
-  const proxData=calcProxData(temp,data,origVal);
-  const acaoTexto=origVal==='evento'?'Fazer contato no dia seguinte ao evento':p.acao;
-  document.getElementById('prosp-text').innerHTML=origVal==='evento'?`<strong>Lead de Evento</strong> — Contato imediato no dia seguinte.<br>Aproveite o contexto do evento para iniciar a conversa.`:p.texto;
-  document.getElementById('prosp-next').innerHTML=`Próximo contato sugerido: ${fmtDate(proxData)} — ${acaoTexto}`;
-  box.style.display='block';
-}
-
-function editLead(id){
-  const l=leads.find(x=>x.id===id);if(!l)return;
-  document.getElementById('lead-edit-id').value=l.id;
-  document.getElementById('mt-lead').textContent='Editar Lead';
-  document.getElementById('l-nome').value=l.nome||'';
-  document.getElementById('l-tel').value=l.telefone?maskTel(l.telefone):'';
-  document.getElementById('l-email').value=l.email||'';
-  document.getElementById('l-cpf').value=l.cpf?maskCPF(l.cpf):'';
-  document.getElementById('l-patrimonio').value=l.patrimonio?maskMoeda(l.patrimonio.replace(/\D/g,'').padEnd(3,'0')):'';
-
-  const origVal=l.origem||'indicacao';
-  document.getElementById('l-origem').value=origVal;
-  document.getElementById('l-origem').style.display='none';
-  const disp=document.getElementById('l-origem-display');
-  disp.style.display='block';disp.textContent=ORIGEM_LABELS[origVal]||origVal;
-  document.getElementById('l-indicado-por').value=l.indicado_por||'';
-  toggleIndicadoPor();
-  document.getElementById('l-responsavel').value=l.responsavel||'';
-  // Status: estágio encerrado sobrepõe a temperatura
-  const statusVal=l.estagio==='fechado'?'ativo':l.estagio==='perdido'?'perdido':l.estagio==='descartado'?'descartado':l.temperatura||'frio';
-  document.getElementById('l-temperatura').value=statusVal;
-  document.getElementById('l-estagio').value=l.estagio||'prospeccao';
-  document.getElementById('l-proxima-acao').value=l.proxima_acao||'';
-  document.getElementById('l-data').value=l.data_primeiro_contato||'';
-  document.getElementById('l-obs').value=l.obs||'';
-  onStatusChange();
-  updateProspSugestao();
-  openModalEdit('modal-lead');
-}
-
-// ── FOLLOW-UP SAVE ──
-function populateLeadSelect(){
-  const sel=document.getElementById('fu-lead-id');if(!sel)return;
-  sel.innerHTML=[...leads].sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR',{sensitivity:'base'})).map(l=>`<option value="${l.id}">${l.nome}</option>`).join('');
-}
-
-async function saveFollowup(){
-  const lead_id=document.getElementById('fu-lead-id').value;
-  const data=document.getElementById('fu-data').value;
-  const desc=document.getElementById('fu-desc').value.trim();
-  if(!lead_id||!data||!desc){alert('Preencha todos os campos');return;}
-  const id=uid();
-  const rec={id,lead_id,data,tipo:document.getElementById('fu-tipo').value,desc,feito:false};
-  const{error}=await _sb.from('wealth_followups').upsert({id,lead_id,data:rec});
-  if(error){showToast('Erro ao salvar','err');return;}
-  followups.push(rec);
-  showToast('Follow-up agendado!','ok');closeModal('modal-followup');
-  renderFollowups();renderVisao();if(document.body.classList.contains('painel-mode'))renderPainel();
-}
-
-function marcarFuFeito(id){
-  if(!id)return;
-  // Atualiza array local imediatamente
+async function checkFu(id){
+  // 1. Oculta o card imediatamente
+  const card=document.getElementById('fucard-'+id);
+  if(card)card.style.display='none';
+  // 2. Atualiza array local
   const idx=followups.findIndex(x=>x.id===id);
-  if(idx<0)return;
-  followups[idx]={...followups[idx],feito:true};
-  const fAtualizado=followups[idx];
-  // Atualiza contador concluídos
-  const concl=followups.filter(f=>f.feito).length;
+  if(idx>=0)followups[idx]={...followups[idx],feito:true};
+  // 3. Atualiza contadores
   const cntEl=document.getElementById('fu-count-concluido');
-  if(cntEl)cntEl.textContent=concl;
-  // Salva no banco e agenda próximo em background
-  _sb.from('wealth_followups').upsert({id,lead_id:fAtualizado.lead_id,data:fAtualizado});
-  const lead=leads.find(l=>l.id===fAtualizado.lead_id);
-  if(lead&&['frio','morno','quente'].includes(lead.temperatura)){
-    const temOutroPendente=followups.some(x=>x.lead_id===fAtualizado.lead_id&&!x.feito&&x.id!==id);
-    if(!temOutroPendente) autoFollowup(lead,true);
+  if(cntEl)cntEl.textContent=followups.filter(f=>f.feito).length;
+  ['atrasado','hoje','semana'].forEach(t=>{
+    const el=document.getElementById('fu-count-'+t);
+    if(el)el.textContent=followups.filter(f=>!f.feito&&(t==='atrasado'?isOverdue(f.data):t==='hoje'?isToday(f.data):(!isOverdue(f.data)&&!isToday(f.data)))).length;
+  });
+  // 4. Salva no banco
+  if(idx>=0){
+    const f=followups[idx];
+    await _sb.from('wealth_followups').upsert({id,lead_id:f.lead_id,data:f});
+    // 5. Agenda próximo
+    const lead=leads.find(l=>l.id===f.lead_id);
+    if(lead&&['frio','morno','quente'].includes(lead.temperatura)){
+      if(!followups.some(x=>x.lead_id===f.lead_id&&!x.feito&&x.id!==id))
+        autoFollowup(lead,true);
+    }
   }
 }
+
+// Alias para compatibilidade
+function marcarFuFeito(id){checkFu(id);}
+
 
 async function autoFollowup(lead,usarHoje=false){
   const p=TEMP_PROSP[lead.temperatura];if(!p)return;
