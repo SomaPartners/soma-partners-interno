@@ -171,18 +171,22 @@ html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-
         <button class="btn btn-primary btn-sm" onclick="renderVencimentos()">Aplicar</button>
       </div>
       <div style="margin-left:auto;display:flex;gap:8px">
-        <select class="filter-select" id="venc-status" onchange="renderVencimentos()">
+        <select class="filter-select" id="venc-status">
           <option value="">Todos os status</option>
           <option value="em_aberto">Em Aberto</option>
           <option value="agendando">Agendando</option>
           <option value="pago">Pago</option>
         </select>
-        <select class="filter-select" id="venc-pagador" onchange="renderVencimentos()">
+        <select class="filter-select" id="venc-pagador">
           <option value="">Quem pagou</option>
           <option value="familia">Família</option>
           <option value="soma">Soma Partners</option>
         </select>
-        <select class="filter-select" id="venc-cliente" onchange="renderVencimentos()"><option value="">Todos os clientes</option></select>
+        <select class="filter-select" id="venc-cliente"><option value="">Todos os clientes</option></select>
+        <button class="btn btn-primary btn-sm" onclick="renderVencimentos()" style="white-space:nowrap">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Buscar
+        </button>
         <button class="action-btn" onclick="exportVencPDF()"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF</button>
         <button class="action-btn" onclick="exportVencExcel()"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Excel</button>
       </div>
