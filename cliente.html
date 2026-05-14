@@ -2025,7 +2025,7 @@ function renderFinanceiro(){
     const entrada=p.descricao==='ENTRADA';
     const val=parseFloat(p.valor||0);
     // Recorrentes convertidos não podem ser excluídos — serão gerados novamente pelo recorrente
-    const delBtn = (p._virtual || p.recorrente) ? '' : `<button class="fin-del" onclick="delPgto('${p.id}')">×</button>`;
+    const delBtn = (p._virtual || p.recorrente) ? '' : `<button class="fin-del" data-del-id="${p.id}" onclick="delPgto(this.dataset.delId)">×</button>`;
     const autoBadge = p._virtual ? '<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:rgba(139,92,246,0.2);color:#c4b5fd;margin-left:5px;vertical-align:middle;border:1px solid rgba(139,92,246,0.35)">Auto</span>' : '';
     // Status
     const pStatus = p._virtual ? 'em_aberto' : (p.status||'em_aberto');
