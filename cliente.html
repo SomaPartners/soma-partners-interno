@@ -2057,8 +2057,8 @@ function renderFinanceiro(){
       <td style="text-align:center">
         ${p._virtual ? '' : `<span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:8px;${p.pagador==='soma'?'background:rgba(79,70,229,0.18);border:1px solid rgba(79,70,229,0.3);color:#a5b4fc':'background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7'}">${p.pagador==='soma'?'Soma':'Família'}</span>`}
       </td>
-      <td style="display:flex;gap:4px;justify-content:center;align-items:center">
-        ${p._virtual?'':(`<button class="fin-del" onclick="editPgto('${safeId}')" style="color:var(--muted2);font-size:12px" title="Editar">✏️</button>`)}
+      <td style="text-align:center;white-space:nowrap">
+        ${p._virtual?'':(`<button class="fin-del" data-edit-id="${safeId}" onclick="editPgto(this.dataset.editId)" style="color:var(--muted2);font-size:12px;margin-right:4px" title="Editar">✏️</button>`)}
         ${delBtn}
       </td>
     </tr>`;
