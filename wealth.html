@@ -639,9 +639,38 @@ async function loadAll(){
   }catch(e){showToast('Erro ao carregar dados','err')}
   showLoader(false);
   await migrarFollowupsAuto();
+  await limparFollowupsRecusados();
   renderVisao();
   renderFollowups();
   populateLeadSelect();
+}
+
+async function limparFollowupsRecusados(){
+  // Busca todos os convidados recusados de todos os eventos
+  try{
+    const{data:convRows}=await _sb.from('eventos_convidados').select('lead_id,data');
+    if(!convRows)return;
+    const recusados=(convRows||[]).filter(r=>r.data?.rsvp==='recusou');
+    if(recusados.length===0)return;
+    // Para cada recusado, cancela follow-ups e descarta o lead (pelo telefone)
+    const telsRecusados=recusados.map(r=>(r.data?.telefone||'').replace(/\D/g,'')).filter(Boolean);
+    if(telsRecusados.length===0)return;
+    // Encontra leads de evento com esses telefones
+    const leadsEvento=leads.filter(l=>l.origem==='evento'&&l.temperatura!=='descartado');
+    for(const lead of leadsEvento){
+      const tel=(lead.telefone||'').replace(/\D/g,'');
+      if(!tel||!telsRecusados.includes(tel))continue;
+      // Remove follow-ups auto pendentes
+      const fusPendentes=followups.filter(f=>f.lead_id===lead.id&&!f.feito&&f.auto);
+      for(const fu of fusPendentes){
+        await _sb.from('wealth_followups').delete().eq('id',fu.id);
+        followups.splice(followups.indexOf(fu),1);
+      }
+      // Descarta o lead
+      lead.temperatura='descartado';lead.estagio='descartado';
+      await _sb.from('wealth_leads').upsert({id:lead.id,data:lead});
+    }
+  }catch(e){console.warn('limparFollowupsRecusados error:',e);}
 }
 
 async function migrarFollowupsAuto(){
