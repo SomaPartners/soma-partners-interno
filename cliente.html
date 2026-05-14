@@ -3171,7 +3171,17 @@ function renderLista(){
         const criado = t.dataCriacao?fmtDate(t.dataCriacao):'—';
         const comCount=(t.comentarios||[]).length;
         const comSection=(t.comentarios||[]).length>0
-          ?(t.comentarios||[]).map(c=>`<div class="comment-item"><div style="flex:1"><div class="comment-text">${c.texto}</div><div class="comment-meta">${c.data||''}</div></div></div>`).join('')
+          ?(t.comentarios||[]).map((c,ci)=>`
+            <div class="comment-item" id="ci-${t.id}-${ci}">
+              <div style="flex:1">
+                <div class="comment-text" id="ctxt-${t.id}-${ci}">${c.texto}</div>
+                <div class="comment-meta">${c.data||''}</div>
+              </div>
+              <div style="display:flex;gap:4px;flex-shrink:0;margin-top:2px">
+                <button onclick="startEditComment('${t.id}',${ci})" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:11px;padding:2px 5px;border-radius:4px;font-family:'Montserrat',sans-serif;transition:all 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--muted2)'">✏️</button>
+                <button onclick="deleteComment('${t.id}',${ci})" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:11px;padding:2px 5px;border-radius:4px;font-family:'Montserrat',sans-serif;transition:all 0.15s" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='var(--muted2)'">×</button>
+              </div>
+            </div>`).join('')
           :'<div style="font-size:11px;color:var(--muted2);padding:4px 0">Nenhum comentário ainda.</div>';
         return `<div style="border-bottom:1px solid rgba(255,255,255,0.04)">
           <div class="asana-row" style="border-bottom:none">
@@ -3204,6 +3214,42 @@ function renderLista(){
           </div>
         </div>`;
       }).join('');
+}
+
+function startEditComment(tarefaId, ci){
+  const t=tarefas.find(x=>x.id===tarefaId);if(!t)return;
+  const c=t.comentarios[ci];if(!c)return;
+  const txtEl=document.getElementById('ctxt-'+tarefaId+'-'+ci);
+  const itemEl=document.getElementById('ci-'+tarefaId+'-'+ci);
+  if(!txtEl||!itemEl)return;
+  // Replace text with input
+  const original=c.texto;
+  txtEl.innerHTML=`<div style="display:flex;gap:6px;align-items:center">
+    <input id="cedit-${tarefaId}-${ci}" class="comment-input" value="${original.replace(/"/g,'&quot;')}" style="flex:1;padding:5px 8px;font-size:12px">
+    <button onclick="saveEditComment('${tarefaId}',${ci})" class="comment-btn" style="padding:5px 10px">Salvar</button>
+    <button onclick="renderLista();setTimeout(()=>{const el=document.getElementById('comments-${tarefaId}');if(el)el.classList.add('open');},50)" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:18px;line-height:1">×</button>
+  </div>`;
+  setTimeout(()=>{const inp=document.getElementById('cedit-'+tarefaId+'-'+ci);if(inp){inp.focus();inp.select();}},50);
+}
+
+async function saveEditComment(tarefaId, ci){
+  const inp=document.getElementById('cedit-'+tarefaId+'-'+ci);
+  if(!inp)return;
+  const texto=inp.value.trim();
+  if(!texto)return;
+  const t=tarefas.find(x=>x.id===tarefaId);if(!t)return;
+  t.comentarios[ci].texto=texto;
+  await _sb.from('concierge_tarefas').upsert({id:tarefaId,data:t});
+  renderLista();
+  setTimeout(()=>{const el=document.getElementById('comments-'+tarefaId);if(el)el.classList.add('open');},50);
+}
+
+async function deleteComment(tarefaId, ci){
+  const t=tarefas.find(x=>x.id===tarefaId);if(!t)return;
+  t.comentarios.splice(ci,1);
+  await _sb.from('concierge_tarefas').upsert({id:tarefaId,data:t});
+  renderLista();
+  setTimeout(()=>{const el=document.getElementById('comments-'+tarefaId);if(el)el.classList.add('open');},50);
 }
 
 async function saveProximaAtualizacao(tarefaId, data){
