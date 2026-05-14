@@ -2346,24 +2346,24 @@ async function delMembro(i){CLIENT.membros.splice(i,1);await _sb.from('concierge
 
 function editPgto(id){
   const p=pagamentos.find(x=>x.id===id);if(!p)return;
+  // Primeiro abre a modal via openModal (que reseta), depois preenche
+  openModal('modal-pgto');
   document.getElementById('pgto-id').value=p.id;
   document.getElementById('mt-pgto').textContent='Editar Transação';
   const carac=document.getElementById('pgto-carac');if(carac)carac.value=p.carac||p.caracteristica||'';
-  const data=document.getElementById('pgto-data');if(data)data.value=p.data||p.dataVencimento||'';
+  const data=document.getElementById('pgto-data');if(data)data.value=p.data||p.dataVencimento||today();
   const tipo=document.getElementById('pgto-tipo');if(tipo)tipo.value=p.tipo||'SERVIÇOS';
   const desc=document.getElementById('pgto-desc');if(desc)desc.value=p.descricao||'SAÍDA';
   const obs=document.getElementById('pgto-obs');if(obs)obs.value=p.obs||'';
-  const stat=document.getElementById('pgto-status');if(stat)stat.value=p.status||'em_aberto';
-  const pag=document.getElementById('pgto-pagador');if(pag)setPagador(p.pagador||'familia');
+  setPagador(p.pagador||'familia');
   const psel=document.getElementById('pgto-pessoa');if(psel)psel.value=p.pessoa||'';
-  // Valor
+  // Valor — usar formatCurrency para formato correto
   const valEl=document.getElementById('pgto-val');
   if(valEl){
     const v=parseFloat(p.valor||0);
-    valEl.value='R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2});
-    setTimeout(()=>initCurrencyInput(valEl),50);
+    const digits=Math.round(v*100).toString();
+    valEl.value=formatCurrency(digits);
   }
-  document.getElementById('modal-pgto').classList.add('open');
 }
 
 async function savePgto(){
