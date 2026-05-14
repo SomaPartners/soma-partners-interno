@@ -678,7 +678,6 @@ async function renderPainelConcierge(){
     _sb.from('concierge_pagamentos').select('data').order('created_at'),
   ]);
 
-  const today=pcToday();
   // Semana: próximos 7 dias
   const fim7=new Date();fim7.setDate(fim7.getDate()+7);
   const fim7s=fim7.getFullYear()+'-'+String(fim7.getMonth()+1).padStart(2,'0')+'-'+String(fim7.getDate()).padStart(2,'0');
