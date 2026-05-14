@@ -684,7 +684,15 @@ async function migrarFollowupsAuto(){
     // 3. Cria follow-up baseado em data_primeiro_contato ou hoje se passado
     const p=TEMP_PROSP[lead.temperatura];if(!p)continue;
     const dataSugerida=calcProxData(lead.temperatura,lead.data_primeiro_contato,lead.origem);
-    const dataFu=(dataSugerida&&dataSugerida>=today())?dataSugerida:today();
+    // Se o lead já teve follow-up concluído e a data sugerida é hoje/passado, agendar para daqui a N dias (evita recriar para hoje)
+    const jaTeveFeito=followups.some(f=>f.lead_id===lead.id&&f.feito);
+    let dataFu;
+    if(jaTeveFeito&&(!dataSugerida||dataSugerida<=today())){
+      const d=new Date();d.setDate(d.getDate()+p.dias);
+      dataFu=d.toISOString().split('T')[0];
+    }else{
+      dataFu=(dataSugerida&&dataSugerida>=today())?dataSugerida:today();
+    }
     const fId=uid();
     const rec={id:fId,lead_id:lead.id,data:dataFu,tipo:TIPO_MAP[lead.temperatura]||'ligacao',desc:p.acao,feito:false,auto:true};
     const{error}=await _sb.from('wealth_followups').upsert({id:fId,lead_id:lead.id,data:rec});
