@@ -98,6 +98,12 @@ html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-
 
 /* ── FILTER BAR ── */
 .filter-bar{display:flex;align-items:center;gap:6px;padding:10px 0 12px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:0}
+.fin-month-bar{display:flex;align-items:center;gap:0;width:100%;border-bottom:1px solid var(--border);margin-bottom:0}
+.fin-year-sel{background:rgba(79,70,229,0.2);border:1px solid rgba(79,70,229,0.4);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:800;color:#a5b4fc;cursor:pointer;font-family:'Montserrat',sans-serif;margin-right:8px;outline:none}
+.fin-year-sel option{background:#0d2035;color:#fff}
+.fin-month-btn{flex:1;background:transparent;border:none;border-bottom:2px solid transparent;padding:8px 4px;font-size:11px;font-weight:700;color:var(--muted2);cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.15s;white-space:nowrap}
+.fin-month-btn:hover{color:#fff;background:rgba(255,255,255,0.04)}
+.fin-month-btn.active{color:#fff;border-bottom-color:var(--indigo)}
 .filter-select{appearance:none;-webkit-appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 28px 6px 10px;font-size:11px;font-weight:600;color:var(--muted);font-family:'Montserrat',sans-serif;cursor:pointer;transition:all 0.18s;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
 .filter-select:hover{border-color:rgba(255,255,255,0.2);color:#fff}
 .filter-select:focus{border-color:var(--indigo);color:#fff;background-color:rgba(79,70,229,0.08)}
@@ -627,14 +633,20 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             Excel
           </button>
-          <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:4px 8px">
-            <button onclick="navFinMes(-1)" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.6);display:flex;align-items:center;padding:2px 4px;border-radius:4px;transition:all 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <span id="fin-mes-label" style="font-size:11px;font-weight:700;color:#fff;white-space:nowrap;min-width:80px;text-align:center"></span>
-            <button onclick="navFinMes(1)" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.6);display:flex;align-items:center;padding:2px 4px;border-radius:4px;transition:all 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
+          <div class="fin-month-bar" id="fin-month-bar">
+            <select class="fin-year-sel" id="fin-year-sel" onchange="setFinAno(this.value)"></select>
+            <button class="fin-month-btn" data-m="0" onclick="setFinMes(0)">Jan</button>
+            <button class="fin-month-btn" data-m="1" onclick="setFinMes(1)">Fev</button>
+            <button class="fin-month-btn" data-m="2" onclick="setFinMes(2)">Mar</button>
+            <button class="fin-month-btn" data-m="3" onclick="setFinMes(3)">Abr</button>
+            <button class="fin-month-btn" data-m="4" onclick="setFinMes(4)">Mai</button>
+            <button class="fin-month-btn" data-m="5" onclick="setFinMes(5)">Jun</button>
+            <button class="fin-month-btn" data-m="6" onclick="setFinMes(6)">Jul</button>
+            <button class="fin-month-btn" data-m="7" onclick="setFinMes(7)">Ago</button>
+            <button class="fin-month-btn" data-m="8" onclick="setFinMes(8)">Set</button>
+            <button class="fin-month-btn" data-m="9" onclick="setFinMes(9)">Out</button>
+            <button class="fin-month-btn" data-m="10" onclick="setFinMes(10)">Nov</button>
+            <button class="fin-month-btn" data-m="11" onclick="setFinMes(11)">Dez</button>
           </div>
           <button class="fin-action-btn" onclick="exportarPDF()" title="Exportar para PDF">
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -1231,28 +1243,54 @@ async function loadAll(){
   showLoader(false);
 }
 
+function setFinMes(mes){
+  const sel=document.getElementById('fin-year-sel');
+  const ano=sel?parseInt(sel.value):new Date().getFullYear();
+  const m=String(mes+1).padStart(2,'0');
+  const primeiro=`${ano}-${m}-01`;
+  const ultimo=`${ano}-${m}-${String(new Date(ano,mes+1,0).getDate()).padStart(2,'0')}`;
+  ['fin-f-de','fin-f-de-vis'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=primeiro;});
+  ['fin-f-ate','fin-f-ate-vis'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=ultimo;});
+  updateFinMesBar();
+  renderFinanceiro();
+}
+
+function setFinAno(ano){
+  const deEl=document.getElementById('fin-f-de');
+  const mes=deEl?.value?new Date(deEl.value+'T12:00:00').getMonth():new Date().getMonth();
+  setFinMes(mes);
+}
+
 function navFinMes(delta){
   const deEl=document.getElementById('fin-f-de');
   const cur=deEl?.value||today();
   const d=new Date(cur+'T12:00:00');
   d.setMonth(d.getMonth()+delta);
-  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0');
-  const primeiro=`${y}-${m}-01`;
-  const ultimo=`${y}-${m}-${String(new Date(y,d.getMonth()+1,0).getDate()).padStart(2,'0')}`;
-  ['fin-f-de','fin-f-de-vis'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=primeiro;});
-  ['fin-f-ate','fin-f-ate-vis'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=ultimo;});
-  updateFinMesLabel();
-  renderFinanceiro();
+  setFinMes(d.getMonth());
+  const sel=document.getElementById('fin-year-sel');
+  if(sel)sel.value=d.getFullYear();
 }
 
-function updateFinMesLabel(){
+function updateFinMesBar(){
   const deEl=document.getElementById('fin-f-de');
   if(!deEl?.value)return;
   const d=new Date(deEl.value+'T12:00:00');
-  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  const lbl=document.getElementById('fin-mes-label');
-  if(lbl)lbl.textContent=`${meses[d.getMonth()]} ${d.getFullYear()}`;
+  const mesAtual=d.getMonth();
+  const anoAtual=d.getFullYear();
+  document.querySelectorAll('.fin-month-btn').forEach(btn=>{
+    btn.classList.toggle('active',parseInt(btn.dataset.m)===mesAtual);
+  });
+  const sel=document.getElementById('fin-year-sel');
+  if(sel){
+    if(!sel.options.length){
+      const now=new Date().getFullYear();
+      for(let y=now-3;y<=now+1;y++){const o=document.createElement('option');o.value=y;o.textContent=y;sel.appendChild(o);}
+    }
+    sel.value=anoAtual;
+  }
 }
+
+function updateFinMesLabel(){updateFinMesBar();}
 
 function renderAll(){
   // Default filter: current month only
@@ -1264,7 +1302,7 @@ function renderAll(){
   const ateEl=document.getElementById('fin-f-ate');if(ateEl&&!ateEl.value)ateEl.value=ultimoDia;
   const deVis=document.getElementById('fin-f-de-vis');if(deVis&&!deVis.value)deVis.value=primeiroDia;
   const ateVis=document.getElementById('fin-f-ate-vis');if(ateVis&&!ateVis.value)ateVis.value=ultimoDia;
-  updateFinMesLabel();
+  updateFinMesBar();
   renderHero();renderCounters();renderLista();renderFinanceiro();renderDados();
 }
 
