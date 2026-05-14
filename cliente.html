@@ -1710,12 +1710,11 @@ function gerarTransacoesRecorrentes(){
     // Respeita a data de início — só gera a partir de quando foi cadastrado
     const inicio = r.dataInicio ? new Date(r.dataInicio) : hoje;
     
-    // Gera apenas passado + mês atual (sem futuro — futuro aparece só no calendário)
-    for(let m = 24; m >= 0; m--){
+    // Gera 24 meses passados + 12 meses futuros (filtro de data controla o que aparece)
+    for(let m = 24; m >= -12; m--){
       const d = new Date(hoje.getFullYear(), hoje.getMonth() - m, dia);
       if(m > 0 && m % intervalMeses !== 0) continue;
-      // Não gera datas futuras na lista
-      if(d > hoje) continue;
+      if(m < 0 && Math.abs(m) % intervalMeses !== 0) continue;
       if(d.getFullYear()*12+d.getMonth() < inicio.getFullYear()*12+inicio.getMonth()) continue;
       // Não gera após a data de encerramento
       if(r.dataFim && d > new Date(r.dataFim)) continue;
