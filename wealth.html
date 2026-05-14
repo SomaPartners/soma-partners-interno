@@ -775,7 +775,7 @@ function fuCardHTML(f,tipo){
   const ov=isOverdue(f.data);const td=isToday(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
   return`<div class="fu-card fu-card-${tipo}" style="display:flex;gap:10px;align-items:flex-start">
-    <button class="fu-done-btn" onclick="event.stopPropagation();marcarFuFeito('${f.id}')" title="Marcar como feito">${CHECKSVG}</button>
+    <button class="fu-done-btn" data-fuid="${f.id}" onclick="event.stopPropagation();marcarFuFeito(this.dataset.fuid)" title="Marcar como feito">${CHECKSVG}</button>
     <div style="flex:1;min-width:0">
       <div class="fu-card-lead">${l?.nome||'—'}${TIPO_TAG[f.tipo]||`<span class="fu-tag fu-tag-out">${f.tipo||'Outro'}</span>`}</div>
       <div class="fu-card-desc">${f.desc||''}</div>
@@ -794,7 +794,7 @@ function fuPainelCardHTML(f,tipo){
   const ov=isOverdue(f.data);
   const dias=ov?Math.abs(Math.ceil((new Date(f.data)-new Date(today()))/(86400000))):0;
   return`<div class="painel-fu-card ${tipo}" style="display:flex;gap:10px;align-items:flex-start">
-    <button class="fu-done-btn" onclick="event.stopPropagation();marcarFuFeito('${f.id}')" title="Marcar como feito">${CHECKSVG}</button>
+    <button class="fu-done-btn" data-fuid="${f.id}" onclick="event.stopPropagation();marcarFuFeito(this.dataset.fuid)" title="Marcar como feito">${CHECKSVG}</button>
     <div style="flex:1;min-width:0">
       <div class="painel-fu-lead">${l?.nome||'—'}</div>
       <div class="painel-fu-desc">${f.desc||''}</div>
