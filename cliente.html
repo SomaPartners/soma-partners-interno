@@ -1710,16 +1710,10 @@ function gerarTransacoesRecorrentes(){
     // Respeita a data de início — só gera a partir de quando foi cadastrado
     const inicio = r.dataInicio ? new Date(r.dataInicio) : hoje;
     
-    // Fim da semana atual (domingo)
-    const diaAtual = hoje.getDay();
-    const domingo = new Date(hoje); domingo.setDate(hoje.getDate()+(6-diaAtual)); domingo.setHours(23,59,59,999);
-
-    // Gera para os últimos 24 meses + próximos dias desta semana (m=-1 = próximo mês)
-    for(let m = 23; m >= -1; m--){
+    // Gera para os últimos 12 meses + próximos 12 meses
+    for(let m = 12; m >= -12; m--){
       const d = new Date(hoje.getFullYear(), hoje.getMonth() - m, dia);
-      if(m > 0 && m % intervalMeses !== 0) continue;
-      // Passado + esta semana apenas
-      if(d > domingo) continue;
+      if(Math.abs(m) > 0 && Math.abs(m) % intervalMeses !== 0) continue;
       if(d.getFullYear()*12+d.getMonth() < inicio.getFullYear()*12+inicio.getMonth()) continue;
       // Não gera após a data de encerramento
       if(r.dataFim && d > new Date(r.dataFim)) continue;
