@@ -310,11 +310,6 @@ textarea.fc{resize:vertical;min-height:70px}
     <span>Visão Geral</span>
   </div>
 
-  <div class="sidebar-section">Pipeline</div>
-  <div class="nav-item" data-section="pipeline" onclick="navigate('pipeline',this)">
-    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    <span>Pipeline</span>
-  </div>
   <div class="nav-item" data-section="followups" onclick="navigate('followups',this)">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     <span>Follow-ups</span>
@@ -768,7 +763,6 @@ function renderPipeline(){
 }
 
 // ── FOLLOW-UPS ──
-const TIPO_TAG={ligacao:'<span class="fu-tag fu-tag-lig">Ligação</span>',reuniao:'<span class="fu-tag fu-tag-reu">Reunião</span>',whatsapp:'<span class="fu-tag fu-tag-wpp">WhatsApp</span>',email:'<span class="fu-tag fu-tag-eml">E-mail</span>'};
 const CHECKSVG=`<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
 
 // ── FOLLOW-UPS RENDER ──
