@@ -1095,37 +1095,33 @@ async function saveFollowup(){
 }
 
 async function marcarFuFeito(id){
-  // Marca feito localmente
+  if(!id){showToast('ID inválido','err');return;}
+  // Salva no banco PRIMEIRO
+  const fObj=followups.find(x=>x.id===id);
+  if(!fObj){showToast('Follow-up não encontrado','err');return;}
+  const fAtualizado={...fObj,feito:true};
+  const{error}=await _sb.from('wealth_followups').upsert({id,lead_id:fAtualizado.lead_id,data:fAtualizado});
+  if(error){showToast('Erro ao salvar','err');return;}
+  // Atualiza array local
   const idx=followups.findIndex(x=>x.id===id);
-  if(idx<0)return;
-  followups[idx]={...followups[idx],feito:true};
-  const f=followups[idx];
-  // Remove o card visualmente de imediato
+  if(idx>=0)followups[idx]=fAtualizado;
+  // Renderiza imediatamente
   renderFollowups();
-  // Abre e atualiza seção concluídos
+  renderVisao();
+  if(document.body.classList.contains('painel-mode'))renderPainel();
+  // Abre concluídos
   _concluidos_aberto=true;
   const el=document.getElementById('fu-cards-concluido');
   const arrow=document.getElementById('concluidos-arrow');
   if(el)el.style.display='grid';
   if(arrow)arrow.style.transform='rotate(180deg)';
-  setTimeout(()=>{const c=document.getElementById('fu-cards-concluido');if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},100);
-  // Salva no banco e agenda próximo (background)
-  await _sb.from('wealth_followups').upsert({id,lead_id:f.lead_id,data:f});
-  const lead=leads.find(l=>l.id===f.lead_id);
+  setTimeout(()=>{const c=document.getElementById('fu-cards-concluido');if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},150);
+  // Agenda próximo follow-up em background
+  const lead=leads.find(l=>l.id===fAtualizado.lead_id);
   if(lead&&['frio','morno','quente'].includes(lead.temperatura)){
-    const temOutroPendente=followups.some(x=>x.lead_id===f.lead_id&&!x.feito&&x.id!==id);
-    if(!temOutroPendente) await autoFollowup(lead,true);
+    const temOutroPendente=followups.some(x=>x.lead_id===fAtualizado.lead_id&&!x.feito&&x.id!==id);
+    if(!temOutroPendente) autoFollowup(lead,true);// sem await — background
   }
-  // Re-render para refletir estado final
-  renderFollowups();
-  renderVisao();
-  if(document.body.classList.contains('painel-mode'))renderPainel();
-  // Garante concluídos aberto e atualizado
-  _concluidos_aberto=true;
-  const el2=document.getElementById('fu-cards-concluido');
-  const ar2=document.getElementById('concluidos-arrow');
-  if(el2)el2.style.display='grid';
-  if(ar2)ar2.style.transform='rotate(180deg)';
 }
 
 async function autoFollowup(lead,usarHoje=false){
