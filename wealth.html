@@ -1091,6 +1091,16 @@ async function saveFollowup(){
   followups.push(rec);
   showToast('Follow-up agendado!','ok');closeModal('modal-followup');
   renderFollowups();renderVisao();if(document.body.classList.contains('painel-mode'))renderPainel();
+  // Abre seção concluídos automaticamente
+  if(!_concluidos_aberto){
+    _concluidos_aberto=true;
+    const el=document.getElementById('fu-cards-concluido');
+    const arrow=document.getElementById('concluidos-arrow');
+    if(el)el.style.display='grid';
+    if(arrow)arrow.style.transform='rotate(180deg)';
+    // Scroll suave até concluídos
+    setTimeout(()=>{const c=document.getElementById('fu-cards-concluido');if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},100);
+  }
 }
 
 async function marcarFuFeito(id){

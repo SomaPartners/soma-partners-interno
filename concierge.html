@@ -633,6 +633,14 @@ document.addEventListener('input',function(e){
       <div id="pc-semana" style="overflow-y:auto;flex:1;padding:8px"></div>
     </div>
   </div>
+  <!-- CONCLUÍDOS -->
+  <div id="pc-concluidos" style="display:none;padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06)">
+    <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      <span>✓ Concluídos</span>
+      <button onclick="document.getElementById('pc-concluidos').style.display='none'" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.3);font-size:14px;line-height:1">×</button>
+    </div>
+    <div id="pc-concluidos-list" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
+  </div>
 </div>
 
 <script>
@@ -650,6 +658,11 @@ async function pcConcluirTarefa(tarefaId, clienteId){
   const rec={...row.data, status:'concluido'};
   await _sb.from('concierge_tarefas').upsert({id:tarefaId, data:rec});
   renderPainelConcierge();
+  // Mostra seção concluídos
+  setTimeout(()=>{
+    const c=document.getElementById('pc-concluidos');
+    if(c){c.style.display='block';c.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  },300);
 }
 
 function pcCard(titulo,subtitulo,cliente,data,cor){
@@ -734,6 +747,13 @@ async function renderPainelConcierge(){
   document.getElementById('pc-atrasado').innerHTML=renderCol(tasksAtrasado,paysAtrasado);
   document.getElementById('pc-hoje').innerHTML=renderCol(tasksHoje,paysHoje);
   document.getElementById('pc-semana').innerHTML=renderCol(tasksSemana,paysSemana);
+  // Concluídos recentes (últimas 24h)
+  const ontem=new Date();ontem.setDate(ontem.getDate()-1);const ontemStr=ontem.toISOString().split('T')[0];
+  const concluidas=(tasks||[]).map(r=>r.data).filter(t=>t&&(t.status==='concluido'||t.status==='concluida'));
+  const pcConclList=document.getElementById('pc-concluidos-list');
+  if(pcConclList&&concluidas.length){
+    pcConclList.innerHTML=concluidas.slice(0,9).map(t=>`<div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);border-radius:7px;padding:8px 10px;opacity:0.7"><div style="font-size:11px;font-weight:700;color:#6ee7b7;text-decoration:line-through;margin-bottom:3px">${t.titulo||'Tarefa'}</div><div style="font-size:9px;color:rgba(255,255,255,0.35)">${clientMap[t.clienteId]||'—'}</div></div>`).join('');
+  }
 }
 
 function pcClock(){
