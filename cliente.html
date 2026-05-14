@@ -98,7 +98,7 @@ html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-
 
 /* ── FILTER BAR ── */
 .filter-bar{display:flex;align-items:center;gap:6px;padding:10px 0 12px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:0}
-.fin-month-bar{display:flex;align-items:center;gap:0;width:100%;border-bottom:1px solid var(--border);margin-bottom:0}
+.fin-month-bar{display:flex;align-items:center;gap:0;width:100%;border-bottom:1px solid var(--border);border-top:1px solid var(--border);background:rgba(255,255,255,0.01)}
 .fin-year-sel{background:rgba(79,70,229,0.2);border:1px solid rgba(79,70,229,0.4);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:800;color:#a5b4fc;cursor:pointer;font-family:'Montserrat',sans-serif;margin-right:8px;outline:none}
 .fin-year-sel option{background:#0d2035;color:#fff}
 .fin-month-btn{flex:1;background:transparent;border:none;border-bottom:2px solid transparent;padding:8px 4px;font-size:11px;font-weight:700;color:var(--muted2);cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.15s;white-space:nowrap}
@@ -619,6 +619,22 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
         <button class="fin-tab" onclick="switchFin('resumo',this)">Resumo</button>
         <button class="fin-tab" onclick="switchFin('calendario',this)">Calendário</button>
       </div>
+      <!-- BARRA DE MESES — linha separada -->
+      <div class="fin-month-bar" id="fin-month-bar" style="margin-top:0">
+        <select class="fin-year-sel" id="fin-year-sel" onchange="setFinAno(this.value)"></select>
+        <button class="fin-month-btn" data-m="0" onclick="setFinMes(0)">Jan</button>
+        <button class="fin-month-btn" data-m="1" onclick="setFinMes(1)">Fev</button>
+        <button class="fin-month-btn" data-m="2" onclick="setFinMes(2)">Mar</button>
+        <button class="fin-month-btn" data-m="3" onclick="setFinMes(3)">Abr</button>
+        <button class="fin-month-btn" data-m="4" onclick="setFinMes(4)">Mai</button>
+        <button class="fin-month-btn" data-m="5" onclick="setFinMes(5)">Jun</button>
+        <button class="fin-month-btn" data-m="6" onclick="setFinMes(6)">Jul</button>
+        <button class="fin-month-btn" data-m="7" onclick="setFinMes(7)">Ago</button>
+        <button class="fin-month-btn" data-m="8" onclick="setFinMes(8)">Set</button>
+        <button class="fin-month-btn" data-m="9" onclick="setFinMes(9)">Out</button>
+        <button class="fin-month-btn" data-m="10" onclick="setFinMes(10)">Nov</button>
+        <button class="fin-month-btn" data-m="11" onclick="setFinMes(11)">Dez</button>
+      </div>
       <div style="display:flex;align-items:center;gap:12px">
         <div class="fin-saldo-box">
           <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2)">Saldo Atual</span>
@@ -633,21 +649,6 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             Excel
           </button>
-          <div class="fin-month-bar" id="fin-month-bar">
-            <select class="fin-year-sel" id="fin-year-sel" onchange="setFinAno(this.value)"></select>
-            <button class="fin-month-btn" data-m="0" onclick="setFinMes(0)">Jan</button>
-            <button class="fin-month-btn" data-m="1" onclick="setFinMes(1)">Fev</button>
-            <button class="fin-month-btn" data-m="2" onclick="setFinMes(2)">Mar</button>
-            <button class="fin-month-btn" data-m="3" onclick="setFinMes(3)">Abr</button>
-            <button class="fin-month-btn" data-m="4" onclick="setFinMes(4)">Mai</button>
-            <button class="fin-month-btn" data-m="5" onclick="setFinMes(5)">Jun</button>
-            <button class="fin-month-btn" data-m="6" onclick="setFinMes(6)">Jul</button>
-            <button class="fin-month-btn" data-m="7" onclick="setFinMes(7)">Ago</button>
-            <button class="fin-month-btn" data-m="8" onclick="setFinMes(8)">Set</button>
-            <button class="fin-month-btn" data-m="9" onclick="setFinMes(9)">Out</button>
-            <button class="fin-month-btn" data-m="10" onclick="setFinMes(10)">Nov</button>
-            <button class="fin-month-btn" data-m="11" onclick="setFinMes(11)">Dez</button>
-          </div>
           <button class="fin-action-btn" onclick="exportarPDF()" title="Exportar para PDF">
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             PDF
