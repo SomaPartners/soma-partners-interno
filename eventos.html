@@ -1107,7 +1107,7 @@ async function addGuest(){
   document.getElementById('new-guest-rsvp').value='pendente';
   cancelEditGuest();
   renderGuests(e);refreshStats();
-  if(!isEdit) autoAddLead(name,tel,email,e.data||new Date().toISOString().slice(0,10));
+  if(!isEdit && guest.rsvp!=='recusou') autoAddLead(name,tel,email,e.data||new Date().toISOString().slice(0,10));
 }
 
 function editGuestStart(i){
@@ -1153,6 +1153,10 @@ async function updateGuestRSVP(i,val){
   if(val==='confirmado'&&g.telefone&&e.data){
     agendarFollowupEvento(g.telefone,e.data);
   }
+  // Se recusou, cancela follow-ups e marca lead como descartado
+  if(val==='recusou'&&g.telefone){
+    cancelarFollowupsRecusou(g.telefone);
+  }
 }
 
 async function agendarFollowupEvento(telefone,dataEvento){
@@ -1171,6 +1175,19 @@ async function agendarFollowupEvento(telefone,dataEvento){
   const rec={id:fId,lead_id:lead.id,data:dataFu,tipo:'ligacao',desc:'Contato pós-evento — aproveitar contexto do evento para iniciar conversa',feito:false,auto:true};
   await sb.from('wealth_followups').upsert({id:fId,lead_id:lead.id,data:rec});
 }
+async function cancelarFollowupsRecusou(telefone){
+  const telNorm=telefone.replace(/\D/g,'');
+  const{data:leads}=await sb.from('wealth_leads').select('id,data');
+  const lead=(leads||[]).find(r=>(r.data?.telefone||'').replace(/\D/g,'')===telNorm&&r.data?.origem==='evento');
+  if(!lead)return;
+  // Remove todos os follow-ups auto pendentes
+  const{data:fus}=await sb.from('wealth_followups').select('id,data').filter('lead_id','eq',lead.id);
+  for(const f of(fus||[])){if(!f.data?.feito&&f.data?.auto)await sb.from('wealth_followups').delete().eq('id',f.id);}
+  // Marca lead como descartado
+  const updated={...lead.data,temperatura:'descartado',estagio:'descartado'};
+  await sb.from('wealth_leads').upsert({id:lead.id,data:updated});
+}
+
 async function removeGuest(i){
   const e=DB.eventos.find(x=>x.id===currentEventId);if(!e)return;
   const g=e.convidados[i];
