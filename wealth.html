@@ -135,16 +135,16 @@ tbody tr:hover .del-btn{color:var(--muted2)}
 .ob-kpi-val{font-size:26px;font-weight:900;margin-bottom:2px}
 .ob-kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
 .ob-filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.ob-chip{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;padding:2px 8px;border-radius:8px;white-space:nowrap}
+.ob-chip{display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.3px;padding:2px 6px;border-radius:6px;white-space:nowrap}
 .ob-chip-feito{background:rgba(16,185,129,0.15);color:#6ee7b7}
 .ob-chip-andamento{background:rgba(245,158,11,0.15);color:#fcd34d}
 .ob-chip-pendente,.ob-chip-vazio,.ob-chip-outro{background:rgba(239,68,68,0.15);color:#fca5a5}
 .ob-chip-na{background:rgba(255,255,255,0.04);color:var(--muted2)}
 .ob-table{width:100%;border-collapse:collapse}
-.ob-th{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
-.ob-td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+.ob-th{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:#0d2035;z-index:2}
+.ob-td{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
 .ob-tr:hover td{background:rgba(255,255,255,0.02)}
-.ob-nome{font-size:12px;font-weight:700;min-width:160px}
+.ob-nome{font-size:11px;font-weight:700;min-width:140px}
 .ob-resp{font-size:10px;font-weight:700;background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.25);color:#a5b4fc;border-radius:4px;padding:1px 6px}
 .ob-progress{width:80px;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
 .ob-progress-fill{height:100%;border-radius:3px;transition:width 0.3s}
@@ -535,7 +535,7 @@ textarea.fc{resize:vertical;min-height:70px}
         <div class="ob-kpi-row" id="ob-kpis"></div>
       </div>
       <div style="height:24px"></div>
-      <div class="table-wrap" style="overflow-x:auto">
+      <div class="table-wrap" style="overflow:auto;max-height:calc(100vh - 62px - 180px)">
         <table class="ob-table">
           <thead>
             <tr>
