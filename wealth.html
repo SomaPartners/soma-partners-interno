@@ -718,9 +718,11 @@ async function migrarFollowupsAuto(){
     if(temPendente)continue;
     // 3. Cria follow-up baseado em data_primeiro_contato ou hoje se passado
     const p=TEMP_PROSP[lead.temperatura];if(!p)continue;
+    const jaTeveFeito=followups.some(f=>f.lead_id===lead.id&&f.feito);
+    // Leads de evento: apenas 1 follow-up automático (dia seguinte ao evento). Após concluído, não recria.
+    if(lead.origem==='evento'&&jaTeveFeito)continue;
     const dataSugerida=calcProxData(lead.temperatura,lead.data_primeiro_contato,lead.origem);
     // Se o lead já teve follow-up concluído e a data sugerida é hoje/passado, agendar para daqui a N dias (evita recriar para hoje)
-    const jaTeveFeito=followups.some(f=>f.lead_id===lead.id&&f.feito);
     let dataFu;
     if(jaTeveFeito&&(!dataSugerida||dataSugerida<=today())){
       const d=new Date();d.setDate(d.getDate()+p.dias);
@@ -919,7 +921,7 @@ function renderFollowups(){
         </div>
       </div>`;}).join(''):'<div class="fu-empty">Nenhum concluído ainda</div>';
   } else {
-    // Visão mês específico: todos os follow-ups do mês
+    // Visão mês específico: kanban com colunas por semana + concluídos
     const mesStr=String(_fuMes+1).padStart(2,'0');
     const prefixo=`${_fuAno}-${mesStr}`;
     const doMes=followups.filter(f=>(f.data||'').startsWith(prefixo))
@@ -928,35 +930,60 @@ function renderFollowups(){
     const concluidos=doMes.filter(f=>f.feito);
     const MESES_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     const checkSVG='<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
-    const itemHTML=f=>{
+    // Agrupa pendentes por semana do mês (semana 1 = dias 1-7, etc.)
+    const semanas=[{label:'Semana 1',items:[]},{label:'Semana 2',items:[]},{label:'Semana 3',items:[]},{label:'Semana 4+',items:[]}];
+    pendentes.forEach(f=>{
+      const dia=parseInt((f.data||'').split('-')[2]||'1');
+      const idx=dia<=7?0:dia<=14?1:dia<=21?2:3;
+      semanas[idx].items.push(f);
+    });
+    const coloresSemanais=['#6ee7b7','#fcd34d','#93c5fd','#c4b5fd'];
+    const fuCardMesHTML=(f,cor)=>{
       const l=leads.find(x=>x.id===f.lead_id);
-      const feito=f.feito;
-      return`<div class="fu-mes-item${feito?' feito':''}">
-        ${feito
-          ?`<div class="fu-check-done">${checkSVG}</div>`
-          :`<button class="fu-done-btn" onclick="event.stopPropagation();marcarFuFeito('${f.id}')" title="Marcar como feito">${checkSVG}</button>`}
-        <div style="flex:1;min-width:0">
-          <div class="fu-mes-item-lead">${l?.nome||'—'}</div>
-          <div class="fu-mes-item-desc">${f.desc||''}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-          ${TIPO_TAG[f.tipo]||''}
-          <span class="fu-mes-item-date">${fmtDate(f.data)}</span>
+      return`<div class="fu-card" style="border-left:3px solid ${cor}">
+        <div class="fu-card-lead">${l?.nome||'—'}</div>
+        <div class="fu-card-desc">${f.desc||''}</div>
+        <div class="fu-card-footer">
+          <div class="fu-card-meta">${TIPO_TAG[f.tipo]||''}<span>${fmtDate(f.data)}</span></div>
+          <button class="fu-done-btn" onclick="event.stopPropagation();marcarFuFeito('${f.id}')" title="Marcar como feito">${checkSVG}</button>
         </div>
       </div>`;
     };
-    let html='';
+    const fuCardConcluidoHTML=f=>{
+      const l=leads.find(x=>x.id===f.lead_id);
+      return`<div class="fu-card fu-card-concluido" style="opacity:0.6;display:flex;gap:10px;align-items:flex-start">
+        <div class="fu-check-done" style="flex-shrink:0">${checkSVG}</div>
+        <div style="flex:1;min-width:0">
+          <div class="fu-card-lead">${l?.nome||'—'}</div>
+          <div class="fu-card-desc">${f.desc||''}</div>
+          <div class="fu-card-meta">${TIPO_TAG[f.tipo]||''} ${fmtDate(f.data)}</div>
+        </div>
+      </div>`;
+    };
+    const semanasComItems=semanas.filter(s=>s.items.length);
+    const totalCols=semanasComItems.length+(concluidos.length?1:0)||1;
+    const gridCols=Math.min(totalCols,4);
+    let html=`<div class="fu-grid" style="grid-template-columns:repeat(${gridCols},1fr)">`;
     if(!doMes.length){
-      html='<div class="fu-mes-empty">Nenhum follow-up em '+MESES_PT[_fuMes]+' '+_fuAno+'</div>';
+      html=`<div class="fu-mes-empty">Nenhum follow-up em ${MESES_PT[_fuMes]} ${_fuAno}</div>`;
     } else {
-      if(pendentes.length){
-        html+=`<div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);margin-bottom:8px">${pendentes.length} PENDENTE${pendentes.length>1?'S':''}</div>`;
-        html+=`<div class="fu-mes-list">${pendentes.map(itemHTML).join('')}</div>`;
-      }
+      semanasComItems.forEach((s,i)=>{
+        const cor=coloresSemanais[semanas.indexOf(s)]||'#6ee7b7';
+        html+=`<div class="fu-col">
+          <div class="fu-col-head" style="border-left:3px solid ${cor}">
+            <span class="fu-col-title" style="color:${cor}">${s.label}</span>
+            <span class="fu-col-count">${s.items.length}</span>
+          </div>
+          <div class="fu-cards">${s.items.map(f=>fuCardMesHTML(f,cor)).join('')}</div>
+        </div>`;
+      });
       if(concluidos.length){
-        html+=`<div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);margin:20px 0 8px">${concluidos.length} CONCLUÍDO${concluidos.length>1?'S':''}</div>`;
-        html+=`<div class="fu-mes-list">${concluidos.map(itemHTML).join('')}</div>`;
+        html+=`<div class="fu-col fu-col-concluido">
+          <div class="fu-col-head"><span class="fu-col-title">Concluídos</span><span class="fu-col-count">${concluidos.length}</span></div>
+          <div class="fu-cards">${concluidos.map(fuCardConcluidoHTML).join('')}</div>
+        </div>`;
       }
+      html+='</div>';
     }
     document.getElementById('fu-mes-conteudo').innerHTML=html;
   }
