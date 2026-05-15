@@ -600,62 +600,101 @@ document.addEventListener('input',function(e){
 
 <!-- PAINEL CONCIERGE -->
 <div id="painel-concierge" style="display:none;position:fixed;inset:0;background:#0b1e30;z-index:500;flex-direction:column;overflow:hidden">
+  <!-- HEADER -->
   <div style="background:rgba(13,32,53,0.98);border-bottom:1px solid rgba(255,255,255,0.08);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-    <div>
-      <div style="font-size:16px;font-weight:800">Painel Operacional — Concierge</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.4)" id="painel-c-clock"></div>
+    <div style="display:flex;align-items:center;gap:24px">
+      <div>
+        <div style="font-size:16px;font-weight:800">Painel Operacional — Concierge</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4)" id="painel-c-clock"></div>
+      </div>
+      <!-- ABAS -->
+      <div style="display:flex;gap:4px;background:rgba(255,255,255,0.05);border-radius:8px;padding:3px">
+        <button id="pc-tab-tarefas" onclick="setPcTab('tarefas')" style="padding:5px 18px;border-radius:6px;border:none;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all 0.15s;background:var(--indigo);color:#fff">Tarefas</button>
+        <button id="pc-tab-pagamentos" onclick="setPcTab('pagamentos')" style="padding:5px 18px;border-radius:6px;border:none;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all 0.15s;background:transparent;color:rgba(255,255,255,0.5)">💰 Pagamentos</button>
+      </div>
     </div>
     <button onclick="togglePainelConcierge()" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;color:#fca5a5;cursor:pointer;font-family:'Montserrat',sans-serif">× Sair do Painel</button>
   </div>
-  <!-- MAIN: Tarefas (3 cols) + Pagamentos (1 col) -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;padding:16px 16px 8px;flex:1;overflow:hidden;min-height:0">
-    <!-- TAREFAS ATRASADAS -->
-    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-top:2px solid #ef4444;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-        <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#fca5a5">Atrasados</span>
-        <span id="pc-count-atrasado" style="font-size:13px;font-weight:800;color:#fca5a5">0</span>
+
+  <!-- ABA TAREFAS -->
+  <div id="pc-view-tarefas" style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px 16px 8px;flex:1;overflow:hidden;min-height:0">
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-top:2px solid #ef4444;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#fca5a5">Atrasados</span>
+          <span id="pc-count-atrasado" style="font-size:13px;font-weight:800;color:#fca5a5">0</span>
+        </div>
+        <div id="pc-atrasado" style="overflow-y:auto;flex:1;padding:8px"></div>
       </div>
-      <div id="pc-atrasado" style="overflow-y:auto;flex:1;padding:8px"></div>
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-top:2px solid #f59e0b;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#fcd34d">Hoje</span>
+          <span id="pc-count-hoje" style="font-size:13px;font-weight:800;color:#fcd34d">0</span>
+        </div>
+        <div id="pc-hoje" style="overflow-y:auto;flex:1;padding:8px"></div>
+      </div>
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-top:2px solid #10b981;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#6ee7b7">Esta Semana</span>
+          <span id="pc-count-semana" style="font-size:13px;font-weight:800;color:#6ee7b7">0</span>
+        </div>
+        <div id="pc-semana" style="overflow-y:auto;flex:1;padding:8px"></div>
+      </div>
     </div>
-    <!-- TAREFAS HOJE -->
-    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-top:2px solid #f59e0b;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-        <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#fcd34d">Hoje</span>
-        <span id="pc-count-hoje" style="font-size:13px;font-weight:800;color:#fcd34d">0</span>
+    <!-- CONCLUÍDOS sempre visível -->
+    <div style="padding:10px 16px 12px;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Concluídos Recentes</span>
+        <span id="pc-count-concluido" style="opacity:0.6"></span>
       </div>
-      <div id="pc-hoje" style="overflow-y:auto;flex:1;padding:8px"></div>
-    </div>
-    <!-- TAREFAS SEMANA -->
-    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-top:2px solid #10b981;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-        <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#6ee7b7">Esta Semana</span>
-        <span id="pc-count-semana" style="font-size:13px;font-weight:800;color:#6ee7b7">0</span>
-      </div>
-      <div id="pc-semana" style="overflow-y:auto;flex:1;padding:8px"></div>
-    </div>
-    <!-- PAGAMENTOS (todos os períodos) -->
-    <div style="background:rgba(245,158,11,0.03);border:1px solid rgba(245,158,11,0.2);border-top:2px solid #f59e0b;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid rgba(245,158,11,0.15);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-        <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#fcd34d">💰 Pagamentos</span>
-        <span id="pc-count-pgto" style="font-size:13px;font-weight:800;color:#fcd34d">0</span>
-      </div>
-      <div id="pc-pagamentos" style="overflow-y:auto;flex:1;padding:8px"></div>
+      <div id="pc-concluidos-list" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px"></div>
+      <div id="pc-concluidos-empty" style="font-size:11px;color:rgba(255,255,255,0.2);text-align:center;padding:4px 0;display:none">Nenhuma tarefa concluída ainda</div>
     </div>
   </div>
-  <!-- CONCLUÍDOS — sempre visível -->
-  <div style="padding:10px 16px 12px;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0">
-    <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;display:flex;align-items:center;gap:8px">
-      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-      <span>Concluídos Recentes</span>
-      <span id="pc-count-concluido" style="opacity:0.6">0</span>
+
+  <!-- ABA PAGAMENTOS -->
+  <div id="pc-view-pagamentos" style="flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px;flex:1;overflow:hidden;min-height:0">
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-top:2px solid #ef4444;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#fca5a5">Atrasados</span>
+          <span id="pc-pgto-count-atrasado" style="font-size:13px;font-weight:800;color:#fca5a5">0</span>
+        </div>
+        <div id="pc-pgto-atrasado" style="overflow-y:auto;flex:1;padding:8px"></div>
+      </div>
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-top:2px solid #f59e0b;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#fcd34d">Hoje</span>
+          <span id="pc-pgto-count-hoje" style="font-size:13px;font-weight:800;color:#fcd34d">0</span>
+        </div>
+        <div id="pc-pgto-hoje" style="overflow-y:auto;flex:1;padding:8px"></div>
+      </div>
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-top:2px solid #10b981;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#6ee7b7">Esta Semana</span>
+          <span id="pc-pgto-count-semana" style="font-size:13px;font-weight:800;color:#6ee7b7">0</span>
+        </div>
+        <div id="pc-pgto-semana" style="overflow-y:auto;flex:1;padding:8px"></div>
+      </div>
     </div>
-    <div id="pc-concluidos-list" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px"></div>
-    <div id="pc-concluidos-empty" style="font-size:11px;color:rgba(255,255,255,0.2);text-align:center;padding:4px 0;display:none">Nenhuma tarefa concluída ainda</div>
   </div>
 </div>
 
 <script>
 let _painelCInterval=null;
+let _pcTab='tarefas';
+
+function setPcTab(tab){
+  _pcTab=tab;
+  const isTarefas=tab==='tarefas';
+  document.getElementById('pc-view-tarefas').style.display=isTarefas?'flex':'none';
+  document.getElementById('pc-view-pagamentos').style.display=isTarefas?'none':'flex';
+  document.getElementById('pc-tab-tarefas').style.background=isTarefas?'var(--indigo)':'transparent';
+  document.getElementById('pc-tab-tarefas').style.color=isTarefas?'#fff':'rgba(255,255,255,0.5)';
+  document.getElementById('pc-tab-pagamentos').style.background=isTarefas?'transparent':'var(--indigo)';
+  document.getElementById('pc-tab-pagamentos').style.color=isTarefas?'rgba(255,255,255,0.5)':'#fff';
+}
 
 function pcFmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
 function pcToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
@@ -737,8 +776,9 @@ async function renderPainelConcierge(){
   const section=(label,items)=>items.length?`<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:8px 0 4px 2px">${label}</div>${items}`:'';
 
   const taskHTML=t=>pcItem('tarefa',t.titulo||'Tarefa',`${t.prioridade==='alta'?'🔴':t.prioridade==='media'?'🟡':'🟢'} ${(t.comentarios||[]).length>0?'💬 '+t.comentarios.at(-1).texto.substring(0,40)+(t.comentarios.at(-1).texto.length>40?'...':''):''}`,clientMap[t.clienteId]||'—',t.prazo,t.id,t.clienteId);
+  const payHTML=p=>pcItem('pgto',p.carac||p.caracteristica||'Pagamento',fmtVal(p.valor),clientMap[p.clienteId]||'—',p.vencimento,null,null);
 
-  // Colunas de tarefas (sem pagamentos)
+  // ABA TAREFAS
   document.getElementById('pc-count-atrasado').textContent=tasksAtrasado.length;
   document.getElementById('pc-count-hoje').textContent=tasksHoje.length;
   document.getElementById('pc-count-semana').textContent=tasksSemana.length;
@@ -746,20 +786,15 @@ async function renderPainelConcierge(){
   document.getElementById('pc-hoje').innerHTML=tasksHoje.length?tasksHoje.map(taskHTML).join(''):empty;
   document.getElementById('pc-semana').innerHTML=tasksSemana.length?tasksSemana.map(taskHTML).join(''):empty;
 
-  // Coluna de Pagamentos separada (todos os períodos com rótulos)
-  const totalPgto=paysAtrasado.length+paysHoje.length+paysSemana.length;
-  document.getElementById('pc-count-pgto').textContent=totalPgto;
-  const payHTML=p=>pcItem('pgto',p.carac||p.caracteristica||'Pagamento',fmtVal(p.valor),clientMap[p.clienteId]||'—',p.vencimento,null,null);
-  const labelAtras=`<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#fca5a5;margin:6px 2px 3px">Atrasados</div>`;
-  const labelHoje=`<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#fcd34d;margin:6px 2px 3px">Hoje</div>`;
-  const labelSemana=`<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6ee7b7;margin:6px 2px 3px">Esta Semana</div>`;
-  let pgtoHTML='';
-  if(paysAtrasado.length) pgtoHTML+=labelAtras+paysAtrasado.map(payHTML).join('');
-  if(paysHoje.length) pgtoHTML+=labelHoje+paysHoje.map(payHTML).join('');
-  if(paysSemana.length) pgtoHTML+=labelSemana+paysSemana.map(payHTML).join('');
-  document.getElementById('pc-pagamentos').innerHTML=pgtoHTML||empty;
+  // ABA PAGAMENTOS — 3 colunas por período
+  document.getElementById('pc-pgto-count-atrasado').textContent=paysAtrasado.length;
+  document.getElementById('pc-pgto-count-hoje').textContent=paysHoje.length;
+  document.getElementById('pc-pgto-count-semana').textContent=paysSemana.length;
+  document.getElementById('pc-pgto-atrasado').innerHTML=paysAtrasado.length?paysAtrasado.map(payHTML).join(''):empty;
+  document.getElementById('pc-pgto-hoje').innerHTML=paysHoje.length?paysHoje.map(payHTML).join(''):empty;
+  document.getElementById('pc-pgto-semana').innerHTML=paysSemana.length?paysSemana.map(payHTML).join(''):empty;
 
-  // Concluídos — sempre visível
+  // CONCLUÍDOS — sempre visível na aba Tarefas
   const concluidas=(tasks||[]).map(r=>r.data).filter(t=>t&&(t.status==='concluido'||t.status==='concluida'));
   const pcConclList=document.getElementById('pc-concluidos-list');
   const pcConclEmpty=document.getElementById('pc-concluidos-empty');
