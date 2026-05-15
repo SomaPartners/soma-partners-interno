@@ -1677,7 +1677,7 @@ async function seedEquipe(){
   showLoader(true);
   let erros=0, primeiroErro='';
   for(const p of EQUIPE_SOMA){
-    const{error}=await _sb.from('wealth_responsaveis').upsert({id:uid(),data:p},{onConflict:'id'});
+    const{error}=await _sb.from('wealth_responsaveis').upsert({id:crypto.randomUUID(),data:p},{onConflict:'id'});
     if(error){erros++;if(!primeiroErro)primeiroErro=error.message||error.code||JSON.stringify(error);console.error('Erro ao inserir',p.nome,error);}
   }
   showLoader(false);
@@ -1774,7 +1774,7 @@ async function salvarResp(){
   const nome=document.getElementById('resp-nome').value.trim();
   const sigla=document.getElementById('resp-sigla').value.trim().toUpperCase();
   if(!nome||!sigla){showToast('Nome e sigla são obrigatórios','err');return;}
-  const id=document.getElementById('resp-id').value||uid();
+  const id=document.getElementById('resp-id').value||crypto.randomUUID();
   const rec={
     nome, sigla,
     cpf:document.getElementById('resp-cpf').value.trim(),
