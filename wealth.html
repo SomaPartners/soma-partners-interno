@@ -1654,11 +1654,18 @@ const EQUIPE_SOMA=[
 
 async function seedEquipe(){
   showLoader(true);
+  let erros=0;
   for(const p of EQUIPE_SOMA){
-    await _sb.from('wealth_responsaveis').insert({id:uid(),data:p});
+    const{error}=await _sb.from('wealth_responsaveis').insert({id:uid(),data:p});
+    if(error){erros++;console.error('Erro ao inserir',p.nome,error);}
   }
   showLoader(false);
-  showToast('Equipe importada!','ok');
+  if(erros>0){
+    showToast(`Erro: a tabela wealth_responsaveis pode não existir no Supabase`,'err');
+    alert('A tabela wealth_responsaveis precisa ser criada no Supabase.\n\nAbra o SQL Editor do Supabase e execute:\n\nCREATE TABLE IF NOT EXISTS wealth_responsaveis (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  data jsonb,\n  created_at timestamptz DEFAULT now()\n);');
+  } else {
+    showToast('Equipe importada!','ok');
+  }
   loadResponsaveis();
 }
 
