@@ -3383,10 +3383,19 @@ async function addComment(tarefaId){
   const now=new Date();
   const dataStr=`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   t.comentarios.push({texto,data:dataStr,id:uid()});
+  // Salva também a descrição da próxima atualização, se digitada no campo ao lado
+  const descInp=document.getElementById('cdesc-'+tarefaId);
+  if(descInp&&descInp.value.trim()) t.proxima_atualizacao_desc=descInp.value.trim();
+  // Se há próxima atualização definida, usa como novo prazo (check provisório)
+  const dateInp=document.getElementById('cdate-'+tarefaId);
+  const proxData=dateInp?.value||t.proxima_atualizacao||'';
+  if(proxData){
+    t.proxima_atualizacao=proxData;
+    t.prazo=proxData; // empurra o prazo → sai dos Atrasados/Hoje no painel
+  }
   await _sb.from('concierge_tarefas').upsert({id:tarefaId,data:t});
   inp.value='';
   renderLista();
-  // Re-open the comments section
   setTimeout(()=>{const el=document.getElementById('comments-'+tarefaId);if(el)el.classList.add('open');},50);
 }
 
