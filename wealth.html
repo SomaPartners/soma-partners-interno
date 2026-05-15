@@ -386,7 +386,7 @@ textarea.fc{resize:vertical;min-height:70px}
         <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         Modo Painel
       </button>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-lead')">
+      <button class="btn btn-primary btn-sm" id="btn-acao-principal" onclick="openModal('modal-lead')">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Novo Lead
       </button>
@@ -704,6 +704,17 @@ function navigate(sec, el){
   document.getElementById('section-'+sec).classList.add('active');
   document.getElementById('topbar-title').textContent=NAV_META[sec]?.title||sec;
   document.getElementById('topbar-sub').textContent=NAV_META[sec]?.sub||'';
+  // Botão de ação muda conforme a seção
+  const btnAcao=document.getElementById('btn-acao-principal');
+  if(btnAcao){
+    if(sec==='followups'){
+      btnAcao.innerHTML='<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agendar';
+      btnAcao.onclick=()=>openModal('modal-followup');
+    } else {
+      btnAcao.innerHTML='<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Lead';
+      btnAcao.onclick=()=>openModal('modal-lead');
+    }
+  }
   if(sec==='pipeline') renderPipeline();
   if(sec==='followups') renderFollowups();
   if(sec==='leads') renderLeads();
