@@ -730,6 +730,7 @@ function navigate(sec, el){
   if(sec==='followups') renderFollowups();
   if(sec==='leads') renderLeads();
   if(sec==='visao') renderVisao();
+  if(sec==='onboarding') loadOnboarding();
 }
 
 // ── LOAD ──
@@ -1516,12 +1517,6 @@ function renderOnboarding(){
   }).join('');
 }
 
-// Carrega onboarding quando navegar para a seção
-const _origNavigate=navigate;
-function navigate(sec,el){
-  _origNavigate(sec,el);
-  if(sec==='onboarding')loadOnboarding();
-}
 
 // ── MÁSCARAS ──
 function maskTel(v){
