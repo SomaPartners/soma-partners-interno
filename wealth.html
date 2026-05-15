@@ -1403,19 +1403,20 @@ loadAll();
 
 // ── ONBOARDING ──
 const OB_SHEET_URL='https://docs.google.com/spreadsheets/d/1edEI7Hw-tRBeCKR--A2WipzrunKGNTWF/export?format=csv&gid=50571294';
+
+// Colunas: A=0 Cliente, B=1(vazio CSV), C=2 Responsavel, D=3 Sigla, E=4 Cad.SF, F=5 Contrato, G=6 BTG, H=7 XP, I=8 Email, J=9 Suitability, K=10 KYC, L=11 Billing, M=12 Termo, N=13 Tem fundo?, O=14 Cad.Vita
+const OB_RESP_IDX=2; // responsável
 const OB_TASK_COLS=[
-  {idx:5,label:'Contrato Vita'},
-  {idx:6,label:'Migração BTG'},
-  {idx:7,label:'Migração XP'},
-  {idx:8,label:'E-mail BV'},
-  {idx:9,label:'Suitability'},
-  {idx:10,label:'KYC'},
-  {idx:11,label:'Billing'},
-  {idx:12,label:'Termo Fundo'},
-  {idx:14,label:'Cad. Vita'},
+  {idx:4, label:'Cad. SF',       getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('sim')||l.includes('feito'))return'feito';return'pendente';}},
+  {idx:5, label:'Contrato Vita', getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('assinado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:6, label:'BTG',           getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('sim'))return'feito';if(l.includes('aprova'))return'andamento';return'pendente';}},
+  {idx:7, label:'XP',            getStatus:v=>{if(!v)return'na';const l=v.toLowerCase();if(l.includes('sim'))return'feito';if(l.includes('aprova'))return'andamento';return'pendente';}},
+  {idx:8, label:'E-mail BV',     getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('enviado')||l.includes('não será')||l.includes('nao sera'))return'feito';return'pendente';}},
+  {idx:9, label:'Suitability',   getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('feito'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:10,label:'KYC',           getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('feito'))return'feito';return'pendente';}},
+  {idx:12,label:'Termo Fundo',   getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('aprovado'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:14,label:'Cad. Vita',     getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('sim'))return'feito';return'pendente';}},
 ];
-const OB_DONE=['sim','feito','assinado','aprovado','pro bono','não será enviado','nao sera enviado'];
-const OB_PROGRESS=['enviado'];
 let _obRows=[];
 
 function obParseCSV(text){
@@ -1432,20 +1433,6 @@ function obParseCSV(text){
   return lines;
 }
 
-function obStatus(val){
-  if(!val||val.trim()==='')return'vazio';
-  const v=val.toLowerCase().trim();
-  if(OB_DONE.some(d=>v.includes(d)))return'feito';
-  if(OB_PROGRESS.some(d=>v.includes(d)))return'andamento';
-  return'pendente';
-}
-
-function obChip(val,label){
-  const s=obStatus(val);
-  const icons={feito:'✓',andamento:'↗',pendente:'✗',vazio:'—'};
-  return`<span class="ob-chip ob-chip-${s}" title="${val||'Vazio'}">${icons[s]||'?'} ${label}</span>`;
-}
-
 async function loadOnboarding(force=false){
   const tbody=document.getElementById('ob-tbody');
   if(!tbody)return;
@@ -1453,13 +1440,11 @@ async function loadOnboarding(force=false){
   tbody.innerHTML='<tr><td colspan="12" class="ob-empty">Carregando dados da planilha...</td></tr>';
   try{
     const res=await fetch(OB_SHEET_URL);
-    if(!res.ok)throw new Error('Erro ao buscar planilha');
+    if(!res.ok)throw new Error('HTTP '+res.status);
     const text=await res.text();
     const rows=obParseCSV(text);
-    // row[0] = headers, row[1] onwards = data
-    _obRows=rows.slice(1).filter(r=>r[0]&&r[0].trim()&&r[0].trim()!=='');
-    // Populate responsável filter
-    const resps=[...new Set(_obRows.map(r=>(r[2]||'').trim()).filter(Boolean))].sort();
+    _obRows=rows.slice(1).filter(r=>r[0]&&r[0].trim()!=='');
+    const resps=[...new Set(_obRows.map(r=>(r[OB_RESP_IDX]||'').trim()).filter(Boolean))].sort();
     const sel=document.getElementById('ob-filtro-resp');
     if(sel){
       sel.innerHTML='<option value="">Todos responsáveis</option>';
@@ -1467,7 +1452,8 @@ async function loadOnboarding(force=false){
     }
     renderOnboarding();
   }catch(e){
-    if(tbody)tbody.innerHTML=`<tr><td colspan="12" class="ob-empty">Erro ao carregar planilha. Verifique se está compartilhada publicamente.</td></tr>`;
+    if(tbody)tbody.innerHTML=`<tr><td colspan="12" class="ob-empty">Erro ao carregar. Verifique se a planilha está compartilhada publicamente.</td></tr>`;
+    console.error('Onboarding load error:',e);
   }
 }
 
@@ -1476,27 +1462,36 @@ function renderOnboarding(){
   if(!tbody||!_obRows.length)return;
   const filtResp=(document.getElementById('ob-filtro-resp')?.value||'').trim();
   const filtStatus=document.getElementById('ob-filtro-status')?.value||'';
+
+  const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
+  const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio');
+  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='andamento'||s==='na');
+
   let rows=_obRows;
-  if(filtResp)rows=rows.filter(r=>(r[2]||'').trim()===filtResp);
-  if(filtStatus==='pendente')rows=rows.filter(r=>OB_TASK_COLS.some(c=>obStatus(r[c.idx])==='pendente'||obStatus(r[c.idx])==='vazio'));
-  if(filtStatus==='completo')rows=rows.filter(r=>OB_TASK_COLS.every(c=>obStatus(r[c.idx])==='feito'||obStatus(r[c.idx])==='andamento'));
-  // KPIs
+  if(filtResp) rows=rows.filter(r=>(r[OB_RESP_IDX]||'').trim()===filtResp);
+  if(filtStatus==='pendente') rows=rows.filter(isPendente);
+  if(filtStatus==='completo') rows=rows.filter(isCompleto);
+
   const total=_obRows.length;
-  const completos=_obRows.filter(r=>OB_TASK_COLS.every(c=>obStatus(r[c.idx])==='feito'||obStatus(r[c.idx])==='andamento')).length;
-  const comPendencia=_obRows.filter(r=>OB_TASK_COLS.some(c=>obStatus(r[c.idx])==='pendente'||obStatus(r[c.idx])==='vazio')).length;
-  const totalPendencias=_obRows.reduce((acc,r)=>acc+OB_TASK_COLS.filter(c=>obStatus(r[c.idx])==='pendente'||obStatus(r[c.idx])==='vazio').length,0);
+  const completos=_obRows.filter(isCompleto).length;
+  const comPend=_obRows.filter(isPendente).length;
+  const totalPend=_obRows.reduce((acc,r)=>acc+getStatuses(r).filter(s=>s==='pendente'||s==='vazio').length,0);
   document.getElementById('ob-kpis').innerHTML=`
     <div class="ob-kpi"><div class="ob-kpi-val">${total}</div><div class="ob-kpi-label">Total de clientes</div></div>
     <div class="ob-kpi"><div class="ob-kpi-val" style="color:#6ee7b7">${completos}</div><div class="ob-kpi-label">Onboarding completo</div></div>
-    <div class="ob-kpi"><div class="ob-kpi-val" style="color:#fca5a5">${comPendencia}</div><div class="ob-kpi-label">Com pendências</div></div>
-    <div class="ob-kpi"><div class="ob-kpi-val" style="color:#fcd34d">${totalPendencias}</div><div class="ob-kpi-label">Tarefas pendentes</div></div>`;
-  // Rows
+    <div class="ob-kpi"><div class="ob-kpi-val" style="color:#fca5a5">${comPend}</div><div class="ob-kpi-label">Com pendências</div></div>
+    <div class="ob-kpi"><div class="ob-kpi-val" style="color:#fcd34d">${totalPend}</div><div class="ob-kpi-label">Tarefas pendentes</div></div>`;
+
   if(!rows.length){tbody.innerHTML='<tr><td colspan="12" class="ob-empty">Nenhum cliente encontrado.</td></tr>';return;}
+
+  const chipIcons={feito:'✓',andamento:'↗',pendente:'✗',vazio:'—',na:'N/A'};
   tbody.innerHTML=rows.map(r=>{
     const nome=(r[0]||'').trim();
-    const resp=(r[2]||'').trim();
-    const done=OB_TASK_COLS.filter(c=>obStatus(r[c.idx])==='feito').length;
-    const pct=Math.round((done/OB_TASK_COLS.length)*100);
+    const resp=(r[OB_RESP_IDX]||'').trim();
+    const statuses=getStatuses(r);
+    const feitos=statuses.filter(s=>s==='feito').length;
+    const aplicaveis=statuses.filter(s=>s!=='na').length;
+    const pct=aplicaveis?Math.round((feitos/aplicaveis)*100):0;
     const progColor=pct===100?'#6ee7b7':pct>=60?'#fcd34d':'#fca5a5';
     return`<tr class="ob-tr">
       <td class="ob-td ob-nome">${nome}</td>
@@ -1507,17 +1502,14 @@ function renderOnboarding(){
           <span style="font-size:10px;font-weight:700;color:${progColor}">${pct}%</span>
         </div>
       </td>
-      ${OB_TASK_COLS.map(c=>{
+      ${OB_TASK_COLS.map((c,i)=>{
         const val=(r[c.idx]||'').trim();
-        const s=obStatus(val);
-        const icons={feito:'✓',andamento:'↗',pendente:'✗',vazio:'—'};
-        const colors={feito:'#6ee7b7',andamento:'#fcd34d',pendente:'#fca5a5',vazio:'var(--muted2)'};
-        return`<td class="ob-td"><span class="ob-chip ob-chip-${s}" title="${val||'Vazio'}">${icons[s]||'?'}</span></td>`;
+        const s=statuses[i];
+        return`<td class="ob-td"><span class="ob-chip ob-chip-${s}" title="${val||'Vazio'}">${chipIcons[s]||'?'}</span></td>`;
       }).join('')}
     </tr>`;
   }).join('');
 }
-
 
 // ── MÁSCARAS ──
 function maskTel(v){
