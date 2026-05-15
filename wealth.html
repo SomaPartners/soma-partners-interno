@@ -1505,7 +1505,8 @@ function renderOnboarding(){
       ${OB_TASK_COLS.map((c,i)=>{
         const val=(r[c.idx]||'').trim();
         const s=statuses[i];
-        return`<td class="ob-td"><span class="ob-chip ob-chip-${s}" title="${val||'Vazio'}">${chipIcons[s]||'?'}</span></td>`;
+        const abrev=val.length>12?val.slice(0,11)+'…':val||'—';
+        return`<td class="ob-td"><span class="ob-chip ob-chip-${s}" title="${val||'Vazio'}">${chipIcons[s]||'?'} ${abrev}</span></td>`;
       }).join('')}
     </tr>`;
   }).join('');
