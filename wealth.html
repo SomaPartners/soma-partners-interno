@@ -1482,7 +1482,7 @@ async function loadOnboarding(force=false){
     if(!res.ok)throw new Error('HTTP '+res.status);
     const text=await res.text();
     const rows=obParseCSV(text);
-    _obRows=rows.slice(1).filter(r=>r[0]&&r[0].trim()!=='');
+    _obRows=rows.slice(1).filter(r=>r[0]&&r[0].trim()!=='').sort((a,b)=>(a[0]||'').trim().localeCompare((b[0]||'').trim(),'pt-BR'));
     const resps=[...new Set(_obRows.map(r=>(r[OB_RESP_IDX]||'').trim()).filter(Boolean))].sort();
     const sel=document.getElementById('ob-filtro-resp');
     if(sel){
