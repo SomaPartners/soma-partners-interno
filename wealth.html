@@ -484,27 +484,21 @@ textarea.fc{resize:vertical;min-height:70px}
 
     <!-- ONBOARDING -->
     <div class="section" id="section-onboarding">
-      <!-- CABEÇALHO STICKY -->
-      <div style="position:sticky;top:62px;z-index:40;background:var(--navy);padding:16px 0 12px;margin:-24px -32px 0;padding-left:32px;padding-right:32px;border-bottom:1px solid var(--border)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div>
-            <div style="font-size:16px;font-weight:800">Onboarding</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">Acompanhamento de clientes em processo de onboarding</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <select id="ob-filtro-resp" onchange="renderOnboarding()" style="appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Montserrat',sans-serif;color:var(--muted);cursor:pointer;outline:none">
-              <option value="">Todos responsáveis</option>
-            </select>
-            <select id="ob-filtro-status" onchange="renderOnboarding()" style="appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Montserrat',sans-serif;color:var(--muted);cursor:pointer;outline:none">
-              <option value="">Todos os status</option>
-              <option value="pendente">Com pendências</option>
-              <option value="completo">Completos</option>
-            </select>
-            <button class="ob-refresh-btn" onclick="loadOnboarding(true)">
-              <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              Atualizar
-            </button>
-          </div>
+      <!-- FILTROS + KPIs STICKY -->
+      <div style="position:sticky;top:62px;z-index:40;background:var(--navy);padding:12px 0;margin:-24px -32px 0;padding-left:32px;padding-right:32px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:12px">
+          <select id="ob-filtro-resp" onchange="renderOnboarding()" style="appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Montserrat',sans-serif;color:var(--muted);cursor:pointer;outline:none">
+            <option value="">Todos responsáveis</option>
+          </select>
+          <select id="ob-filtro-status" onchange="renderOnboarding()" style="appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Montserrat',sans-serif;color:var(--muted);cursor:pointer;outline:none">
+            <option value="">Todos os status</option>
+            <option value="pendente">Com pendências</option>
+            <option value="completo">Completos</option>
+          </select>
+          <button class="ob-refresh-btn" onclick="loadOnboarding(true)">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Atualizar
+          </button>
         </div>
         <div class="ob-kpi-row" id="ob-kpis"></div>
       </div>
@@ -704,15 +698,25 @@ function navigate(sec, el){
   document.getElementById('section-'+sec).classList.add('active');
   document.getElementById('topbar-title').textContent=NAV_META[sec]?.title||sec;
   document.getElementById('topbar-sub').textContent=NAV_META[sec]?.sub||'';
-  // Botão de ação muda conforme a seção
+  // Botão de ação e Modo Painel mudam conforme a seção
   const btnAcao=document.getElementById('btn-acao-principal');
-  if(btnAcao){
-    if(sec==='followups'){
-      btnAcao.innerHTML='<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agendar';
-      btnAcao.onclick=()=>openModal('modal-followup');
-    } else {
-      btnAcao.innerHTML='<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Lead';
-      btnAcao.onclick=()=>openModal('modal-lead');
+  const btnPainel=document.getElementById('btn-painel');
+  if(sec==='onboarding'){
+    if(btnPainel) btnPainel.style.display='none';
+    if(btnAcao){
+      btnAcao.style.display='none';
+    }
+  } else {
+    if(btnPainel) btnPainel.style.display='';
+    if(btnAcao){
+      btnAcao.style.display='';
+      if(sec==='followups'){
+        btnAcao.innerHTML='<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agendar';
+        btnAcao.onclick=()=>openModal('modal-followup');
+      } else {
+        btnAcao.innerHTML='<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Lead';
+        btnAcao.onclick=()=>openModal('modal-lead');
+      }
     }
   }
   if(sec==='pipeline') renderPipeline();
