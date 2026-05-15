@@ -138,9 +138,8 @@ tbody tr:hover .del-btn{color:var(--muted2)}
 .ob-chip{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;padding:2px 8px;border-radius:8px;white-space:nowrap}
 .ob-chip-feito{background:rgba(16,185,129,0.15);color:#6ee7b7}
 .ob-chip-andamento{background:rgba(245,158,11,0.15);color:#fcd34d}
-.ob-chip-pendente{background:rgba(239,68,68,0.15);color:#fca5a5}
-.ob-chip-vazio{background:rgba(255,255,255,0.06);color:var(--muted2)}
-.ob-chip-outro{background:rgba(255,255,255,0.06);color:var(--muted2)}
+.ob-chip-pendente,.ob-chip-vazio,.ob-chip-outro{background:rgba(239,68,68,0.15);color:#fca5a5}
+.ob-chip-na{background:rgba(255,255,255,0.04);color:var(--muted2)}
 .ob-table{width:100%;border-collapse:collapse}
 .ob-th{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
 .ob-td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
@@ -1465,7 +1464,7 @@ function renderOnboarding(){
 
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
   const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio');
-  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='andamento'||s==='na');
+  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na');
 
   let rows=_obRows;
   if(filtResp) rows=rows.filter(r=>(r[OB_RESP_IDX]||'').trim()===filtResp);
@@ -1484,14 +1483,14 @@ function renderOnboarding(){
 
   if(!rows.length){tbody.innerHTML='<tr><td colspan="12" class="ob-empty">Nenhum cliente encontrado.</td></tr>';return;}
 
-  const chipIcons={feito:'✓',andamento:'↗',pendente:'✗',vazio:'—',na:'N/A'};
+  const chipIcons={feito:'✓',andamento:'↗',pendente:'✗',vazio:'✗',na:'—'};
   tbody.innerHTML=rows.map(r=>{
     const nome=(r[0]||'').trim();
     const resp=(r[OB_RESP_IDX]||'').trim();
     const statuses=getStatuses(r);
     const feitos=statuses.filter(s=>s==='feito').length;
-    const aplicaveis=statuses.filter(s=>s!=='na').length;
-    const pct=aplicaveis?Math.round((feitos/aplicaveis)*100):0;
+    const aplicaveis=statuses.filter(s=>s!=='na').length; // XP vazio = N/A, não entra no total
+    const pct=aplicaveis?Math.round((feitos/aplicaveis)*100):100;
     const progColor=pct===100?'#6ee7b7':pct>=60?'#fcd34d':'#fca5a5';
     return`<tr class="ob-tr">
       <td class="ob-td ob-nome">${nome}</td>
