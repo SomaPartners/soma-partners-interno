@@ -707,7 +707,18 @@ async function migrarFollowupsAuto(){
   const TIPO_MAP={frio:'whatsapp',morno:'ligacao',quente:'ligacao'};
   const ativos=leads.filter(l=>['frio','morno','quente'].includes(l.temperatura)&&!['perdido','descartado'].includes(l.estagio));
   for(const lead of ativos){
-    // 1. Só remove auto follow-ups que estão no passado (já vencidos) — preserva futuros
+    const jaTeveFeito=followups.some(f=>f.lead_id===lead.id&&f.feito);
+    // Leads de evento: apenas 1 follow-up automático (dia seguinte ao evento).
+    // Se já teve follow-up concluído, apaga TODOS os auto pendentes (inclusive futuros) e não recria.
+    if(lead.origem==='evento'&&jaTeveFeito){
+      const sobras=followups.filter(f=>f.lead_id===lead.id&&!f.feito&&f.auto);
+      for(const s of sobras){
+        await _sb.from('wealth_followups').delete().eq('id',s.id);
+        followups.splice(followups.indexOf(s),1);
+      }
+      continue;
+    }
+    // 1. Remove auto follow-ups vencidos (passado) — preserva futuros para leads não-evento
     const antigos=followups.filter(f=>f.lead_id===lead.id&&!f.feito&&f.auto&&f.data<today());
     for(const a of antigos){
       await _sb.from('wealth_followups').delete().eq('id',a.id);
@@ -718,9 +729,6 @@ async function migrarFollowupsAuto(){
     if(temPendente)continue;
     // 3. Cria follow-up baseado em data_primeiro_contato ou hoje se passado
     const p=TEMP_PROSP[lead.temperatura];if(!p)continue;
-    const jaTeveFeito=followups.some(f=>f.lead_id===lead.id&&f.feito);
-    // Leads de evento: apenas 1 follow-up automático (dia seguinte ao evento). Após concluído, não recria.
-    if(lead.origem==='evento'&&jaTeveFeito)continue;
     const dataSugerida=calcProxData(lead.temperatura,lead.data_primeiro_contato,lead.origem);
     // Se o lead já teve follow-up concluído e a data sugerida é hoje/passado, agendar para daqui a N dias (evita recriar para hoje)
     let dataFu;
