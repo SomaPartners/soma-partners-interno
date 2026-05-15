@@ -3308,8 +3308,9 @@ function renderLista(){
             <div id="clist-${t.id}">${comSection}</div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:10px;margin-bottom:6px;flex-wrap:wrap">
               <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);white-space:nowrap">Próxima atualização</span>
-              <input type="date" class="comment-input" id="cdate-${t.id}" value="${t.proxima_atualizacao||''}" style="width:150px;flex:none;color-scheme:dark" onchange="saveProximaAtualizacao('${t.id}',this.value,document.getElementById('cdesc-${t.id}').value)">
-              <input type="text" class="comment-input" id="cdesc-${t.id}" value="${(t.proxima_atualizacao_desc||'').replace(/"/g,'&quot;')}" placeholder="O que será feito..." style="flex:1;min-width:180px" onblur="saveProximaAtualizacao('${t.id}',document.getElementById('cdate-${t.id}').value,this.value)">
+              <input type="date" class="comment-input" id="cdate-${t.id}" value="${t.proxima_atualizacao||''}" style="width:150px;flex:none;color-scheme:dark">
+              <input type="text" class="comment-input" id="cdesc-${t.id}" value="${(t.proxima_atualizacao_desc||'').replace(/"/g,'&quot;')}" placeholder="O que será feito..." style="flex:1;min-width:180px" onkeydown="if(event.key==='Enter'){saveProximaAtualizacao('${t.id}');event.preventDefault()}">
+              <button class="comment-btn" onclick="saveProximaAtualizacao('${t.id}')" style="flex-shrink:0">Salvar</button>
               ${t.proxima_atualizacao?`<span style="font-size:10px;font-weight:700;white-space:nowrap;color:${t.proxima_atualizacao<today()?'#fca5a5':t.proxima_atualizacao===today()?'#fcd34d':'#6ee7b7'}">${t.proxima_atualizacao<today()?'Atrasada':t.proxima_atualizacao===today()?'Hoje':fmtDate(t.proxima_atualizacao)}</span>`:''}
             </div>
             <div class="comment-input-row">
@@ -3357,11 +3358,15 @@ async function deleteComment(tarefaId, ci){
   setTimeout(()=>{const el=document.getElementById('comments-'+tarefaId);if(el)el.classList.add('open');},50);
 }
 
-async function saveProximaAtualizacao(tarefaId, data, desc){
+async function saveProximaAtualizacao(tarefaId){
   const t=tarefas.find(x=>x.id===tarefaId);if(!t)return;
+  const dateEl=document.getElementById('cdate-'+tarefaId);
+  const descEl=document.getElementById('cdesc-'+tarefaId);
+  const data=(dateEl?.value||'').trim();
+  const desc=(descEl?.value||'').trim();
   t.proxima_atualizacao=data||null;
-  t.proxima_atualizacao_desc=(desc||'').trim()||null;
-  // Atualiza o prazo da tarefa para a nova data — painel e relatório usam essa data
+  t.proxima_atualizacao_desc=desc||null;
+  // Atualiza o prazo para a nova data — painel e relatório usam essa data
   if(data) t.prazo=data;
   await _sb.from('concierge_tarefas').upsert({id:tarefaId,data:t});
   renderLista();
@@ -3383,16 +3388,16 @@ async function addComment(tarefaId){
   const now=new Date();
   const dataStr=`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   t.comentarios.push({texto,data:dataStr,id:uid()});
-  // Salva também a descrição da próxima atualização, se digitada no campo ao lado
-  const descInp=document.getElementById('cdesc-'+tarefaId);
-  if(descInp&&descInp.value.trim()) t.proxima_atualizacao_desc=descInp.value.trim();
-  // Se há próxima atualização definida, usa como novo prazo (check provisório)
+  // Lê data e descrição da próxima atualização e atualiza o prazo
   const dateInp=document.getElementById('cdate-'+tarefaId);
-  const proxData=dateInp?.value||t.proxima_atualizacao||'';
+  const descInp=document.getElementById('cdesc-'+tarefaId);
+  const proxData=(dateInp?.value||'').trim()||t.proxima_atualizacao||'';
+  const proxDesc=(descInp?.value||'').trim()||t.proxima_atualizacao_desc||'';
   if(proxData){
     t.proxima_atualizacao=proxData;
-    t.prazo=proxData; // empurra o prazo → sai dos Atrasados/Hoje no painel
+    t.prazo=proxData; // check provisório: empurra prazo para a próxima data
   }
+  if(proxDesc) t.proxima_atualizacao_desc=proxDesc;
   await _sb.from('concierge_tarefas').upsert({id:tarefaId,data:t});
   inp.value='';
   renderLista();
