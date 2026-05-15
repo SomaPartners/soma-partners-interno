@@ -366,6 +366,10 @@ textarea.fc{resize:vertical;min-height:70px}
     <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     <span>Leads</span>
   </div>
+  <div class="nav-item" data-section="responsaveis" onclick="navigate('responsaveis',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span>Responsáveis</span>
+  </div>
 
   <div class="sidebar-footer">
     <div class="back-btn" onclick="window.location.href='soma-partners.html'">
@@ -585,6 +589,49 @@ textarea.fc{resize:vertical;min-height:70px}
   </div>
 </div>
 
+<!-- RESPONSÁVEIS -->
+<div class="section" id="section-responsaveis" style="max-width:700px">
+  <div class="table-wrap">
+    <div class="table-header" style="display:flex;align-items:center;justify-content:space-between">
+      <span class="table-title">Equipe Soma Partners</span>
+      <button class="btn btn-primary btn-sm" onclick="abrirModalResp()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar
+      </button>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr>
+          <th style="font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;padding:10px 16px;text-align:left;border-bottom:1px solid var(--border)">Nome</th>
+          <th style="font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;padding:10px 16px;text-align:left;border-bottom:1px solid var(--border)">Sigla</th>
+          <th style="font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;padding:10px 16px;text-align:left;border-bottom:1px solid var(--border)">Cargo</th>
+          <th style="font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;padding:10px 16px;text-align:left;border-bottom:1px solid var(--border)">E-mail</th>
+          <th style="border-bottom:1px solid var(--border);width:80px"></th>
+        </tr>
+      </thead>
+      <tbody id="resp-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL RESPONSÁVEL -->
+<div class="modal-overlay" id="modal-resp">
+  <div class="modal" style="width:440px">
+    <div class="mh"><div class="mt" id="mt-resp">Novo Responsável</div><button class="mc" onclick="closeModal('modal-resp')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="mb">
+      <input type="hidden" id="resp-id">
+      <div class="fg"><label class="fl">Nome completo *</label><input class="fc" id="resp-nome" placeholder="Ex: Lucas Fioravanti"></div>
+      <div class="fg"><label class="fl">Sigla *</label><input class="fc" id="resp-sigla" placeholder="Ex: LF" style="text-transform:uppercase" maxlength="4" oninput="this.value=this.value.toUpperCase()"></div>
+      <div class="fg"><label class="fl">Cargo</label><input class="fc" id="resp-cargo" placeholder="Ex: Consultor de Investimentos"></div>
+      <div class="fg"><label class="fl">E-mail</label><input class="fc" id="resp-email" type="email" placeholder="email@somapartners.co"></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-outline" onclick="closeModal('modal-resp')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarResp()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL LEAD -->
 <div class="modal-overlay" id="modal-lead">
   <div class="modal">
@@ -735,6 +782,7 @@ const NAV_META={
   followups:{title:'Follow-ups',sub:'Próximas ações agendadas'},
   leads:{title:'Leads',sub:'Cadastro completo de leads e oportunidades'},
   onboarding:{title:'Onboarding',sub:'Acompanhamento de clientes em processo de onboarding'},
+  responsaveis:{title:'Responsáveis',sub:'Equipe Soma Partners'},
 };
 function navigate(sec, el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -769,6 +817,7 @@ function navigate(sec, el){
   if(sec==='leads') renderLeads();
   if(sec==='visao') renderVisao();
   if(sec==='onboarding') loadOnboarding();
+  if(sec==='responsaveis') loadResponsaveis();
 }
 
 // ── LOAD ──
@@ -1587,6 +1636,76 @@ function abrirDetalheOnboarding(idx){
     </div>`;
   }).join('');
   document.getElementById('modal-onboarding').classList.add('open');
+}
+
+// ── RESPONSÁVEIS ──
+let _responsaveis=[];
+
+async function loadResponsaveis(){
+  const{data}=await _sb.from('wealth_responsaveis').select('id,data').order('created_at');
+  _responsaveis=(data||[]).map(r=>({id:r.id,...r.data})).sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR'));
+  renderResponsaveis();
+}
+
+function renderResponsaveis(){
+  const tbody=document.getElementById('resp-tbody');
+  if(!tbody)return;
+  if(!_responsaveis.length){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;font-size:12px;color:var(--muted2)">Nenhum responsável cadastrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=_responsaveis.map(r=>`
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+      <td style="padding:12px 16px;font-size:13px;font-weight:700">${r.nome||'—'}</td>
+      <td style="padding:12px 16px"><span style="font-size:11px;font-weight:800;background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.25);color:#a5b4fc;border-radius:5px;padding:2px 8px">${r.sigla||'—'}</span></td>
+      <td style="padding:12px 16px;font-size:12px;color:var(--muted)">${r.cargo||'—'}</td>
+      <td style="padding:12px 16px;font-size:12px;color:var(--muted)">${r.email||'—'}</td>
+      <td style="padding:12px 16px;text-align:right">
+        <button onclick="editarResp('${r.id}')" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:13px;padding:3px 7px;border-radius:5px;transition:all 0.15s;font-family:'Montserrat',sans-serif" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--muted2)'">✏️</button>
+        <button onclick="deletarResp('${r.id}')" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:13px;padding:3px 7px;border-radius:5px;transition:all 0.15s;font-family:'Montserrat',sans-serif" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='var(--muted2)'">×</button>
+      </td>
+    </tr>`).join('');
+}
+
+function abrirModalResp(id){
+  document.getElementById('resp-id').value='';
+  document.getElementById('resp-nome').value='';
+  document.getElementById('resp-sigla').value='';
+  document.getElementById('resp-cargo').value='';
+  document.getElementById('resp-email').value='';
+  document.getElementById('mt-resp').textContent='Novo Responsável';
+  openModal('modal-resp');
+}
+
+function editarResp(id){
+  const r=_responsaveis.find(x=>x.id===id);if(!r)return;
+  document.getElementById('resp-id').value=id;
+  document.getElementById('resp-nome').value=r.nome||'';
+  document.getElementById('resp-sigla').value=r.sigla||'';
+  document.getElementById('resp-cargo').value=r.cargo||'';
+  document.getElementById('resp-email').value=r.email||'';
+  document.getElementById('mt-resp').textContent='Editar Responsável';
+  openModal('modal-resp');
+}
+
+async function salvarResp(){
+  const nome=document.getElementById('resp-nome').value.trim();
+  const sigla=document.getElementById('resp-sigla').value.trim().toUpperCase();
+  if(!nome||!sigla){showToast('Nome e sigla são obrigatórios','err');return;}
+  const id=document.getElementById('resp-id').value||uid();
+  const rec={nome,sigla,cargo:document.getElementById('resp-cargo').value.trim(),email:document.getElementById('resp-email').value.trim()};
+  const{error}=await _sb.from('wealth_responsaveis').upsert({id,data:rec});
+  if(error){showToast('Erro ao salvar','err');return;}
+  showToast('Responsável salvo!','ok');
+  closeModal('modal-resp');
+  loadResponsaveis();
+}
+
+async function deletarResp(id){
+  if(!confirm('Remover este responsável?'))return;
+  await _sb.from('wealth_responsaveis').delete().eq('id',id);
+  _responsaveis=_responsaveis.filter(r=>r.id!==id);
+  renderResponsaveis();
 }
 
 // ── MÁSCARAS ──
