@@ -623,15 +623,15 @@ textarea.fc{resize:vertical;min-height:70px}
         <div class="fg" style="max-width:100px"><label class="fl">Sigla *</label><input class="fc" id="resp-sigla" placeholder="LF" maxlength="2" oninput="this.value=this.value.toUpperCase()"></div>
       </div>
       <div class="fr">
-        <div class="fg"><label class="fl">CPF</label><input class="fc" id="resp-cpf" placeholder="000.000.000-00"></div>
-        <div class="fg"><label class="fl">Data de Nascimento</label><input class="fc" id="resp-nasc" placeholder="DD/MM/AAAA"></div>
+        <div class="fg"><label class="fl">CPF</label><input class="fc" id="resp-cpf" placeholder="000.000.000-00" oninput="maskRespCPF(this)"></div>
+        <div class="fg"><label class="fl">Data de Nascimento</label><input class="fc" id="resp-nasc" placeholder="DD/MM/AAAA" oninput="maskRespData(this)" maxlength="10"></div>
       </div>
       <div class="fr">
         <div class="fg"><label class="fl">Cidade de Nascimento</label><input class="fc" id="resp-cidade" placeholder="São Paulo"></div>
         <div class="fg"><label class="fl">Cargo</label><input class="fc" id="resp-cargo" placeholder="Consultor de Investimentos"></div>
       </div>
       <div class="fr">
-        <div class="fg"><label class="fl">Telefone</label><input class="fc" id="resp-tel" placeholder="11 99999-9999"></div>
+        <div class="fg"><label class="fl">Telefone</label><input class="fc" id="resp-tel" placeholder="(11) 99999-9999" oninput="maskRespTel(this)"></div>
         <div class="fg"><label class="fl">E-mail</label><input class="fc" id="resp-email" placeholder="email@somapartners.co"></div>
       </div>
       <div class="fg"><label class="fl">Endereço</label><input class="fc" id="resp-end" placeholder="Rua, número, apto"></div>
@@ -1317,7 +1317,7 @@ async function saveLead(){
     obs:document.getElementById('l-obs').value.trim(),
   };
   const{error}=await _sb.from('wealth_leads').upsert({id,data});
-  if(error){showToast('Erro ao salvar','err');return;}
+  if(error){showToast('Erro: '+( error.message||error.code||'Verifique se a tabela wealth_responsaveis existe no Supabase'),'err');console.error(error);return;}
   const idx=leads.findIndex(l=>l.id===id);
   if(idx>=0)leads[idx]=data;else leads.unshift(data);
   // Auto follow-up se não houver nenhum pendente para este lead
@@ -1747,6 +1747,27 @@ function editarResp(id){
   document.getElementById('resp-mae').value=r.mae||'';
   document.getElementById('mt-resp').textContent='Editar Responsável';
   openModal('modal-resp');
+}
+
+function maskRespCPF(el){
+  let v=el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>9) v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4');
+  else if(v.length>6) v=v.replace(/(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3');
+  else if(v.length>3) v=v.replace(/(\d{3})(\d{0,3})/,'$1.$2');
+  el.value=v;
+}
+function maskRespData(el){
+  let v=el.value.replace(/\D/g,'').slice(0,8);
+  if(v.length>4) v=v.replace(/(\d{2})(\d{2})(\d{0,4})/,'$1/$2/$3');
+  else if(v.length>2) v=v.replace(/(\d{2})(\d{0,2})/,'$1/$2');
+  el.value=v;
+}
+function maskRespTel(el){
+  let v=el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>10) v=v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+  else if(v.length>6) v=v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
+  else if(v.length>2) v=v.replace(/(\d{2})(\d{0,5})/,'($1) $2');
+  el.value=v;
 }
 
 async function salvarResp(){
