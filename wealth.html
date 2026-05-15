@@ -718,14 +718,15 @@ const NAV_META={
   pipeline:{title:'Pipeline',sub:'Leads por estágio de negociação'},
   followups:{title:'Follow-ups',sub:'Próximas ações agendadas'},
   leads:{title:'Leads',sub:'Cadastro completo de leads e oportunidades'},
+  onboarding:{title:'Onboarding',sub:'Acompanhamento de clientes em processo de onboarding'},
 };
 function navigate(sec, el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   if(el) el.classList.add('active');
   document.getElementById('section-'+sec).classList.add('active');
-  document.getElementById('topbar-title').textContent=NAV_META[sec].title;
-  document.getElementById('topbar-sub').textContent=NAV_META[sec].sub;
+  document.getElementById('topbar-title').textContent=NAV_META[sec]?.title||sec;
+  document.getElementById('topbar-sub').textContent=NAV_META[sec]?.sub||'';
   if(sec==='pipeline') renderPipeline();
   if(sec==='followups') renderFollowups();
   if(sec==='leads') renderLeads();
