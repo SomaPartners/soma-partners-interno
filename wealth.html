@@ -664,6 +664,33 @@ textarea.fc{resize:vertical;min-height:70px}
 </div>
 
 
+<!-- MODAL ONBOARDING DETALHE -->
+<div class="modal-overlay" id="modal-onboarding">
+  <div class="modal" style="width:560px;max-height:85vh;overflow-y:auto">
+    <div class="mh">
+      <div>
+        <div class="mt" id="ob-modal-nome">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px" id="ob-modal-resp"></div>
+      </div>
+      <button class="mc" onclick="closeModal('modal-onboarding')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="mb">
+      <!-- barra de progresso geral -->
+      <div style="margin-bottom:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px">Progresso Geral</span>
+          <span id="ob-modal-pct" style="font-size:13px;font-weight:800"></span>
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden">
+          <div id="ob-modal-bar" style="height:100%;border-radius:3px;transition:width 0.4s"></div>
+        </div>
+      </div>
+      <!-- lista de tarefas -->
+      <div id="ob-modal-tarefas" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CONFIRM DELETE -->
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal" style="width:380px">
@@ -1505,8 +1532,9 @@ function renderOnboarding(){
     const aplicaveis=statuses.filter(s=>s!=='na').length; // XP vazio = N/A, não entra no total
     const pct=aplicaveis?Math.round((feitos/aplicaveis)*100):100;
     const progColor=pct===100?'#6ee7b7':pct>=60?'#fcd34d':'#fca5a5';
-    return`<tr class="ob-tr">
-      <td class="ob-td ob-td-left"><div class="ob-nome">${nome}</div></td>
+    const rIdx=_obRows.indexOf(r);
+    return`<tr class="ob-tr" onclick="abrirDetalheOnboarding(${rIdx})" style="cursor:pointer">
+      <td class="ob-td ob-td-left"><div class="ob-nome" style="color:#a5b4fc;text-decoration:underline;text-underline-offset:2px;text-decoration-style:dotted">${nome}</div></td>
       <td class="ob-td">${resp?`<span class="ob-resp">${resp}</span>`:''}</td>
       <td class="ob-td ob-td-left">
         <div style="display:flex;align-items:center;gap:5px">
@@ -1521,6 +1549,44 @@ function renderOnboarding(){
       }).join('')}
     </tr>`;
   }).join('');
+}
+
+function abrirDetalheOnboarding(idx){
+  const r=_obRows[idx];if(!r)return;
+  const nome=(r[0]||'').trim();
+  const resp=(r[OB_RESP_IDX]||'').trim();
+  const statuses=OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
+  const feitos=statuses.filter(s=>s==='feito').length;
+  const aplicaveis=statuses.filter(s=>s!=='na').length;
+  const pct=aplicaveis?Math.round((feitos/aplicaveis)*100):100;
+  const progColor=pct===100?'#6ee7b7':pct>=60?'#fcd34d':'#fca5a5';
+  document.getElementById('ob-modal-nome').textContent=nome;
+  document.getElementById('ob-modal-resp').textContent=resp?`Responsável: ${resp}`:'';
+  document.getElementById('ob-modal-pct').textContent=`${feitos}/${aplicaveis} concluídos`;
+  document.getElementById('ob-modal-pct').style.color=progColor;
+  document.getElementById('ob-modal-bar').style.width=pct+'%';
+  document.getElementById('ob-modal-bar').style.background=progColor;
+  const statusInfo={
+    feito:{icon:'✓',label:'Concluído',bg:'rgba(16,185,129,0.12)',border:'rgba(16,185,129,0.25)',color:'#6ee7b7'},
+    andamento:{icon:'↗',label:'Em andamento',bg:'rgba(245,158,11,0.12)',border:'rgba(245,158,11,0.25)',color:'#fcd34d'},
+    pendente:{icon:'✗',label:'Pendente',bg:'rgba(239,68,68,0.12)',border:'rgba(239,68,68,0.25)',color:'#fca5a5'},
+    vazio:{icon:'✗',label:'Pendente',bg:'rgba(239,68,68,0.12)',border:'rgba(239,68,68,0.25)',color:'#fca5a5'},
+    na:{icon:'—',label:'N/A',bg:'rgba(255,255,255,0.04)',border:'rgba(255,255,255,0.08)',color:'var(--muted2)'},
+  };
+  document.getElementById('ob-modal-tarefas').innerHTML=OB_TASK_COLS.map((c,i)=>{
+    const val=(r[c.idx]||'').trim();
+    const s=statuses[i];
+    const si=statusInfo[s]||statusInfo.vazio;
+    return`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${si.bg};border:1px solid ${si.border};border-radius:8px">
+      <span style="font-size:16px;font-weight:800;color:${si.color};width:20px;text-align:center;flex-shrink:0">${si.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;margin-bottom:2px">${c.label}</div>
+        <div style="font-size:10px;color:var(--muted)">${val||'—'}</div>
+      </div>
+      <span style="font-size:9px;font-weight:700;color:${si.color};text-transform:uppercase;letter-spacing:0.5px">${si.label}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('modal-onboarding').classList.add('open');
 }
 
 // ── MÁSCARAS ──
