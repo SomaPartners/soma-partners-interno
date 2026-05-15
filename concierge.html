@@ -655,7 +655,7 @@ document.addEventListener('input',function(e){
 
   <!-- ABA PAGAMENTOS -->
   <div id="pc-view-pagamentos" style="flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px;flex:1;overflow:hidden;min-height:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px 16px 8px;flex:1;overflow:hidden;min-height:0">
       <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-top:2px solid #ef4444;border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
         <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
           <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#fca5a5">Atrasados</span>
@@ -677,6 +677,16 @@ document.addEventListener('input',function(e){
         </div>
         <div id="pc-pgto-semana" style="overflow-y:auto;flex:1;padding:8px"></div>
       </div>
+    </div>
+    <!-- CONCLUÍDOS PAGAMENTOS -->
+    <div style="padding:10px 16px 12px;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Pagamentos Confirmados</span>
+        <span id="pc-pgto-count-pago" style="opacity:0.6"></span>
+      </div>
+      <div id="pc-pgto-pagos-list" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px"></div>
+      <div id="pc-pgto-pagos-empty" style="font-size:11px;color:rgba(255,255,255,0.2);text-align:center;padding:4px 0;display:none">Nenhum pagamento confirmado ainda</div>
     </div>
   </div>
 </div>
@@ -707,6 +717,21 @@ async function pcConcluirTarefa(tarefaId, clienteId){
   if(!row)return;
   const rec={...row.data, status:'concluido'};
   await _sb.from('concierge_tarefas').upsert({id:tarefaId, data:rec});
+  renderPainelConcierge();
+}
+
+async function pcPagarPagamento(id, clienteId, desc, dateStr, valor){
+  if(id){
+    // Transação real: atualiza status para 'pago'
+    const{data:row}=await _sb.from('concierge_pagamentos').select('id,data').eq('id',id).single();
+    if(row){
+      await _sb.from('concierge_pagamentos').upsert({id, data:{...row.data, status:'pago'}});
+    }
+  } else {
+    // Recorrente: cria registro com status 'pago'
+    const newId=crypto.randomUUID();
+    await _sb.from('concierge_pagamentos').insert({id:newId, data:{clienteId, carac:desc, data:dateStr, valor, status:'pago', pagador:'familia'}});
+  }
   renderPainelConcierge();
 }
 
@@ -782,7 +807,7 @@ async function renderPainelConcierge(){
     const ds=p.data||p.dataVencimento||'';
     if(!ds||ds<ini30s||ds>fim7s)return;
     if(p.status==='pago')return;
-    allPaysData.push({dateStr:ds,desc:p.carac||p.caracteristica||'Pagamento',valor:fmtVal(p.valor),cliente:allClientes.find(c=>c.id===p.clienteId)?.nome||clientMap[p.clienteId]||'—'});
+    allPaysData.push({id:p.id,clienteId:p.clienteId,dateStr:ds,desc:p.carac||p.caracteristica||'Pagamento',valor:fmtVal(p.valor),cliente:allClientes.find(c=>c.id===p.clienteId)?.nome||clientMap[p.clienteId]||'—'});
   });
 
   // 2. Recorrentes de todos os clientes
@@ -803,7 +828,7 @@ async function renderPainelConcierge(){
         // Não duplica se já existe transação real com mesmo nome e data
         const jaExiste=allPagamentos.some(p=>{const pd=p.data||p.dataVencimento||'';return pd===ds&&(p.carac||p.caracteristica||'').toLowerCase()===r.nome.toLowerCase()&&p.clienteId===c.id;});
         if(jaExiste)continue;
-        allPaysData.push({dateStr:ds,desc:r.nome||'Recorrente',valor:fmtVal(r.valor),cliente:c.nome||'—'});
+        allPaysData.push({id:null,clienteId:c.id,dateStr:ds,desc:r.nome||'Recorrente',valor:fmtVal(r.valor),cliente:c.nome||'—'});
       }
     });
   });
@@ -817,7 +842,26 @@ async function renderPainelConcierge(){
   const section=(label,items)=>items.length?`<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:8px 0 4px 2px">${label}</div>${items}`:'';
 
   const taskHTML=t=>pcItem('tarefa',t.titulo||'Tarefa',`${t.prioridade==='alta'?'🔴':t.prioridade==='media'?'🟡':'🟢'} ${(t.comentarios||[]).length>0?'💬 '+t.comentarios.at(-1).texto.substring(0,40)+(t.comentarios.at(-1).texto.length>40?'...':''):''}`,clientMap[t.clienteId]||'—',t.prazo,t.id,t.clienteId);
-  const payHTML=p=>pcItem('pgto',p.desc,p.valor,p.cliente,p.dateStr,null,null);
+  const payHTML=p=>{
+    const ov=pcIsOverdue(p.dateStr),td=pcIsToday(p.dateStr);
+    const dc=ov?'#fca5a5':td?'#fcd34d':'rgba(255,255,255,0.55)';
+    const idEnc=encodeURIComponent(p.id||'');
+    const descEnc=encodeURIComponent(p.desc);
+    const valorEnc=encodeURIComponent(p.valor);
+    const dateEnc=encodeURIComponent(p.dateStr);
+    const cliEnc=encodeURIComponent(p.clienteId||'');
+    return`<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:7px;padding:8px 10px;margin-bottom:5px;display:flex;gap:8px;align-items:flex-start">
+      <button onclick="pcPagarPagamento(decodeURIComponent('${idEnc}')||null,'${p.clienteId||''}',decodeURIComponent('${descEnc}'),decodeURIComponent('${dateEnc}'),decodeURIComponent('${valorEnc}'))" style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(245,158,11,0.4);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.18s;color:transparent" onmouseover="this.style.background='rgba(245,158,11,0.2)';this.style.borderColor='#fcd34d';this.style.color='#fcd34d'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(245,158,11,0.4)';this.style.color='transparent'"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.desc}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:3px">${p.valor}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+          <span style="font-size:9px;font-weight:700;background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.25);color:#a5b4fc;border-radius:4px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">${p.cliente}</span>
+          <span style="font-size:9px;font-weight:700;color:${dc};white-space:nowrap">${ov?`${Math.abs(pcDiff(p.dateStr))}d atraso`:td?'Hoje':pcFmtDate(p.dateStr)}</span>
+        </div>
+      </div>
+    </div>`;
+  };
 
   // ABA TAREFAS
   document.getElementById('pc-count-atrasado').textContent=tasksAtrasado.length;
@@ -834,6 +878,25 @@ async function renderPainelConcierge(){
   document.getElementById('pc-pgto-atrasado').innerHTML=paysAtrasado.length?paysAtrasado.map(payHTML).join(''):empty;
   document.getElementById('pc-pgto-hoje').innerHTML=paysHoje.length?paysHoje.map(payHTML).join(''):empty;
   document.getElementById('pc-pgto-semana').innerHTML=paysSemana.length?paysSemana.map(payHTML).join(''):empty;
+
+  // CONCLUÍDOS PAGAMENTOS
+  const pagamentosPagos=allPagamentos.filter(p=>p.status==='pago').sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,12);
+  const pgPagosList=document.getElementById('pc-pgto-pagos-list');
+  const pgPagosEmpty=document.getElementById('pc-pgto-pagos-empty');
+  document.getElementById('pc-pgto-count-pago').textContent=pagamentosPagos.length||'';
+  if(pagamentosPagos.length){
+    pgPagosList.innerHTML=pagamentosPagos.map(p=>{
+      const cli=allClientes.find(c=>c.id===p.clienteId);
+      return`<div style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);border-radius:7px;padding:7px 9px;display:flex;align-items:flex-start;gap:6px">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fcd34d" stroke-width="2.5" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>
+        <div><div style="font-size:11px;font-weight:700;color:#fcd34d;text-decoration:line-through;margin-bottom:2px">${p.carac||p.caracteristica||'Pagamento'}</div><div style="font-size:9px;color:rgba(255,255,255,0.35)">${cli?.nome||'—'} · ${pcFmtDate(p.data||p.dataVencimento||'')}</div></div>
+      </div>`;
+    }).join('');
+    pgPagosEmpty.style.display='none';
+  } else {
+    pgPagosList.innerHTML='';
+    pgPagosEmpty.style.display='block';
+  }
 
   // CONCLUÍDOS — sempre visível na aba Tarefas
   const concluidas=(tasks||[]).map(r=>r.data).filter(t=>t&&(t.status==='concluido'||t.status==='concluida'));
