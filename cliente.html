@@ -346,12 +346,12 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
 
 /* ASANA LIST */
 .asana-wrap{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.asana-header-row{display:grid;grid-template-columns:32px 1fr 130px 120px 100px 120px 32px;align-items:center;padding:8px 12px 8px 10px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02)}
+.asana-header-row{display:grid;grid-template-columns:32px 1fr 130px 120px 100px 120px 200px 32px;align-items:center;padding:8px 12px 8px 10px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02)}
 .asana-header-row div{font-size:11px;font-weight:500;color:rgba(255,255,255,0.35)}
 .ah-add{text-align:center;cursor:pointer;color:var(--muted2);font-size:16px;font-weight:300;transition:color 0.18s}.ah-add:hover{color:#fff}
 .asana-section-header{display:flex;align-items:center;gap:7px;padding:9px 14px;font-size:12px;font-weight:700;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);user-select:none}
 .asana-section-count{background:rgba(255,255,255,0.08);border-radius:8px;padding:1px 7px;font-size:10px;font-weight:700;color:var(--muted2)}
-.asana-row{display:grid;grid-template-columns:32px 1fr 130px 120px 100px 120px 32px;align-items:center;padding:0 12px 0 10px;height:40px;border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s}
+.asana-row{display:grid;grid-template-columns:32px 1fr 130px 120px 100px 120px 200px 32px;align-items:center;padding:0 12px 0 10px;height:40px;border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s}
 .asana-row:hover{background:rgba(255,255,255,0.04)}
 .a-check{width:17px;height:17px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.18s}
 .a-check:hover{border-color:var(--green)}
@@ -387,7 +387,7 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
 .a-comments-btn:hover{color:#fff}
 .asana-add-row{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:12px;color:var(--muted2);cursor:pointer;transition:color 0.18s}
 .asana-add-row:hover{color:#fff}
-.asana-inline-row{display:grid;grid-template-columns:32px 1fr 130px 120px 100px 120px 32px;align-items:center;padding:0 12px 0 10px;height:40px;border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(79,70,229,0.06);border-left:2px solid var(--indigo)}
+.asana-inline-row{display:grid;grid-template-columns:32px 1fr 130px 120px 100px 120px 200px 32px;align-items:center;padding:0 12px 0 10px;height:40px;border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(79,70,229,0.06);border-left:2px solid var(--indigo)}
 .inline-input{background:transparent;border:none;outline:none;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:500;color:#fff;width:100%;padding:0 4px}
 .inline-input::placeholder{color:rgba(255,255,255,0.2)}
 .inline-select{background:transparent;border:none;outline:none;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;width:100%}
@@ -544,6 +544,7 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
           <div class="ah-prazo">Prazo</div>
           <div class="ah-prio">Prioridade</div>
           <div class="ah-status">Status</div>
+          <div class="ah-proxima">Próxima Atualização</div>
           <div class="ah-del"></div>
         </div>
         <div class="asana-section-header">
@@ -3292,8 +3293,10 @@ function renderLista(){
             <div class="a-cell" style="color:${isOverdue(t.prazo)&&!isDone?'var(--red)':'var(--muted)'}">${t.prazo?fmtDate(t.prazo):'—'}</div>
             <div><span class="a-prio ap-${t.prioridade||'media'}">${PRIO_LABEL[t.prioridade]||'Média'}</span></div>
             <div><span class="a-status ${STATUS_CLS[st]||'as-a_fazer'}">${STATUS_LABEL[st]||st}</span></div>
-            <div style="display:flex;align-items:center;gap:6px">
-              ${t.proxima_atualizacao&&!isDone?`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis;${t.proxima_atualizacao<today()?'background:rgba(239,68,68,0.15);color:#fca5a5':t.proxima_atualizacao===today()?'background:rgba(245,158,11,0.15);color:#fcd34d':'background:rgba(16,185,129,0.12);color:#6ee7b7'}" title="${t.proxima_atualizacao_desc||''}">↻ ${t.proxima_atualizacao<today()?'Atrasada':t.proxima_atualizacao===today()?'Hoje':fmtDate(t.proxima_atualizacao)}${t.proxima_atualizacao_desc?' · '+t.proxima_atualizacao_desc:''}</span>`:''}
+            <div style="display:flex;align-items:center;gap:6px;overflow:hidden">
+              ${t.proxima_atualizacao&&!isDone?`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;${t.proxima_atualizacao<today()?'background:rgba(239,68,68,0.15);color:#fca5a5':t.proxima_atualizacao===today()?'background:rgba(245,158,11,0.15);color:#fcd34d':'background:rgba(16,185,129,0.12);color:#6ee7b7'}" title="${(t.proxima_atualizacao_desc||'').replace(/"/g,'&quot;')}">↻ ${t.proxima_atualizacao<today()?'Atrasada':t.proxima_atualizacao===today()?'Hoje':fmtDate(t.proxima_atualizacao)}${t.proxima_atualizacao_desc?' · '+t.proxima_atualizacao_desc:''}</span>`:'<span style="font-size:10px;color:var(--muted2)">—</span>'}
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
               <button class="a-comments-btn" onclick="toggleComments('comments-${t.id}')">
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 ${comCount>0?comCount:''}
