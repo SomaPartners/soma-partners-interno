@@ -731,14 +731,18 @@ async function renderPainelConcierge(){
 
   const clientMap={};clients.forEach(c=>clientMap[c.id]=c.nome||'—');
 
-  const[{data:tasks},{data:pays}]=await Promise.all([
+  const[{data:tasks},{data:pays},{data:clis}]=await Promise.all([
     _sb.from('concierge_tarefas').select('data').filter('data->>status','in','("a_fazer","em_andamento","aberta")').order('created_at'),
-    _sb.from('concierge_pagamentos').select('data').order('created_at'),
+    _sb.from('concierge_pagamentos').select('id,data').order('created_at'),
+    _sb.from('concierge_clientes').select('id,data').order('created_at'),
   ]);
 
   // Semana: próximos 7 dias
   const fim7=new Date();fim7.setDate(fim7.getDate()+7);
   const fim7s=fim7.getFullYear()+'-'+String(fim7.getMonth()+1).padStart(2,'0')+'-'+String(fim7.getDate()).padStart(2,'0');
+  // Início: 30 dias atrás (para pegar atrasados)
+  const ini30=new Date();ini30.setDate(ini30.getDate()-30);
+  const ini30s=ini30.toISOString().split('T')[0];
 
   // Helper: card item para tarefa ou pagamento
   function pcItem(tipo,titulo,subtitulo,cliente,data,id,clienteId){
@@ -765,18 +769,55 @@ async function renderPainelConcierge(){
   const tasksHoje=allTasks.filter(t=>pcIsToday(t.prazo));
   const tasksSemana=allTasks.filter(t=>!pcIsOverdue(t.prazo)&&!pcIsToday(t.prazo)&&t.prazo<=fim7s).sort((a,b)=>a.prazo.localeCompare(b.prazo));
 
-  // Classifica pagamentos
-  const allPaysData=(pays||[]).map(r=>r.data).filter(p=>p&&p.vencimento&&p.status!=='pago');
-  const fmtVal=v=>{if(!v)return'—';const n=parseFloat(String(v).replace(/[^\d,]/g,'').replace(',','.'));return isNaN(n)?v:'R$'+n.toLocaleString('pt-BR',{minimumFractionDigits:2})};
-  const paysAtrasado=allPaysData.filter(p=>pcIsOverdue(p.vencimento)).sort((a,b)=>a.vencimento.localeCompare(b.vencimento));
-  const paysHoje=allPaysData.filter(p=>pcIsToday(p.vencimento));
-  const paysSemana=allPaysData.filter(p=>!pcIsOverdue(p.vencimento)&&!pcIsToday(p.vencimento)&&p.vencimento<=fim7s).sort((a,b)=>a.vencimento.localeCompare(b.vencimento));
+  // ── PAGAMENTOS: transações reais + recorrentes (mesma lógica do relatório) ──
+  const fmtVal=v=>{if(!v)return'—';const n=parseFloat(String(v).replace(/[^\d.,]/g,'').replace(',','.'));return isNaN(n)?String(v):'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2})};
+  const allPagamentos=(pays||[]).map(r=>({id:r.id,...r.data}));
+  const allClientes=(clis||[]).map(r=>({id:r.id,...r.data}));
+  const freqMap={mensal:1,bimestral:2,trimestral:3,semestral:6,anual:12};
+
+  const allPaysData=[];
+
+  // 1. Transações reais
+  allPagamentos.forEach(p=>{
+    const ds=p.data||p.dataVencimento||'';
+    if(!ds||ds<ini30s||ds>fim7s)return;
+    if(p.status==='pago')return;
+    allPaysData.push({dateStr:ds,desc:p.carac||p.caracteristica||'Pagamento',valor:fmtVal(p.valor),cliente:allClientes.find(c=>c.id===p.clienteId)?.nome||clientMap[p.clienteId]||'—'});
+  });
+
+  // 2. Recorrentes de todos os clientes
+  const deYM=ini30.getFullYear()*12+ini30.getMonth();
+  const ateYM=fim7.getFullYear()*12+fim7.getMonth();
+  allClientes.forEach(c=>{
+    (c.recorrentes||[]).forEach(r=>{
+      const dia=parseInt(r.dia)||1;
+      const interval=freqMap[r.freq]||1;
+      for(let ym=deYM;ym<=ateYM;ym++){
+        const yr=Math.floor(ym/12),mo=ym%12;
+        const d=new Date(yr,mo,Math.min(dia,new Date(yr,mo+1,0).getDate()),12,0,0);
+        const ds=d.toISOString().split('T')[0];
+        if(ds<ini30s||ds>fim7s)continue;
+        if(r.dataInicio&&(yr*12+mo)<(new Date(r.dataInicio).getFullYear()*12+new Date(r.dataInicio).getMonth()))continue;
+        if(r.dataFim&&ds>r.dataFim)continue;
+        if(r.dataInicio){const sd=new Date(r.dataInicio);if((yr*12+mo-(sd.getFullYear()*12+sd.getMonth()))%interval!==0)continue;}
+        // Não duplica se já existe transação real com mesmo nome e data
+        const jaExiste=allPagamentos.some(p=>{const pd=p.data||p.dataVencimento||'';return pd===ds&&(p.carac||p.caracteristica||'').toLowerCase()===r.nome.toLowerCase()&&p.clienteId===c.id;});
+        if(jaExiste)continue;
+        allPaysData.push({dateStr:ds,desc:r.nome||'Recorrente',valor:fmtVal(r.valor),cliente:c.nome||'—'});
+      }
+    });
+  });
+
+  allPaysData.sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
+  const paysAtrasado=allPaysData.filter(p=>pcIsOverdue(p.dateStr));
+  const paysHoje=allPaysData.filter(p=>pcIsToday(p.dateStr));
+  const paysSemana=allPaysData.filter(p=>!pcIsOverdue(p.dateStr)&&!pcIsToday(p.dateStr)&&p.dateStr<=fim7s);
 
   const empty='<div style="text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)">Nenhuma ação</div>';
   const section=(label,items)=>items.length?`<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:8px 0 4px 2px">${label}</div>${items}`:'';
 
   const taskHTML=t=>pcItem('tarefa',t.titulo||'Tarefa',`${t.prioridade==='alta'?'🔴':t.prioridade==='media'?'🟡':'🟢'} ${(t.comentarios||[]).length>0?'💬 '+t.comentarios.at(-1).texto.substring(0,40)+(t.comentarios.at(-1).texto.length>40?'...':''):''}`,clientMap[t.clienteId]||'—',t.prazo,t.id,t.clienteId);
-  const payHTML=p=>pcItem('pgto',p.carac||p.caracteristica||'Pagamento',fmtVal(p.valor),clientMap[p.clienteId]||'—',p.vencimento,null,null);
+  const payHTML=p=>pcItem('pgto',p.desc,p.valor,p.cliente,p.dateStr,null,null);
 
   // ABA TAREFAS
   document.getElementById('pc-count-atrasado').textContent=tasksAtrasado.length;
