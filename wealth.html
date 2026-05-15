@@ -129,6 +129,32 @@ tbody tr:hover .del-btn{color:var(--muted2)}
 .pipeline-card-name{font-size:12px;font-weight:700;margin-bottom:4px}
 .pipeline-card-meta{font-size:10px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
 
+/* ONBOARDING */
+.ob-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.ob-kpi{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.ob-kpi-val{font-size:26px;font-weight:900;margin-bottom:2px}
+.ob-kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
+.ob-filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.ob-chip{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;padding:2px 8px;border-radius:8px;white-space:nowrap}
+.ob-chip-feito{background:rgba(16,185,129,0.15);color:#6ee7b7}
+.ob-chip-andamento{background:rgba(245,158,11,0.15);color:#fcd34d}
+.ob-chip-pendente{background:rgba(239,68,68,0.15);color:#fca5a5}
+.ob-chip-vazio{background:rgba(255,255,255,0.06);color:var(--muted2)}
+.ob-chip-outro{background:rgba(255,255,255,0.06);color:var(--muted2)}
+.ob-table{width:100%;border-collapse:collapse}
+.ob-th{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+.ob-td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+.ob-tr:hover td{background:rgba(255,255,255,0.02)}
+.ob-nome{font-size:12px;font-weight:700;min-width:160px}
+.ob-resp{font-size:10px;font-weight:700;background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.25);color:#a5b4fc;border-radius:4px;padding:1px 6px}
+.ob-progress{width:80px;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+.ob-progress-fill{height:100%;border-radius:3px;transition:width 0.3s}
+.ob-tasks{display:flex;gap:4px;flex-wrap:wrap}
+.ob-refresh-btn{background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.3);border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;cursor:pointer;font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:6px;transition:all 0.18s}
+.ob-refresh-btn:hover{background:rgba(79,70,229,0.3)}
+.ob-refresh-btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none}
+.ob-empty{text-align:center;padding:48px;color:var(--muted2);font-size:12px}
+
 /* FOLLOWUPS */
 /* FOLLOW-UPS */
 .fu-month-bar{display:flex;align-items:center;gap:0;width:100%;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.01);margin-bottom:20px}
@@ -329,6 +355,11 @@ textarea.fc{resize:vertical;min-height:70px}
     <span>Follow-ups</span>
   </div>
 
+  <div class="sidebar-section">Operacional</div>
+  <div class="nav-item" data-section="onboarding" onclick="navigate('onboarding',this)">
+    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Onboarding</span>
+  </div>
   <div class="sidebar-section">Cadastro</div>
   <div class="nav-item" data-section="leads" onclick="navigate('leads',this)">
     <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -475,6 +506,52 @@ textarea.fc{resize:vertical;min-height:70px}
         <span id="p-count-semana" style="display:none"></span>
         <div id="p-fu-semana" style="display:none"></div>
         <div id="painel-pipeline-board" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div class="section" id="section-onboarding">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:16px;font-weight:800">Onboarding</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Acompanhamento de clientes em processo de onboarding</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <select id="ob-filtro-resp" onchange="renderOnboarding()" style="appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Montserrat',sans-serif;color:var(--muted);cursor:pointer;outline:none">
+            <option value="">Todos responsáveis</option>
+          </select>
+          <select id="ob-filtro-status" onchange="renderOnboarding()" style="appearance:none;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Montserrat',sans-serif;color:var(--muted);cursor:pointer;outline:none">
+            <option value="">Todos os status</option>
+            <option value="pendente">Com pendências</option>
+            <option value="completo">Completos</option>
+          </select>
+          <button class="ob-refresh-btn" onclick="loadOnboarding(true)">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Atualizar
+          </button>
+        </div>
+      </div>
+      <div class="ob-kpi-row" id="ob-kpis"></div>
+      <div class="table-wrap" style="overflow-x:auto">
+        <table class="ob-table">
+          <thead>
+            <tr>
+              <th class="ob-th">Cliente</th>
+              <th class="ob-th">Resp.</th>
+              <th class="ob-th">Progresso</th>
+              <th class="ob-th">Contrato</th>
+              <th class="ob-th">BTG</th>
+              <th class="ob-th">XP</th>
+              <th class="ob-th">E-mail BV</th>
+              <th class="ob-th">Suitability</th>
+              <th class="ob-th">KYC</th>
+              <th class="ob-th">Billing</th>
+              <th class="ob-th">Termo Fundo</th>
+              <th class="ob-th">Cad. Vita</th>
+            </tr>
+          </thead>
+          <tbody id="ob-tbody"></tbody>
+        </table>
       </div>
     </div>
 
@@ -1321,6 +1398,130 @@ tickClock();setInterval(tickClock,30000);
 
 // INIT
 loadAll();
+
+// ── ONBOARDING ──
+const OB_SHEET_URL='https://docs.google.com/spreadsheets/d/1edEI7Hw-tRBeCKR--A2WipzrunKGNTWF/export?format=csv&gid=50571294';
+const OB_TASK_COLS=[
+  {idx:5,label:'Contrato Vita'},
+  {idx:6,label:'Migração BTG'},
+  {idx:7,label:'Migração XP'},
+  {idx:8,label:'E-mail BV'},
+  {idx:9,label:'Suitability'},
+  {idx:10,label:'KYC'},
+  {idx:11,label:'Billing'},
+  {idx:12,label:'Termo Fundo'},
+  {idx:14,label:'Cad. Vita'},
+];
+const OB_DONE=['sim','feito','assinado','aprovado','pro bono','não será enviado','nao sera enviado'];
+const OB_PROGRESS=['enviado'];
+let _obRows=[];
+
+function obParseCSV(text){
+  const lines=[];
+  let cur='',inQ=false,row=[];
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(c==='"'){if(inQ&&text[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(c===','&&!inQ){row.push(cur.trim());cur='';}
+    else if((c==='\n'||c==='\r')&&!inQ){if(cur||row.length){row.push(cur.trim());lines.push(row);cur='';row=[];}}
+    else cur+=c;
+  }
+  if(cur||row.length){row.push(cur.trim());lines.push(row);}
+  return lines;
+}
+
+function obStatus(val){
+  if(!val||val.trim()==='')return'vazio';
+  const v=val.toLowerCase().trim();
+  if(OB_DONE.some(d=>v.includes(d)))return'feito';
+  if(OB_PROGRESS.some(d=>v.includes(d)))return'andamento';
+  return'pendente';
+}
+
+function obChip(val,label){
+  const s=obStatus(val);
+  const icons={feito:'✓',andamento:'↗',pendente:'✗',vazio:'—'};
+  return`<span class="ob-chip ob-chip-${s}" title="${val||'Vazio'}">${icons[s]||'?'} ${label}</span>`;
+}
+
+async function loadOnboarding(force=false){
+  const tbody=document.getElementById('ob-tbody');
+  if(!tbody)return;
+  if(_obRows.length&&!force){renderOnboarding();return;}
+  tbody.innerHTML='<tr><td colspan="12" class="ob-empty">Carregando dados da planilha...</td></tr>';
+  try{
+    const res=await fetch(OB_SHEET_URL);
+    if(!res.ok)throw new Error('Erro ao buscar planilha');
+    const text=await res.text();
+    const rows=obParseCSV(text);
+    // row[0] = headers, row[1] onwards = data
+    _obRows=rows.slice(1).filter(r=>r[0]&&r[0].trim()&&r[0].trim()!=='');
+    // Populate responsável filter
+    const resps=[...new Set(_obRows.map(r=>(r[2]||'').trim()).filter(Boolean))].sort();
+    const sel=document.getElementById('ob-filtro-resp');
+    if(sel){
+      sel.innerHTML='<option value="">Todos responsáveis</option>';
+      resps.forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
+    }
+    renderOnboarding();
+  }catch(e){
+    if(tbody)tbody.innerHTML=`<tr><td colspan="12" class="ob-empty">Erro ao carregar planilha. Verifique se está compartilhada publicamente.</td></tr>`;
+  }
+}
+
+function renderOnboarding(){
+  const tbody=document.getElementById('ob-tbody');
+  if(!tbody||!_obRows.length)return;
+  const filtResp=(document.getElementById('ob-filtro-resp')?.value||'').trim();
+  const filtStatus=document.getElementById('ob-filtro-status')?.value||'';
+  let rows=_obRows;
+  if(filtResp)rows=rows.filter(r=>(r[2]||'').trim()===filtResp);
+  if(filtStatus==='pendente')rows=rows.filter(r=>OB_TASK_COLS.some(c=>obStatus(r[c.idx])==='pendente'||obStatus(r[c.idx])==='vazio'));
+  if(filtStatus==='completo')rows=rows.filter(r=>OB_TASK_COLS.every(c=>obStatus(r[c.idx])==='feito'||obStatus(r[c.idx])==='andamento'));
+  // KPIs
+  const total=_obRows.length;
+  const completos=_obRows.filter(r=>OB_TASK_COLS.every(c=>obStatus(r[c.idx])==='feito'||obStatus(r[c.idx])==='andamento')).length;
+  const comPendencia=_obRows.filter(r=>OB_TASK_COLS.some(c=>obStatus(r[c.idx])==='pendente'||obStatus(r[c.idx])==='vazio')).length;
+  const totalPendencias=_obRows.reduce((acc,r)=>acc+OB_TASK_COLS.filter(c=>obStatus(r[c.idx])==='pendente'||obStatus(r[c.idx])==='vazio').length,0);
+  document.getElementById('ob-kpis').innerHTML=`
+    <div class="ob-kpi"><div class="ob-kpi-val">${total}</div><div class="ob-kpi-label">Total de clientes</div></div>
+    <div class="ob-kpi"><div class="ob-kpi-val" style="color:#6ee7b7">${completos}</div><div class="ob-kpi-label">Onboarding completo</div></div>
+    <div class="ob-kpi"><div class="ob-kpi-val" style="color:#fca5a5">${comPendencia}</div><div class="ob-kpi-label">Com pendências</div></div>
+    <div class="ob-kpi"><div class="ob-kpi-val" style="color:#fcd34d">${totalPendencias}</div><div class="ob-kpi-label">Tarefas pendentes</div></div>`;
+  // Rows
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="12" class="ob-empty">Nenhum cliente encontrado.</td></tr>';return;}
+  tbody.innerHTML=rows.map(r=>{
+    const nome=(r[0]||'').trim();
+    const resp=(r[2]||'').trim();
+    const done=OB_TASK_COLS.filter(c=>obStatus(r[c.idx])==='feito').length;
+    const pct=Math.round((done/OB_TASK_COLS.length)*100);
+    const progColor=pct===100?'#6ee7b7':pct>=60?'#fcd34d':'#fca5a5';
+    return`<tr class="ob-tr">
+      <td class="ob-td ob-nome">${nome}</td>
+      <td class="ob-td">${resp?`<span class="ob-resp">${resp}</span>`:''}</td>
+      <td class="ob-td">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="ob-progress"><div class="ob-progress-fill" style="width:${pct}%;background:${progColor}"></div></div>
+          <span style="font-size:10px;font-weight:700;color:${progColor}">${pct}%</span>
+        </div>
+      </td>
+      ${OB_TASK_COLS.map(c=>{
+        const val=(r[c.idx]||'').trim();
+        const s=obStatus(val);
+        const icons={feito:'✓',andamento:'↗',pendente:'✗',vazio:'—'};
+        const colors={feito:'#6ee7b7',andamento:'#fcd34d',pendente:'#fca5a5',vazio:'var(--muted2)'};
+        return`<td class="ob-td"><span class="ob-chip ob-chip-${s}" title="${val||'Vazio'}">${icons[s]||'?'}</span></td>`;
+      }).join('')}
+    </tr>`;
+  }).join('');
+}
+
+// Carrega onboarding quando navegar para a seção
+const _origNavigate=navigate;
+function navigate(sec,el){
+  _origNavigate(sec,el);
+  if(sec==='onboarding')loadOnboarding();
+}
 
 // ── MÁSCARAS ──
 function maskTel(v){
