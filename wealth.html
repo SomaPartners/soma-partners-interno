@@ -144,7 +144,8 @@ tbody tr:hover .del-btn{color:var(--muted2)}
 .fu-mes-item-desc{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
 .fu-mes-item-date{font-size:10px;color:var(--muted2);white-space:nowrap}
 .fu-mes-empty{text-align:center;padding:48px 24px;font-size:12px;color:var(--muted2)}
-.fu-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.fu-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+.fu-col-concluido .fu-col-title{color:#a5b4fc}
 .fu-col{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
 .fu-col-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .fu-col-title{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
@@ -431,7 +432,7 @@ textarea.fc{resize:vertical;min-height:70px}
         <button class="fu-month-btn" data-m="11" onclick="setFuMes(11)">Dez</button>
       </div>
 
-      <!-- VISÃO MÊS CORRENTE: Atrasados / Hoje / Esta Semana -->
+      <!-- VISÃO MÊS CORRENTE: Atrasados / Hoje / Esta Semana / Concluídos -->
       <div id="fu-view-current">
         <div class="fu-grid">
           <div class="fu-col fu-col-atrasado">
@@ -446,15 +447,10 @@ textarea.fc{resize:vertical;min-height:70px}
             <div class="fu-col-head"><span class="fu-col-title">Esta Semana</span><span class="fu-col-count" id="fu-count-semana">0</span></div>
             <div class="fu-cards" id="fu-cards-semana"></div>
           </div>
-        </div>
-        <!-- CONCLUÍDOS -->
-        <div style="margin-top:20px">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="toggleConcluidos()">
-            <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted2)">Concluídos</div>
-            <span id="fu-count-concluido" style="font-size:11px;font-weight:700;color:var(--muted2)">0</span>
-            <svg id="concluidos-arrow" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--muted2)" stroke-width="2" style="margin-left:2px;transition:transform 0.2s"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="fu-col fu-col-concluido">
+            <div class="fu-col-head"><span class="fu-col-title">Concluídos</span><span class="fu-col-count" id="fu-count-concluido">0</span></div>
+            <div class="fu-cards" id="fu-cards-concluido"></div>
           </div>
-          <div id="fu-cards-concluido" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
         </div>
       </div>
 
@@ -914,14 +910,14 @@ function renderFollowups(){
     document.getElementById('fu-cards-semana').innerHTML=semana.length?semana.map(f=>fuCardHTML(f,'semana')).join(''):empty;
     document.getElementById('fu-cards-concluido').innerHTML=concluidos.length?concluidos.map(f=>{
       const l=leads.find(x=>x.id===f.lead_id);
-      return`<div class="fu-card-concluido">
-        <div class="fu-check-done"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      return`<div class="fu-card fu-card-concluido" style="opacity:0.6;display:flex;gap:10px;align-items:flex-start">
+        <div class="fu-check-done" style="flex-shrink:0"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:12px;font-weight:700;margin-bottom:2px">${l?.nome||'—'}</div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${f.desc||''}</div>
-          <div style="font-size:10px;color:var(--muted2)">${TIPO_TAG[f.tipo]||''} ${fmtDate(f.data)}</div>
+          <div class="fu-card-lead">${l?.nome||'—'}</div>
+          <div class="fu-card-desc">${f.desc||''}</div>
+          <div class="fu-card-meta">${TIPO_TAG[f.tipo]||''} ${fmtDate(f.data)}</div>
         </div>
-      </div>`;}).join(''):'<div class="fu-empty" style="grid-column:1/-1">Nenhum concluído ainda</div>';
+      </div>`;}).join(''):'<div class="fu-empty">Nenhum concluído ainda</div>';
   } else {
     // Visão mês específico: todos os follow-ups do mês
     const mesStr=String(_fuMes+1).padStart(2,'0');
@@ -966,14 +962,6 @@ function renderFollowups(){
   }
 }
 
-let _concluidos_aberto=false;
-function toggleConcluidos(){
-  _concluidos_aberto=!_concluidos_aberto;
-  const el=document.getElementById('fu-cards-concluido');
-  const arrow=document.getElementById('concluidos-arrow');
-  el.style.display=_concluidos_aberto?'grid':'none';
-  if(arrow)arrow.style.transform=_concluidos_aberto?'rotate(180deg)':'';
-}
 
 function renderPainel(){
   const pending=followups.filter(f=>!f.feito).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
