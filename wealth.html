@@ -1497,8 +1497,8 @@ function renderOnboarding(){
       <td class="ob-td">${resp?`<span class="ob-resp">${resp}</span>`:''}</td>
       <td class="ob-td">
         <div style="display:flex;align-items:center;gap:6px">
-          <div class="ob-progress"><div class="ob-progress-fill" style="width:${pct}%;background:${progColor}"></div></div>
-          <span style="font-size:10px;font-weight:700;color:${progColor}">${pct}%</span>
+          <div class="ob-progress" title="${feitos} de ${aplicaveis} concluídos"><div class="ob-progress-fill" style="width:${pct}%;background:${progColor}"></div></div>
+          <span style="font-size:10px;font-weight:700;color:${progColor}">${feitos}/${aplicaveis}</span>
         </div>
       </td>
       ${OB_TASK_COLS.map((c,i)=>{
