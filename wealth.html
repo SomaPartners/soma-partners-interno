@@ -508,18 +508,19 @@ textarea.fc{resize:vertical;min-height:70px}
       <div class="table-wrap" style="overflow:auto;max-height:calc(100vh - 62px - 180px)">
         <table class="ob-table">
           <colgroup>
-            <col style="width:17%"> <!-- Cliente -->
-            <col style="width:5%">  <!-- Resp -->
-            <col style="width:8%">  <!-- Progresso -->
-            <col style="width:7%">  <!-- Cad SF -->
-            <col style="width:8%">  <!-- Contrato -->
+            <col style="width:15%"> <!-- Cliente -->
+            <col style="width:4%">  <!-- Resp -->
+            <col style="width:7%">  <!-- Progresso -->
+            <col style="width:6%">  <!-- Cad SF -->
+            <col style="width:7%">  <!-- Contrato -->
             <col style="width:6%">  <!-- BTG -->
-            <col style="width:6%">  <!-- XP -->
-            <col style="width:8%">  <!-- E-mail BV -->
-            <col style="width:8%">  <!-- Suitability -->
-            <col style="width:6%">  <!-- KYC -->
-            <col style="width:9%">  <!-- Termo Fundo -->
-            <col style="width:12%"> <!-- Cad. Vita -->
+            <col style="width:5%">  <!-- XP -->
+            <col style="width:7%">  <!-- E-mail BV -->
+            <col style="width:7%">  <!-- Suitability -->
+            <col style="width:5%">  <!-- KYC -->
+            <col style="width:8%">  <!-- Termo Fundo -->
+            <col style="width:7%">  <!-- Tem fundo? -->
+            <col style="width:16%"> <!-- Cad. Vita -->
           </colgroup>
           <thead>
             <tr>
@@ -534,6 +535,7 @@ textarea.fc{resize:vertical;min-height:70px}
               <th class="ob-th">Suitab.</th>
               <th class="ob-th">KYC</th>
               <th class="ob-th">Termo</th>
+              <th class="ob-th">Fundo?</th>
               <th class="ob-th">Cad. Vita</th>
             </tr>
           </thead>
@@ -1423,7 +1425,8 @@ const OB_TASK_COLS=[
   {idx:7, label:'E-mail BV',     getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');if(l.includes('enviado')||l.includes('nao sera'))return'feito';return'pendente';}},
   {idx:8, label:'Suitability',   getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('feito'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
   {idx:9, label:'KYC',           getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('feito'))return'feito';return'pendente';}},
-  {idx:11,label:'Termo Fundo',   getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('aprovado')||l.includes('pro bono')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:11,label:'Termo Fundo',   getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('aprovado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:12,label:'Tem fundo?',    getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('sim'))return'feito';return'pendente';}},
   {idx:13,label:'Cad. Vita',     getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase();if(l.includes('sim'))return'feito';return'pendente';}},
 ];
 let _obRows=[];
