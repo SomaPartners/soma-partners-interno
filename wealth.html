@@ -787,7 +787,7 @@ let leads=[], followups=[];
 
 const ESTAGIO_LABELS={prospeccao:'Prospecção',em_conversa:'Em Conversa',proposta:'Proposta',fechado:'Cliente Ativo',perdido:'Perdido',descartado:'Descartado'};
 const ESTAGIO_INATIVOS=['perdido','descartado'];
-const ORIGEM_LABELS={evento:'Evento',indicacao:'Indicação',redes_sociais:'Redes Sociais',prospeccao:'Prospecção Ativa',cold_call:'Cold Call',concierge:'Concierge',outro:'Outro'};
+const ORIGEM_LABELS={evento:'Evento',indicacao:'Indicação',redes_sociais:'Redes Sociais',prospeccao:'Prospecção Ativa',cold_call:'Cold Call',concierge:'Consultoria',outro:'Outro'};
 function origemBadge(o){return`<span class="origem-badge ob-${o||'outro'}">${ORIGEM_LABELS[o]||o||'—'}</span>`}
 const TEMP_PROSP={
   frio:{dias:30,texto:'<strong>Lead Frio</strong> — Nutrição gradual.<br>Semana 1: envie conteúdo de valor (artigo, panorama de mercado). Semana 2: conecte no LinkedIn. Semana 3: convite para evento. Semana 4: ligação de aquecimento.',acao:'Enviar conteúdo de valor por WhatsApp ou e-mail'},
