@@ -675,7 +675,7 @@ textarea.fc{resize:vertical;min-height:70px}
       <div class="fr">
         <div class="fg"><label class="fl">Patrimônio estimado</label><input class="fc" id="l-patrimonio" placeholder="Ex: R$ 2.000.000"></div>
         <div class="fg"><label class="fl">Origem do contato</label>
-          <select class="fc" id="l-origem" onchange="toggleIndicadoPor()"><option value="indicacao">Indicação</option><option value="evento">Evento</option><option value="redes_sociais">Redes Sociais</option><option value="prospeccao">Prospecção Ativa</option><option value="cold_call">Cold Call</option><option value="outro">Outro</option></select>
+          <select class="fc" id="l-origem" onchange="toggleIndicadoPor()"><option value="indicacao">Indicação</option><option value="concierge">Consultoria</option><option value="evento">Evento</option><option value="redes_sociais">Redes Sociais</option><option value="prospeccao">Prospecção Ativa</option><option value="cold_call">Cold Call</option><option value="outro">Outro</option></select>
           <div id="l-origem-display" style="display:none;padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:13px;color:var(--muted)"></div>
         </div>
       </div>
@@ -1646,7 +1646,7 @@ async function sincronizarLeadsOnboarding(){
       id, nome,
       temperatura:'ativo',
       estagio:'fechado',
-      origem:'indicacao',
+      origem:'concierge',
       responsavel:resp||'',
       data_primeiro_contato:today(),
       obs:'Importado do Onboarding'
