@@ -1627,6 +1627,12 @@ function renderOnboarding(){
 }
 
 async function sincronizarLeadsOnboarding(){
+  // Corrige leads já sincronizados que ainda têm origem='indicacao'
+  const leadsCorrigir=leads.filter(l=>l.obs==='Importado do Onboarding'&&l.origem!=='concierge');
+  for(const l of leadsCorrigir){
+    l.origem='concierge';
+    await _sb.from('wealth_leads').upsert({id:l.id,data:l});
+  }
   if(!_obRows.length){showToast('Carregue o onboarding primeiro','err');return;}
   const nomesLeads=leads.map(l=>(l.nome||'').trim().toLowerCase());
   const novos=_obRows.filter(r=>{
