@@ -2132,7 +2132,7 @@ function renderFinanceiro(){
       <td class="fin-saldo-cell" style="color:${p._contaNaoSaldo?'var(--muted2)':p._saldo>=0?'#6ee7b7':'#fca5a5'}">${p._contaNaoSaldo?'—':fmtMoney(p._saldo)}</td>
       <td style="text-align:center">${statusBtn}</td>
       <td style="text-align:center">
-        ${p._virtual ? '' : `<span style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:8px;${p.pagador==='soma'?'background:rgba(79,70,229,0.18);border:1px solid rgba(79,70,229,0.3);color:#a5b4fc':'background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7'}">${p.pagador==='soma'?'Soma':'Família'}</span>`}
+        ${p._virtual ? '' : `<button onclick="togglePagador('${safeId}')" style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:8px;cursor:pointer;border:none;transition:all 0.18s;font-family:'Montserrat',sans-serif;${p.pagador==='soma'?'background:rgba(79,70,229,0.18);border:1px solid rgba(79,70,229,0.3);color:#a5b4fc':'background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7'}" title="Clique para alternar">${p.pagador==='soma'?'Soma':'Família'}</button>`}
       </td>
       <td style="text-align:center;white-space:nowrap">
         ${p._virtual?'':(`<button class="fin-del" data-edit-id="${safeId}" onclick="editPgto(this.dataset.editId)" style="color:var(--muted2);font-size:12px;margin-right:4px" title="Editar">✏️</button>`)}
@@ -3002,6 +3002,14 @@ async function ciclarStatusFin(id){
   const next = FIN_STATUS_ORDER[(FIN_STATUS_ORDER.indexOf(cur)+1) % FIN_STATUS_ORDER.length];
   p.status = next;
   await _sb.from('concierge_pagamentos').upsert({id, data:p});
+  renderFinanceiro();
+  if(document.getElementById('fin-kanban')?.classList.contains('active')) renderFinKanban();
+}
+
+async function togglePagador(id){
+  const p=pagamentos.find(x=>x.id===id);if(!p)return;
+  p.pagador=p.pagador==='soma'?'familia':'soma';
+  await _sb.from('concierge_pagamentos').upsert({id,data:p});
   renderFinanceiro();
   if(document.getElementById('fin-kanban')?.classList.contains('active')) renderFinKanban();
 }
