@@ -501,6 +501,10 @@ textarea.fc{resize:vertical;min-height:70px}
             <option value="pendente">Com pendências</option>
             <option value="completo">Completos</option>
           </select>
+          <button class="ob-refresh-btn" onclick="sincronizarLeadsOnboarding()" style="background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#6ee7b7">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            Sincronizar Leads
+          </button>
           <button class="ob-refresh-btn" onclick="loadOnboarding(true)">
             <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Atualizar
@@ -1620,6 +1624,41 @@ function renderOnboarding(){
       }).join('')}
     </tr>`;
   }).join('');
+}
+
+async function sincronizarLeadsOnboarding(){
+  if(!_obRows.length){showToast('Carregue o onboarding primeiro','err');return;}
+  const nomesLeads=leads.map(l=>(l.nome||'').trim().toLowerCase());
+  const novos=_obRows.filter(r=>{
+    const nome=(r[0]||'').trim();
+    return nome && !nomesLeads.includes(nome.toLowerCase());
+  });
+  if(!novos.length){showToast('Todos os clientes já são leads!','ok');return;}
+  const confirmar=confirm(`${novos.length} cliente(s) serão adicionados como leads ativos:\n\n${novos.map(r=>'• '+(r[0]||'').trim()).join('\n')}\n\nContinuar?`);
+  if(!confirmar)return;
+  showLoader(true);
+  let erros=0;
+  for(const r of novos){
+    const nome=(r[0]||'').trim();
+    const resp=(r[OB_RESP_IDX]||'').trim();
+    const id=uid();
+    const rec={
+      id, nome,
+      temperatura:'ativo',
+      estagio:'fechado',
+      origem:'indicacao',
+      responsavel:resp||'',
+      data_primeiro_contato:today(),
+      obs:'Importado do Onboarding'
+    };
+    const{error}=await _sb.from('wealth_leads').upsert({id,data:rec});
+    if(error){erros++;console.error('Erro ao criar lead',nome,error);}
+    else leads.push(rec);
+  }
+  showLoader(false);
+  if(erros) showToast(`${erros} erro(s) ao sincronizar`,'err');
+  else showToast(`${novos.length} lead(s) adicionado(s) com sucesso!`,'ok');
+  renderVisao();renderLeads();
 }
 
 function abrirDetalheOnboarding(idx){
