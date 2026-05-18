@@ -675,7 +675,7 @@ textarea.fc{resize:vertical;min-height:70px}
       <div class="fr">
         <div class="fg"><label class="fl">Patrimônio estimado</label><input class="fc" id="l-patrimonio" placeholder="Ex: R$ 2.000.000"></div>
         <div class="fg"><label class="fl">Origem do contato</label>
-          <select class="fc" id="l-origem" onchange="toggleIndicadoPor()"><option value="indicacao">Indicação</option><option value="concierge">Consultoria</option><option value="evento">Evento</option><option value="redes_sociais">Redes Sociais</option><option value="prospeccao">Prospecção Ativa</option><option value="cold_call">Cold Call</option><option value="outro">Outro</option></select>
+          <select class="fc" id="l-origem" onchange="toggleIndicadoPor()"><option value="indicacao">Indicação</option><option value="consultoria">Consultoria</option><option value="concierge">Concierge</option><option value="evento">Evento</option><option value="redes_sociais">Redes Sociais</option><option value="prospeccao">Prospecção Ativa</option><option value="cold_call">Cold Call</option><option value="outro">Outro</option></select>
           <div id="l-origem-display" style="display:none;padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:13px;color:var(--muted)"></div>
         </div>
       </div>
@@ -787,7 +787,7 @@ let leads=[], followups=[];
 
 const ESTAGIO_LABELS={prospeccao:'Prospecção',em_conversa:'Em Conversa',proposta:'Proposta',fechado:'Cliente Ativo',perdido:'Perdido',descartado:'Descartado'};
 const ESTAGIO_INATIVOS=['perdido','descartado'];
-const ORIGEM_LABELS={evento:'Evento',indicacao:'Indicação',redes_sociais:'Redes Sociais',prospeccao:'Prospecção Ativa',cold_call:'Cold Call',concierge:'Consultoria',outro:'Outro'};
+const ORIGEM_LABELS={indicacao:'Indicação',consultoria:'Consultoria',concierge:'Concierge',evento:'Evento',redes_sociais:'Redes Sociais',prospeccao:'Prospecção Ativa',cold_call:'Cold Call',outro:'Outro'};
 function origemBadge(o){return`<span class="origem-badge ob-${o||'outro'}">${ORIGEM_LABELS[o]||o||'—'}</span>`}
 const TEMP_PROSP={
   frio:{dias:30,texto:'<strong>Lead Frio</strong> — Nutrição gradual.<br>Semana 1: envie conteúdo de valor (artigo, panorama de mercado). Semana 2: conecte no LinkedIn. Semana 3: convite para evento. Semana 4: ligação de aquecimento.',acao:'Enviar conteúdo de valor por WhatsApp ou e-mail'},
@@ -1628,9 +1628,9 @@ function renderOnboarding(){
 
 async function sincronizarLeadsOnboarding(){
   // Corrige leads já sincronizados que ainda têm origem='indicacao'
-  const leadsCorrigir=leads.filter(l=>l.obs==='Importado do Onboarding'&&l.origem!=='concierge');
+  const leadsCorrigir=leads.filter(l=>l.obs==='Importado do Onboarding'&&l.origem!=='consultoria');
   for(const l of leadsCorrigir){
-    l.origem='concierge';
+    l.origem='consultoria';
     await _sb.from('wealth_leads').upsert({id:l.id,data:l});
   }
   if(!_obRows.length){showToast('Carregue o onboarding primeiro','err');return;}
@@ -1652,7 +1652,7 @@ async function sincronizarLeadsOnboarding(){
       id, nome,
       temperatura:'ativo',
       estagio:'fechado',
-      origem:'concierge',
+      origem:'consultoria',
       responsavel:resp||'',
       data_primeiro_contato:today(),
       obs:'Importado do Onboarding'
