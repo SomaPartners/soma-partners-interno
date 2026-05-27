@@ -2578,6 +2578,7 @@ async function exSalvar(){
     tipo:r.valor>0?'receita':'despesa',
     categoria:r.categoria,
     status:'pago',
+    conta:r.empresa,
     data_vencimento:r.data,
     data_pagamento:r.data,
     obs:'BTG·'+r.empresa+'|'+r.mes,
