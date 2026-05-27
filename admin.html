@@ -2556,7 +2556,7 @@ async function exSalvar(){
     id:'btg-'+r.id,
     descricao:r.descricao,
     valor:Math.abs(r.valor),
-    tipo:r.valor>0?'entrada':'saida',
+    tipo:r.valor>0?'receita':'despesa',
     categoria:r.categoria,
     status:'pago',
     data_vencimento:r.data,
@@ -2565,7 +2565,7 @@ async function exSalvar(){
   }));
   if(lancSync.length){
     const {error:e2}=await _sb.from('admin_lancamentos').upsert(lancSync);
-    if(e2) console.warn('Sync lancamentos erro:',e2.message);
+    if(e2){st.textContent='Extrato salvo, mas erro ao sincronizar lançamentos: '+e2.message;btn.disabled=false;return;}
   }
   st.textContent='✓ '+toSave.length+' salvos · '+lancSync.length+' sincronizados nos lançamentos';
   exRenderDRE();
