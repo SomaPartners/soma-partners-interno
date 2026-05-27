@@ -244,9 +244,25 @@ body{display:flex;flex-direction:column;overflow:hidden}
   </div>
 
   <div class="sidebar-section">Marketing</div>
-  <div class="nav-item" data-sec="mkt" onclick="nav('mkt',this)">
+  <div class="nav-item" data-sec="mkt-visao" onclick="nav('mkt-visao',this)">
     <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
     <span>Visão Geral</span>
+  </div>
+  <div class="nav-item" data-sec="mkt-conteudo" onclick="nav('mkt-conteudo',this)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span>Calendário</span>
+  </div>
+  <div class="nav-item" data-sec="mkt-campanhas" onclick="nav('mkt-campanhas',this)">
+    <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <span>Campanhas</span>
+  </div>
+  <div class="nav-item" data-sec="mkt-materiais" onclick="nav('mkt-materiais',this)">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <span>Materiais</span>
+  </div>
+  <div class="nav-item" data-sec="mkt-metricas" onclick="nav('mkt-metricas',this)">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span>Métricas</span>
   </div>
 
   <div class="sidebar-section">Em breve</div>
@@ -360,7 +376,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
       <input class="toolbar-search" id="func-search" placeholder="Buscar colaborador…" oninput="renderEquipe()">
     </div>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Nome</th><th>Sigla</th><th>Cargo</th><th>Salário</th><th>Entrada</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>Nome</th><th>Sigla</th><th>Cargo</th><th>Salário</th><th>Entrada</th><th>Status</th><th>Contrato</th><th></th></tr></thead>
       <tbody id="tbl-equipe"></tbody>
     </table></div>
   </div>
@@ -448,7 +464,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
     <div class="tbl-header">
       <div>
         <div class="sec-title">Extrato BTG</div>
-        <div class="sec-sub" style="margin-bottom:0">Importe, categorize e gere a DRE automaticamente</div>
+        <div class="sec-sub" style="margin-bottom:0">Importe os extratos de cada empresa, categorize e gere a DRE</div>
       </div>
     </div>
     <div class="tabs" id="extrato-tabs">
@@ -458,22 +474,55 @@ body{display:flex;flex-direction:column;overflow:hidden}
 
     <!-- Tab: Importar -->
     <div id="extab-importar">
-      <div class="ex-upload-zone" id="ex-upload-zone"
-        onclick="document.getElementById('ex-file-input').click()"
-        ondragover="event.preventDefault()"
-        ondrop="event.preventDefault();exImportFile({files:event.dataTransfer.files})">
-        <input type="file" id="ex-file-input" accept=".xlsx,.xls" style="display:none" onchange="exImportFile(this)">
-        <div style="opacity:0.25;margin-bottom:4px">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
+      <!-- 4 upload cards -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(201,150,60,0.7);margin-bottom:6px">Soma Partners Ltda</div>
+          <div class="ex-upload-zone" style="padding:14px;cursor:pointer;text-align:center" onclick="document.getElementById('ex-file-soma').click()" ondragover="event.preventDefault()" ondrop="event.preventDefault();exImportFile({files:event.dataTransfer.files},'soma')">
+            <input type="file" id="ex-file-soma" accept=".xlsx,.xls" style="display:none" onchange="exImportFile(this,'soma')">
+            <div style="font-size:20px;opacity:0.4">📥</div>
+            <div style="font-size:11px;font-weight:700;margin-top:4px">Importar extrato</div>
+            <div id="ex-status-soma" style="font-size:10px;color:var(--muted);margin-top:4px">Nenhum importado</div>
+          </div>
         </div>
-        <div style="font-size:13px;font-weight:700">Clique para importar o extrato BTG</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Arquivo .xlsx gerado pelo internet banking · ou arraste aqui</div>
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(99,102,241,0.7);margin-bottom:6px">TR AI Ltda</div>
+          <div class="ex-upload-zone" style="padding:14px;cursor:pointer;text-align:center" onclick="document.getElementById('ex-file-trai').click()" ondragover="event.preventDefault()" ondrop="event.preventDefault();exImportFile({files:event.dataTransfer.files},'trai')">
+            <input type="file" id="ex-file-trai" accept=".xlsx,.xls" style="display:none" onchange="exImportFile(this,'trai')">
+            <div style="font-size:20px;opacity:0.4">📥</div>
+            <div style="font-size:11px;font-weight:700;margin-top:4px">Importar extrato</div>
+            <div id="ex-status-trai" style="font-size:10px;color:var(--muted);margin-top:4px">Nenhum importado</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(16,185,129,0.7);margin-bottom:6px">Soma Wealth Consultoria</div>
+          <div class="ex-upload-zone" style="padding:14px;cursor:pointer;text-align:center" onclick="document.getElementById('ex-file-wealth').click()" ondragover="event.preventDefault()" ondrop="event.preventDefault();exImportFile({files:event.dataTransfer.files},'wealth')">
+            <input type="file" id="ex-file-wealth" accept=".xlsx,.xls" style="display:none" onchange="exImportFile(this,'wealth')">
+            <div style="font-size:20px;opacity:0.4">📥</div>
+            <div style="font-size:11px;font-weight:700;margin-top:4px">Importar extrato</div>
+            <div id="ex-status-wealth" style="font-size:10px;color:var(--muted);margin-top:4px">Nenhum importado</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(244,63,94,0.7);margin-bottom:6px">TR Serviços Financeiros</div>
+          <div class="ex-upload-zone" style="padding:14px;cursor:pointer;text-align:center" onclick="document.getElementById('ex-file-trserv').click()" ondragover="event.preventDefault()" ondrop="event.preventDefault();exImportFile({files:event.dataTransfer.files},'trserv')">
+            <input type="file" id="ex-file-trserv" accept=".xlsx,.xls" style="display:none" onchange="exImportFile(this,'trserv')">
+            <div style="font-size:20px;opacity:0.4">📥</div>
+            <div style="font-size:11px;font-weight:700;margin-top:4px">Importar extrato</div>
+            <div id="ex-status-trserv" style="font-size:10px;color:var(--muted);margin-top:4px">Nenhum importado</div>
+          </div>
+        </div>
       </div>
+
+      <!-- Review / categorização -->
       <div id="ex-review" style="display:none">
-        <div class="toolbar" style="margin-top:16px">
+        <div class="tabs" id="ex-empresa-tabs" style="margin-bottom:12px">
+          <div class="tab active" data-emp="soma" onclick="exSetActiveEmpresa('soma')">Soma Partners</div>
+          <div class="tab" data-emp="trai" onclick="exSetActiveEmpresa('trai')">TR AI</div>
+          <div class="tab" data-emp="wealth" onclick="exSetActiveEmpresa('wealth')">Soma Wealth</div>
+          <div class="tab" data-emp="trserv" onclick="exSetActiveEmpresa('trserv')">TR Serviços</div>
+        </div>
+        <div class="toolbar">
           <input class="toolbar-search" id="ex-search" placeholder="Buscar lançamento…" oninput="exRender()">
           <select class="toolbar-select" id="ex-filter-mes" onchange="exRender()"><option value="">Todos os meses</option></select>
           <select class="toolbar-select" id="ex-filter-cat" onchange="exRender()">
@@ -498,10 +547,6 @@ body{display:flex;flex-direction:column;overflow:hidden}
             <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
             Salvar no Supabase
           </button>
-          <button class="btn btn-outline" onclick="exNovoImport()">
-            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Importar outro extrato
-          </button>
           <span id="ex-save-status" style="font-size:11px;color:var(--muted)"></span>
         </div>
       </div>
@@ -509,6 +554,13 @@ body{display:flex;flex-direction:column;overflow:hidden}
 
     <!-- Tab: DRE -->
     <div id="extab-dre" style="display:none">
+      <div class="tabs" id="ex-dre-tabs" style="margin-bottom:12px">
+        <div class="tab active" data-emp="" onclick="exSetDreEmpresa('')">Consolidado</div>
+        <div class="tab" data-emp="soma" onclick="exSetDreEmpresa('soma')">Soma Partners</div>
+        <div class="tab" data-emp="trai" onclick="exSetDreEmpresa('trai')">TR AI</div>
+        <div class="tab" data-emp="wealth" onclick="exSetDreEmpresa('wealth')">Soma Wealth</div>
+        <div class="tab" data-emp="trserv" onclick="exSetDreEmpresa('trserv')">TR Serviços</div>
+      </div>
       <div class="toolbar">
         <select class="toolbar-select" id="ex-dre-mes" onchange="exRenderDRE()">
           <option value="">Acumulado (todos os meses)</option>
@@ -520,13 +572,104 @@ body{display:flex;flex-direction:column;overflow:hidden}
     </div>
   </div>
 
-  <!-- ════ MARKETING ════ -->
-  <div class="section" id="section-mkt">
-    <div class="placeholder-section">
-      <div class="placeholder-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-      <div class="placeholder-title">Marketing</div>
-      <div class="placeholder-sub">Campanhas, budget e métricas — em construção</div>
+  <!-- ════ MARKETING — VISÃO GERAL ════ -->
+  <div class="section" id="section-mkt-visao">
+    <div class="sec-title">Marketing</div>
+    <div class="sec-sub">Visão consolidada dos canais e ações da Soma Partners</div>
+    <div class="kpi-row" id="mkt-kpis" style="margin-bottom:24px"></div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Próximos conteúdos</div>
+        <div id="mkt-proximos-lista" style="margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Campanhas ativas</div>
+        <div id="mkt-campanhas-ativas-lista" style="margin-top:8px"></div>
+      </div>
     </div>
+  </div>
+
+  <!-- ════ MARKETING — CALENDÁRIO ════ -->
+  <div class="section" id="section-mkt-conteudo">
+    <div class="tbl-header">
+      <div><div class="sec-title">Calendário de Conteúdo</div><div class="sec-sub" style="margin-bottom:0">Planeje e acompanhe cada publicação</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="abrirModalCalendario()">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Gerar Calendário
+        </button>
+        <button class="btn btn-primary" onclick="abrirModalConteudo()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo Conteúdo
+        </button>
+      </div>
+    </div>
+    <div id="semana-atual" style="margin-bottom:16px"></div>
+    <div class="toolbar" style="display:flex;gap:8px;margin-bottom:12px">
+      <select class="toolbar-search" id="mkt-c-filtro-canal" style="width:140px" onchange="renderConteudo()">
+        <option value="">Todos os canais</option>
+        <option value="instagram">Instagram</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="email">E-mail</option>
+      </select>
+      <select class="toolbar-search" id="mkt-c-filtro-status" style="width:140px" onchange="renderConteudo()">
+        <option value="">Todos os status</option>
+        <option value="rascunho">Rascunho</option>
+        <option value="agendado">Agendado</option>
+        <option value="publicado">Publicado</option>
+      </select>
+    </div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Canal</th><th>Título</th><th>Data</th><th>Responsável</th><th>Status</th><th></th></tr></thead>
+      <tbody id="tbl-conteudo"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ════ MARKETING — CAMPANHAS ════ -->
+  <div class="section" id="section-mkt-campanhas">
+    <div class="tbl-header">
+      <div><div class="sec-title">Campanhas</div><div class="sec-sub" style="margin-bottom:0">Ações com objetivo, budget e resultado</div></div>
+      <button class="btn btn-primary" onclick="abrirModalCampanha()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nova Campanha
+      </button>
+    </div>
+    <div class="kpi-row" id="mkt-camp-kpis" style="margin-bottom:20px"></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Nome</th><th>Canal</th><th>Objetivo</th><th>Período</th><th>Budget</th><th>Leads</th><th>Status</th><th></th></tr></thead>
+      <tbody id="tbl-campanhas"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ════ MARKETING — MATERIAIS ════ -->
+  <div class="section" id="section-mkt-materiais">
+    <div class="tbl-header">
+      <div><div class="sec-title">Materiais</div><div class="sec-sub" style="margin-bottom:0">Biblioteca de apresentações, flyers e templates</div></div>
+      <button class="btn btn-primary" onclick="abrirModalMaterial()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo Material
+      </button>
+    </div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Nome</th><th>Tipo</th><th>Categoria</th><th>Versão</th><th>Status</th><th>Link</th><th></th></tr></thead>
+      <tbody id="tbl-materiais"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ════ MARKETING — MÉTRICAS ════ -->
+  <div class="section" id="section-mkt-metricas">
+    <div class="tbl-header">
+      <div><div class="sec-title">Métricas</div><div class="sec-sub" style="margin-bottom:0">Acompanhe o crescimento de cada canal por mês</div></div>
+      <button class="btn btn-primary" onclick="abrirModalMetrica()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Registrar Métricas
+      </button>
+    </div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Canal</th><th>Mês</th><th>Seguidores</th><th>Alcance</th><th>Engajamento</th><th>Leads gerados</th><th>Obs</th><th></th></tr></thead>
+      <tbody id="tbl-metricas"></tbody>
+    </table></div>
   </div>
 
 </div><!-- /main -->
@@ -610,7 +753,56 @@ body{display:flex;flex-direction:column;overflow:hidden}
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modal-func')">Cancelar</button>
+      <button class="btn btn-outline" id="btn-gerar-contrato" style="display:none;gap:6px" onclick="abrirSelecionarContrato()">
+        <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Gerar Contrato
+      </button>
       <button class="btn btn-primary" onclick="salvarFunc()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SELEÇÃO TIPO CONTRATO -->
+<div class="modal-overlay" id="modal-contrato-tipo" style="z-index:400">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title">
+      <span>Gerar Contrato</span>
+      <button class="mc" onclick="fecharSelecionarContrato()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div style="padding:6px 0 8px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px;padding:0 2px">Selecione o tipo de contrato para <strong id="contrato-nome-func" style="color:var(--text)"></strong>:</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="gerarContrato('pj')" style="padding:14px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:left;transition:all .18s;color:var(--text)" onmouseover="this.style.borderColor='var(--gold)';this.style.background='rgba(201,150,60,0.06)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='rgba(255,255,255,0.04)'">
+          <div style="font-size:11px;font-weight:800;color:var(--gold);letter-spacing:1px;margin-bottom:4px">PJ</div>
+          <div style="font-size:12px;font-weight:600">Prestação de Serviços</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Autônomo / Pessoa Jurídica</div>
+        </button>
+        <button onclick="gerarContrato('clt')" style="padding:14px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:left;transition:all .18s;color:var(--text)" onmouseover="this.style.borderColor='var(--gold)';this.style.background='rgba(201,150,60,0.06)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='rgba(255,255,255,0.04)'">
+          <div style="font-size:11px;font-weight:800;color:#6ee7b7;letter-spacing:1px;margin-bottom:4px">CLT</div>
+          <div style="font-size:12px;font-weight:600">Contrato de Trabalho</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Emprego com registro em carteira</div>
+        </button>
+        <button onclick="gerarContrato('associado')" style="padding:14px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:left;transition:all .18s;color:var(--text)" onmouseover="this.style.borderColor='var(--gold)';this.style.background='rgba(201,150,60,0.06)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='rgba(255,255,255,0.04)'">
+          <div style="font-size:11px;font-weight:800;color:#93c5fd;letter-spacing:1px;margin-bottom:4px">ASSOCIADO</div>
+          <div style="font-size:12px;font-weight:600">Termo de Associação</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Parceria e colaboração</div>
+        </button>
+        <button onclick="gerarContrato('sociedade')" style="padding:14px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:left;transition:all .18s;color:var(--text)" onmouseover="this.style.borderColor='var(--gold)';this.style.background='rgba(201,150,60,0.06)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='rgba(255,255,255,0.04)'">
+          <div style="font-size:11px;font-weight:800;color:#fcd34d;letter-spacing:1px;margin-bottom:4px">SOCIEDADE</div>
+          <div style="font-size:12px;font-weight:600">Contrato de Sociedade</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Ingresso como sócio</div>
+        </button>
+        <button onclick="gerarContrato('jovem_aprendiz')" style="padding:14px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:left;transition:all .18s;color:var(--text)" onmouseover="this.style.borderColor='var(--gold)';this.style.background='rgba(201,150,60,0.06)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='rgba(255,255,255,0.04)'">
+          <div style="font-size:11px;font-weight:800;color:#f9a8d4;letter-spacing:1px;margin-bottom:4px">APRENDIZ</div>
+          <div style="font-size:12px;font-weight:600">Jovem Aprendiz</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Lei 10.097/2000</div>
+        </button>
+        <button onclick="gerarContrato('estagio')" style="padding:14px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:left;transition:all .18s;color:var(--text)" onmouseover="this.style.borderColor='var(--gold)';this.style.background='rgba(201,150,60,0.06)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='rgba(255,255,255,0.04)'">
+          <div style="font-size:11px;font-weight:800;color:#a5b4fc;letter-spacing:1px;margin-bottom:4px">ESTÁGIO</div>
+          <div style="font-size:12px;font-weight:600">Termo de Estágio</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Lei 11.788/2008</div>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -665,7 +857,11 @@ body{display:flex;flex-direction:column;overflow:hidden}
     </div>
     <div class="field"><label>Nota (1–5)</label>
       <div style="display:flex;gap:8px;margin-top:4px" id="aval-stars">
-        ${[1,2,3,4,5].map(n=>`<span onclick="setNota(${n})" style="font-size:24px;cursor:pointer;color:rgba(255,255,255,0.15);transition:color 0.15s" data-nota="${n}">★</span>`).join('')}
+        <span onclick="setNota(1)" style="font-size:24px;cursor:pointer;color:rgba(255,255,255,0.15);transition:color 0.15s" data-nota="1">★</span>
+        <span onclick="setNota(2)" style="font-size:24px;cursor:pointer;color:rgba(255,255,255,0.15);transition:color 0.15s" data-nota="2">★</span>
+        <span onclick="setNota(3)" style="font-size:24px;cursor:pointer;color:rgba(255,255,255,0.15);transition:color 0.15s" data-nota="3">★</span>
+        <span onclick="setNota(4)" style="font-size:24px;cursor:pointer;color:rgba(255,255,255,0.15);transition:color 0.15s" data-nota="4">★</span>
+        <span onclick="setNota(5)" style="font-size:24px;cursor:pointer;color:rgba(255,255,255,0.15);transition:color 0.15s" data-nota="5">★</span>
       </div>
       <input type="hidden" id="aval-f-nota" value="0">
     </div>
@@ -675,6 +871,217 @@ body{display:flex;flex-direction:column;overflow:hidden}
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modal-aval')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarAval()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONTEÚDO -->
+<div class="modal-overlay" id="modal-conteudo">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title">
+      <span id="conteudo-modal-title">Novo Conteúdo</span>
+      <button class="mc" onclick="closeModal('modal-conteudo')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <input type="hidden" id="conteudo-id">
+    <div class="form-row">
+      <div class="field"><label>Canal</label>
+        <select id="conteudo-canal" class="fc">
+          <option value="instagram">Instagram</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="email">E-mail</option>
+        </select>
+      </div>
+      <div class="field"><label>Data de Publicação</label><input type="date" id="conteudo-data" style="color-scheme:dark"></div>
+    </div>
+    <div class="field"><label>Título / Assunto</label><input type="text" id="conteudo-titulo" placeholder="Ex: Post sobre planejamento sucessório"></div>
+    <div class="field"><label>Descrição / Roteiro</label><textarea id="conteudo-desc" placeholder="O que será dito, link, hashtags…"></textarea></div>
+    <div class="form-row">
+      <div class="field"><label>Responsável</label><select id="conteudo-resp"></select></div>
+      <div class="field"><label>Status</label>
+        <select id="conteudo-status" class="fc">
+          <option value="rascunho">Rascunho</option>
+          <option value="agendado">Agendado</option>
+          <option value="publicado">Publicado</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Link (após publicação)</label><input type="url" id="conteudo-link" placeholder="https://…"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-conteudo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarConteudo()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMPANHA -->
+<div class="modal-overlay" id="modal-campanha">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title">
+      <span id="campanha-modal-title">Nova Campanha</span>
+      <button class="mc" onclick="closeModal('modal-campanha')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <input type="hidden" id="campanha-id">
+    <div class="field"><label>Nome da Campanha</label><input type="text" id="campanha-nome" placeholder="Ex: Captação Q1 2026 — LinkedIn"></div>
+    <div class="form-row">
+      <div class="field"><label>Canal</label>
+        <select id="campanha-canal" class="fc">
+          <option value="instagram">Instagram</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="email">E-mail</option>
+          <option value="multi">Multi-canal</option>
+        </select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="campanha-status" class="fc">
+          <option value="planejada">Planejada</option>
+          <option value="em_andamento">Em andamento</option>
+          <option value="concluida">Concluída</option>
+          <option value="pausada">Pausada</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Objetivo</label><input type="text" id="campanha-objetivo" placeholder="Ex: Gerar 10 leads qualificados, Aumentar seguidores 20%"></div>
+    <div class="form-row">
+      <div class="field"><label>Data Início</label><input type="date" id="campanha-ini" style="color-scheme:dark"></div>
+      <div class="field"><label>Data Fim</label><input type="date" id="campanha-fim" style="color-scheme:dark"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Budget (R$)</label><input type="number" id="campanha-budget" placeholder="0" min="0"></div>
+      <div class="field"><label>Leads gerados</label><input type="number" id="campanha-leads" placeholder="0" min="0"></div>
+    </div>
+    <div class="field"><label>Resultado / Observações</label><textarea id="campanha-resultado" placeholder="O que funcionou, o que não funcionou, aprendizados…"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-campanha')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCampanha()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MATERIAL -->
+<div class="modal-overlay" id="modal-material">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-title">
+      <span id="material-modal-title">Novo Material</span>
+      <button class="mc" onclick="closeModal('modal-material')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <input type="hidden" id="material-id">
+    <div class="field"><label>Nome do Material</label><input type="text" id="material-nome" placeholder="Ex: Apresentação Institucional Soma 2026"></div>
+    <div class="form-row">
+      <div class="field"><label>Tipo</label>
+        <select id="material-tipo" class="fc">
+          <option value="apresentacao">Apresentação</option>
+          <option value="flyer">Flyer / Arte</option>
+          <option value="video">Vídeo</option>
+          <option value="template">Template</option>
+          <option value="foto">Foto</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+      <div class="field"><label>Categoria</label>
+        <select id="material-categoria" class="fc">
+          <option value="institucional">Institucional</option>
+          <option value="produto">Produto / Serviço</option>
+          <option value="evento">Evento</option>
+          <option value="social_media">Social Media</option>
+          <option value="proposta">Proposta Comercial</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Versão</label><input type="text" id="material-versao" placeholder="Ex: v3.0"></div>
+      <div class="field"><label>Status</label>
+        <select id="material-status" class="fc">
+          <option value="atualizado">Atualizado</option>
+          <option value="revisar">Precisa Revisar</option>
+          <option value="desatualizado">Desatualizado</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Link (Google Drive, Canva, YouTube…)</label><input type="url" id="material-link" placeholder="https://…"></div>
+    <div class="field"><label>Observações</label><textarea id="material-obs" placeholder="Para quê serve, quando usar…"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-material')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarMaterial()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MÉTRICA -->
+<div class="modal-overlay" id="modal-metrica">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title">
+      <span id="metrica-modal-title">Registrar Métricas</span>
+      <button class="mc" onclick="closeModal('modal-metrica')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <input type="hidden" id="metrica-id">
+    <div class="form-row">
+      <div class="field"><label>Canal</label>
+        <select id="metrica-canal" class="fc">
+          <option value="instagram">Instagram</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="email">E-mail</option>
+        </select>
+      </div>
+      <div class="field"><label>Mês de Referência</label><input type="month" id="metrica-mes" style="color-scheme:dark"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Seguidores / Contatos</label><input type="number" id="metrica-seguidores" placeholder="0" min="0"></div>
+      <div class="field"><label>Alcance total</label><input type="number" id="metrica-alcance" placeholder="0" min="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Engajamento (%)</label><input type="number" id="metrica-engajamento" placeholder="0.0" step="0.1" min="0"></div>
+      <div class="field"><label>Leads gerados</label><input type="number" id="metrica-leads" placeholder="0" min="0"></div>
+    </div>
+    <div class="field"><label>Observações</label><textarea id="metrica-obs" placeholder="Destaques do mês, picos, campanhas que influenciaram…"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-metrica')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarMetrica()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GERAR CALENDÁRIO -->
+<div class="modal-overlay" id="modal-calendario">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-title">
+      <span>✨ Gerar Calendário Automático</span>
+      <button class="mc" onclick="closeModal('modal-calendario')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Data de início</label><input type="date" id="cal-data-inicio"></div>
+      <div class="field">
+        <label>Período</label>
+        <select id="cal-periodo">
+          <option value="30">30 dias</option>
+          <option value="60">60 dias</option>
+          <option value="90">90 dias</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Canais a incluir</label>
+      <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:rgba(255,255,255,0.7)"><input type="checkbox" id="cal-linkedin" checked> 💼 LinkedIn</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:rgba(255,255,255,0.7)"><input type="checkbox" id="cal-instagram" checked> 📸 Instagram</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:rgba(255,255,255,0.7)"><input type="checkbox" id="cal-whatsapp" checked> 💬 WhatsApp</label>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;line-height:1.7;margin-top:4px">
+      <strong style="color:rgba(255,255,255,0.5)">Ritmo semanal gerado:</strong><br>
+      <span style="color:#0077b5">💼 Seg</span> Educação Financeira (LinkedIn) &nbsp;·&nbsp;
+      <span style="color:#e1306c">📸 Ter</span> Lifestyle (Instagram)<br>
+      <span style="color:#0077b5">💼 Qua</span> Mercado &amp; Atualidade (LinkedIn) &nbsp;·&nbsp;
+      <span style="color:#e1306c">📸 Qui</span> Bastidores (Instagram)<br>
+      <span style="color:#25d366">💬 Sex</span> Dica Rápida (WhatsApp) &nbsp;·&nbsp;
+      <span style="color:#e1306c">📸 Sáb</span> Lifestyle / Legado (Instagram)<br>
+      <span style="color:var(--gold)">📅</span> Datas especiais: Copom, IR, fim de ano e feriados
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-calendario')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-gerar-cal" onclick="gerarCalendarioAutomatico()">✨ Gerar</button>
     </div>
   </div>
 </div>
@@ -692,22 +1099,41 @@ function logout(){sessionStorage.removeItem('soma_auth');sessionStorage.removeIt
 
 // ── DATA ──
 let lancamentos=[],equipe=[],ausencias=[],avaliacoes=[];
+let mktConteudo=[],mktCampanhas=[],mktMateriais=[],mktMetricas=[];
 
 async function loadAll(){
-  const[l,e,a,av]=await Promise.all([
+  const[l,e,a,av,mc,mca,mm,mme,ex]=await Promise.all([
     _sb.from('admin_lancamentos').select('*').order('data_vencimento'),
     _sb.from('wealth_responsaveis').select('id,data').order('created_at'),
     _sb.from('admin_ausencias').select('*').order('data_inicio',{ascending:false}),
     _sb.from('admin_avaliacoes').select('*').order('created_at',{ascending:false}),
+    _sb.from('admin_mkt_conteudo').select('*').order('data_publicacao',{ascending:true}),
+    _sb.from('admin_mkt_campanhas').select('*').order('created_at',{ascending:false}),
+    _sb.from('admin_mkt_materiais').select('*').order('created_at',{ascending:false}),
+    _sb.from('admin_mkt_metricas').select('*').order('mes',{ascending:false}),
+    _sb.from('admin_extrato').select('*').order('data'),
   ]);
-  if(l.error)console.error('admin_lancamentos:',l.error);
-  if(e.error)console.error('wealth_responsaveis:',e.error);
-  if(a.error)console.error('admin_ausencias:',a.error);
-  if(av.error)console.error('admin_avaliacoes:',av.error);
   lancamentos=l.data||[];
-  equipe=(e.data||[]).map(r=>({id:r.id,nome:r.data?.nome||'',cargo:r.data?.cargo||'',email:r.data?.email||'',telefone:r.data?.telefone||'',sigla:r.data?.sigla||'',cpf:r.data?.cpf||'',nascimento:r.data?.nascimento||'',cidade:r.data?.cidade||'',status:r.data?.status||'ativo',salario:r.data?.salario||null,data_entrada:r.data?.data_entrada||'',_data:r.data||{}})).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  equipe=(e.data||[]).map(r=>({id:r.id,nome:r.data?.nome||'',cargo:r.data?.cargo||'',email:r.data?.email||'',telefone:r.data?.telefone||'',sigla:r.data?.sigla||'',cpf:r.data?.cpf||'',nascimento:r.data?.nascimento||'',cidade:r.data?.cidade||'',status:r.data?.status||'ativo',salario:r.data?.salario||null,data_entrada:r.data?.data_entrada||'',contrato_tipo:r.data?.contrato_tipo||null,contrato_gerado_em:r.data?.contrato_gerado_em||null,contrato_impresso:r.data?.contrato_impresso||false,contrato_assinado:r.data?.contrato_assinado||false,_data:r.data||{}})).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
   ausencias=a.data||[];
   avaliacoes=av.data||[];
+  mktConteudo=mc.data||[];
+  mktCampanhas=mca.data||[];
+  mktMateriais=mm.data||[];
+  mktMetricas=mme.data||[];
+  // Carrega extrato salvo no startup
+  if(ex.data&&ex.data.length){
+    _exRows=ex.data.map(r=>({...r,empresa:r.empresa||'soma',saved:true}));
+    Object.keys(EX_EMPRESAS).forEach(emp=>{
+      const cnt=_exRows.filter(r=>r.empresa===emp).length;
+      const el=document.getElementById('ex-status-'+emp);
+      if(el&&cnt>0) el.innerHTML='<span style="color:#6ee7b7">✓ '+cnt+' lançamentos</span>';
+    });
+    setTimeout(()=>{
+      document.getElementById('ex-review').style.display='';
+      exInitFilters();exRender();exUpdateNcBadge();exRenderDRE();
+    },0);
+  }
   populateMesFiltro();
   populateDepFiltro();
   populateFuncSelects();
@@ -717,6 +1143,11 @@ async function loadAll(){
   renderEquipe();
   renderAusencias();
   renderAvaliacoes();
+  renderMktVisao();
+  renderConteudo();
+  renderCampanhas();
+  renderMateriais();
+  renderMetricas();
 }
 
 // ── NAV ──
@@ -750,7 +1181,8 @@ function populateDepFiltro(){
   // func-dep removido — departamento não é mais um campo da equipe
 }
 function populateFuncSelects(){
-  const opts=equipe.map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');
+  const ativos=equipe.filter(f=>f.status!=='inativo');
+  const opts=ativos.map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');
   ['aus-f-func','aus-func','aval-f-func'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.innerHTML='<option value="">Selecionar…</option>'+opts;
@@ -1029,7 +1461,33 @@ function renderDRE(){
 function renderEquipe(){
   const q=(document.getElementById('func-search')?.value||'').toLowerCase();
   const rows=equipe.filter(f=>!q||(f.nome||'').toLowerCase().includes(q)||(f.cargo||'').toLowerCase().includes(q)||(f.sigla||'').toLowerCase().includes(q));
-  document.getElementById('tbl-equipe').innerHTML=rows.length?rows.map(f=>`
+  const CTIPO_LABEL={pj:'PJ',clt:'CLT',associado:'Assoc.',sociedade:'Soc.',jovem_aprendiz:'Aprendiz',estagio:'Estágio'};
+  const CTIPO_COR={pj:'var(--gold)',clt:'#6ee7b7',associado:'#93c5fd',sociedade:'#fcd34d',jovem_aprendiz:'#f9a8d4',estagio:'#a5b4fc'};
+  document.getElementById('tbl-equipe').innerHTML=rows.length?rows.map(f=>{
+    const gerado=!!f.contrato_gerado_em;
+    const impresso=!!f.contrato_impresso;
+    const assinado=!!f.contrato_assinado;
+    const stepStyle=(on,col)=>on
+      ?`background:${col||'rgba(110,231,183,0.15)'};border:1px solid ${col||'#6ee7b7'};color:${col||'#6ee7b7'}`
+      :`background:rgba(255,255,255,0.04);border:1px solid var(--border);color:rgba(255,255,255,0.2)`;
+    const contratoCell=gerado?`
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:0.5px;color:${CTIPO_COR[f.contrato_tipo]||'var(--gold)'}">
+          ${CTIPO_LABEL[f.contrato_tipo]||f.contrato_tipo||'—'}
+        </div>
+        <div style="display:flex;gap:3px" onclick="event.stopPropagation()">
+          <span title="Gerado em ${f.contrato_gerado_em?new Date(f.contrato_gerado_em).toLocaleDateString('pt-BR'):''}"
+            style="font-size:10px;padding:2px 6px;border-radius:4px;cursor:default;${stepStyle(true,'rgba(201,150,60,0.5)')}">📄 Gerado</span>
+          <span title="${impresso?'Impresso':'Marcar como impresso'}"
+            onclick="toggleContratoStep('${f.id}','contrato_impresso',${impresso})"
+            style="font-size:10px;padding:2px 6px;border-radius:4px;cursor:pointer;transition:all .15s;${stepStyle(impresso,'rgba(110,231,183,0.4)')}">🖨 Impresso</span>
+          <span title="${assinado?'Assinado':'Marcar como assinado'}"
+            onclick="toggleContratoStep('${f.id}','contrato_assinado',${assinado})"
+            style="font-size:10px;padding:2px 6px;border-radius:4px;cursor:pointer;transition:all .15s;${stepStyle(assinado,'rgba(110,231,183,0.6)')}">✍ Assinado</span>
+        </div>
+      </div>`
+      :`<span style="font-size:11px;color:rgba(255,255,255,0.18);font-style:italic">Sem contrato</span>`;
+    return`
     <tr onclick="editarFunc('${f.id}')" style="cursor:pointer">
       <td><div style="display:flex;align-items:center;gap:10px">
         <div class="av" style="background:${acol(f.nome)}">${initials(f.nome)}</div>
@@ -1041,8 +1499,9 @@ function renderEquipe(){
       <td style="font-weight:700">${isSocio(f.cargo)?`<span style="font-size:10px;font-weight:800;background:rgba(201,150,60,0.12);border:1px solid rgba(201,150,60,0.2);color:var(--gold);border-radius:5px;padding:2px 8px;letter-spacing:0.5px">PRÓ LABORE</span>`:(f.salario?BRL(f.salario):'—')}</td>
       <td style="font-size:11px;color:var(--muted)">${f.data_entrada?fmtDate(f.data_entrada):'—'}</td>
       <td><span class="badge badge-${f.status||'ativo'}">${f.status==='inativo'?'Inativo':'Ativo'}</span></td>
+      <td onclick="event.stopPropagation()">${contratoCell}</td>
       <td onclick="event.stopPropagation()"><button class="btn btn-danger btn-sm" onclick="deletarFunc('${f.id}')">×</button></td>
-    </tr>`).join(''):'<tr class="empty-row"><td colspan="7">Nenhum colaborador cadastrado</td></tr>';
+    </tr>`;}).join(''):'<tr class="empty-row"><td colspan="8">Nenhum colaborador cadastrado</td></tr>';
 }
 
 function isSocio(cargo){return (cargo||'').trim().toLowerCase()==='sócio'||(cargo||'').trim().toLowerCase()==='socio';}
@@ -1069,6 +1528,7 @@ function abrirModalFunc(){
   document.getElementById('func-modal-title').textContent='Novo Colaborador';
   ['func-f-nome','func-f-sigla','func-f-cargo','func-f-cpf','func-f-email','func-f-tel','func-f-nasc','func-f-cidade','func-f-end','func-f-pai','func-f-mae','func-f-sal','func-f-entrada'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('func-f-status').value='ativo';
+  document.getElementById('btn-gerar-contrato').style.display='none';
   atualizarLabelSal();
   openModal('modal-func');
 }
@@ -1090,6 +1550,7 @@ function editarFunc(id){
   document.getElementById('func-f-status').value=f.status||'ativo';
   document.getElementById('func-f-sal').value=f.salario||'';
   document.getElementById('func-f-entrada').value=f.data_entrada||'';
+  document.getElementById('btn-gerar-contrato').style.display='';
   atualizarLabelSal();
   openModal('modal-func');
 }
@@ -1098,7 +1559,9 @@ async function salvarFunc(){
   const sigla=(document.getElementById('func-f-sigla').value||'').trim().toUpperCase();
   if(!nome||!sigla){alert('Nome e sigla são obrigatórios');return;}
   const id=document.getElementById('func-id').value||crypto.randomUUID();
+  const existing=equipe.find(x=>x.id===id)?._data||{};
   const rec={
+    ...existing,
     nome, sigla,
     cargo:(document.getElementById('func-f-cargo').value||'').trim(),
     status:document.getElementById('func-f-status').value||'ativo',
@@ -1120,6 +1583,12 @@ async function salvarFunc(){
 async function deletarFunc(id){
   if(!confirm('Remover este colaborador? Isso afeta o Wealth e o Concierge.'))return;
   await _sb.from('wealth_responsaveis').delete().eq('id',id);
+  await loadAll();
+}
+async function toggleContratoStep(id, campo, valorAtual){
+  const f=equipe.find(x=>x.id===id);if(!f)return;
+  const novoData={...f._data,[campo]:!valorAtual};
+  await _sb.from('wealth_responsaveis').upsert({id, data:novoData});
   await loadAll();
 }
 
@@ -1380,21 +1849,470 @@ function abrirModalAval(){
 }
 async function salvarAval(){
   const id=document.getElementById('aval-id').value;
+  const funcId=document.getElementById('aval-f-func').value;
+  if(!funcId){alert('Selecione um colaborador.');return;}
   const rec={
-    funcionario_id:document.getElementById('aval-f-func').value||null,
-    periodo:document.getElementById('aval-f-periodo').value,
+    id: id||crypto.randomUUID(),
+    funcionario_id:funcId,
+    periodo:document.getElementById('aval-f-periodo').value||'',
     nota:parseInt(document.getElementById('aval-f-nota').value)||null,
-    pontos_fortes:document.getElementById('aval-f-fortes').value,
-    pontos_melhoria:document.getElementById('aval-f-melhoria').value,
-    obs:document.getElementById('aval-f-obs').value,
+    pontos_fortes:document.getElementById('aval-f-fortes').value||'',
+    pontos_melhoria:document.getElementById('aval-f-melhoria').value||'',
+    obs:document.getElementById('aval-f-obs').value||'',
   };
-  if(id){await _sb.from('admin_avaliacoes').update(rec).eq('id',id);}
-  else{await _sb.from('admin_avaliacoes').insert(rec);}
-  closeModal('modal-aval');await loadAll();
+  const res=await _sb.from('admin_avaliacoes').upsert(rec);
+  if(res.error){alert('Erro ao salvar avaliação:\n'+res.error.message);return;}
+  closeModal('modal-aval');
+  await loadAll();
 }
 async function deletarAval(id){
   if(!confirm('Remover esta avaliação?'))return;
   await _sb.from('admin_avaliacoes').delete().eq('id',id);await loadAll();
+}
+
+// ════════════════════════════════
+//  MARKETING
+// ════════════════════════════════
+const MKT_CANAL_LABEL={instagram:'Instagram',linkedin:'LinkedIn',whatsapp:'WhatsApp',email:'E-mail',multi:'Multi-canal'};
+const MKT_CANAL_COR={instagram:'#e1306c',linkedin:'#0077b5',whatsapp:'#25d366',email:'#f59e0b',multi:'#8b5cf6'};
+const MKT_CANAL_ICON={instagram:'📸',linkedin:'💼',whatsapp:'💬',email:'✉️',multi:'🌐'};
+const MKT_STATUS_LABEL={rascunho:'Rascunho',agendado:'Agendado',publicado:'Publicado',cancelado:'Cancelado',planejada:'Planejada',em_andamento:'Em andamento',concluida:'Concluída',pausada:'Pausada',atualizado:'Atualizado',revisar:'Revisar',desatualizado:'Desatualizado'};
+const MKT_STATUS_CLS={rascunho:'badge-pendente',agendado:'badge-ativo',publicado:'badge-pago',cancelado:'badge-inativo',planejada:'badge-pendente',em_andamento:'badge-ativo',concluida:'badge-pago',pausada:'badge-inativo',atualizado:'badge-pago',revisar:'badge-pendente',desatualizado:'badge-inativo'};
+const MKT_TIPO_LABEL={apresentacao:'Apresentação',flyer:'Flyer',video:'Vídeo',template:'Template',foto:'Foto',outro:'Outro'};
+const MKT_CAT_LABEL={institucional:'Institucional',produto:'Produto',evento:'Evento',social_media:'Social Media',proposta:'Proposta'};
+
+function renderMktVisao(){
+  const hoje=new Date().toISOString().slice(0,10);
+  const postsHoje=mktConteudo.filter(c=>c.data_publicacao===hoje).length;
+  const postsMes=mktConteudo.filter(c=>(c.data_publicacao||'').slice(0,7)===hoje.slice(0,7)).length;
+  const campAtivas=mktCampanhas.filter(c=>c.status==='em_andamento').length;
+  const totalLeads=mktCampanhas.reduce((s,c)=>s+(c.leads_gerados||0),0);
+  document.getElementById('mkt-kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-val">${postsMes}</div><div class="kpi-label">Posts este mês</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--gold)">${campAtivas}</div><div class="kpi-label">Campanhas ativas</div></div>
+    <div class="kpi"><div class="kpi-val">${mktMateriais.length}</div><div class="kpi-label">Materiais</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#6ee7b7">${totalLeads}</div><div class="kpi-label">Leads de campanhas</div></div>`;
+  // Próximos conteúdos
+  const proximos=mktConteudo.filter(c=>c.data_publicacao>=hoje&&c.status!=='publicado').slice(0,5);
+  document.getElementById('mkt-proximos-lista').innerHTML=proximos.length
+    ?proximos.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:16px">${MKT_CANAL_ICON[c.canal]||'📌'}</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600">${c.titulo||'—'}</div>
+        <div style="font-size:10px;color:var(--muted)">${c.data_publicacao?fmtDate(c.data_publicacao):''}</div></div>
+        <span class="badge ${MKT_STATUS_CLS[c.status]||''}" style="font-size:9px">${MKT_STATUS_LABEL[c.status]||c.status}</span>
+      </div>`).join('')
+    :'<div style="font-size:12px;color:var(--muted);padding:12px 0">Nenhum conteúdo agendado</div>';
+  // Campanhas ativas
+  const ativas=mktCampanhas.filter(c=>c.status==='em_andamento');
+  document.getElementById('mkt-campanhas-ativas-lista').innerHTML=ativas.length
+    ?ativas.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:16px">${MKT_CANAL_ICON[c.canal]||'📌'}</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600">${c.nome||'—'}</div>
+        <div style="font-size:10px;color:var(--muted)">${c.objetivo||''}</div></div>
+        <div style="font-size:11px;color:#6ee7b7;font-weight:700">${c.leads_gerados||0} leads</div>
+      </div>`).join('')
+    :'<div style="font-size:12px;color:var(--muted);padding:12px 0">Nenhuma campanha ativa</div>';
+}
+
+function renderConteudo(){
+  renderSemanaAtual();
+  const canal=document.getElementById('mkt-c-filtro-canal')?.value||'';
+  const status=document.getElementById('mkt-c-filtro-status')?.value||'';
+  const rows=mktConteudo.filter(c=>(!canal||c.canal===canal)&&(!status||c.status===status));
+  document.getElementById('tbl-conteudo').innerHTML=rows.length?rows.map(c=>{
+    const resp=equipe.find(x=>x.id===c.responsavel_id);
+    return`<tr>
+      <td><span style="font-size:13px">${MKT_CANAL_ICON[c.canal]||'📌'}</span> <span style="font-size:11px;color:${MKT_CANAL_COR[c.canal]||'#fff'};font-weight:700">${MKT_CANAL_LABEL[c.canal]||c.canal}</span></td>
+      <td style="font-weight:600">${c.titulo||'—'}${c.descricao?`<div style="font-size:10px;color:var(--muted);margin-top:2px">${c.descricao.slice(0,60)}${c.descricao.length>60?'…':''}</div>`:''}</td>
+      <td style="font-size:11px;color:var(--muted)">${c.data_publicacao?fmtDate(c.data_publicacao):'—'}</td>
+      <td style="font-size:11px">${resp?.nome||'—'}</td>
+      <td><span class="badge ${MKT_STATUS_CLS[c.status]||''}">${MKT_STATUS_LABEL[c.status]||c.status}</span></td>
+      <td style="display:flex;gap:6px">
+        ${c.link?`<a href="${c.link}" target="_blank" class="btn btn-outline btn-sm" style="font-size:10px">↗</a>`:''}
+        <button class="btn btn-outline btn-sm" onclick="editarConteudo('${c.id}')">✎</button>
+        <button class="btn btn-danger btn-sm" onclick="deletarConteudo('${c.id}')">×</button>
+      </td>
+    </tr>`;}).join(''):'<tr class="empty-row"><td colspan="6">Nenhum conteúdo cadastrado</td></tr>';
+}
+
+function renderCampanhas(){
+  const hoje=new Date().toISOString().slice(0,10);
+  const totalBudget=mktCampanhas.reduce((s,c)=>s+(parseFloat(c.budget)||0),0);
+  const totalLeads=mktCampanhas.reduce((s,c)=>s+(parseInt(c.leads_gerados)||0),0);
+  const ativas=mktCampanhas.filter(c=>c.status==='em_andamento').length;
+  document.getElementById('mkt-camp-kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-val">${mktCampanhas.length}</div><div class="kpi-label">Total campanhas</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--gold)">${ativas}</div><div class="kpi-label">Ativas</div></div>
+    <div class="kpi"><div class="kpi-val">${BRL(totalBudget)}</div><div class="kpi-label">Budget total</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#6ee7b7">${totalLeads}</div><div class="kpi-label">Leads gerados</div></div>`;
+  document.getElementById('tbl-campanhas').innerHTML=mktCampanhas.length?mktCampanhas.map(c=>`<tr>
+    <td style="font-weight:600">${c.nome||'—'}</td>
+    <td><span style="font-size:11px;color:${MKT_CANAL_COR[c.canal]||'#fff'}">${MKT_CANAL_ICON[c.canal]||''} ${MKT_CANAL_LABEL[c.canal]||c.canal}</span></td>
+    <td style="font-size:11px;color:var(--muted)">${(c.objetivo||'—').slice(0,50)}</td>
+    <td style="font-size:11px;color:var(--muted)">${c.data_inicio?fmtDate(c.data_inicio):'—'}${c.data_fim?' → '+fmtDate(c.data_fim):''}</td>
+    <td style="font-weight:600">${c.budget?BRL(c.budget):'—'}</td>
+    <td style="font-weight:700;color:#6ee7b7">${c.leads_gerados||0}</td>
+    <td><span class="badge ${MKT_STATUS_CLS[c.status]||''}">${MKT_STATUS_LABEL[c.status]||c.status}</span></td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="editarCampanha('${c.id}')">✎</button>
+      <button class="btn btn-danger btn-sm" onclick="deletarCampanha('${c.id}')">×</button>
+    </td>
+  </tr>`).join(''):'<tr class="empty-row"><td colspan="8">Nenhuma campanha cadastrada</td></tr>';
+}
+
+function renderMateriais(){
+  document.getElementById('tbl-materiais').innerHTML=mktMateriais.length?mktMateriais.map(m=>`<tr>
+    <td style="font-weight:600">${m.nome||'—'}</td>
+    <td style="font-size:11px">${MKT_TIPO_LABEL[m.tipo]||m.tipo||'—'}</td>
+    <td style="font-size:11px;color:var(--muted)">${MKT_CAT_LABEL[m.categoria]||m.categoria||'—'}</td>
+    <td style="font-size:11px;color:var(--muted)">${m.versao||'—'}</td>
+    <td><span class="badge ${MKT_STATUS_CLS[m.status]||''}">${MKT_STATUS_LABEL[m.status]||m.status}</span></td>
+    <td>${m.link?`<a href="${m.link}" target="_blank" class="btn btn-outline btn-sm" style="font-size:10px;padding:3px 8px">Abrir ↗</a>`:'—'}</td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="editarMaterial('${m.id}')">✎</button>
+      <button class="btn btn-danger btn-sm" onclick="deletarMaterial('${m.id}')">×</button>
+    </td>
+  </tr>`).join(''):'<tr class="empty-row"><td colspan="7">Nenhum material cadastrado</td></tr>';
+}
+
+function renderMetricas(){
+  document.getElementById('tbl-metricas').innerHTML=mktMetricas.length?mktMetricas.map(m=>`<tr>
+    <td><span style="font-size:13px">${MKT_CANAL_ICON[m.canal]||'📌'}</span> <span style="font-size:11px;color:${MKT_CANAL_COR[m.canal]||'#fff'};font-weight:700">${MKT_CANAL_LABEL[m.canal]||m.canal}</span></td>
+    <td style="font-size:11px;font-weight:600">${m.mes||'—'}</td>
+    <td style="font-weight:700">${m.seguidores!=null?m.seguidores.toLocaleString('pt-BR'):'—'}</td>
+    <td style="font-size:11px;color:var(--muted)">${m.alcance!=null?m.alcance.toLocaleString('pt-BR'):'—'}</td>
+    <td style="font-size:11px;color:var(--muted)">${m.engajamento!=null?m.engajamento+'%':'—'}</td>
+    <td style="font-weight:700;color:#6ee7b7">${m.leads_gerados||0}</td>
+    <td style="font-size:10px;color:var(--muted)">${(m.obs||'').slice(0,40)}</td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="editarMetrica('${m.id}')">✎</button>
+      <button class="btn btn-danger btn-sm" onclick="deletarMetrica('${m.id}')">×</button>
+    </td>
+  </tr>`).join(''):'<tr class="empty-row"><td colspan="8">Nenhuma métrica registrada</td></tr>';
+}
+
+// ── CONTEÚDO CRUD ──
+function abrirModalConteudo(){
+  document.getElementById('conteudo-id').value='';
+  document.getElementById('conteudo-modal-title').textContent='Novo Conteúdo';
+  ['conteudo-titulo','conteudo-desc','conteudo-data','conteudo-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('conteudo-canal').value='instagram';
+  document.getElementById('conteudo-status').value='rascunho';
+  document.getElementById('conteudo-resp').innerHTML='<option value="">Selecionar…</option>'+equipe.filter(f=>f.status!=='inativo').map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');
+  openModal('modal-conteudo');
+}
+function editarConteudo(id){
+  const c=mktConteudo.find(x=>x.id===id);if(!c)return;
+  document.getElementById('conteudo-id').value=c.id;
+  document.getElementById('conteudo-modal-title').textContent='Editar Conteúdo';
+  document.getElementById('conteudo-canal').value=c.canal||'instagram';
+  document.getElementById('conteudo-data').value=c.data_publicacao||'';
+  document.getElementById('conteudo-titulo').value=c.titulo||'';
+  document.getElementById('conteudo-desc').value=c.descricao||'';
+  document.getElementById('conteudo-status').value=c.status||'rascunho';
+  document.getElementById('conteudo-link').value=c.link||'';
+  document.getElementById('conteudo-resp').innerHTML='<option value="">Selecionar…</option>'+equipe.filter(f=>f.status!=='inativo').map(f=>`<option value="${f.id}"${f.id===c.responsavel_id?' selected':''}>${f.nome}</option>`).join('');
+  openModal('modal-conteudo');
+}
+async function salvarConteudo(){
+  const titulo=document.getElementById('conteudo-titulo').value.trim();
+  if(!titulo){alert('Informe o título do conteúdo.');return;}
+  const id=document.getElementById('conteudo-id').value||crypto.randomUUID();
+  const rec={id,canal:document.getElementById('conteudo-canal').value,titulo,descricao:document.getElementById('conteudo-desc').value,data_publicacao:document.getElementById('conteudo-data').value||null,status:document.getElementById('conteudo-status').value,link:document.getElementById('conteudo-link').value||null,responsavel_id:document.getElementById('conteudo-resp').value||null};
+  const res=await _sb.from('admin_mkt_conteudo').upsert(rec);
+  if(res.error){alert('Erro: '+res.error.message);return;}
+  closeModal('modal-conteudo');await loadAll();
+}
+async function deletarConteudo(id){if(!confirm('Remover conteúdo?'))return;await _sb.from('admin_mkt_conteudo').delete().eq('id',id);await loadAll();}
+
+// ── CAMPANHAS CRUD ──
+function abrirModalCampanha(){
+  document.getElementById('campanha-id').value='';
+  document.getElementById('campanha-modal-title').textContent='Nova Campanha';
+  ['campanha-nome','campanha-objetivo','campanha-ini','campanha-fim','campanha-budget','campanha-leads','campanha-resultado'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('campanha-canal').value='instagram';
+  document.getElementById('campanha-status').value='planejada';
+  openModal('modal-campanha');
+}
+function editarCampanha(id){
+  const c=mktCampanhas.find(x=>x.id===id);if(!c)return;
+  document.getElementById('campanha-id').value=c.id;
+  document.getElementById('campanha-modal-title').textContent='Editar Campanha';
+  document.getElementById('campanha-nome').value=c.nome||'';
+  document.getElementById('campanha-canal').value=c.canal||'instagram';
+  document.getElementById('campanha-status').value=c.status||'planejada';
+  document.getElementById('campanha-objetivo').value=c.objetivo||'';
+  document.getElementById('campanha-ini').value=c.data_inicio||'';
+  document.getElementById('campanha-fim').value=c.data_fim||'';
+  document.getElementById('campanha-budget').value=c.budget||'';
+  document.getElementById('campanha-leads').value=c.leads_gerados||'';
+  document.getElementById('campanha-resultado').value=c.resultado||'';
+  openModal('modal-campanha');
+}
+async function salvarCampanha(){
+  const nome=document.getElementById('campanha-nome').value.trim();
+  if(!nome){alert('Informe o nome da campanha.');return;}
+  const id=document.getElementById('campanha-id').value||crypto.randomUUID();
+  const rec={id,nome,canal:document.getElementById('campanha-canal').value,status:document.getElementById('campanha-status').value,objetivo:document.getElementById('campanha-objetivo').value,data_inicio:document.getElementById('campanha-ini').value||null,data_fim:document.getElementById('campanha-fim').value||null,budget:parseFloat(document.getElementById('campanha-budget').value)||null,leads_gerados:parseInt(document.getElementById('campanha-leads').value)||0,resultado:document.getElementById('campanha-resultado').value};
+  const res=await _sb.from('admin_mkt_campanhas').upsert(rec);
+  if(res.error){alert('Erro: '+res.error.message);return;}
+  closeModal('modal-campanha');await loadAll();
+}
+async function deletarCampanha(id){if(!confirm('Remover campanha?'))return;await _sb.from('admin_mkt_campanhas').delete().eq('id',id);await loadAll();}
+
+// ── MATERIAIS CRUD ──
+function abrirModalMaterial(){
+  document.getElementById('material-id').value='';
+  document.getElementById('material-modal-title').textContent='Novo Material';
+  ['material-nome','material-versao','material-link','material-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('material-tipo').value='apresentacao';
+  document.getElementById('material-categoria').value='institucional';
+  document.getElementById('material-status').value='atualizado';
+  openModal('modal-material');
+}
+function editarMaterial(id){
+  const m=mktMateriais.find(x=>x.id===id);if(!m)return;
+  document.getElementById('material-id').value=m.id;
+  document.getElementById('material-modal-title').textContent='Editar Material';
+  document.getElementById('material-nome').value=m.nome||'';
+  document.getElementById('material-tipo').value=m.tipo||'apresentacao';
+  document.getElementById('material-categoria').value=m.categoria||'institucional';
+  document.getElementById('material-versao').value=m.versao||'';
+  document.getElementById('material-status').value=m.status||'atualizado';
+  document.getElementById('material-link').value=m.link||'';
+  document.getElementById('material-obs').value=m.obs||'';
+  openModal('modal-material');
+}
+async function salvarMaterial(){
+  const nome=document.getElementById('material-nome').value.trim();
+  if(!nome){alert('Informe o nome do material.');return;}
+  const id=document.getElementById('material-id').value||crypto.randomUUID();
+  const rec={id,nome,tipo:document.getElementById('material-tipo').value,categoria:document.getElementById('material-categoria').value,versao:document.getElementById('material-versao').value,status:document.getElementById('material-status').value,link:document.getElementById('material-link').value||null,obs:document.getElementById('material-obs').value};
+  const res=await _sb.from('admin_mkt_materiais').upsert(rec);
+  if(res.error){alert('Erro: '+res.error.message);return;}
+  closeModal('modal-material');await loadAll();
+}
+async function deletarMaterial(id){if(!confirm('Remover material?'))return;await _sb.from('admin_mkt_materiais').delete().eq('id',id);await loadAll();}
+
+// ── MÉTRICAS CRUD ──
+function abrirModalMetrica(){
+  document.getElementById('metrica-id').value='';
+  document.getElementById('metrica-modal-title').textContent='Registrar Métricas';
+  ['metrica-mes','metrica-seguidores','metrica-alcance','metrica-engajamento','metrica-leads','metrica-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('metrica-canal').value='instagram';
+  openModal('modal-metrica');
+}
+function editarMetrica(id){
+  const m=mktMetricas.find(x=>x.id===id);if(!m)return;
+  document.getElementById('metrica-id').value=m.id;
+  document.getElementById('metrica-modal-title').textContent='Editar Métricas';
+  document.getElementById('metrica-canal').value=m.canal||'instagram';
+  document.getElementById('metrica-mes').value=m.mes||'';
+  document.getElementById('metrica-seguidores').value=m.seguidores??'';
+  document.getElementById('metrica-alcance').value=m.alcance??'';
+  document.getElementById('metrica-engajamento').value=m.engajamento??'';
+  document.getElementById('metrica-leads').value=m.leads_gerados??'';
+  document.getElementById('metrica-obs').value=m.obs||'';
+  openModal('modal-metrica');
+}
+async function salvarMetrica(){
+  const canal=document.getElementById('metrica-canal').value;
+  const mes=document.getElementById('metrica-mes').value;
+  if(!mes){alert('Informe o mês de referência.');return;}
+  const id=document.getElementById('metrica-id').value||crypto.randomUUID();
+  const rec={id,canal,mes,seguidores:parseInt(document.getElementById('metrica-seguidores').value)||null,alcance:parseInt(document.getElementById('metrica-alcance').value)||null,engajamento:parseFloat(document.getElementById('metrica-engajamento').value)||null,leads_gerados:parseInt(document.getElementById('metrica-leads').value)||0,obs:document.getElementById('metrica-obs').value};
+  const res=await _sb.from('admin_mkt_metricas').upsert(rec);
+  if(res.error){alert('Erro: '+res.error.message);return;}
+  closeModal('modal-metrica');await loadAll();
+}
+async function deletarMetrica(id){if(!confirm('Remover métrica?'))return;await _sb.from('admin_mkt_metricas').delete().eq('id',id);await loadAll();}
+
+// ── CALENDÁRIO AUTOMÁTICO ──
+function abrirModalCalendario(){
+  const hoje=new Date();
+  const yyyy=hoje.getFullYear();
+  const mm=String(hoje.getMonth()+1).padStart(2,'0');
+  const dd=String(hoje.getDate()).padStart(2,'0');
+  document.getElementById('cal-data-inicio').value=`${yyyy}-${mm}-${dd}`;
+  document.getElementById('cal-periodo').value='30';
+  ['cal-linkedin','cal-instagram','cal-whatsapp'].forEach(id=>{document.getElementById(id).checked=true;});
+  openModal('modal-calendario');
+}
+
+async function gerarCalendarioAutomatico(){
+  const inicio=document.getElementById('cal-data-inicio').value;
+  if(!inicio){alert('Informe a data de início.');return;}
+  const dias=parseInt(document.getElementById('cal-periodo').value)||30;
+  const incLinkedin=document.getElementById('cal-linkedin').checked;
+  const incInstagram=document.getElementById('cal-instagram').checked;
+  const incWhatsapp=document.getElementById('cal-whatsapp').checked;
+  if(!incLinkedin&&!incInstagram&&!incWhatsapp){alert('Selecione ao menos um canal.');return;}
+
+  // Temas rotativos por dia da semana (1=Seg..6=Sáb)
+  const TEMPLATE={
+    1:{canal:'linkedin',temas:[
+      'O que é patrimônio líquido e por que você precisa saber o seu',
+      'Diversificação além da renda fixa: estratégias para quem tem mais de R$ 1M',
+      'Planejamento sucessório: o que você precisa saber antes de precisar',
+      'Fundos exclusivos: quando faz sentido para o seu patrimônio?',
+      'Como funciona a tributação de investimentos no Brasil?',
+      'Previdência privada ou fundos? Entenda a diferença',
+      'O que é gestão de patrimônio e como ela transforma a sua vida',
+      'Risco x retorno: como equilibrar sua carteira de investimentos',
+    ]},
+    2:{canal:'instagram',temas:[
+      'Patrimônio não é só dinheiro — é tempo e liberdade',
+      'Viver bem sem abrir mão da segurança financeira',
+      'O estilo de vida que o seu patrimônio pode proporcionar',
+      'Família e patrimônio: construindo legado juntos',
+      'Férias, experiências e planejamento financeiro inteligente',
+    ]},
+    3:{canal:'linkedin',temas:[
+      'O que a decisão do Copom significa para os seus investimentos?',
+      'Juros em queda: hora de rever a sua alocação?',
+      'Brasil no radar dos investidores: oportunidades e riscos',
+      'Fundos multimercado no cenário atual: vale a pena?',
+      'Dólar e portfólio: como se proteger da volatilidade cambial',
+      'Renda variável em 2026: o que esperar do mercado?',
+    ]},
+    4:{canal:'instagram',temas:[
+      'Nos bastidores: como montamos estratégias para nossos clientes',
+      'Um dia na Soma Partners',
+      'O que nossos clientes mais perguntam sobre investimentos',
+      'Novidades da Soma: o que estamos desenvolvendo para você',
+      'Nossa equipe em ação — conheça quem cuida do seu patrimônio',
+    ]},
+    5:{canal:'whatsapp',temas:[
+      '✅ Dica rápida: revise seus investimentos ao menos uma vez por mês',
+      '💡 Dica rápida: tenha reserva de emergência equivalente a 6 meses de despesas',
+      '📋 Dica rápida: documente seus ativos — facilita o planejamento sucessório',
+      '📊 Dica rápida: acompanhe o Copom — ele impacta diretamente seus rendimentos',
+      '📉 Dica rápida: compare sempre a rentabilidade real, descontada de inflação',
+      '🎯 Dica rápida: diversifique entre diferentes classes de ativos',
+    ]},
+    6:{canal:'instagram',temas:[
+      'Sua família merece um planejamento à altura',
+      'Investir no futuro começa com uma conversa',
+      'O que você quer deixar de legado?',
+      'Momentos que o planejamento financeiro protege e viabiliza',
+    ]},
+  };
+
+  // Calendário financeiro brasileiro
+  const CAL_FIN=[
+    {data:'2026-01-28',titulo:'Reunião Copom — Decisão de Juros (Jan/26)',canal:'linkedin',desc:'O Copom reúne hoje para decidir a taxa Selic. Saiba o impacto nos seus investimentos.'},
+    {data:'2026-01-29',titulo:'Resultado Copom — O que muda nos seus investimentos?',canal:'linkedin',desc:''},
+    {data:'2026-03-02',titulo:'Abre o prazo da Declaração do IR 2026',canal:'linkedin',desc:'Começa hoje o prazo para declarar o Imposto de Renda. Saiba como declarar seus investimentos corretamente.'},
+    {data:'2026-03-18',titulo:'Reunião Copom — Decisão de Juros (Mar/26)',canal:'linkedin',desc:''},
+    {data:'2026-03-19',titulo:'Resultado Copom — Análise para o seu portfólio',canal:'linkedin',desc:''},
+    {data:'2026-04-30',titulo:'Último dia para declaração do IR 2026 ⏰',canal:'whatsapp',desc:'Hoje é o prazo final do IR. Você já declarou seus investimentos corretamente?'},
+    {data:'2026-05-06',titulo:'Reunião Copom — Decisão de Juros (Mai/26)',canal:'linkedin',desc:''},
+    {data:'2026-05-07',titulo:'Resultado Copom — O que esperar do mercado?',canal:'linkedin',desc:''},
+    {data:'2026-06-17',titulo:'Reunião Copom — Decisão de Juros (Jun/26)',canal:'linkedin',desc:''},
+    {data:'2026-06-18',titulo:'Resultado Copom — Análise de mercado pós-decisão',canal:'linkedin',desc:''},
+    {data:'2026-07-29',titulo:'Reunião Copom — Decisão de Juros (Jul/26)',canal:'linkedin',desc:''},
+    {data:'2026-07-30',titulo:'Resultado Copom — Impacto para investidores',canal:'linkedin',desc:''},
+    {data:'2026-09-16',titulo:'Reunião Copom — Decisão de Juros (Set/26)',canal:'linkedin',desc:''},
+    {data:'2026-09-17',titulo:'Resultado Copom — Como posicionar sua carteira agora?',canal:'linkedin',desc:''},
+    {data:'2026-11-04',titulo:'Reunião Copom — Decisão de Juros (Nov/26)',canal:'linkedin',desc:''},
+    {data:'2026-11-05',titulo:'Resultado Copom — Estratégias para o fim de ano',canal:'linkedin',desc:''},
+    {data:'2026-12-09',titulo:'Copom — Última reunião de 2026',canal:'linkedin',desc:''},
+    {data:'2026-12-10',titulo:'Copom: Fechamento do ano e perspectivas 2027',canal:'linkedin',desc:''},
+    {data:'2026-12-28',titulo:'Retrospectiva 2026 — Como foi o ano dos seus investimentos?',canal:'instagram',desc:''},
+  ];
+
+  const startDate=new Date(inicio+'T12:00:00');
+  const endDate=new Date(startDate);
+  endDate.setDate(endDate.getDate()+dias-1);
+
+  const recs=[];
+  const counters={};
+
+  // Adiciona eventos do calendário financeiro no período
+  CAL_FIN.forEach(ev=>{
+    const d=new Date(ev.data+'T12:00:00');
+    if(d<startDate||d>endDate)return;
+    const canalOk=(ev.canal==='linkedin'&&incLinkedin)||(ev.canal==='instagram'&&incInstagram)||(ev.canal==='whatsapp'&&incWhatsapp);
+    if(!canalOk)return;
+    recs.push({id:crypto.randomUUID(),canal:ev.canal,titulo:ev.titulo,descricao:ev.desc||'Conteúdo especial do Calendário Financeiro.',data_publicacao:ev.data,status:'rascunho',link:null,responsavel_id:null,_cal_fin:true});
+  });
+
+  // Gera conteúdo semanal rotativo
+  for(let i=0;i<dias;i++){
+    const d=new Date(startDate);
+    d.setDate(d.getDate()+i);
+    const dow=d.getDay();
+    if(dow===0)continue; // pula domingo
+    const dataStr=d.toISOString().slice(0,10);
+    const tmpl=TEMPLATE[dow];
+    if(!tmpl)continue;
+    const canalOk=(tmpl.canal==='linkedin'&&incLinkedin)||(tmpl.canal==='instagram'&&incInstagram)||(tmpl.canal==='whatsapp'&&incWhatsapp);
+    if(!canalOk)continue;
+    // Pula se já tem evento financeiro nesse dia/canal
+    const jaTemFin=recs.some(r=>r.data_publicacao===dataStr&&r.canal===tmpl.canal&&r._cal_fin);
+    if(jaTemFin)continue;
+    if(!counters[dow])counters[dow]=0;
+    const titulo=tmpl.temas[counters[dow]%tmpl.temas.length];
+    counters[dow]++;
+    recs.push({id:crypto.randomUUID(),canal:tmpl.canal,titulo,descricao:'',data_publicacao:dataStr,status:'rascunho',link:null,responsavel_id:null});
+  }
+
+  // Remove campo auxiliar antes de salvar
+  recs.forEach(r=>delete r._cal_fin);
+
+  if(!recs.length){alert('Nenhum conteúdo gerado para o período.');return;}
+
+  const btn=document.getElementById('btn-gerar-cal');
+  if(btn){btn.disabled=true;btn.textContent='Gerando…';}
+
+  // Salva em lotes de 20
+  const LOTE=20;
+  for(let i=0;i<recs.length;i+=LOTE){
+    const res=await _sb.from('admin_mkt_conteudo').upsert(recs.slice(i,i+LOTE));
+    if(res.error){
+      alert('Erro ao salvar: '+res.error.message);
+      if(btn){btn.disabled=false;btn.textContent='✨ Gerar';}
+      return;
+    }
+  }
+
+  if(btn){btn.disabled=false;btn.textContent='✨ Gerar';}
+  closeModal('modal-calendario');
+  await loadAll();
+  alert(`✅ Calendário gerado! ${recs.length} publicações adicionadas como rascunho.`);
+}
+
+function renderSemanaAtual(){
+  const el=document.getElementById('semana-atual');
+  if(!el)return;
+  const hoje=new Date();
+  const dow=hoje.getDay();
+  const diffSeg=dow===0?-6:1-dow;
+  const seg=new Date(hoje);
+  seg.setDate(hoje.getDate()+diffSeg);
+  const DIAS=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  let html=`<div style="margin-bottom:8px;font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,0.25);text-transform:uppercase">Semana atual</div>`;
+  html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">`;
+  for(let i=0;i<7;i++){
+    const d=new Date(seg);
+    d.setDate(seg.getDate()+i);
+    const dataStr=d.toISOString().slice(0,10);
+    const isHoje=dataStr===hoje.toISOString().slice(0,10);
+    const posts=mktConteudo.filter(c=>c.data_publicacao===dataStr);
+    html+=`<div style="background:rgba(255,255,255,0.03);border:1px solid ${isHoje?'rgba(201,150,60,0.45)':'rgba(255,255,255,0.06)'};border-radius:8px;padding:8px 6px;min-height:72px;cursor:default">`;
+    html+=`<div style="font-size:9px;font-weight:700;letter-spacing:0.5px;color:${isHoje?'var(--gold)':'rgba(255,255,255,0.3)'};margin-bottom:5px">${DIAS[i]} ${d.getDate()}</div>`;
+    if(posts.length){
+      posts.slice(0,2).forEach(p=>{
+        html+=`<div title="${p.titulo||''}" style="font-size:9px;color:${MKT_CANAL_COR[p.canal]||'#fff'};font-weight:600;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${MKT_CANAL_ICON[p.canal]||''} ${(p.titulo||'').slice(0,22)}${(p.titulo||'').length>22?'…':''}</div>`;
+      });
+      if(posts.length>2)html+=`<div style="font-size:9px;color:var(--muted);margin-top:2px">+${posts.length-2} mais</div>`;
+    } else {
+      html+=`<div style="font-size:9px;color:rgba(255,255,255,0.12)">—</div>`;
+    }
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
 }
 
 // ── INIT ──
@@ -1427,55 +2345,62 @@ const EX_CATS = {
   nc:              {label:'Não Categorizado',           group:'nc'},
 };
 
+const EX_EMPRESAS = {
+  soma:   {label:'Soma Partners Ltda',           cnpj:'63.898.584/0001-84', short:'Soma Partners'},
+  trai:   {label:'TR AI Ltda',                   cnpj:'40.202.799/0001-13', short:'TR AI'},
+  wealth: {label:'Soma Wealth Consultoria Ltda', cnpj:'64.931.784/0001-54', short:'Soma Wealth'},
+  trserv: {label:'TR Serviços Financeiros Ltda', cnpj:'36.617.889/0001-06', short:'TR Serviços'},
+};
+
+const EX_CNPJ_MAP = {
+  '63898584000184':'soma', '64931784000154':'wealth',
+  '40202799000113':'trai', '36617889000106':'trserv',
+};
+
 const EX_INTERNOS_KW = [
   'aplicação conta remunerada','resgate conta remunerada',
   'débito na conta corrente','crédito na conta corrente',
   'tef enviada para soma partners','tef recebida de soma partners',
+  'tef enviada para tr ai','tef recebida de tr ai',
+  'tef enviada para tr servicos','tef recebida de tr servicos',
   'pix recebido de soma partners ltda','pix enviado para soma partners ltda',
+  'pix recebido de tr ai ltda','pix enviado para tr ai ltda',
+  'pix recebido de tr servicos financeiros','pix enviado para tr servicos financeiros',
+  'pix recebido de soma partners wealth','pix enviado para soma partners wealth',
 ];
 
 let _exRows = [];
+let _exEmpresaAtiva = 'soma';
+let _exDreEmpresa = '';
 
 function exIsInterno(desc){
   const d=desc.toLowerCase();
   return EX_INTERNOS_KW.some(k=>d.includes(k));
 }
 
-function exAutoCateg(desc,val){
-  const d=desc.toLowerCase();
+function exAutoCateg(desc,val,empresa){
+  // Apenas detecta automático: interno e rendimento. Tudo mais → nc para categorização manual.
   if(exIsInterno(desc)) return 'interno';
-  if(d.includes('valor de rendimento remunera')) return 'rendimento';
-  if(val>0){
-    if(/lucas m|mark jenjon|gol do rayo|daniel de souza|marc vandersmissen|siarhei|unacorp/.test(d)) return 'honorarios';
-    if(d.includes('tr ai ltda')) return 'honorarios';
-    return 'nc';
-  } else {
-    if(/secretaria da fazenda|ministerio da fazenda|pref mun|secretaria municipal da fazenda/.test(d)) return 'impostos';
-    if(/guilherme fernandes leite|marcelo andre machado/.test(d)) return 'prolabore';
-    if(/eletropaulo|comgas|light servicos|light\s+-/.test(d)) return 'infraestrutura';
-    if(d.includes('cond mosaico')) return 'infraestrutura';
-    if(/vivo sp|claro sp|claro s a|telefonica brasil/.test(d)) return 'telecom';
-    if(d.includes('jorge sociedade de advogados')) return 'juridico';
-    if(d.includes('editora empreenda')) return 'marketing';
-    if(/lub producoes|snf eventos|nova forma viagens|day off consultoria|airbnb/.test(d)) return 'eventos';
-    if(/tr ai ltda|blockstar|portoseg|pjbank|asaas|time con contabilidade|google cloud|use360/.test(d)) return 'tecnologia';
-    if(/inpi|instituto nacional da propriedade|global - clube/.test(d)) return 'taxas';
-    if(d.includes('liderancas empresariais')) return 'treinamento';
-    if(/hertz canhete|rafael goldberg|ana paula lizo|oghan ferreira|gustavo cordeiro|artemis esteves|joao paulo de freitas|alex moraes|valdeir batista|valmir magalhaes|davi altierys|skarllet pereira|leonardo savicius|guilherme nascimento|erika rodelle|twister ii|sautt car|mikaela sales|reginaldo candido|fabiana jose soares|joaquim da costa|adriana francelino|aparecida de cassia|barbara badin|thalita venera|rosane ferreira|lucas donizete|beatriz makeup|ana beatriz siqueira|fabio jose perel|jovino rodrigues/.test(d)) return 'prestadores';
-    if(/ifood|pet center|farmacia|farmacom|roldao|bacco/.test(d)) return 'desp_pessoais';
-    return 'nc';
-  }
+  if(desc.toLowerCase().includes('valor de rendimento remunera')) return 'rendimento';
+  return 'nc';
 }
 
-function exImportFile(input){
-  const file = input.files && input.files[0];
+function exAutoDetectEmpresa(allRows){
+  for(let i=0;i<Math.min(allRows.length,12);i++){
+    const r=allRows[i]||[];
+    for(let j=0;j<r.length;j++){
+      const v=String(r[j]||'').replace(/[.\-\/\s]/g,'');
+      for(const [cnpj,emp] of Object.entries(EX_CNPJ_MAP)){
+        if(v.includes(cnpj)) return emp;
+      }
+    }
+  }
+  return null;
+}
+
+function exImportFile(input,empresaDefault){
+  const file=input.files&&input.files[0];
   if(!file) return;
-
-  // Feedback visual imediato
-  const zone=document.getElementById('ex-upload-zone');
-  zone.style.opacity='0.5';
-  zone.style.pointerEvents='none';
-
   const reader=new FileReader();
   reader.onload=function(e){
     try{
@@ -1484,89 +2409,80 @@ function exImportFile(input){
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
 
-      // ── Detecta automaticamente a linha de cabeçalho e os índices das colunas ──
-      // O extrato BTG tem "Data de lançamento" na linha de header
-      let headerIdx=-1, cData=-1, cDesc=-1, cVal=-1;
+      const empresa=exAutoDetectEmpresa(rows)||empresaDefault||'soma';
+
+      let headerIdx=-1,cData=-1,cDesc=-1,cVal=-1;
       for(let i=0;i<rows.length;i++){
         const r=rows[i];
         for(let j=0;j<r.length;j++){
           if(r[j]&&String(r[j]).toLowerCase().includes('data de lançamento')){
-            headerIdx=i; cData=j; cDesc=j+1; cVal=j+2;
-            break;
+            headerIdx=i;cData=j;cDesc=j+1;cVal=j+2;break;
           }
         }
         if(headerIdx>=0) break;
       }
+      if(headerIdx<0){alert('Formato não reconhecido. Verifique se é o extrato BTG Empresas (.xlsx).');return;}
 
-      if(headerIdx<0){
-        alert('Formato não reconhecido.\nVerifique se é o extrato BTG Empresas (.xlsx) correto.');
-        zone.style.opacity=''; zone.style.pointerEvents='';
-        return;
-      }
+      // Remove rows desta empresa antes de recarregar
+      _exRows=_exRows.filter(r=>r.empresa!==empresa);
 
-      _exRows=[];
+      let count=0;
       for(let i=headerIdx+1;i<rows.length;i++){
         const r=rows[i];
-        const rawDate=r[cData], rawDesc=r[cDesc], rawVal=r[cVal];
+        const rawDate=r[cData],rawDesc=r[cDesc],rawVal=r[cVal];
         if(!rawDate||!rawDesc||rawVal===null||rawVal===undefined) continue;
-
-        // Valor: já vem como número no arquivo BTG
         const val=typeof rawVal==='number'?rawVal:parseFloat(String(rawVal).replace(',','.'));
         if(isNaN(val)) continue;
-
         const desc=String(rawDesc).trim();
-
-        // Data: BTG exporta como string 'DD/MM/YYYY'
-        // Mas caso venha como serial Excel (número), converte também
-        let isoDate='', mes='';
+        let isoDate='',mes='';
         if(typeof rawDate==='number'){
-          // Serial Excel → JS Date
           const d=new Date(Math.round((rawDate-25569)*86400*1000));
           const dd=String(d.getUTCDate()).padStart(2,'0');
           const mm=String(d.getUTCMonth()+1).padStart(2,'0');
           const yyyy=d.getUTCFullYear();
-          isoDate=`${yyyy}-${mm}-${dd}`; mes=`${mm}/${yyyy}`;
+          isoDate=`${yyyy}-${mm}-${dd}`;mes=`${mm}/${yyyy}`;
         } else {
           const parts=String(rawDate).trim().split('/');
-          if(parts.length===3){
-            isoDate=`${parts[2]}-${parts[1]}-${parts[0]}`;
-            mes=`${parts[1]}/${parts[2]}`;
-          }
+          if(parts.length===3){isoDate=`${parts[2]}-${parts[1]}-${parts[0]}`;mes=`${parts[1]}/${parts[2]}`;}
         }
         if(!isoDate) continue;
-
-        _exRows.push({id:crypto.randomUUID(),data:isoDate,mes,descricao:desc,valor:val,categoria:exAutoCateg(desc,val),obs:'',saved:false});
+        _exRows.push({id:crypto.randomUUID(),empresa,data:isoDate,mes,descricao:desc,valor:val,categoria:exAutoCateg(desc,val,empresa),obs:'',saved:false});
+        count++;
       }
 
-      // Mantém ordem original do extrato (sem reordenar)
-      exInitFilters();
-      exRender();
-      document.getElementById('ex-review').style.display='';
-      exUpdateNcBadge();
+      const statusEl=document.getElementById(`ex-status-${empresa}`);
+      if(statusEl) statusEl.innerHTML=`<span style="color:#6ee7b7">✓ ${count} lançamentos</span>`;
 
-      // Esconde a zona de upload após importar com sucesso
-      zone.style.display='none';
-    } catch(err){
-      alert('Erro ao ler o arquivo: '+err.message);
-    }
-    zone.style.opacity=''; zone.style.pointerEvents='';
+      _exEmpresaAtiva=empresa;
+      document.getElementById('ex-review').style.display='';
+      exInitFilters();
+      exSetActiveEmpresa(empresa);
+      exUpdateNcBadge();
+    }catch(err){alert('Erro ao ler o arquivo: '+err.message);}
   };
   reader.readAsArrayBuffer(file);
 }
 
+function exSetActiveEmpresa(emp){
+  _exEmpresaAtiva=emp;
+  document.querySelectorAll('#ex-empresa-tabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.emp===emp));
+  exInitFilters();
+  exRender();
+  exUpdateNcBadge();
+}
+
 function exInitFilters(){
-  const meses=[...new Set(_exRows.map(r=>r.mes))].filter(Boolean).sort();
+  const rows=_exEmpresaAtiva?_exRows.filter(r=>r.empresa===_exEmpresaAtiva):_exRows;
+  const meses=[...new Set(rows.map(r=>r.mes))].filter(Boolean).sort();
   const sel=document.getElementById('ex-filter-mes');
-  sel.innerHTML='<option value="">Todos os meses</option>'+meses.map(m=>`<option value="${m}">${m}</option>`).join('');
-  const dresel=document.getElementById('ex-dre-mes');
-  dresel.innerHTML='<option value="">Acumulado (todos os meses)</option>'+meses.map(m=>`<option value="${m}">${m}</option>`).join('');
+  if(sel) sel.innerHTML='<option value="">Todos os meses</option>'+meses.map(m=>`<option value="${m}">${m}</option>`).join('');
 }
 
 function exUpdateNcBadge(){
-  const nc=_exRows.filter(r=>r.categoria==='nc').length;
+  const rows=_exEmpresaAtiva?_exRows.filter(r=>r.empresa===_exEmpresaAtiva):_exRows;
+  const nc=rows.filter(r=>r.categoria==='nc').length;
   const b=document.getElementById('ex-nc-badge');
-  b.textContent=nc>0?`⚠ ${nc} sem categoria`:'✓ Todos categorizados';
-  b.style.color=nc>0?'#fcd34d':'#6ee7b7';
+  if(b){b.textContent=nc>0?`⚠ ${nc} sem categoria`:'✓ Todos categorizados';b.style.color=nc>0?'#fcd34d':'#6ee7b7';}
 }
 
 function exCatOptions(selected){
@@ -1582,15 +2498,14 @@ function exCatOptions(selected){
   }).join('');
 }
 
-function exFmtVal(v){
-  return(v>0?'+':'')+v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-}
+function exFmtVal(v){return(v>0?'+':'')+v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
 
 function exRender(){
   const search=(document.getElementById('ex-search').value||'').toLowerCase();
   const filtMes=document.getElementById('ex-filter-mes').value;
   const filtCat=document.getElementById('ex-filter-cat').value;
-  const filtered=_exRows.filter(r=>{
+  let base=_exEmpresaAtiva?_exRows.filter(r=>r.empresa===_exEmpresaAtiva):_exRows;
+  const filtered=base.filter(r=>{
     if(filtMes&&r.mes!==filtMes) return false;
     if(filtCat==='nc'&&r.categoria!=='nc') return false;
     if(filtCat==='!interno'&&r.categoria==='interno') return false;
@@ -1610,50 +2525,63 @@ function exRender(){
       <td style="font-size:11px;color:var(--muted);white-space:nowrap">${dateFmt}</td>
       <td style="font-size:11px;max-width:300px;${isInt?'color:rgba(255,255,255,0.3)':''}">${r.descricao}</td>
       <td style="color:${vclr};font-weight:700;white-space:nowrap;text-align:right">${exFmtVal(r.valor)}</td>
-      <td>
-        <select class="ex-cat-sel${nc?' nc-sel':''}" onchange="exChangeCateg('${r.id}',this.value)">
-          ${exCatOptions(r.categoria)}
-        </select>
-      </td>
-      <td>
-        <input class="ex-obs-inp" value="${r.obs||''}" onchange="exChangeObs('${r.id}',this.value)" placeholder="obs…">
-      </td>
+      <td><select class="ex-cat-sel${nc?' nc-sel':''}" onchange="exChangeCateg('${r.id}',this.value)">${exCatOptions(r.categoria)}</select></td>
+      <td><input class="ex-obs-inp" value="${r.obs||''}" onchange="exChangeObs('${r.id}',this.value)" placeholder="obs…"></td>
     </tr>`;
   }).join('');
 }
 
-function exChangeCateg(id,val){
-  const r=_exRows.find(x=>x.id===id);
-  if(r){r.categoria=val;r.saved=false;}
-  exUpdateNcBadge();
-}
-function exChangeObs(id,val){
-  const r=_exRows.find(x=>x.id===id);
-  if(r){r.obs=val;r.saved=false;}
-}
-
-function exNovoImport(){
-  document.getElementById('ex-upload-zone').style.display='';
-  document.getElementById('ex-file-input').value='';
-}
+function exChangeCateg(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.categoria=val;r.saved=false;}exUpdateNcBadge();}
+function exChangeObs(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.obs=val;r.saved=false;}}
 
 async function exSalvar(){
   const btn=document.querySelector('[onclick="exSalvar()"]');
   const st=document.getElementById('ex-save-status');
-  btn.disabled=true; st.textContent='Salvando…';
+  btn.disabled=true;st.textContent='Salvando…';
   const toSave=_exRows.filter(r=>!r.saved);
   if(!toSave.length){st.textContent='Sem alterações pendentes.';btn.disabled=false;return;}
-  const recs=toSave.map(({id,data,descricao,valor,categoria,mes,obs})=>({id,data,descricao,valor,categoria,mes,obs}));
+  // Salva em admin_extrato
+  const recs=toSave.map(({id,empresa,data,descricao,valor,categoria,mes,obs})=>({id,empresa,data,descricao,valor,categoria,mes,obs}));
   const {error}=await _sb.from('admin_extrato').upsert(recs);
-  if(error){st.textContent='Erro: '+error.message;}
-  else{toSave.forEach(r=>r.saved=true);st.textContent=`✓ ${toSave.length} lançamentos salvos`;exRenderDRE();}
+  if(error){st.textContent='Erro: '+error.message;btn.disabled=false;return;}
+  toSave.forEach(r=>r.saved=true);
+  // Sincroniza para admin_lancamentos (exceto interno)
+  // Apaga lançamentos BTG desta empresa antes de re-sincronizar
+  const empresasAlteradas=[...new Set(toSave.map(r=>r.empresa))];
+  for(const emp of empresasAlteradas){
+    await _sb.from('admin_lancamentos').delete().like('obs','BTG·'+emp+'%');
+  }
+  // Re-sincroniza todos os rows não-internos desta empresa
+  const lancSync=_exRows.filter(r=>empresasAlteradas.includes(r.empresa)&&r.categoria!=='interno').map(r=>({
+    id:'btg-'+r.id,
+    descricao:r.descricao,
+    valor:Math.abs(r.valor),
+    tipo:r.valor>0?'entrada':'saida',
+    categoria:r.categoria,
+    status:'pago',
+    data_vencimento:r.data,
+    data_pagamento:r.data,
+    obs:'BTG·'+r.empresa+'|'+r.mes,
+  }));
+  if(lancSync.length){
+    const {error:e2}=await _sb.from('admin_lancamentos').upsert(lancSync);
+    if(e2) console.warn('Sync lancamentos erro:',e2.message);
+  }
+  st.textContent='✓ '+toSave.length+' salvos · '+lancSync.length+' sincronizados nos lançamentos';
+  exRenderDRE();
+  await loadAll();
   btn.disabled=false;
 }
 
 async function exLoadSaved(){
   const {data}=await _sb.from('admin_extrato').select('*').order('data');
   if(data&&data.length){
-    _exRows=data.map(r=>({...r,saved:true}));
+    _exRows=data.map(r=>({...r,empresa:r.empresa||'soma',saved:true}));
+    Object.keys(EX_EMPRESAS).forEach(emp=>{
+      const count=_exRows.filter(r=>r.empresa===emp).length;
+      const statusEl=document.getElementById(`ex-status-${emp}`);
+      if(statusEl&&count>0) statusEl.innerHTML=`<span style="color:#6ee7b7">✓ ${count} lançamentos</span>`;
+    });
     exInitFilters();
     exRender();
     document.getElementById('ex-review').style.display='';
@@ -1669,12 +2597,26 @@ function exTab(tab){
   if(tab==='dre') exRenderDRE();
 }
 
+function exSetDreEmpresa(emp){
+  _exDreEmpresa=emp;
+  document.querySelectorAll('#ex-dre-tabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.emp===emp));
+  // Atualiza meses disponíveis no filtro
+  const base=emp?_exRows.filter(r=>r.empresa===emp):_exRows;
+  const meses=[...new Set(base.map(r=>r.mes))].filter(Boolean).sort();
+  const dresel=document.getElementById('ex-dre-mes');
+  if(dresel){dresel.innerHTML='<option value="">Acumulado</option>'+meses.map(m=>`<option value="${m}">${m}</option>`).join('');}
+  exRenderDRE();
+}
+
 function fmtBRL2(v){return Math.abs(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
 
 function exRenderDRE(){
   const filtMes=document.getElementById('ex-dre-mes').value;
-  const rows=filtMes?_exRows.filter(r=>r.mes===filtMes):_exRows;
+  const empresa=_exDreEmpresa;
+  let rows=empresa?_exRows.filter(r=>r.empresa===empresa):_exRows;
+  if(filtMes) rows=rows.filter(r=>r.mes===filtMes);
   const el=document.getElementById('ex-dre-content');
+  const empLabel=empresa?(EX_EMPRESAS[empresa]?.label||empresa):'Consolidado (todas as empresas)';
   if(!rows.length){el.innerHTML='<div style="text-align:center;padding:48px;color:var(--muted);font-size:12px">Importe e salve o extrato para visualizar a DRE.</div>';return;}
 
   const agg={};
@@ -1742,7 +2684,7 @@ function exRenderDRE(){
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div>
           <div style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Demonstração do Resultado</div>
-          <div style="font-size:15px;font-weight:900;letter-spacing:0.3px">Extrato BTG — DRE</div>
+          <div style="font-size:15px;font-weight:900;letter-spacing:0.3px">${empLabel}</div>
         </div>
         <div style="font-size:11px;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:4px 10px">${label}</div>
       </div>
@@ -1827,6 +2769,389 @@ function exRenderDRE(){
   el.innerHTML=html;
 }
 
+// ════════════════════════════════
+//  GERAÇÃO DE CONTRATOS
+// ════════════════════════════════
+const EMPRESA={
+  razao:'Soma Partners Ltda.',
+  cnpj:'63.898.584/0001-84',
+  sede:'São Paulo',
+  estado:'SP',
+  endereco:'Rua Conceição de Monte Alegre, nº 198, Conj. 142, Cidade Monções, CEP 04.563-060',
+  rep:'Victor Solla Pereira Silva Jorge',
+  cpfRep:'374.906.478-43',
+  cargoRep:'Administrador'
+};
+
+function abrirSelecionarContrato(){
+  const nome=document.getElementById('func-f-nome').value||'';
+  document.getElementById('contrato-nome-func').textContent=nome;
+  openModal('modal-contrato-tipo');
+}
+function fecharSelecionarContrato(){closeModal('modal-contrato-tipo');}
+
+function processarCorpo(h){
+  // 1. Primeira <p> vira bloco de introdução
+  let intro='';
+  h=h.replace(/^\s*<p>([\s\S]*?)<\/p>\s*/,(_,p)=>{intro=p;return'';});
+  // 2. Divide em seções por <h3>
+  const sections=h.split(/(?=<h3>)/);
+  let out=intro?`<div class="intro">${intro}</div>`:'';
+  sections.forEach(sec=>{
+    if(!sec.trim())return;
+    const m=sec.match(/^<h3>([\s\S]*?)<\/h3>([\s\S]*)$/);
+    if(!m){out+=sec;return;}
+    const title=m[1].trim();
+    const content=m[2].trim();
+    if(title==='PARTES'){
+      const blocos=content.replace(/<p>\s*<strong>([^<:]+):<\/strong>\s*([\s\S]*?)<\/p>/g,
+        (_,label,info)=>`<div class="parte-bloco"><div class="parte-label">${label.trim()}</div><div class="parte-info">${info.trim()}</div></div>`);
+      out+=`<div class="partes-section"><div class="partes-title">Identificação das Partes</div>${blocos}</div>`;
+    } else {
+      out+=`<div class="clausula"><div class="clausula-titulo">${title}</div>${content}</div>`;
+    }
+  });
+  return out;
+}
+
+async function gerarContrato(tipo){
+  fecharSelecionarContrato();
+  const d={
+    nome:document.getElementById('func-f-nome').value||'[NOME]',
+    cpf:document.getElementById('func-f-cpf').value||'[CPF]',
+    cargo:document.getElementById('func-f-cargo').value||'[CARGO]',
+    email:document.getElementById('func-f-email').value||'',
+    tel:document.getElementById('func-f-tel').value||'',
+    nasc:document.getElementById('func-f-nasc').value||'',
+    cidade:document.getElementById('func-f-cidade').value||'[CIDADE]',
+    endereco:document.getElementById('func-f-end').value||'[ENDEREÇO]',
+    pai:document.getElementById('func-f-pai').value||'',
+    mae:document.getElementById('func-f-mae').value||'',
+    salario:document.getElementById('func-f-sal').value||'',
+    entrada:document.getElementById('func-f-entrada').value||'',
+  };
+  const fmtD=v=>{if(!v)return'___/___/_____';const[y,m,day]=v.split('-');return`${day}/${m}/${y}`;};
+  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const salFmt=d.salario?new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(parseFloat(d.salario)):'R$ _______________';
+  const tipos={pj:'Contrato de Prestação de Serviços',clt:'Contrato Individual de Trabalho',associado:'Termo de Associação',sociedade:'Contrato de Sociedade',jovem_aprendiz:'Contrato de Aprendizagem',estagio:'Termo de Compromisso de Estágio'};
+  let corpo='';
+
+  if(tipo==='pj'){
+    corpo=`
+<p>Pelo presente instrumento particular, as partes abaixo identificadas celebram o presente <strong>CONTRATO DE PRESTAÇÃO DE SERVIÇOS</strong>, que se regerá pelas cláusulas e condições seguintes, as quais as partes declaram conhecer e aceitar integralmente:</p>
+<h3>PARTES</h3>
+<p><strong>CONTRATANTE:</strong> ${EMPRESA.razao}, inscrita no CNPJ sob nº ${EMPRESA.cnpj}, com sede em ${EMPRESA.endereco}, ${EMPRESA.sede} — ${EMPRESA.estado}, neste ato representada por seu ${EMPRESA.cargoRep}, ${EMPRESA.rep}, CPF ${EMPRESA.cpfRep}.</p>
+<p><strong>CONTRATADO(A):</strong> ${d.nome}, CPF nº ${d.cpf}, residente e domiciliado(a) em ${d.endereco}, ${d.cidade}${d.tel?`, telefone ${d.tel}`:''}${d.email?`, e-mail ${d.email}`:''}.</p>
+<h3>CLÁUSULA 1ª — DO OBJETO</h3>
+<p>O(A) CONTRATADO(A) prestará à CONTRATANTE os serviços especializados de <strong>${d.cargo}</strong>, de forma autônoma, sem subordinação hierárquica, sem pessoalidade obrigatória e com assunção de risco próprio, utilizando conhecimentos técnicos e intelectuais próprios. As atividades, prazos e entregas serão definidos em Ordens de Serviço emitidas pela CONTRATANTE, com força de instrumento complementar a este contrato.</p>
+<h3>CLÁUSULA 2ª — DA REMUNERAÇÃO E CONDIÇÕES DE PAGAMENTO</h3>
+<p>Pela prestação dos serviços efetivamente executados e aprovados pela CONTRATANTE, será pago ao(à) CONTRATADO(A) o valor de <strong>${salFmt}</strong> mensais, condicionado à: (i) emissão de nota fiscal de serviços até o último dia útil do mês de competência; (ii) entrega das atividades pactuadas; (iii) ausência de pendências contratuais. O pagamento será efetuado até o 5º (quinto) dia útil do mês subsequente. A CONTRATANTE reserva-se o direito de suspender pagamentos na hipótese de execução insatisfatória dos serviços, mediante notificação formal e prazo de 5 dias para saneamento.</p>
+<h3>CLÁUSULA 3ª — DO PRAZO E RESCISÃO</h3>
+<p>O presente contrato vigorará por prazo indeterminado, a contar de <strong>${fmtD(d.entrada)}</strong>. A CONTRATANTE poderá rescindi-lo a qualquer tempo, imediatamente e sem ônus, nas hipóteses de: (i) descumprimento de qualquer cláusula; (ii) conduta prejudicial à imagem ou operação da empresa; (iii) quebra de confidencialidade; (iv) conflito de interesses não declarado. O(A) CONTRATADO(A) deverá comunicar a rescisão com antecedência mínima de 30 (trinta) dias, sendo vedada a interrupção abrupta de atividades críticas em andamento.</p>
+<h3>CLÁUSULA 4ª — DA EXCLUSIVIDADE E NÃO CONCORRÊNCIA</h3>
+<p>Durante a vigência deste contrato, o(a) CONTRATADO(A) não poderá prestar serviços da mesma natureza a empresas que atuem no mesmo segmento da CONTRATANTE (gestão de patrimônio, wealth management, family office, assessoria de investimentos ou produtos financeiros), sem prévia autorização escrita. Após o encerramento contratual, por qualquer motivo, o(a) CONTRATADO(A) ficará impedido(a), pelo prazo de <strong>12 (doze) meses</strong>, de: (i) prestar serviços a concorrentes diretos; (ii) atender, captar ou prospectar, direta ou indiretamente, qualquer cliente que já tenha sido atendido pela CONTRATANTE. O descumprimento sujeitará o(a) CONTRATADO(A) ao pagamento de multa equivalente a <strong>12 (doze) vezes</strong> o valor mensal contratado, sem prejuízo de indenização por perdas e danos apuradas judicialmente.</p>
+<h3>CLÁUSULA 5ª — DO NÃO ALICIAMENTO</h3>
+<p>Durante a vigência e pelo prazo de <strong>24 (vinte e quatro) meses</strong> após o encerramento deste contrato, o(a) CONTRATADO(A) obriga-se a não recrutar, contratar, induzir ou facilitar o desligamento de qualquer colaborador, associado ou parceiro da CONTRATANTE, sob pena de multa equivalente a <strong>6 (seis) vezes</strong> o valor mensal deste contrato por pessoa aliciada.</p>
+<h3>CLÁUSULA 6ª — DA PROPRIEDADE INTELECTUAL</h3>
+<p>Todos os trabalhos, criações, desenvolvimentos, metodologias, relatórios, análises, softwares, materiais e demais produtos intelectuais elaborados pelo(a) CONTRATADO(A) no âmbito deste contrato serão de titularidade <strong>exclusiva e integral da CONTRATANTE</strong>, independentemente do suporte ou meio em que estejam fixados, nos termos da Lei nº 9.610/1998. O(A) CONTRATADO(A) cede, neste ato, de forma irrevogável e irretratável, todos os direitos patrimoniais sobre tais criações, sem qualquer remuneração adicional. Vedada a utilização, reprodução ou divulgação desses materiais para fins próprios ou de terceiros.</p>
+<h3>CLÁUSULA 7ª — DA CONFIDENCIALIDADE</h3>
+<p>O(A) CONTRATADO(A) obriga-se a manter absoluto sigilo, durante a vigência e por <strong>5 (cinco) anos</strong> após o encerramento deste contrato, sobre: (i) dados e informações de clientes da CONTRATANTE; (ii) estratégias comerciais, modelos de negócio e metodologias proprietárias; (iii) dados financeiros internos; (iv) qualquer informação não pública obtida em razão desta relação. A divulgação não autorizada, por qualquer meio, sujeita o(a) CONTRATADO(A) ao pagamento de multa de <strong>R$ 50.000,00 (cinquenta mil reais)</strong> por ocorrência, sem prejuízo de responsabilização civil e criminal. O(A) CONTRATADO(A) deverá devolver ou destruir, ao término, todos os documentos e arquivos pertencentes à CONTRATANTE.</p>
+<h3>CLÁUSULA 8ª — DA NATUREZA JURÍDICA</h3>
+<p>A relação estabelecida por este contrato é de natureza estritamente civil, não caracterizando, em hipótese alguma, vínculo empregatício, societário ou de representação comercial, não gerando quaisquer obrigações de natureza trabalhista ou previdenciária à CONTRATANTE. O(A) CONTRATADO(A) é responsável exclusivo pelo recolhimento de todos os tributos incidentes sobre sua remuneração.</p>
+<h3>CLÁUSULA 9ª — DAS DISPOSIÇÕES GERAIS</h3>
+<p>Este contrato constitui o acordo integral entre as partes, prevalecendo sobre qualquer entendimento anterior. Alterações somente serão válidas mediante aditamento escrito e assinado. A tolerância da CONTRATANTE quanto a eventual descumprimento não implicará novação ou renúncia de direitos. As partes elegem o foro da Comarca de ${EMPRESA.sede} — ${EMPRESA.estado} para dirimir quaisquer controvérsias, com renúncia expressa a qualquer outro, por mais privilegiado que seja.</p>`;
+  } else if(tipo==='clt'){
+    corpo=`
+<p>Pelo presente instrumento, as partes abaixo qualificadas celebram o presente <strong>CONTRATO INDIVIDUAL DE TRABALHO POR PRAZO INDETERMINADO</strong>, nos termos da Consolidação das Leis do Trabalho — CLT e legislação complementar, que se regerá pelas cláusulas e condições seguintes:</p>
+<h3>PARTES</h3>
+<p><strong>EMPREGADOR:</strong> ${EMPRESA.razao}, CNPJ nº ${EMPRESA.cnpj}, com sede em ${EMPRESA.endereco}, ${EMPRESA.sede} — ${EMPRESA.estado}, neste ato representado por ${EMPRESA.rep}, ${EMPRESA.cargoRep}.</p>
+<p><strong>EMPREGADO(A):</strong> ${d.nome}, CPF nº ${d.cpf}${d.nasc?`, nascido(a) em ${fmtD(d.nasc)}`:''}${d.cidade?`, natural de ${d.cidade}`:''}${d.pai?`, filho(a) de ${d.pai}${d.mae?' e '+d.mae:''}`:''}, residente e domiciliado(a) em ${d.endereco}.</p>
+<h3>CLÁUSULA 1ª — DA FUNÇÃO E PODER DIRETIVO</h3>
+<p>O(A) EMPREGADO(A) é admitido(a) para exercer a função de <strong>${d.cargo}</strong>. O EMPREGADOR, no exercício de seu poder diretivo, poderá atribuir outras tarefas compatíveis com a qualificação do(a) EMPREGADO(A), alterar horários, local de trabalho e forma de execução das atividades, bem como definir metas e indicadores de desempenho a serem cumpridos, nos limites da legislação trabalhista vigente.</p>
+<h3>CLÁUSULA 2ª — DO PERÍODO DE EXPERIÊNCIA</h3>
+<p>O presente contrato inicia-se em <strong>${fmtD(d.entrada)}</strong> com período de experiência de 45 (quarenta e cinco) dias, prorrogável por igual período, totalizando o máximo de 90 (noventa) dias, nos termos do art. 445 da CLT. Durante o período de experiência, qualquer das partes poderá rescindir o contrato sem pagamento de aviso prévio, limitadas as indenizações ao disposto no art. 479 da CLT.</p>
+<h3>CLÁUSULA 3ª — DA JORNADA DE TRABALHO</h3>
+<p>A jornada de trabalho será de até 44 (quarenta e quatro) horas semanais, distribuídas de segunda-feira a sexta-feira, nos horários e escalas definidos pelo EMPREGADOR conforme necessidade operacional. O regime poderá ser presencial, híbrido ou remoto, a critério exclusivo do EMPREGADOR, sem alteração salarial. Poderá ser adotado banco de horas por acordo escrito, nos termos do art. 59 da CLT.</p>
+<h3>CLÁUSULA 4ª — DA REMUNERAÇÃO</h3>
+<p>O(A) EMPREGADO(A) receberá salário mensal de <strong>${salFmt}</strong>, pago até o 5º (quinto) dia útil do mês subsequente ao trabalhado, acrescido dos benefícios previstos em lei. Eventuais benefícios adicionais concedidos de forma habitual não se incorporam ao salário, salvo pactuação expressa em contrário.</p>
+<h3>CLÁUSULA 5ª — DAS FÉRIAS E 13º SALÁRIO</h3>
+<p>O(A) EMPREGADO(A) terá direito a férias anuais remuneradas de 30 (trinta) dias, cujo período de gozo será definido pelo EMPREGADOR, nos termos dos arts. 129 e 136 da CLT, bem como ao 13º salário proporcional, nos termos da Lei nº 4.090/1962.</p>
+<h3>CLÁUSULA 6ª — DO FGTS E PREVIDÊNCIA</h3>
+<p>O EMPREGADOR recolherá mensalmente o FGTS à alíquota legal vigente e as contribuições previdenciárias na forma da lei, sendo os descontos do EMPREGADO(A) efetuados diretamente na folha de pagamento.</p>
+<h3>CLÁUSULA 7ª — DA PROPRIEDADE INTELECTUAL</h3>
+<p>Toda e qualquer criação intelectual, obra, invenção, desenvolvimento, metodologia, software, relatório, análise ou material produzido pelo(a) EMPREGADO(A) em razão de suas funções ou com utilização de recursos, informações ou tempo do EMPREGADOR serão de propriedade <strong>exclusiva do EMPREGADOR</strong>, nos termos dos arts. 4º e 88 da Lei nº 9.610/1998 e da Lei nº 9.279/1996, independentemente de registro ou formalidade adicional. O(A) EMPREGADO(A) compromete-se a firmar todos os documentos necessários para assegurar tal titularidade.</p>
+<h3>CLÁUSULA 8ª — DA CONFIDENCIALIDADE</h3>
+<p>O(A) EMPREGADO(A) obriga-se a manter sigilo absoluto, durante o contrato e por <strong>5 (cinco) anos</strong> após seu encerramento, sobre: (i) dados e informações de clientes; (ii) estratégias comerciais e operacionais; (iii) metodologias e know-how proprietário; (iv) dados financeiros internos; (v) qualquer informação não pública obtida em razão do emprego. O descumprimento constitui falta grave, passível de justa causa, além de responsabilidade civil pelos danos causados. Ao término, o(a) EMPREGADO(A) deverá devolver imediatamente todos os materiais e documentos pertencentes ao EMPREGADOR.</p>
+<h3>CLÁUSULA 9ª — DO NÃO ALICIAMENTO PÓS-CONTRATUAL</h3>
+<p>Pelo prazo de <strong>18 (dezoito) meses</strong> após o encerramento do contrato, o(a) EMPREGADO(A) obriga-se a não recrutar ou induzir o desligamento de qualquer colaborador, associado ou parceiro do EMPREGADOR, e a não prospectar, atender ou captar, direta ou indiretamente, clientes que tenha conhecido em razão do emprego, sob pena de indenização por perdas e danos apuradas judicialmente.</p>
+<h3>CLÁUSULA 10ª — DA CONDUTA E IMAGEM INSTITUCIONAL</h3>
+<p>O(A) EMPREGADO(A) compromete-se a observar o Código de Conduta e demais políticas internas do EMPREGADOR, abstendo-se de praticar atos que possam prejudicar a imagem, reputação ou interesses da empresa, inclusive em redes sociais e ambientes digitais. A violação dessas normas poderá ensejar advertência, suspensão ou dispensa por justa causa, conforme a gravidade.</p>
+<h3>CLÁUSULA 11ª — DO FORO</h3>
+<p>As partes elegem a Vara do Trabalho da Comarca de ${EMPRESA.sede} — ${EMPRESA.estado} para dirimir eventuais litígios decorrentes deste contrato.</p>`;
+  } else if(tipo==='associado'){
+    corpo=`
+<p>Pelo presente instrumento particular, as partes celebram o presente <strong>TERMO DE ASSOCIAÇÃO</strong>, que se regerá pelas cláusulas e condições abaixo, as quais as partes declaram conhecer e aceitar integralmente:</p>
+<h3>PARTES</h3>
+<p><strong>EMPRESA:</strong> ${EMPRESA.razao}, CNPJ nº ${EMPRESA.cnpj}, com sede em ${EMPRESA.endereco}, ${EMPRESA.sede} — ${EMPRESA.estado}, representada por ${EMPRESA.rep}, ${EMPRESA.cargoRep}, CPF ${EMPRESA.cpfRep}.</p>
+<p><strong>ASSOCIADO(A):</strong> ${d.nome}, CPF nº ${d.cpf}, residente e domiciliado(a) em ${d.endereco}, ${d.cidade}${d.tel?`, telefone ${d.tel}`:''}${d.email?`, e-mail ${d.email}`:''}.</p>
+<h3>CLÁUSULA 1ª — DO OBJETO E NATUREZA DA RELAÇÃO</h3>
+<p>O(A) ASSOCIADO(A) integrará o quadro de parceiros estratégicos da ${EMPRESA.razao} na qualidade de <strong>${d.cargo}</strong>, colaborando com suas competências técnicas, rede de relacionamentos e capacidade de geração de negócios, a partir de <strong>${fmtD(d.entrada)}</strong>. A presente relação é de natureza civil e associativa, <strong>não configurando vínculo empregatício, societário ou de representação comercial</strong>, não gerando obrigações trabalhistas ou previdenciárias para a EMPRESA.</p>
+<h3>CLÁUSULA 2ª — DAS OBRIGAÇÕES DO(A) ASSOCIADO(A)</h3>
+<p>O(A) ASSOCIADO(A) obriga-se a: (i) atuar em plena consonância com os valores, padrões éticos e diretrizes estratégicas da EMPRESA; (ii) apresentar relatórios mensais de atividades e resultados; (iii) dedicar esforços adequados para o atingimento das metas estabelecidas pela EMPRESA; (iv) não representar, assessorar ou prestar serviços a empresas concorrentes; (v) comunicar imediatamente qualquer conflito de interesse; (vi) utilizar apenas os canais e materiais de comunicação aprovados pela EMPRESA para abordar clientes e prospects.</p>
+<h3>CLÁUSULA 3ª — DAS METAS E AVALIAÇÃO DE DESEMPENHO</h3>
+<p>A EMPRESA definirá, semestralmente, metas quantitativas e qualitativas para o(a) ASSOCIADO(A), incluindo captação de clientes, volume de ativos sob assessoria e indicadores de qualidade. O não atingimento consecutivo de metas por 2 (dois) períodos avaliativos poderá ensejar rescisão imediata deste Termo pela EMPRESA, sem ônus para a mesma.</p>
+<h3>CLÁUSULA 4ª — DA REMUNERAÇÃO E PARTICIPAÇÃO</h3>
+<p>A remuneração do(a) ASSOCIADO(A) dar-se-á exclusivamente por participação nos resultados gerados por sua atuação direta, conforme modelo de remuneração variável definido em instrumento apartado, revisável semestralmente pela EMPRESA. Não há garantia de remuneração mínima. A EMPRESA poderá rever, reduzir ou extinguir benefícios adicionais eventualmente concedidos a qualquer tempo, mediante comunicação prévia de 30 dias.</p>
+<h3>CLÁUSULA 5ª — DA EXCLUSIVIDADE E NÃO CONCORRÊNCIA</h3>
+<p>Durante a vigência deste Termo, o(a) ASSOCIADO(A) não poderá exercer atividades no mesmo segmento (gestão de patrimônio, wealth management, family office ou assessoria de investimentos) para terceiros. Após o encerramento, por qualquer motivo, o(a) ASSOCIADO(A) ficará impedido(a), pelo prazo de <strong>18 (dezoito) meses</strong>, de: (i) associar-se, prestar serviços ou ter qualquer vínculo com concorrentes diretos; (ii) captar, prospectar ou atender clientes que tenham sido da carteira da EMPRESA durante a vigência deste Termo. O descumprimento sujeitará o(a) ASSOCIADO(A) a multa de <strong>R$ 100.000,00 (cem mil reais)</strong>, sem prejuízo de indenização integral por perdas e danos.</p>
+<h3>CLÁUSULA 6ª — DO NÃO ALICIAMENTO</h3>
+<p>Durante a vigência e por <strong>24 (vinte e quatro) meses</strong> após o encerramento, o(a) ASSOCIADO(A) obriga-se a não recrutar, contratar ou induzir o desligamento de qualquer colaborador, associado ou parceiro da EMPRESA, sob pena de multa de <strong>R$ 30.000,00 (trinta mil reais)</strong> por pessoa aliciada.</p>
+<h3>CLÁUSULA 7ª — DA PROPRIEDADE INTELECTUAL</h3>
+<p>Toda criação, metodologia, análise, material de captação, modelo de proposta ou desenvolvimentos elaborados pelo(a) ASSOCIADO(A) com utilização de recursos, dados ou marca da EMPRESA serão de titularidade <strong>exclusiva da EMPRESA</strong>, independente de registro. O(A) ASSOCIADO(A) cede, irrevogavelmente, todos os direitos patrimoniais sobre tais produções.</p>
+<h3>CLÁUSULA 8ª — DA CONFIDENCIALIDADE</h3>
+<p>O(A) ASSOCIADO(A) compromete-se ao sigilo absoluto durante a vigência e por <strong>5 (cinco) anos</strong> após o encerramento, sobre dados de clientes, estratégias, modelos de remuneração, metodologias, informações financeiras e quaisquer dados não públicos da EMPRESA. A violação sujeitará o(a) ASSOCIADO(A) a multa de <strong>R$ 50.000,00 (cinquenta mil reais)</strong> por ocorrência, além de responsabilização civil e criminal.</p>
+<h3>CLÁUSULA 9ª — DA VIGÊNCIA E RESCISÃO</h3>
+<p>Este Termo vigora por prazo indeterminado. A EMPRESA poderá rescindi-lo imediatamente, sem ônus, em caso de: (i) descumprimento de qualquer cláusula; (ii) conduta lesiva à imagem ou aos interesses da EMPRESA; (iii) não atingimento de metas; (iv) quebra de confidencialidade. O(A) ASSOCIADO(A) deverá comunicar a rescisão com antecedência mínima de 30 dias.</p>
+<h3>CLÁUSULA 10ª — DO FORO</h3>
+<p>Fica eleito o foro da Comarca de ${EMPRESA.sede} — ${EMPRESA.estado} para dirimir quaisquer controvérsias, com renúncia a qualquer outro, por mais privilegiado que seja.</p>`;
+  } else if(tipo==='sociedade'){
+    corpo=`
+<p>Pelo presente instrumento particular, as partes celebram o presente <strong>ACORDO DE SÓCIOS E TERMO DE INGRESSO EM SOCIEDADE</strong>, como instrumento complementar ao Contrato Social da ${EMPRESA.razao}, que se regerá pelas cláusulas e condições seguintes:</p>
+<h3>PARTES</h3>
+<p><strong>SOCIEDADE:</strong> ${EMPRESA.razao}, CNPJ nº ${EMPRESA.cnpj}, com sede em ${EMPRESA.endereco}, ${EMPRESA.sede} — ${EMPRESA.estado}, representada por ${EMPRESA.rep}, ${EMPRESA.cargoRep}, CPF ${EMPRESA.cpfRep}.</p>
+<p><strong>NOVO(A) SÓCIO(A):</strong> ${d.nome}, CPF nº ${d.cpf}${d.nasc?`, nascido(a) em ${fmtD(d.nasc)}`:''}${d.cidade?`, natural de ${d.cidade}`:''}${d.pai?`, filho(a) de ${d.pai}${d.mae?' e '+d.mae:''}`:''}, residente e domiciliado(a) em ${d.endereco}.</p>
+<h3>CLÁUSULA 1ª — DO INGRESSO E VESTING</h3>
+<p>${d.nome} ingressa no quadro societário da ${EMPRESA.razao} na qualidade de <strong>${d.cargo}</strong>, a partir de <strong>${fmtD(d.entrada)}</strong>. A participação societária estará sujeita a período de vesting de <strong>4 (quatro) anos</strong>, com cliff de 1 (um) ano, nos seguintes termos: (i) nenhuma quota é consolidada antes de completado o 1º ano; (ii) 25% das quotas se consolidam ao final do 1º ano; (iii) as quotas restantes se consolidam mensalmente ao longo dos 3 anos subsequentes. Em caso de saída voluntária antes do término do vesting, apenas as quotas já consolidadas serão mantidas pelo(a) SÓCIO(A).</p>
+<h3>CLÁUSULA 2ª — DA REMUNERAÇÃO (PRÓ-LABORE)</h3>
+<p>A remuneração do(a) SÓCIO(A) dar-se-á por meio de <strong>pró-labore</strong> de <strong>${salFmt}</strong> mensais, fixado em reunião de sócios e revisto anualmente por deliberação majoritária. Adicionalmente, o(a) SÓCIO(A) participará dos lucros conforme percentual definido no Contrato Social. O pró-labore não configura vínculo empregatício, e o(a) SÓCIO(A) é responsável pelo recolhimento de suas contribuições previdenciárias na qualidade de contribuinte individual.</p>
+<h3>CLÁUSULA 3ª — DAS OBRIGAÇÕES E DEDICAÇÃO</h3>
+<p>O(A) SÓCIO(A) obriga-se a: (i) dedicar-se com exclusividade e em tempo integral ao objeto social da EMPRESA; (ii) zelar pelos interesses da sociedade acima de interesses pessoais; (iii) não praticar atos em conflito de interesse, sob pena de exclusão; (iv) comunicar imediatamente qualquer situação que possa comprometer seus deveres societários; (v) participar das reuniões e deliberações sociais; (vi) atingir as metas estratégicas definidas pelos demais sócios.</p>
+<h3>CLÁUSULA 4ª — DA NÃO CONCORRÊNCIA E EXCLUSIVIDADE</h3>
+<p>Durante a vigência da sociedade e por <strong>2 (dois) anos</strong> após a saída, por qualquer motivo, o(a) SÓCIO(A) compromete-se a não: (i) constituir, integrar ou colaborar com empresa que atue no mesmo segmento da EMPRESA; (ii) captar ou atender, direta ou indiretamente, clientes ou prospects da carteira da EMPRESA; (iii) recrutar ou induzir o desligamento de qualquer colaborador, associado ou parceiro. O descumprimento sujeitará o(a) SÓCIO(A) à devolução das quotas e pagamento de multa equivalente a <strong>24 (vinte e quatro) vezes</strong> o pró-labore mensal, sem prejuízo de indenização integral por perdas e danos.</p>
+<h3>CLÁUSULA 5ª — DO LOCK-UP E TRANSFERÊNCIA DE QUOTAS</h3>
+<p>O(A) SÓCIO(A) não poderá ceder, transferir, onerar ou de qualquer forma alienar suas quotas durante os primeiros <strong>3 (três) anos</strong> de sociedade (lock-up). Após esse período, qualquer transferência estará sujeita a: (i) direito de preferência dos demais sócios, a ser exercido em 30 dias; (ii) aprovação prévia e unânime dos demais sócios em caso de ingresso de terceiros. Fica vedada a penhora, usufruto ou qualquer gravame sobre as quotas sem consentimento escrito dos demais sócios.</p>
+<h3>CLÁUSULA 6ª — DA RETIRADA E APURAÇÃO DE HAVERES</h3>
+<p>A retirada voluntária do(a) SÓCIO(A) dar-se-á mediante notificação por escrito com antecedência mínima de <strong>90 (noventa) dias</strong>. A apuração dos haveres será realizada com base no último balanço patrimonial aprovado, pelo valor patrimonial das quotas, excluídos os valores de carteira de clientes, propriedade intelectual e fundo de comércio gerados durante o período societário, que permanecerão integralmente com a EMPRESA. O pagamento será realizado em até 12 (doze) parcelas mensais iguais.</p>
+<h3>CLÁUSULA 7ª — DA EXCLUSÃO POR JUSTA CAUSA</h3>
+<p>O(A) SÓCIO(A) poderá ser excluído(a) por deliberação dos demais sócios, independentemente de indenização pelos haveres não consolidados via vesting, nas hipóteses de: (i) prática de ato de improbidade, fraude ou desonestidade contra a sociedade; (ii) descumprimento grave das obrigações societárias; (iii) condenação criminal transitada em julgado; (iv) violação da cláusula de confidencialidade ou não-concorrência.</p>
+<h3>CLÁUSULA 8ª — DA CONFIDENCIALIDADE</h3>
+<p>O(A) SÓCIO(A) obriga-se ao sigilo absoluto sobre informações estratégicas, dados de clientes, modelos de negócio, tecnologia e dados financeiros da EMPRESA, durante a vigência e por <strong>5 (cinco) anos</strong> após a saída, sob pena de multa de <strong>R$ 100.000,00 (cem mil reais)</strong> por violação, além de responsabilização civil e criminal.</p>
+<h3>CLÁUSULA 9ª — DO FORO E ARBITRAGEM</h3>
+<p>As controvérsias decorrentes deste Acordo serão submetidas, primeiramente, a mediação. Não havendo acordo em 30 dias, as partes elegem o foro da Comarca de ${EMPRESA.sede} — ${EMPRESA.estado} para resolução judicial, com renúncia a qualquer outro.</p>`;
+  } else if(tipo==='jovem_aprendiz'){
+    corpo=`
+<p>Pelo presente instrumento, as partes celebram o presente <strong>CONTRATO DE APRENDIZAGEM</strong>, nos termos dos artigos 428 a 433 da CLT e Lei nº 10.097/2000, que se regerá pelas cláusulas e condições seguintes:</p>
+<h3>PARTES</h3>
+<p><strong>EMPRESA CONTRATANTE:</strong> ${EMPRESA.razao}, CNPJ nº ${EMPRESA.cnpj}, com sede em ${EMPRESA.endereco}, ${EMPRESA.sede} — ${EMPRESA.estado}, neste ato representada por ${EMPRESA.rep}, ${EMPRESA.cargoRep}.</p>
+<p><strong>APRENDIZ:</strong> ${d.nome}, CPF nº ${d.cpf}${d.nasc?`, nascido(a) em ${fmtD(d.nasc)}`:''}${d.cidade?`, natural de ${d.cidade}`:''}${d.pai?`, filho(a) de ${d.pai}${d.mae?' e '+d.mae:''}`:''}, residente e domiciliado(a) em ${d.endereco}.</p>
+<h3>CLÁUSULA 1ª — DO OBJETO E PROGRAMA DE FORMAÇÃO</h3>
+<p>O presente contrato tem por objeto a formação técnico-profissional metódica do(a) APRENDIZ na ocupação de <strong>${d.cargo}</strong>, em conformidade com programa de aprendizagem desenvolvido junto a entidade qualificante habilitada pelo Ministério do Trabalho e Emprego. As atividades práticas serão supervisionadas por responsável designado pela EMPRESA CONTRATANTE.</p>
+<h3>CLÁUSULA 2ª — DO PRAZO</h3>
+<p>O contrato tem vigência a partir de <strong>${fmtD(d.entrada)}</strong> até a conclusão do programa de aprendizagem, respeitado o limite máximo de 2 (dois) anos previsto no art. 428, §3º da CLT. A EMPRESA CONTRATANTE poderá rescindir o contrato antecipadamente nas hipóteses do art. 433 da CLT, especialmente: (i) desempenho insuficiente ou inadaptação; (ii) falta disciplinar grave; (iii) ausências reiteradas injustificadas.</p>
+<h3>CLÁUSULA 3ª — DA JORNADA DE TRABALHO</h3>
+<p>A jornada do(a) APRENDIZ será de, no máximo, 6 (seis) horas diárias, abrangendo as horas de atividade prática e as destinadas à formação teórica, vedadas a prorrogação e a compensação, nos termos do art. 432 da CLT. Os horários serão definidos pela EMPRESA CONTRATANTE em conformidade com o calendário escolar.</p>
+<h3>CLÁUSULA 4ª — DA REMUNERAÇÃO E BENEFÍCIOS</h3>
+<p>O(A) APRENDIZ receberá salário mensal de <strong>${salFmt}</strong>, não inferior ao salário mínimo hora, pago até o 5º dia útil do mês subsequente. O FGTS será recolhido à alíquota especial de 2% (dois por cento), conforme art. 15, §7º da Lei nº 8.036/1990.</p>
+<h3>CLÁUSULA 5ª — DOS DIREITOS ASSEGURADOS</h3>
+<p>São assegurados ao(à) APRENDIZ: (i) férias de 30 dias, preferencialmente coincidentes com o período de recesso escolar; (ii) FGTS à alíquota de 2%; (iii) previdência social; (iv) seguro de acidentes pessoais; (v) vale-transporte nos termos da legislação vigente.</p>
+<h3>CLÁUSULA 6ª — DAS OBRIGAÇÕES DO(A) APRENDIZ</h3>
+<p>O(A) APRENDIZ compromete-se a: (i) cumprir fielmente o programa de aprendizagem e as tarefas definidas pelo supervisor; (ii) manter frequência escolar e apresentar comprovante quando solicitado; (iii) zelar pelos equipamentos e bens da EMPRESA CONTRATANTE; (iv) observar as normas internas de conduta e segurança; (v) manter sigilo sobre informações e dados internos da EMPRESA CONTRATANTE aos quais tenha acesso em razão das atividades práticas, durante e por 2 (dois) anos após o encerramento do contrato.</p>
+<h3>CLÁUSULA 7ª — DA PROPRIEDADE INTELECTUAL</h3>
+<p>Todo material produzido pelo(a) APRENDIZ no exercício das atividades práticas é de propriedade exclusiva da EMPRESA CONTRATANTE, não sendo devida qualquer remuneração adicional por tal produção.</p>
+<h3>CLÁUSULA 8ª — DO FORO</h3>
+<p>As partes elegem a Vara do Trabalho da Comarca de ${EMPRESA.sede} — ${EMPRESA.estado} para dirimir eventuais litígios.</p>`;
+  } else if(tipo==='estagio'){
+    corpo=`
+<p>Pelo presente instrumento, as partes celebram o presente <strong>TERMO DE COMPROMISSO DE ESTÁGIO</strong>, nos termos da Lei nº 11.788/2008, que se regerá pelas cláusulas e condições seguintes:</p>
+<h3>PARTES</h3>
+<p><strong>PARTE CONCEDENTE:</strong> ${EMPRESA.razao}, CNPJ nº ${EMPRESA.cnpj}, com sede em ${EMPRESA.endereco}, ${EMPRESA.sede} — ${EMPRESA.estado}, representada por ${EMPRESA.rep}, ${EMPRESA.cargoRep}, CPF ${EMPRESA.cpfRep}.</p>
+<p><strong>ESTAGIÁRIO(A):</strong> ${d.nome}, CPF nº ${d.cpf}${d.nasc?`, nascido(a) em ${fmtD(d.nasc)}`:''}${d.cidade?`, natural de ${d.cidade}`:''}${d.pai?`, filho(a) de ${d.pai}${d.mae?' e '+d.mae:''}`:''}, residente e domiciliado(a) em ${d.endereco}${d.tel?`, telefone ${d.tel}`:''}${d.email?`, e-mail ${d.email}`:''}.</p>
+<p><strong>INSTITUIÇÃO DE ENSINO:</strong> [NOME DA INSTITUIÇÃO DE ENSINO], CNPJ nº [CNPJ], curso de [CURSO], neste ato representada por [NOME DO REPRESENTANTE / COORDENADOR].</p>
+<h3>CLÁUSULA 1ª — DO OBJETO E PLANO DE ATIVIDADES</h3>
+<p>O presente Termo tem por objeto a realização de estágio curricular supervisionado na área de <strong>${d.cargo}</strong>, visando ao aprendizado de competências profissionais e à contextualização curricular do(a) ESTAGIÁRIO(A). As atividades específicas, metas e critérios de avaliação serão definidos pela PARTE CONCEDENTE em Plano de Atividades de Estágio, que integrará este instrumento como Anexo I. A PARTE CONCEDENTE reserva-se o direito de ajustar as atividades conforme necessidade operacional, desde que compatíveis com a área de estágio.</p>
+<h3>CLÁUSULA 2ª — DO PRAZO E RESCISÃO</h3>
+<p>O estágio terá início em <strong>${fmtD(d.entrada)}</strong> e duração máxima de 2 (dois) anos, conforme art. 11 da Lei nº 11.788/2008. A PARTE CONCEDENTE poderá rescindir este Termo a qualquer tempo, imediatamente e sem ônus, em caso de: (i) desempenho insatisfatório avaliado pelo supervisor; (ii) descumprimento de qualquer cláusula; (iii) quebra de confidencialidade; (iv) irregularidade na situação acadêmica; (v) conduta inadequada ou prejudicial à imagem da empresa.</p>
+<h3>CLÁUSULA 3ª — DA JORNADA</h3>
+<p>A jornada de estágio será de até 6 (seis) horas diárias e 30 (trinta) horas semanais, nos horários definidos pela PARTE CONCEDENTE em conformidade com o horário escolar, conforme art. 10 da Lei nº 11.788/2008. O regime poderá ser presencial, híbrido ou remoto, a critério da PARTE CONCEDENTE.</p>
+<h3>CLÁUSULA 4ª — DA BOLSA-AUXÍLIO E BENEFÍCIOS</h3>
+<p>A PARTE CONCEDENTE pagará ao(à) ESTAGIÁRIO(A) bolsa-auxílio mensal no valor de <strong>${salFmt}</strong>, condicionada à frequência regular, ao cumprimento das atividades pactuadas e à manutenção da matrícula ativa. O pagamento será suspenso automaticamente em caso de trancamento de matrícula. É assegurado auxílio-transporte e recesso remunerado de 30 dias a cada 12 meses, nos termos do art. 13 da Lei nº 11.788/2008.</p>
+<h3>CLÁUSULA 5ª — DO SEGURO DE ACIDENTES PESSOAIS</h3>
+<p>A PARTE CONCEDENTE contratará seguro contra acidentes pessoais em favor do(a) ESTAGIÁRIO(A) pelo período de vigência deste Termo, conforme exigência do art. 9º, IV, da Lei nº 11.788/2008, sem que isso configure vínculo empregatício.</p>
+<h3>CLÁUSULA 6ª — DAS OBRIGAÇÕES DO(A) ESTAGIÁRIO(A)</h3>
+<p>Compete ao(à) ESTAGIÁRIO(A): (i) cumprir fielmente as atividades e prazos definidos pelo supervisor; (ii) manter frequência escolar e apresentar comprovantes quando solicitado; (iii) comunicar imediatamente qualquer alteração na situação acadêmica; (iv) zelar pelos equipamentos, sistemas e bens da PARTE CONCEDENTE; (v) observar as normas internas de conduta, segurança da informação e ética profissional; (vi) apresentar relatório circunstanciado de atividades ao término do estágio.</p>
+<h3>CLÁUSULA 7ª — DA CONFIDENCIALIDADE</h3>
+<p>O(A) ESTAGIÁRIO(A) obriga-se a manter absoluto sigilo sobre todas as informações, dados de clientes, estratégias, metodologias e sistemas internos da PARTE CONCEDENTE aos quais tenha acesso durante o estágio, durante a vigência e por <strong>3 (três) anos</strong> após o encerramento deste Termo. A violação dessa obrigação sujeitará o(a) ESTAGIÁRIO(A) a responsabilização civil por perdas e danos. Ao término, todos os materiais e documentos da PARTE CONCEDENTE deverão ser imediatamente devolvidos ou destruídos.</p>
+<h3>CLÁUSULA 8ª — DA PROPRIEDADE INTELECTUAL</h3>
+<p>Todo trabalho, análise, código, material ou criação produzido pelo(a) ESTAGIÁRIO(A) no âmbito das atividades de estágio será de propriedade <strong>exclusiva da PARTE CONCEDENTE</strong>, independentemente de registro, não sendo devida qualquer remuneração adicional por tal produção.</p>
+<h3>CLÁUSULA 9ª — DO NÃO ALICIAMENTO PÓS-ESTÁGIO</h3>
+<p>Pelo prazo de <strong>12 (doze) meses</strong> após o encerramento do estágio, o(a) ESTAGIÁRIO(A) obriga-se a não prospectar ou atender, direta ou indiretamente, clientes que tenha conhecido em razão das atividades de estágio.</p>
+<h3>CLÁUSULA 10ª — DO FORO</h3>
+<p>As partes elegem o foro da Comarca de ${EMPRESA.sede} — ${EMPRESA.estado} para dirimir quaisquer controvérsias oriundas deste Termo.</p>`;
+  }
+
+  // Gerar HTML do contrato
+  const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${tipos[tipo]} — ${d.nome}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--gold:#C9963C;--navy:#0D1B2A;--text:#1a1a1a;--muted:#555;--border:#d4c5a9;--light:#f9f6f0}
+  body{font-family:'Cormorant Garamond',Georgia,serif;font-size:11.5pt;color:var(--text);background:#fff;padding:0;max-width:860px;margin:0 auto}
+
+  /* ── PRINT BUTTON ── */
+  .print-bar{background:var(--navy);padding:12px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .print-bar-logo{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,0.5)}
+  .print-btn{background:var(--gold);color:#fff;border:none;padding:8px 22px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;letter-spacing:0.5px;display:flex;align-items:center;gap:6px}
+  .print-btn:hover{background:#a07020}
+
+  /* ── DOCUMENT WRAPPER ── */
+  .doc{padding:14mm 22mm 16mm}
+
+  /* ── HEADER ── */
+  .header{margin-bottom:28px}
+  .header-top{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:12px;border-bottom:3px solid var(--gold)}
+  .logo-wrap{display:flex;flex-direction:column}
+  .logo-text{font-family:'Montserrat',sans-serif;font-size:17pt;font-weight:700;letter-spacing:3px;color:var(--navy);line-height:1}
+  .logo-sep{display:inline-block;width:1px;height:16px;background:var(--gold);margin:0 10px;vertical-align:middle}
+  .logo-tagline{font-family:'Montserrat',sans-serif;font-size:7.5pt;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-top:4px}
+  .header-meta{text-align:right;font-family:'Montserrat',sans-serif;font-size:7.5pt;color:var(--muted);line-height:1.8}
+  .header-meta strong{color:var(--navy)}
+  .contract-title-wrap{margin-top:18px;text-align:center;padding:14px 0 10px}
+  .contract-type-badge{display:inline-block;font-family:'Montserrat',sans-serif;font-size:7pt;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;border:1px solid var(--border);padding:4px 14px;border-radius:20px;margin-bottom:10px}
+  .contract-title{font-family:'Montserrat',sans-serif;font-size:13pt;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:1.5px;line-height:1.3}
+
+  /* ── INTRO ── */
+  .intro{font-size:10.5pt;color:var(--muted);text-align:justify;line-height:1.75;margin-bottom:22px;padding:14px 18px;background:var(--light);border-left:3px solid var(--gold);border-radius:0 4px 4px 0}
+
+  /* ── PARTES ── */
+  .partes-section{margin-bottom:22px}
+  .partes-title{font-family:'Montserrat',sans-serif;font-size:7pt;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+  .parte-bloco{padding:10px 14px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;background:#fdfcfa}
+  .parte-label{font-family:'Montserrat',sans-serif;font-size:7.5pt;font-weight:700;letter-spacing:1.5px;color:var(--navy);text-transform:uppercase;margin-bottom:4px}
+  .parte-info{font-size:10.5pt;line-height:1.6;color:var(--text)}
+
+  /* ── CLÁUSULAS ── */
+  .clausulas{margin-bottom:8px}
+  .clausula{margin-bottom:0;border-bottom:1px solid #ede8df;padding-bottom:14px;margin-bottom:14px}
+  .clausula:last-child{border-bottom:none}
+  .clausula-titulo{font-family:'Montserrat',sans-serif;font-size:7.5pt;font-weight:700;letter-spacing:1.5px;color:var(--navy);text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:8px}
+  .clausula-titulo::before{content:'';display:inline-block;width:3px;height:12px;background:var(--gold);border-radius:2px;flex-shrink:0}
+  .clausula p{font-size:10.5pt;text-align:justify;line-height:1.75;color:var(--text)}
+
+  /* ── ASSINATURAS ── */
+  .ass-section{margin-top:36px;padding-top:20px;border-top:2px solid var(--border)}
+  .ass-section-title{font-family:'Montserrat',sans-serif;font-size:7pt;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:6px;text-align:center}
+  .ass-local-data{font-family:'Montserrat',sans-serif;font-size:9pt;text-align:center;color:var(--muted);margin-bottom:28px}
+  .ass-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-bottom:28px}
+  .ass-bloco{text-align:center}
+  .ass-linha{border-top:1.5px solid var(--navy);padding-top:10px;margin-top:44px}
+  .ass-nome{font-family:'Montserrat',sans-serif;font-weight:700;font-size:9.5pt;color:var(--navy)}
+  .ass-cargo{font-family:'Montserrat',sans-serif;font-size:8pt;color:var(--muted);margin-top:2px}
+  .ass-cpf{font-family:'Montserrat',sans-serif;font-size:7.5pt;color:var(--muted);margin-top:1px}
+  .testemunhas-title{font-family:'Montserrat',sans-serif;font-size:7pt;font-weight:700;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;text-align:center}
+  .test-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+  .test-bloco{text-align:center}
+  .test-linha{border-top:1px solid #ccc;padding-top:8px;margin-top:36px}
+  .test-label{font-family:'Montserrat',sans-serif;font-size:7.5pt;color:#999}
+
+  /* ── RODAPÉ ── */
+  .rodape{margin-top:24px;padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .rodape-text{font-family:'Montserrat',sans-serif;font-size:7pt;color:#aaa;line-height:1.5}
+  .rodape-cnpj{font-family:'Montserrat',sans-serif;font-size:7pt;color:var(--gold);font-weight:600;white-space:nowrap}
+
+  /* ── PRINT RULES ── */
+  @media print{
+    .print-bar{display:none}
+    body{max-width:none}
+    .doc{padding:12mm 18mm 14mm}
+    .clausula{page-break-inside:avoid}
+    .ass-section{page-break-inside:avoid}
+    .header-top{border-bottom-color:#C9963C}
+  }
+</style></head><body>
+
+<div class="print-bar">
+  <div class="print-bar-logo">SOMA PARTNERS · GESTÃO DE PATRIMÔNIO</div>
+  <button class="print-btn" onclick="window.print()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Imprimir / Salvar PDF
+  </button>
+</div>
+
+<div class="doc">
+  <div class="header">
+    <div class="header-top">
+      <div class="logo-wrap">
+        <div class="logo-text">SOMA <span style="font-weight:400;color:var(--gold)">|</span> PARTNERS</div>
+        <div class="logo-tagline">Gestão de Patrimônio</div>
+      </div>
+      <div class="header-meta">
+        <div><strong>CNPJ</strong> ${EMPRESA.cnpj}</div>
+        <div>${EMPRESA.endereco}</div>
+        <div>${EMPRESA.sede} — ${EMPRESA.estado}</div>
+        <div style="margin-top:4px;color:#aaa">${hoje}</div>
+      </div>
+    </div>
+    <div class="contract-title-wrap">
+      <div class="contract-type-badge">Instrumento Particular</div>
+      <div class="contract-title">${tipos[tipo]}</div>
+    </div>
+  </div>
+
+  <div class="clausulas">${processarCorpo(corpo)}</div>
+
+  <div class="ass-section">
+    <div class="ass-section-title">Assinaturas</div>
+    <div class="ass-local-data">${EMPRESA.sede} — ${EMPRESA.estado}, ${hoje}</div>
+    <div class="ass-grid">
+      <div class="ass-bloco">
+        <div class="ass-linha">
+          <div class="ass-nome">${EMPRESA.razao}</div>
+          <div class="ass-cargo">${EMPRESA.rep}</div>
+          <div class="ass-cpf">${EMPRESA.cargoRep} · CPF ${EMPRESA.cpfRep}</div>
+        </div>
+      </div>
+      <div class="ass-bloco">
+        <div class="ass-linha">
+          <div class="ass-nome">${d.nome}</div>
+          <div class="ass-cargo">${d.cargo}</div>
+          <div class="ass-cpf">CPF ${d.cpf}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rodape">
+    <div class="rodape-text">
+      Documento gerado em ${hoje} via sistema interno Soma Partners.<br>
+      As partes declaram que leram e aceitaram integralmente todas as cláusulas deste instrumento, assinando-o em 2 (duas) vias de igual teor e forma.
+    </div>
+    <div class="rodape-cnpj">CNPJ ${EMPRESA.cnpj}</div>
+  </div>
+</div>
+</body></html>`;
+
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+
+  // Registrar geração do contrato no Supabase
+  const funcId=document.getElementById('func-id')?.value;
+  if(funcId){
+    const f=equipe.find(x=>x.id===funcId);
+    if(f){
+      const novoData={...f._data,
+        contrato_tipo:tipo,
+        contrato_gerado_em:new Date().toISOString(),
+        contrato_impresso:false,
+        contrato_assinado:false
+      };
+      await _sb.from('wealth_responsaveis').upsert({id:funcId,data:novoData});
+      await loadAll();
+    }
+  }
+}
 </script>
 </body>
 </html>
