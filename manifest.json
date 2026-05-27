@@ -1,0 +1,31 @@
+{
+  "name": "Soma Partners",
+  "short_name": "Soma",
+  "description": "Plataforma interna Soma Partners",
+  "start_url": "/soma-partners.html",
+  "display": "standalone",
+  "background_color": "#070c18",
+  "theme_color": "#c9963c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "finance"],
+  "lang": "pt-BR"
+}

@@ -68,6 +68,53 @@ CREATE TABLE IF NOT EXISTS wealth_followups (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ADMIN
+CREATE TABLE IF NOT EXISTS admin_lancamentos (
+  id TEXT PRIMARY KEY,
+  descricao TEXT,
+  valor NUMERIC,
+  tipo TEXT,
+  categoria TEXT,
+  status TEXT DEFAULT 'pendente',
+  data_vencimento DATE,
+  data_pagamento DATE,
+  obs TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS admin_ausencias (
+  id TEXT PRIMARY KEY,
+  funcionario_id TEXT,
+  tipo TEXT,
+  data_inicio DATE,
+  data_fim DATE,
+  dias INTEGER,
+  obs TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS admin_avaliacoes (
+  id TEXT PRIMARY KEY,
+  funcionario_id TEXT,
+  periodo TEXT,
+  nota INTEGER,
+  pontos_fortes TEXT,
+  pontos_melhoria TEXT,
+  obs TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS: liberar acesso anônimo (mesmo padrão das outras tabelas)
+ALTER TABLE admin_lancamentos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_ausencias ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_avaliacoes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "anon_all_lancamentos" ON admin_lancamentos FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "anon_all_ausencias"   ON admin_ausencias   FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "anon_all_avaliacoes"  ON admin_avaliacoes  FOR ALL TO anon USING (true) WITH CHECK (true);
+
 -- Indexes para performance
 CREATE INDEX IF NOT EXISTS idx_eventos_convidados_evento_id ON eventos_convidados(evento_id);
 CREATE INDEX IF NOT EXISTS idx_wealth_followups_lead_id ON wealth_followups(lead_id);
+CREATE INDEX IF NOT EXISTS idx_admin_ausencias_func ON admin_ausencias(funcionario_id);
+CREATE INDEX IF NOT EXISTS idx_admin_avaliacoes_func ON admin_avaliacoes(funcionario_id);

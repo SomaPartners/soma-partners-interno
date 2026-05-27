@@ -8,52 +8,45 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    :root {
-      --navy: #0b1e30;
-      --white: #ffffff;
-    }
+    :root { --navy: #0b1e30; --white: #ffffff; }
 
     html, body {
-      width: 100%;
+      width: 100%; height: 100%;
       background: var(--navy);
       font-family: 'Montserrat', sans-serif;
       color: var(--white);
-      overflow-x: hidden;
-    }
-
-    /* ════════════ FIRST SCREEN (100vh) ════════════ */
-    .screen-main {
-      width: 100%;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
       overflow: hidden;
     }
 
-    /* ════════════ LOGO ════════════ */
+    /* ════════════ PAGE WRAPPER ════════════ */
+    .page {
+      width: 100%; height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 32px 28px;
+      gap: 18px;
+    }
+
+    /* ════════════ LOGO BAR ════════════ */
     .logo-bar {
-      padding: 28px 36px 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
-      width: 100%;
     }
 
-    .user-area {
+    .logo {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 16px;
+      user-select: none;
     }
+    .logo-soma    { font-size: 20px; font-weight: 300; letter-spacing: 0.5px; }
+    .logo-pipe    { width: 1px; height: 26px; background: rgba(255,255,255,0.4); }
+    .logo-partners{ font-size: 12px; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; }
 
-    .user-name {
-      font-size: 11px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.3);
-      letter-spacing: 0.3px;
-    }
+    .user-area { display: flex; align-items: center; gap: 10px; }
+    .user-name  { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.3); letter-spacing: 0.3px; }
 
     .btn-logout {
       background: rgba(255,255,255,0.06);
@@ -61,271 +54,128 @@
       border-radius: 8px;
       padding: 6px 13px;
       font-family: 'Montserrat', sans-serif;
-      font-size: 10px;
-      font-weight: 700;
+      font-size: 10px; font-weight: 700;
       color: rgba(255,255,255,0.3);
-      cursor: pointer;
-      letter-spacing: 0.5px;
+      cursor: pointer; letter-spacing: 0.5px;
       transition: all 0.18s;
     }
     .btn-logout:hover { color: #fff; background: rgba(255,255,255,0.1); }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      user-select: none;
-    }
-
-    .logo-soma {
-      font-size: 21px;
-      font-weight: 300;
-      letter-spacing: 0.5px;
-    }
-
-    .logo-pipe {
-      width: 1px;
-      height: 30px;
-      background: rgba(255,255,255,0.45);
-    }
-
-    .logo-partners {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 5px;
-      text-transform: uppercase;
-    }
 
     /* ════════════ HERO ════════════ */
     .hero {
       text-align: center;
       flex-shrink: 0;
       line-height: 1.08;
-      padding: 0 20px;
     }
+    .hero-thin { font-size: clamp(20px, 2.8vw, 44px); font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+    .hero-bold { font-size: clamp(24px, 3.4vw, 52px); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
 
-    .hero-thin {
-      font-size: clamp(32px, 4.6vw, 62px);
-      font-weight: 400;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    .hero-bold {
-      font-size: clamp(36px, 5.2vw, 70px);
-      font-weight: 900;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    /* ════════════ CARDS ROW ════════════ */
-    .cards-row {
-      width: 100%;
-      display: flex;
-      align-items: stretch;
-      padding: 0 36px;
+    /* ════════════ CARDS GRID ════════════ */
+    .cards-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
       gap: 5px;
-      flex: 1;
-      max-height: 52vh;
-      margin-bottom: 48px;
+      min-height: 0;
     }
 
+    /* ════════════ CARD ════════════ */
     .card {
-      flex: 1;
       position: relative;
       overflow: hidden;
       cursor: pointer;
-      border-radius: 1px;
+      border-radius: 2px;
     }
 
-    /* ─ background images ─ */
     .card-img {
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       width: 100%; height: 100%;
       object-fit: cover;
-      display: block;
-      z-index: 1;
+      display: block; z-index: 1;
     }
 
-    /* CSS placeholder shown when no <img> is present */
-    .card-placeholder {
-      position: absolute;
-      inset: 0;
-    }
+    .card-placeholder { position: absolute; inset: 0; }
 
-    /* Concierge */
+    /* gradients */
     .card-concierge .card-placeholder {
       background:
         radial-gradient(ellipse at 60% 30%, rgba(30,55,80,0.9) 0%, rgba(8,18,28,1) 70%),
         linear-gradient(135deg, #1c3349 0%, #0a1a28 50%, #060f1a 100%);
     }
-
-    /* Wealth */
     .card-wealth .card-placeholder {
       background:
         radial-gradient(ellipse at 40% 60%, rgba(0,30,20,0.95) 0%, rgba(5,12,10,1) 70%),
         linear-gradient(135deg, #0a1f10 0%, #060d08 60%, #040b0a 100%);
     }
-
-    /* Eventos */
     .card-eventos .card-placeholder {
       background:
         radial-gradient(ellipse at 50% 40%, rgba(40,38,48,0.95) 0%, rgba(12,15,22,1) 70%),
         linear-gradient(135deg, #1e1e2a 0%, #0d0f18 60%, #080b14 100%);
     }
-
-    /* Dark tint always visible */
-    .card-tint {
-      position: absolute;
-      inset: 0;
-      background: rgba(8, 20, 34, 0.38);
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    /* Bottom gradient + label */
-    .card-footer {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: 48px 22px 22px;
-      background: linear-gradient(to top, rgba(6,16,26,0.92) 0%, transparent 100%);
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 0.35s ease, transform 0.35s ease;
-      z-index: 3;
-    }
-    .card:hover .card-footer { opacity: 1; transform: translateY(0); }
-
-    .card-title {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-    }
-    .card-subtitle {
-      font-size: 10.5px;
-      font-weight: 400;
-      letter-spacing: 1.5px;
-      color: rgba(255,255,255,0.65);
-      margin-top: 5px;
-    }
-
-    /* ════════════ SCROLL HINT ════════════ */
-    .scroll-hint {
-      position: absolute;
-      bottom: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      opacity: 0.28;
-      animation: hintBob 2.2s ease-in-out infinite;
-      pointer-events: none;
-      z-index: 10;
-    }
-    .scroll-hint span {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-    }
-    .scroll-hint svg {
-      width: 14px; height: 14px;
-      stroke: #fff; stroke-width: 2;
-      fill: none;
-    }
-    @keyframes hintBob {
-      0%,100%{ transform: translateX(-50%) translateY(0); opacity: 0.28; }
-      50%{ transform: translateX(-50%) translateY(5px); opacity: 0.5; }
-    }
-    .scroll-hint.hidden {
-      opacity: 0 !important;
-      animation: none !important;
-      transition: opacity 0.3s ease;
-    }
-
-    /* ════════════ SOMA CLUB SECTION ════════════ */
-    .screen-club {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 56px 36px 80px;
-      gap: 20px;
-    }
-
-    .club-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.18);
-    }
-
-    .club-card-wrap {
-      width: 100%;
-      max-width: 900px;
-      height: 260px;
-    }
-
-    /* Soma Club */
     .card-somaclub .card-placeholder {
       background:
         radial-gradient(ellipse at 55% 40%, rgba(201,150,60,0.18) 0%, rgba(10,12,18,1) 65%),
         linear-gradient(135deg, #1a1206 0%, #0d0c10 60%, #080a10 100%);
     }
-
-    /* Admin */
+    .card-somanews .card-placeholder {
+      background:
+        radial-gradient(ellipse at 50% 35%, rgba(180,40,30,0.22) 0%, rgba(10,8,8,1) 65%),
+        linear-gradient(135deg, #1e0a08 0%, #110707 60%, #0a0505 100%);
+    }
     .card-admin .card-placeholder {
       background:
         radial-gradient(ellipse at 50% 30%, rgba(100,80,180,0.2) 0%, rgba(8,10,18,1) 65%),
         linear-gradient(135deg, #120f1e 0%, #0a0c16 60%, #080a10 100%);
     }
 
-    /* Soma News */
-    .card-somanews .card-placeholder {
-      background:
-        radial-gradient(ellipse at 50% 35%, rgba(180,40,30,0.22) 0%, rgba(10,8,8,1) 65%),
-        linear-gradient(135deg, #1e0a08 0%, #110707 60%, #0a0505 100%);
-    }
-    .card-admin-locked {
-      cursor: not-allowed !important;
-      opacity: 0.55;
-    }
-    .card-admin-locked .card-footer {
-      opacity: 1 !important;
-      transform: none !important;
-    }
-    .admin-lock-icon {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -60%);
-      z-index: 4;
-      opacity: 0.22;
-    }
-    .admin-lock-icon svg {
-      width: 36px; height: 36px;
-      stroke: #fff; stroke-width: 1.5; fill: none;
+    .card-tint {
+      position: absolute; inset: 0;
+      background: rgba(8,20,34,0.38);
+      pointer-events: none; z-index: 2;
     }
 
-    @media(max-width:768px){
-      .screen-main{ height:auto; min-height:100vh; overflow:visible; }
-      .logo-bar{padding:24px 0 0}
-      .hero{padding:0 16px;margin:20px 0}
-      .hero-thin{font-size:clamp(22px,6vw,36px)}
-      .hero-bold{font-size:clamp(26px,7vw,42px)}
-      .cards-row{flex-direction:column;max-height:none;padding:0 16px;gap:8px;margin-bottom:32px}
-      .card{aspect-ratio:16/9;flex:none}
-      .card-footer{opacity:1;transform:none}
-      .card-title{font-size:13px;letter-spacing:3px}
-      .card-subtitle{font-size:10px}
-      .scroll-hint{display:none}
-      .screen-club{padding:32px 16px 64px}
-      .club-card-wrap{height:180px}
+    /* footer label */
+    .card-footer {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 40px 20px 18px;
+      background: linear-gradient(to top, rgba(6,16,26,0.92) 0%, transparent 100%);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.32s ease, transform 0.32s ease;
+      z-index: 3;
+    }
+    .card:hover .card-footer { opacity: 1; transform: translateY(0); }
+
+    .card-title    { font-size: 13px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; }
+    .card-subtitle { font-size: 10px; font-weight: 400; letter-spacing: 1.5px; color: rgba(255,255,255,0.65); margin-top: 4px; }
+
+    /* admin states */
+    .card-admin-locked { cursor: not-allowed !important; opacity: 0.55; }
+    .card-admin-locked .card-footer { opacity: 1 !important; transform: none !important; }
+
+    .admin-lock-icon {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -60%);
+      z-index: 4; opacity: 0.22;
+    }
+    .admin-lock-icon svg { width: 32px; height: 32px; stroke: #fff; stroke-width: 1.5; fill: none; }
+
+    /* ════════════ MOBILE ════════════ */
+    @media(max-width: 768px){
+      html, body { overflow: auto; height: auto; }
+      .page { height: auto; overflow: visible; padding: 20px 16px 32px; gap: 16px; }
+      .hero-thin { font-size: clamp(20px, 5vw, 32px); }
+      .hero-bold { font-size: clamp(24px, 6vw, 38px); }
+      .cards-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: repeat(3, 42vw);
+        gap: 6px;
+      }
+      .card-footer { opacity: 1; transform: none; }
+      .card-title { font-size: 11px; letter-spacing: 3px; }
+      .card-subtitle { font-size: 9px; }
     }
   </style>
   <!-- PWA -->
@@ -342,152 +192,130 @@
 </head>
 <body>
 
-  <!-- ══════════════════════════════════════════ -->
-  <!--   FIRST SCREEN — logo + hero + 3 cards    -->
-  <!-- ══════════════════════════════════════════ -->
-  <div class="screen-main">
+<div class="page">
 
-    <!-- LOGO -->
-    <div class="logo-bar">
-      <div class="logo">
-        <span class="logo-soma">Soma</span>
-        <div class="logo-pipe"></div>
-        <span class="logo-partners">Partners</span>
-      </div>
-      <div class="user-area">
-        <span class="user-name" id="user-name"></span>
-        <button class="btn-logout" onclick="logout()">SAIR</button>
-      </div>
+  <!-- LOGO BAR -->
+  <div class="logo-bar">
+    <div class="logo">
+      <span class="logo-soma">Soma</span>
+      <div class="logo-pipe"></div>
+      <span class="logo-partners">Partners</span>
     </div>
-
-    <!-- HERO -->
-    <div class="hero">
-      <div class="hero-thin">Cada passo soma.</div>
-      <div class="hero-bold">Cada decisão conta.</div>
-    </div>
-
-    <!-- CARDS -->
-    <div class="cards-row">
-
-      <!-- CONCIERGE -->
-      <div class="card card-concierge" onclick="window.location.href='concierge.html'">
-        <div class="card-placeholder"></div>
-        <img class="card-img" src="img/concierge.jpg.png" alt="Concierge" />
-        <div class="card-tint"></div>
-        <div class="card-footer">
-          <div class="card-title">Concierge</div>
-          <div class="card-subtitle">CRM Operacional &amp; Financeiro</div>
-        </div>
-      </div>
-
-      <!-- WEALTH -->
-      <div class="card card-wealth" onclick="window.location.href='wealth.html'">
-        <div class="card-placeholder"></div>
-        <img class="card-img" src="img/wealth.jpg.png" alt="Wealth" />
-        <div class="card-tint"></div>
-        <div class="card-footer">
-          <div class="card-title">Wealth</div>
-          <div class="card-subtitle">CRM Comercial &amp; Relacionamento</div>
-        </div>
-      </div>
-
-      <!-- EVENTOS -->
-      <div class="card card-eventos" onclick="window.location.href='eventos.html'">
-        <div class="card-placeholder"></div>
-        <img class="card-img" src="img/eventos.jpg.png" alt="Eventos" />
-        <div class="card-tint"></div>
-        <div class="card-footer">
-          <div class="card-title">Eventos</div>
-          <div class="card-subtitle">Gestão Completa de Eventos</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- SCROLL HINT -->
-    <div class="scroll-hint">
-      <span>Mais módulos</span>
-      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-    </div>
-
-  </div><!-- /screen-main -->
-
-  <!-- ══════════════════════════════════════════ -->
-  <!--   SOMA CLUB + ADMIN — revealed on scroll  -->
-  <!-- ══════════════════════════════════════════ -->
-  <div class="screen-club">
-    <div class="club-label">Mais módulos</div>
-    <div style="width:100%;max-width:900px;display:flex;gap:5px;height:260px" id="bottom-cards">
-
-      <!-- SOMA CLUB -->
-      <div class="card card-somaclub" style="height:100%" onclick="window.open('https://somaclubportal.vercel.app','_blank')">
-        <div class="card-placeholder"></div>
-        <img class="card-img" src="img/somaclub.jpg.png" alt="Soma Club" />
-        <div class="card-tint"></div>
-        <div class="card-footer">
-          <div class="card-title">Soma Club</div>
-          <div class="card-subtitle">Portal do Cliente</div>
-        </div>
-      </div>
-
-      <!-- SOMA NEWS -->
-      <div class="card card-somanews" style="height:100%" onclick="window.open('#','_blank')">
-        <div class="card-placeholder"></div>
-        <img class="card-img" src="img/somanews.png" alt="Soma News" onerror="this.style.display='none'" />
-        <div class="card-tint"></div>
-        <div class="card-footer">
-          <div class="card-title">Soma News</div>
-          <div class="card-subtitle">Notícias &amp; Atualizações</div>
-        </div>
-      </div>
-
-      <!-- ADMINISTRADOR -->
-      <div class="card card-admin" id="card-admin" style="height:100%">
-        <div class="card-placeholder"></div>
-        <img class="card-img" src="img/administrador.png" alt="Administrador" />
-        <div class="card-tint"></div>
-        <div class="admin-lock-icon" id="admin-lock">
-          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <div class="card-footer">
-          <div class="card-title">Administrador</div>
-          <div class="card-subtitle" id="admin-subtitle">Acesso restrito</div>
-        </div>
-      </div>
-
+    <div class="user-area">
+      <span class="user-name" id="user-name"></span>
+      <button class="btn-logout" onclick="logout()">SAIR</button>
     </div>
   </div>
 
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-thin">Cada passo soma.</div>
+    <div class="hero-bold">Cada decisão conta.</div>
+  </div>
+
+  <!-- CARDS GRID 2×3 -->
+  <div class="cards-grid">
+
+    <!-- CONCIERGE -->
+    <div class="card card-concierge" onclick="window.location.href='concierge.html'">
+      <div class="card-placeholder"></div>
+      <img class="card-img" src="img/concierge.jpg.png" alt="Concierge" />
+      <div class="card-tint"></div>
+      <div class="card-footer">
+        <div class="card-title">Concierge</div>
+        <div class="card-subtitle">CRM Operacional &amp; Financeiro</div>
+      </div>
+    </div>
+
+    <!-- WEALTH -->
+    <div class="card card-wealth" onclick="window.location.href='wealth.html'">
+      <div class="card-placeholder"></div>
+      <img class="card-img" src="img/wealth.jpg.png" alt="Wealth" />
+      <div class="card-tint"></div>
+      <div class="card-footer">
+        <div class="card-title">Wealth</div>
+        <div class="card-subtitle">CRM Comercial &amp; Relacionamento</div>
+      </div>
+    </div>
+
+    <!-- EVENTOS -->
+    <div class="card card-eventos" onclick="window.location.href='eventos.html'">
+      <div class="card-placeholder"></div>
+      <img class="card-img" src="img/eventos.jpg.png" alt="Eventos" />
+      <div class="card-tint"></div>
+      <div class="card-footer">
+        <div class="card-title">Eventos</div>
+        <div class="card-subtitle">Gestão Completa de Eventos</div>
+      </div>
+    </div>
+
+    <!-- SOMA CLUB -->
+    <div class="card card-somaclub" onclick="window.open('https://somaclubportal.vercel.app','_blank')">
+      <div class="card-placeholder"></div>
+      <img class="card-img" src="img/somaclub.jpg.png" alt="Soma Club" />
+      <div class="card-tint"></div>
+      <div class="card-footer">
+        <div class="card-title">Soma Club</div>
+        <div class="card-subtitle">Portal do Cliente</div>
+      </div>
+    </div>
+
+    <!-- SOMA NEWS -->
+    <div class="card card-somanews">
+      <div class="card-placeholder"></div>
+      <img class="card-img" src="img/somanews.png" alt="Soma News" />
+      <div class="card-tint"></div>
+      <div class="card-footer">
+        <div class="card-title">Soma News</div>
+        <div class="card-subtitle">Notícias &amp; Atualizações</div>
+      </div>
+    </div>
+
+    <!-- ADMINISTRADOR -->
+    <div class="card card-admin" id="card-admin">
+      <div class="card-placeholder"></div>
+      <img class="card-img" src="img/administrador.png" alt="Administrador" />
+      <div class="card-tint"></div>
+      <div class="admin-lock-icon" id="admin-lock">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="card-footer">
+        <div class="card-title">Administrador</div>
+        <div class="card-subtitle" id="admin-subtitle">Acesso restrito</div>
+      </div>
+    </div>
+
+  </div><!-- /cards-grid -->
+
+</div><!-- /page -->
 
 <script>
-if(sessionStorage.getItem('soma_auth')!=='1')window.location.href='login.html';
+if(sessionStorage.getItem('soma_auth')!=='1') window.location.href='login.html';
 
-// Esconde scroll hint ao rolar
-function hideHint(){
-  const hint = document.querySelector('.scroll-hint');
-  if(hint) hint.classList.add('hidden');
+const _nome = sessionStorage.getItem('soma_nome') || '';
+if(_nome) document.getElementById('user-name').textContent = _nome;
+
+function logout(){
+  sessionStorage.removeItem('soma_auth');
+  sessionStorage.removeItem('soma_admin');
+  sessionStorage.removeItem('soma_nome');
+  window.location.href = 'login.html';
 }
-window.addEventListener('scroll', hideHint, { once: true });
-document.addEventListener('scroll', hideHint, { once: true });
-document.body.addEventListener('scroll', hideHint, { once: true });
-const _nome=sessionStorage.getItem('soma_nome')||'';
-if(_nome) document.getElementById('user-name').textContent=_nome;
-function logout(){sessionStorage.removeItem('soma_auth');sessionStorage.removeItem('soma_admin');sessionStorage.removeItem('soma_nome');window.location.href='login.html';}
 
-// Admin card setup
+// Admin card
 (function(){
-  const isAdmin = sessionStorage.getItem('soma_admin')==='1';
+  const isAdmin = sessionStorage.getItem('soma_admin') === '1';
   const card = document.getElementById('card-admin');
   const lock = document.getElementById('admin-lock');
   const sub  = document.getElementById('admin-subtitle');
   if(isAdmin){
-    lock.style.display='none';
-    sub.textContent='Painel Administrativo';
-    card.style.cursor='pointer';
-    card.onclick=function(){ window.location.href='admin.html'; };
+    lock.style.display = 'none';
+    sub.textContent = 'Painel Administrativo';
+    card.style.cursor = 'pointer';
+    card.onclick = function(){ window.location.href = 'admin.html'; };
   } else {
     card.classList.add('card-admin-locked');
-    card.onclick=function(){ /* sem acesso */ };
+    card.onclick = function(){};
   }
 })();
 </script>
