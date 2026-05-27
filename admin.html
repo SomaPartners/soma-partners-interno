@@ -2622,10 +2622,14 @@ function exRenderDRE(){
   Object.keys(EX_CATS).forEach(k=>agg[k]=0);
   rows.forEach(r=>{agg[r.categoria]=(agg[r.categoria]||0)+r.valor;});
 
-  const recBruta=agg.honorarios+agg.rendimento+agg.outras_rec;
+  // Separa nc em entradas (créditos) e saídas (débitos)
+  const ncEntradas=rows.filter(r=>r.categoria==='nc'&&r.valor>0).reduce((s,r)=>s+r.valor,0);
+  const ncSaidas=rows.filter(r=>r.categoria==='nc'&&r.valor<0).reduce((s,r)=>s+r.valor,0);
+
+  const recBruta=agg.honorarios+agg.rendimento+agg.outras_rec+ncEntradas;
   const deducoes=agg.impostos;
   const recLiq=recBruta+deducoes;
-  const despTotal=agg.prolabore+agg.prestadores+agg.eventos+agg.marketing+agg.juridico+agg.tecnologia+agg.infraestrutura+agg.telecom+agg.treinamento+agg.taxas+agg.outros;
+  const despTotal=agg.prolabore+agg.prestadores+agg.eventos+agg.marketing+agg.juridico+agg.tecnologia+agg.infraestrutura+agg.telecom+agg.treinamento+agg.taxas+agg.outros+ncSaidas;
   const resultado=recLiq+despTotal;
   const antecipSaldo=agg.antecip_entrada+agg.pgto_cliente;
   const label=filtMes?`${filtMes}`:'Todos os períodos';
@@ -2709,6 +2713,14 @@ function exRenderDRE(){
     ${item('Honorários / Fees',agg.honorarios,'#6ee7b7')}
     ${item('Rendimento (Conta Remunerada)',agg.rendimento,'#6ee7b7')}
     ${item('Outras Receitas',agg.outras_rec,'#6ee7b7')}
+    ${ncEntradas?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 40px;border-bottom:1px solid rgba(255,255,255,0.025);background:rgba(245,158,11,0.05)">
+      <span style="font-size:11.5px;color:#fcd34d;display:flex;align-items:center;gap:7px;font-weight:600">
+        <span style="display:inline-block;width:2px;height:10px;border-radius:1px;background:#fcd34d;flex-shrink:0"></span>
+        ⚠ Entradas Não Categorizadas
+      </span>
+      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px">+${fmtBRL2(ncEntradas)}</span></div>
+      <div style="text-align:right">${recLiq?`<span style="color:rgba(252,211,77,0.6);font-size:10px">+${((ncEntradas/recLiq)*100).toFixed(1)}%</span>`:''}</div>
+    </div>`:''}
     ${totalRow('(+) Receita Bruta',recBruta,'rgba(16,185,129,0.2)')}
 
     <!-- ── DEDUÇÕES ── -->
@@ -2729,13 +2741,13 @@ function exRenderDRE(){
     ${item('Treinamento',agg.treinamento,'#fca5a5')}
     ${item('Taxas / Regulatório',agg.taxas,'#fca5a5')}
     ${item('Outros Serviços',agg.outros,'#fca5a5')}
-    ${agg.nc?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 40px;border-bottom:1px solid rgba(255,255,255,0.025);background:rgba(245,158,11,0.05)">
+    ${ncSaidas?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 40px;border-bottom:1px solid rgba(255,255,255,0.025);background:rgba(245,158,11,0.05)">
       <span style="font-size:11.5px;color:#fcd34d;display:flex;align-items:center;gap:7px;font-weight:600">
         <span style="display:inline-block;width:2px;height:10px;border-radius:1px;background:#fcd34d;flex-shrink:0"></span>
-        ⚠ Não Categorizado (pendente)
+        ⚠ Saídas Não Categorizadas
       </span>
-      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px">${fmtBRL2(agg.nc)}</span></div>
-      <div></div>
+      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px">${fmtBRL2(ncSaidas)}</span></div>
+      <div style="text-align:right">${recLiq?`<span style="color:rgba(252,211,77,0.6);font-size:10px">${((ncSaidas/recLiq)*100).toFixed(1)}%</span>`:''}</div>
     </div>`:''}
     ${totalRow('(–) Total de Despesas',despTotal,'rgba(239,68,68,0.25)')}
 
