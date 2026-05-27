@@ -2553,7 +2553,6 @@ async function exSalvar(){
   }
   // Re-sincroniza todos os rows não-internos desta empresa
   const lancSync=_exRows.filter(r=>empresasAlteradas.includes(r.empresa)&&r.categoria!=='interno').map(r=>({
-    id:'btg-'+r.id,
     descricao:r.descricao,
     valor:Math.abs(r.valor),
     tipo:r.valor>0?'receita':'despesa',
