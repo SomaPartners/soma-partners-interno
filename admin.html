@@ -348,6 +348,13 @@ body{display:flex;flex-direction:column;overflow:hidden}
         <div class="sec-sub" style="margin-bottom:0">Demonstração do Resultado do Exercício</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
+        <select class="toolbar-select" id="dre-conta" onchange="renderDRE()">
+          <option value="">Todas as contas</option>
+          <option value="soma">Soma Partners</option>
+          <option value="trai">TR AI</option>
+          <option value="wealth">Soma Wealth</option>
+          <option value="trserv">TR Serviços</option>
+        </select>
         <select class="toolbar-select" id="dre-mes" onchange="renderDRE()">
           <option value="">Ano completo</option>
           <option value="01">Janeiro</option><option value="02">Fevereiro</option>
@@ -695,6 +702,14 @@ body{display:flex;flex-direction:column;overflow:hidden}
           <option value="atrasado">Atrasado</option>
         </select></div>
     </div>
+    <div class="field"><label>Conta de Pagamento</label>
+      <select id="lanc-f-conta">
+        <option value="">— Selecionar conta —</option>
+        <option value="soma">Soma Partners Ltda</option>
+        <option value="trai">TR AI Ltda</option>
+        <option value="wealth">Soma Wealth Consultoria Ltda</option>
+        <option value="trserv">TR Serviços Financeiros Ltda</option>
+      </select></div>
     <div class="field"><label>Descrição</label><input type="text" id="lanc-f-desc" placeholder="Ex: Salários, Mensalidade cliente…"></div>
     <div class="form-row">
       <div class="field"><label>Categoria</label><input type="text" id="lanc-f-cat" placeholder="Ex: RH, Marketing, Honorários…"></div>
@@ -1276,6 +1291,7 @@ function abrirModalLanc(){
   ['lanc-f-desc','lanc-f-cat','lanc-f-valor','lanc-f-venc','lanc-f-pgto','lanc-f-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lanc-f-tipo').value='receita';
   document.getElementById('lanc-f-status').value='pendente';
+  document.getElementById('lanc-f-conta').value='';
   openModal('modal-lanc');
 }
 
@@ -1291,6 +1307,7 @@ function editarLanc(id){
   document.getElementById('lanc-f-venc').value=l.data_vencimento||'';
   document.getElementById('lanc-f-pgto').value=l.data_pagamento||'';
   document.getElementById('lanc-f-obs').value=l.obs||'';
+  document.getElementById('lanc-f-conta').value=l.conta||'';
   openModal('modal-lanc');
 }
 
@@ -1305,6 +1322,7 @@ async function salvarLanc(){
     data_vencimento:document.getElementById('lanc-f-venc').value||null,
     data_pagamento:document.getElementById('lanc-f-pgto').value||null,
     obs:document.getElementById('lanc-f-obs').value,
+    conta:document.getElementById('lanc-f-conta').value||null,
   };
   if(id){await _sb.from('admin_lancamentos').update(rec).eq('id',id);}
   else{await _sb.from('admin_lancamentos').insert(rec);}
@@ -1330,10 +1348,12 @@ function renderDRE(){
   if(!selAno.options.length) selAno.innerHTML=anos.map(a=>`<option value="${a}">${a}</option>`).join('');
   const ano=selAno.value||curAno;
   const mes=document.getElementById('dre-mes')?.value||'';
+  const conta=document.getElementById('dre-conta')?.value||'';
 
-  // Filtra lançamentos do período
+  // Filtra lançamentos do período e conta
   const prefix=mes?`${ano}-${mes}`:ano;
-  const lancs=lancamentos.filter(l=>l.data_vencimento?.startsWith(prefix));
+  const contaLabel=conta?({'soma':'Soma Partners','trai':'TR AI','wealth':'Soma Wealth','trserv':'TR Serviços'}[conta]||conta):'Todas as Contas';
+  const lancs=lancamentos.filter(l=>l.data_vencimento?.startsWith(prefix)&&(!conta||l.conta===conta));
 
   // Agrupa por categoria
   const receitas=lancs.filter(l=>l.tipo==='receita');
@@ -1407,7 +1427,7 @@ function renderDRE(){
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div>
           <div style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Demonstração do Resultado</div>
-          <div style="font-size:15px;font-weight:900;letter-spacing:0.3px">Financeiro — DRE</div>
+          <div style="font-size:15px;font-weight:900;letter-spacing:0.3px">Financeiro — DRE${conta?` · ${contaLabel}`:''}</div>
         </div>
         <div style="font-size:11px;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:4px 10px">${periodoLabel}</div>
       </div>
