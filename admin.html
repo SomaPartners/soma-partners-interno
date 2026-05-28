@@ -2538,21 +2538,26 @@ function exRender(){
   tbody.innerHTML=filtered.map(r=>{
     const nc=r.categoria==='nc';
     const isInt=r.categoria==='interno';
+    const isPassagem=r.categoria==='antecip_entrada'||r.categoria==='pgto_cliente';
     const vclr=isInt?'rgba(255,255,255,0.15)':(r.valor>0?'#6ee7b7':'#fca5a5');
-    const rowStyle=nc?'background:rgba(252,211,77,0.02)':isInt?'opacity:0.45':'';
+    const rowStyle=nc?'background:rgba(252,211,77,0.02)':isInt?'opacity:0.45':isPassagem?'background:rgba(59,130,246,0.03)':'';
     const dateFmt=r.data.split('-').reverse().join('/');
     return`<tr style="${rowStyle}">
       <td style="font-size:11px;color:var(--muted);white-space:nowrap">${dateFmt}</td>
       <td style="font-size:11px;max-width:300px;${isInt?'color:rgba(255,255,255,0.3)':''}">${r.descricao}</td>
       <td style="color:${vclr};font-weight:700;white-space:nowrap;text-align:right">${exFmtVal(r.valor)}</td>
       <td><select class="ex-cat-sel${nc?' nc-sel':''}" onchange="exChangeCateg('${r.id}',this.value)">${exCatOptions(r.categoria)}</select></td>
-      <td><input class="ex-obs-inp" value="${r.obs||''}" onchange="exChangeObs('${r.id}',this.value)" placeholder="obs…"></td>
+      <td style="display:flex;gap:4px;align-items:center">
+        ${isPassagem?`<input class="ex-obs-inp" style="width:100px;border-color:rgba(147,197,253,0.3);background:rgba(59,130,246,0.06)" value="${r.cliente||''}" onchange="exChangeCliente('${r.id}',this.value)" placeholder="cliente…">`:``}
+        <input class="ex-obs-inp" style="${isPassagem?'width:90px':''}" value="${r.obs||''}" onchange="exChangeObs('${r.id}',this.value)" placeholder="obs…">
+      </td>
     </tr>`;
   }).join('');
 }
 
-function exChangeCateg(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.categoria=val;r.saved=false;}exUpdateNcBadge();}
+function exChangeCateg(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.categoria=val;r.saved=false;}exUpdateNcBadge();exRender();}
 function exChangeObs(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.obs=val;r.saved=false;}}
+function exChangeCliente(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.cliente=val;r.saved=false;}}
 
 async function exSalvar(){
   const btn=document.querySelector('[onclick="exSalvar()"]');
@@ -2561,7 +2566,7 @@ async function exSalvar(){
   const toSave=_exRows.filter(r=>!r.saved);
   if(!toSave.length){st.textContent='Sem alterações pendentes.';btn.disabled=false;return;}
   // Salva em admin_extrato
-  const recs=toSave.map(({id,empresa,data,descricao,valor,categoria,mes,obs})=>({id,empresa,data,descricao,valor,categoria,mes,obs}));
+  const recs=toSave.map(({id,empresa,data,descricao,valor,categoria,mes,obs,cliente})=>({id,empresa,data,descricao,valor,categoria,mes,obs,cliente:cliente||null}));
   const {error}=await _sb.from('admin_extrato').upsert(recs);
   if(error){st.textContent='Erro: '+error.message;btn.disabled=false;return;}
   toSave.forEach(r=>r.saved=true);
@@ -2790,13 +2795,41 @@ function exRenderDRE(){
     ${item('Despesas Pessoais',agg.desp_pessoais,'#fcd34d')}`;
   }
 
-  // ── Antecipações ──
-  if(agg.antecip_entrada||agg.pgto_cliente){
+  // ── Fluxo de Passagem por Cliente ──
+  const passagemRows=rows.filter(r=>r.categoria==='antecip_entrada'||r.categoria==='pgto_cliente');
+  if(passagemRows.length){
+    // Agrupa por cliente
+    const clientes=[...new Set(passagemRows.map(r=>r.cliente||'— Cliente não informado'))].sort();
+    const totalDevolver=clientes.reduce((sum,cli)=>{
+      const cliRows=passagemRows.filter(r=>(r.cliente||'— Cliente não informado')===cli);
+      return sum+cliRows.reduce((s,r)=>s+r.valor,0);
+    },0);
     html+=`
-    ${secao('Fluxo de Passagem — Antecipações','#93c5fd','rgba(59,130,246,0.03)')}
-    ${agg.antecip_entrada?item('Antecipações Recebidas',agg.antecip_entrada,'#93c5fd'):''}
-    ${agg.pgto_cliente?item('Pagamentos por Conta do Cliente',agg.pgto_cliente,'#93c5fd'):''}
-    ${totalRow('Saldo Antecipações',antecipSaldo,'rgba(59,130,246,0.25)')}`;
+    ${secao('Fluxo de Passagem — Por Cliente','#93c5fd','rgba(59,130,246,0.03)')}`;
+    clientes.forEach(cli=>{
+      const cliRows=passagemRows.filter(r=>(r.cliente||'— Cliente não informado')===cli);
+      const entradas=cliRows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+r.valor,0);
+      const pagamentos=cliRows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+r.valor,0);
+      const saldo=entradas+pagamentos;
+      const saldoCor=saldo>0?'#93c5fd':saldo<0?'#fca5a5':'rgba(255,255,255,0.3)';
+      html+=`
+      <div style="padding:8px 20px 4px;border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.02)">
+        <span style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(147,197,253,0.8)">${cli}</span>
+      </div>
+      ${entradas?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
+        <span style="font-size:11px;color:rgba(255,255,255,0.45)">Antecipações recebidas</span>
+        <div style="text-align:right"><span style="color:#93c5fd;font-size:12px">+${fmtBRL2(entradas)}</span></div><div></div>
+      </div>`:''}
+      ${pagamentos?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
+        <span style="font-size:11px;color:rgba(255,255,255,0.45)">Pagamentos realizados</span>
+        <div style="text-align:right"><span style="color:#fca5a5;font-size:12px">${fmtBRL2(pagamentos)}</span></div><div></div>
+      </div>`:''}
+      <div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 44px;border-bottom:1px solid rgba(59,130,246,0.1);background:rgba(59,130,246,0.04)">
+        <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7)">Saldo a devolver</span>
+        <div style="text-align:right"><span style="color:${saldoCor};font-weight:800;font-size:12px">${saldo>=0?'+':''}${fmtBRL2(saldo)}</span></div><div></div>
+      </div>`;
+    });
+    html+=totalRow('Total a Devolver (todos os clientes)',totalDevolver,'rgba(59,130,246,0.3)');
   }
 
   html+=`</div>`;
