@@ -1594,6 +1594,88 @@ function renderDRE(){
       <div style="font-size:26px;font-weight:900;color:${lucro?'#6ee7b7':'#fca5a5'};font-variant-numeric:tabular-nums">${resultado>=0?'+':''}${BRL(resultado)}</div>
     </div>
 
+    <!-- ── FLUXO DE PASSAGEM ── -->
+    ${(()=>{
+      const passRows=lancs.filter(l=>l.categoria==='antecip_entrada'||l.categoria==='pgto_cliente'||l.categoria==='fee_soma');
+      if(!passRows.length) return '';
+      // Agrupa por família via cliente_item_id
+      const cliMap={};
+      passRows.forEach(l=>{
+        const itm=l.cliente_item_id?antecipItens.find(i=>i.id===l.cliente_item_id):null;
+        const key=itm?itm.cliente_id:'__unknown__';
+        const cli=itm?antecipClientes.find(c=>c.id===itm.cliente_id):null;
+        if(!cliMap[key])cliMap[key]={cliNome:cli?cli.nome:'— Cliente não informado',rows:[]};
+        cliMap[key].rows.push({...l,itemNome:itm?itm.nome:'—'});
+      });
+      const totalDev=Object.values(cliMap).reduce((sum,g)=>{
+        const ent=g.rows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+(r.valor||0),0);
+        const pgt=g.rows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+(r.valor||0),0);
+        const fee=g.rows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s+(r.valor||0),0);
+        return sum+ent-pgt-fee;
+      },0);
+      const secPassagem=`
+        <div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:12px 20px 9px;background:rgba(59,130,246,0.04);border-top:1px solid rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.04)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:2px;height:12px;border-radius:1px;background:#93c5fd"></div>
+            <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#93c5fd">Fluxo de Passagem — Por Cliente</span>
+          </div>
+          <div style="text-align:right;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.2)">Valor</div>
+          <div style="text-align:right;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.2)">% Rec.</div>
+        </div>`;
+      let html=secPassagem;
+      Object.values(cliMap).sort((a,b)=>a.cliNome.localeCompare(b.cliNome)).forEach(({cliNome,rows:cr})=>{
+        const ent=cr.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+(r.valor||0),0);
+        const pgt=cr.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+(r.valor||0),0);
+        const fee=cr.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s+(r.valor||0),0);
+        const saldo=ent-pgt-fee;
+        const saldoCor=saldo>0?'#93c5fd':saldo<0?'#fca5a5':'rgba(255,255,255,0.3)';
+        html+=`<div style="padding:8px 20px 4px;border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.02)">
+          <span style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(147,197,253,0.8)">${cliNome}</span>
+        </div>`;
+        // Sub-itens
+        const itemIds=[...new Set(cr.map(r=>r.cliente_item_id||'__none__'))];
+        if(itemIds.length>1||(itemIds.length===1&&itemIds[0]!=='__none__')){
+          itemIds.forEach(iid=>{
+            const iNome=iid==='__none__'?'—':(antecipItens.find(i=>i.id===iid)?.nome||iid);
+            const iRows=cr.filter(r=>(r.cliente_item_id||'__none__')===iid);
+            const iEnt=iRows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+(r.valor||0),0);
+            const iPgt=iRows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+(r.valor||0),0);
+            const iFee=iRows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s+(r.valor||0),0);
+            const iSaldo=iEnt-iPgt-iFee;
+            if(!iSaldo&&!iEnt&&!iPgt&&!iFee)return;
+            html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:4px 20px 4px 36px;border-bottom:1px solid rgba(255,255,255,0.015)">
+              <span style="font-size:10px;color:rgba(147,197,253,0.5);font-weight:600">${iNome}</span>
+              <div style="text-align:right"><span style="color:${iSaldo>=0?'#93c5fd':'#fca5a5'};font-size:11px">${iSaldo>=0?'+':''}${BRL(Math.abs(iSaldo))}</span></div><div></div>
+            </div>`;
+          });
+        }
+        if(ent) html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
+          <span style="font-size:11px;color:rgba(255,255,255,0.45)">Antecipações recebidas</span>
+          <div style="text-align:right"><span style="color:#93c5fd;font-size:12px">+${BRL(ent)}</span></div><div></div>
+        </div>`;
+        if(pgt) html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
+          <span style="font-size:11px;color:rgba(255,255,255,0.45)">Pagamentos realizados</span>
+          <div style="text-align:right"><span style="color:#fca5a5;font-size:12px">-${BRL(pgt)}</span></div><div></div>
+        </div>`;
+        if(fee) html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
+          <span style="font-size:11px;color:rgba(255,255,255,0.45)">Fee Soma Partners</span>
+          <div style="text-align:right"><span style="color:#fca5a5;font-size:12px">-${BRL(fee)}</span></div><div></div>
+        </div>`;
+        html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:6px 20px 6px 44px;border-bottom:1px solid rgba(59,130,246,0.1);background:rgba(59,130,246,0.04)">
+          <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7)">Saldo a devolver</span>
+          <div style="text-align:right"><span style="color:${saldoCor};font-weight:800;font-size:12px">${saldo>=0?'+':''}${BRL(Math.abs(saldo))}</span></div><div></div>
+        </div>`;
+      });
+      // Total geral
+      const totCor=totalDev>0?'#93c5fd':totalDev<0?'#fca5a5':'rgba(255,255,255,0.3)';
+      html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:10px 20px;background:rgba(255,255,255,0.03);border-top:1px solid rgba(59,130,246,0.3);border-bottom:1px solid rgba(255,255,255,0.04)">
+        <span style="font-size:11.5px;font-weight:800;color:rgba(255,255,255,0.85);letter-spacing:0.2px">Total a Devolver (todos os clientes)</span>
+        <div style="text-align:right"><span style="color:${totCor};font-weight:900;font-size:13px">${totalDev>=0?'+':''}${BRL(Math.abs(totalDev))}</span></div>
+        <div style="text-align:right">${Pct(totalDev,totalRec)}</div>
+      </div>`;
+      return html;
+    })()}
+
     <!-- ── Rodapé ── -->
     <div style="padding:8px 20px;border-top:1px solid rgba(255,255,255,0.04);display:flex;gap:16px">
       <span style="font-size:10px;color:rgba(255,255,255,0.25)">Lançamentos no período: <strong style="color:rgba(255,255,255,0.4)">${lancs.length}</strong></span>
