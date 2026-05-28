@@ -1300,24 +1300,41 @@ function populateFuncSelects(){
 // ════════════════════════════════
 //  FINANCEIRO — VISÃO GERAL
 // ════════════════════════════════
+function calcDRE(lancs){
+  // Mesma lógica da DRE: exclui nc e passagem dos totais principais
+  const PASS=new Set(['antecip_entrada','pgto_cliente','fee_soma']);
+  const agg={};
+  Object.keys(EX_CATS).forEach(k=>agg[k]=0);
+  lancs.forEach(l=>{
+    const v=l.tipo==='receita'?(l.valor||0):-(l.valor||0);
+    if(l.categoria) agg[l.categoria]=(agg[l.categoria]||0)+v;
+  });
+  const feeTotal=Math.abs(agg.fee_soma||0);
+  const recBruta=(agg.honorarios||0)+(agg.rendimento||0)+(agg.outras_rec||0)+feeTotal;
+  const recLiq=recBruta+(agg.impostos||0);
+  const despTotal=(agg.prolabore||0)+(agg.prestadores||0)+(agg.eventos||0)+(agg.marketing||0)+(agg.juridico||0)+(agg.tecnologia||0)+(agg.infraestrutura||0)+(agg.telecom||0)+(agg.treinamento||0)+(agg.taxas||0)+(agg.outros||0);
+  const resultado=recLiq+despTotal;
+  const ncPend=lancs.filter(l=>l.categoria==='nc').reduce((s,l)=>s+(l.valor||0),0);
+  return {recBruta,recLiq,despTotal:Math.abs(despTotal),resultado,ncPend};
+}
+
 function renderFinVisao(){
   const now=new Date();
   const mesStr=now.toISOString().slice(0,7);
   const mesLanc=lancamentos.filter(l=>l.data_vencimento?.startsWith(mesStr));
-  const rec=mesLanc.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
-  const desp=mesLanc.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
-  const res=rec-desp;
+  const {recLiq,despTotal,resultado,ncPend}=calcDRE(mesLanc);
+
   const in30=new Date(); in30.setDate(in30.getDate()+30);
-  const aVencer=lancamentos.filter(l=>l.status==='pendente'&&l.data_vencimento&&new Date(l.data_vencimento+'T12:00:00')<=in30).reduce((s,l)=>s+(l.valor||0),0);
+  const aVencer=lancamentos.filter(l=>l.status==='pendente'&&l.data_vencimento&&new Date(l.data_vencimento+'T12:00:00')<=in30&&!['antecip_entrada','pgto_cliente','fee_soma','nc'].includes(l.categoria)).reduce((s,l)=>s+(l.valor||0),0);
 
   document.getElementById('fin-kpis').innerHTML=`
-    <div class="kpi"><div class="kpi-val" style="color:#6ee7b7">${BRL(rec)}</div><div class="kpi-label">Receitas do mês</div></div>
-    <div class="kpi"><div class="kpi-val" style="color:#fca5a5">${BRL(desp)}</div><div class="kpi-label">Despesas do mês</div></div>
-    <div class="kpi"><div class="kpi-val" style="${res>=0?'color:#6ee7b7':'color:#fca5a5'}">${BRL(res)}</div><div class="kpi-label">Resultado</div><div class="kpi-sub">${res>=0?'Lucro':'Prejuízo'}</div></div>
-    <div class="kpi"><div class="kpi-val" style="color:#fcd34d">${BRL(aVencer)}</div><div class="kpi-label">A vencer (30 dias)</div></div>`;
+    <div class="kpi"><div class="kpi-val" style="color:#6ee7b7">${BRL(recLiq)}</div><div class="kpi-label">Receita Líquida</div><div class="kpi-sub">Mês atual</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#fca5a5">${BRL(despTotal)}</div><div class="kpi-label">Despesas</div><div class="kpi-sub">Mês atual</div></div>
+    <div class="kpi"><div class="kpi-val" style="${resultado>=0?'color:#6ee7b7':'color:#fca5a5'}">${resultado>=0?'+':''}${BRL(resultado)}</div><div class="kpi-label">Resultado</div><div class="kpi-sub">${resultado>=0?'Lucro':'Prejuízo'}</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#fcd34d">${BRL(aVencer)}</div><div class="kpi-label">A vencer (30 dias)</div>${ncPend?`<div class="kpi-sub" style="color:#fcd34d">⚠ ${BRL(ncPend)} pendente categ.</div>`:''}</div>`;
 
-  // Próximos vencimentos
-  const prox=lancamentos.filter(l=>l.status==='pendente'&&l.data_vencimento).sort((a,b)=>a.data_vencimento.localeCompare(b.data_vencimento)).slice(0,8);
+  // Próximos vencimentos (exclui passagem e nc)
+  const prox=lancamentos.filter(l=>l.status==='pendente'&&l.data_vencimento&&!['antecip_entrada','pgto_cliente','fee_soma','nc'].includes(l.categoria)).sort((a,b)=>a.data_vencimento.localeCompare(b.data_vencimento)).slice(0,8);
   document.getElementById('tbl-proximos').innerHTML=prox.length?prox.map(l=>`
     <tr onclick="editarLanc('${l.id}')">
       <td style="font-weight:600">${l.descricao||'—'}</td>
@@ -1334,8 +1351,8 @@ function renderChartRDM(){
   const meses=[];
   const now=new Date();
   for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);meses.push(d.toISOString().slice(0,7));}
-  const rec=meses.map(m=>lancamentos.filter(l=>l.tipo==='receita'&&l.data_vencimento?.startsWith(m)).reduce((s,l)=>s+(l.valor||0),0));
-  const desp=meses.map(m=>lancamentos.filter(l=>l.tipo==='despesa'&&l.data_vencimento?.startsWith(m)).reduce((s,l)=>s+(l.valor||0),0));
+  const rec=meses.map(m=>{const{recLiq}=calcDRE(lancamentos.filter(l=>l.data_vencimento?.startsWith(m)));return recLiq;});
+  const desp=meses.map(m=>{const{despTotal}=calcDRE(lancamentos.filter(l=>l.data_vencimento?.startsWith(m)));return despTotal;});
   const labels=meses.map(m=>mesAno(m+'-01'));
   const ctx=document.getElementById('chart-rdm').getContext('2d');
   if(_chartRDM) _chartRDM.destroy();
