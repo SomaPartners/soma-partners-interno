@@ -550,6 +550,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
         </div>
         <div class="toolbar">
           <input class="toolbar-search" id="ex-search" placeholder="Buscar lançamento…" oninput="exRender()">
+          <input class="toolbar-search" id="ex-search-valor" placeholder="Buscar por valor…" oninput="exRender()" style="width:150px">
           <select class="toolbar-select" id="ex-filter-mes" onchange="exRender()"><option value="">Todos os meses</option></select>
           <select class="toolbar-select" id="ex-filter-cat" onchange="exRender()">
             <option value="">Todas as categorias</option>
@@ -2620,6 +2621,7 @@ function antecipItemOptions(selectedId){
 
 function exRender(){
   const search=(document.getElementById('ex-search').value||'').toLowerCase();
+  const searchValor=(document.getElementById('ex-search-valor')?.value||'').replace(',','.').trim();
   const filtMes=document.getElementById('ex-filter-mes').value;
   const filtCat=document.getElementById('ex-filter-cat').value;
   let base=_exEmpresaAtiva?_exRows.filter(r=>r.empresa===_exEmpresaAtiva):_exRows;
@@ -2629,6 +2631,7 @@ function exRender(){
     if(filtCat==='!interno'&&r.categoria==='interno') return false;
     if(filtCat&&filtCat!=='nc'&&filtCat!=='!interno'&&r.categoria!==filtCat) return false;
     if(search&&!r.descricao.toLowerCase().includes(search)) return false;
+    if(searchValor&&!String(Math.abs(r.valor)).includes(searchValor)&&!Math.abs(r.valor).toFixed(2).includes(searchValor)) return false;
     return true;
   });
   const tbody=document.getElementById('ex-tbody');
