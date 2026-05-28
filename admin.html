@@ -2793,8 +2793,8 @@ function exRender(){
       <td style="color:${vclr};font-weight:700;white-space:nowrap;text-align:right">${exFmtVal(r.valor)}</td>
       <td><select class="ex-cat-sel${nc?' nc-sel':''}" onchange="exChangeCateg('${r.id}',this.value)">${exCatOptions(r.categoria)}</select></td>
       <td style="display:flex;gap:4px;align-items:center">
-        ${isPassagem?`<select class="ex-cat-sel" style="width:140px;border-color:rgba(147,197,253,0.3);background:rgba(59,130,246,0.06);font-size:11px;color:#93c5fd" onchange="exChangeCliente('${r.id}',this.value)">${antecipItemOptions(r.cliente_item_id)}</select>`:``}
-        <input class="ex-obs-inp" style="${isPassagem?'width:90px':''}" value="${r.obs||''}" onchange="exChangeObs('${r.id}',this.value)" placeholder="obs…">
+        <select class="ex-cat-sel" style="width:140px;border-color:${isPassagem?'rgba(147,197,253,0.3)':'rgba(255,255,255,0.06)'};background:${isPassagem?'rgba(59,130,246,0.06)':'rgba(255,255,255,0.02)'};font-size:11px;color:${isPassagem?'#93c5fd':'rgba(255,255,255,0.45)'}" onchange="exChangeCliente('${r.id}',this.value)">${antecipItemOptions(r.cliente_item_id)}</select>
+        <input class="ex-obs-inp" style="width:90px" value="${r.obs||''}" onchange="exChangeObs('${r.id}',this.value)" placeholder="obs…">
       </td>
     </tr>`;
   }).join('');
