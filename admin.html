@@ -228,6 +228,10 @@ body{display:flex;flex-direction:column;overflow:hidden}
     <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
     <span>Extrato BTG</span>
   </div>
+  <div class="nav-item" data-sec="fin-antecip" onclick="nav('fin-antecip',this)">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span>Clientes Antecip.</span>
+  </div>
 
   <div class="sidebar-section">RH</div>
   <div class="nav-item" data-sec="rh-equipe" onclick="nav('rh-equipe',this)">
@@ -368,6 +372,21 @@ body{display:flex;flex-direction:column;overflow:hidden}
       </div>
     </div>
     <div id="dre-content"></div>
+  </div>
+
+  <!-- ════ CLIENTES ANTECIPAÇÃO ════ -->
+  <div class="section" id="section-fin-antecip">
+    <div class="tbl-header">
+      <div>
+        <div class="sec-title">Clientes — Antecipação de Saldo</div>
+        <div class="sec-sub" style="margin-bottom:0">Famílias e membros que usam antecipação de saldo</div>
+      </div>
+      <button class="btn btn-primary" onclick="abrirModalAntecipCliente()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nova Família
+      </button>
+    </div>
+    <div id="antecip-clientes-lista" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
   </div>
 
   <!-- ════ RH — EQUIPE ════ -->
@@ -747,6 +766,41 @@ body{display:flex;flex-direction:column;overflow:hidden}
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modal-lanc')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarLanc()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANTECIP CLIENTE (família) -->
+<div class="modal-overlay" id="modal-antecip-cliente">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">
+      <span id="antecip-cliente-title">Nova Família</span>
+      <button class="mc" onclick="closeModal('modal-antecip-cliente')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <input type="hidden" id="antecip-cliente-id">
+    <div class="field"><label>Nome da Família / Cliente</label><input type="text" id="antecip-cliente-nome" placeholder="Ex: Família Silva, João Costa…"></div>
+    <div class="field"><label>Observação</label><textarea id="antecip-cliente-obs" placeholder="Notas…" style="height:60px"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-antecip-cliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarAntecipCliente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANTECIP ITEM (sub-cliente) -->
+<div class="modal-overlay" id="modal-antecip-item">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">
+      <span id="antecip-item-title">Novo Membro</span>
+      <button class="mc" onclick="closeModal('modal-antecip-item')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <input type="hidden" id="antecip-item-id">
+    <input type="hidden" id="antecip-item-cliente-id">
+    <div class="field"><label>Nome do Membro / Custo</label><input type="text" id="antecip-item-nome" placeholder="Ex: Manu (filha), Condomínio…"></div>
+    <div class="field"><label>Observação</label><textarea id="antecip-item-obs" placeholder="Notas…" style="height:60px"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-antecip-item')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarAntecipItem()">Salvar</button>
     </div>
   </div>
 </div>
@@ -1139,9 +1193,10 @@ function logout(){sessionStorage.removeItem('soma_auth');sessionStorage.removeIt
 // ── DATA ──
 let lancamentos=[],equipe=[],ausencias=[],avaliacoes=[];
 let mktConteudo=[],mktCampanhas=[],mktMateriais=[],mktMetricas=[];
+let antecipClientes=[],antecipItens=[];
 
 async function loadAll(){
-  const[l,e,a,av,mc,mca,mm,mme,ex]=await Promise.all([
+  const[l,e,a,av,mc,mca,mm,mme,ex,ac,ai]=await Promise.all([
     _sb.from('admin_lancamentos').select('*').order('data_vencimento'),
     _sb.from('wealth_responsaveis').select('id,data').order('created_at'),
     _sb.from('admin_ausencias').select('*').order('data_inicio',{ascending:false}),
@@ -1151,6 +1206,8 @@ async function loadAll(){
     _sb.from('admin_mkt_materiais').select('*').order('created_at',{ascending:false}),
     _sb.from('admin_mkt_metricas').select('*').order('mes',{ascending:false}),
     _sb.from('admin_extrato').select('*').order('data'),
+    _sb.from('admin_antecip_clientes').select('*').order('nome'),
+    _sb.from('admin_antecip_itens').select('*').order('nome'),
   ]);
   lancamentos=l.data||[];
   equipe=(e.data||[]).map(r=>({id:r.id,nome:r.data?.nome||'',cargo:r.data?.cargo||'',email:r.data?.email||'',telefone:r.data?.telefone||'',sigla:r.data?.sigla||'',cpf:r.data?.cpf||'',nascimento:r.data?.nascimento||'',cidade:r.data?.cidade||'',status:r.data?.status||'ativo',salario:r.data?.salario||null,data_entrada:r.data?.data_entrada||'',contrato_tipo:r.data?.contrato_tipo||null,contrato_gerado_em:r.data?.contrato_gerado_em||null,contrato_impresso:r.data?.contrato_impresso||false,contrato_assinado:r.data?.contrato_assinado||false,_data:r.data||{}})).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
@@ -1160,6 +1217,9 @@ async function loadAll(){
   mktCampanhas=mca.data||[];
   mktMateriais=mm.data||[];
   mktMetricas=mme.data||[];
+  antecipClientes=ac.data||[];
+  antecipItens=ai.data||[];
+  renderAntecipClientes();
   // Carrega extrato salvo no startup
   if(ex.data&&ex.data.length){
     _exRows=ex.data.map(r=>({...r,empresa:r.empresa||'soma',saved:true}));
@@ -2545,6 +2605,19 @@ function exCatOptions(selected){
 
 function exFmtVal(v){return(v>0?'+':'')+v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
 
+function antecipItemOptions(selectedId){
+  const opts=['<option value="">— cliente —</option>'];
+  antecipClientes.forEach(c=>{
+    const itens=antecipItens.filter(i=>i.cliente_id===c.id);
+    if(itens.length){
+      opts.push(`<optgroup label="${c.nome}">`);
+      itens.forEach(i=>opts.push(`<option value="${i.id}"${selectedId===i.id?' selected':''}>${i.nome}</option>`));
+      opts.push('</optgroup>');
+    }
+  });
+  return opts.join('');
+}
+
 function exRender(){
   const search=(document.getElementById('ex-search').value||'').toLowerCase();
   const filtMes=document.getElementById('ex-filter-mes').value;
@@ -2573,7 +2646,7 @@ function exRender(){
       <td style="color:${vclr};font-weight:700;white-space:nowrap;text-align:right">${exFmtVal(r.valor)}</td>
       <td><select class="ex-cat-sel${nc?' nc-sel':''}" onchange="exChangeCateg('${r.id}',this.value)">${exCatOptions(r.categoria)}</select></td>
       <td style="display:flex;gap:4px;align-items:center">
-        ${isPassagem?`<input class="ex-obs-inp" style="width:100px;border-color:rgba(147,197,253,0.3);background:rgba(59,130,246,0.06)" value="${r.cliente||''}" onchange="exChangeCliente('${r.id}',this.value)" placeholder="cliente…">`:``}
+        ${isPassagem?`<select class="ex-cat-sel" style="width:140px;border-color:rgba(147,197,253,0.3);background:rgba(59,130,246,0.06);font-size:11px;color:#93c5fd" onchange="exChangeCliente('${r.id}',this.value)">${antecipItemOptions(r.cliente_item_id)}</select>`:``}
         <input class="ex-obs-inp" style="${isPassagem?'width:90px':''}" value="${r.obs||''}" onchange="exChangeObs('${r.id}',this.value)" placeholder="obs…">
       </td>
     </tr>`;
@@ -2582,7 +2655,7 @@ function exRender(){
 
 function exChangeCateg(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.categoria=val;r.saved=false;}exUpdateNcBadge();exRender();}
 function exChangeObs(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.obs=val;r.saved=false;}}
-function exChangeCliente(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.cliente=val;r.saved=false;}}
+function exChangeCliente(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.cliente_item_id=val||null;r.saved=false;}}
 
 async function exSalvar(){
   const btn=document.querySelector('[onclick="exSalvar()"]');
@@ -2591,7 +2664,7 @@ async function exSalvar(){
   const toSave=_exRows.filter(r=>!r.saved);
   if(!toSave.length){st.textContent='Sem alterações pendentes.';btn.disabled=false;return;}
   // Salva em admin_extrato
-  const recs=toSave.map(({id,empresa,data,descricao,valor,categoria,mes,obs,cliente})=>({id,empresa,data,descricao,valor,categoria,mes,obs,cliente:cliente||null}));
+  const recs=toSave.map(({id,empresa,data,descricao,valor,categoria,mes,obs,cliente_item_id})=>({id,empresa,data,descricao,valor,categoria,mes,obs,cliente_item_id:cliente_item_id||null}));
   const {error}=await _sb.from('admin_extrato').upsert(recs);
   if(error){st.textContent='Erro: '+error.message;btn.disabled=false;return;}
   toSave.forEach(r=>r.saved=true);
@@ -2826,16 +2899,20 @@ function exRenderDRE(){
   // ── Fluxo de Passagem por Cliente ──
   const passagemRows=rows.filter(r=>r.categoria==='antecip_entrada'||r.categoria==='pgto_cliente'||r.categoria==='fee_soma');
   if(passagemRows.length){
-    // Agrupa por cliente
-    const clientes=[...new Set(passagemRows.map(r=>r.cliente||'— Cliente não informado'))].sort();
-    const totalDevolver=clientes.reduce((sum,cli)=>{
-      const cliRows=passagemRows.filter(r=>(r.cliente||'— Cliente não informado')===cli);
-      return sum+cliRows.reduce((s,r)=>s+r.valor,0);
-    },0);
+    // Agrupa por família (cliente pai) via cliente_item_id
+    const clienteMap={};
+    passagemRows.forEach(r=>{
+      const item=r.cliente_item_id?antecipItens.find(i=>i.id===r.cliente_item_id):null;
+      const cliKey=item?item.cliente_id:'__unknown__';
+      const cli=item?antecipClientes.find(c=>c.id===item.cliente_id):null;
+      const cliNome=cli?cli.nome:'— Cliente não informado';
+      if(!clienteMap[cliKey])clienteMap[cliKey]={cliNome,rows:[]};
+      clienteMap[cliKey].rows.push({...r,itemNome:item?item.nome:'—'});
+    });
+    const totalDevolver=Object.values(clienteMap).reduce((sum,g)=>sum+g.rows.reduce((s,r)=>s+r.valor,0),0);
     html+=`
     ${secao('Fluxo de Passagem — Por Cliente','#93c5fd','rgba(59,130,246,0.03)')}`;
-    clientes.forEach(cli=>{
-      const cliRows=passagemRows.filter(r=>(r.cliente||'— Cliente não informado')===cli);
+    Object.values(clienteMap).sort((a,b)=>a.cliNome.localeCompare(b.cliNome)).forEach(({cliNome,rows:cliRows})=>{
       const entradas=cliRows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+r.valor,0);
       const pagamentos=cliRows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+r.valor,0);
       const feeCli=cliRows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s-Math.abs(r.valor),0);
@@ -2843,8 +2920,26 @@ function exRenderDRE(){
       const saldoCor=saldo>0?'#93c5fd':saldo<0?'#fca5a5':'rgba(255,255,255,0.3)';
       html+=`
       <div style="padding:8px 20px 4px;border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.02)">
-        <span style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(147,197,253,0.8)">${cli}</span>
-      </div>
+        <span style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(147,197,253,0.8)">${cliNome}</span>
+      </div>`;
+      // Detalhamento por sub-item
+      const itemIds=[...new Set(cliRows.map(r=>r.cliente_item_id||'—'))];
+      if(itemIds.length>1||(itemIds.length===1&&itemIds[0]!=='—')){
+        itemIds.forEach(iid=>{
+          const iNome=iid==='—'?'—':(antecipItens.find(i=>i.id===iid)?.nome||iid);
+          const iRows=cliRows.filter(r=>(r.cliente_item_id||'—')===iid);
+          const iEnt=iRows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+r.valor,0);
+          const iPgto=iRows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+r.valor,0);
+          const iFee=iRows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s-Math.abs(r.valor),0);
+          const iSaldo=iEnt+iPgto+iFee;
+          if(!iSaldo&&!iEnt&&!iPgto&&!iFee)return;
+          html+=`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:4px 20px 4px 36px;border-bottom:1px solid rgba(255,255,255,0.015)">
+            <span style="font-size:10px;color:rgba(147,197,253,0.5);font-weight:600">${iNome}</span>
+            <div style="text-align:right"><span style="color:${iSaldo>=0?'#93c5fd':'#fca5a5'};font-size:11px">${iSaldo>=0?'+':''}${fmtBRL2(iSaldo)}</span></div><div></div>
+          </div>`;
+        });
+      }
+      html+=`
       ${entradas?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
         <span style="font-size:11px;color:rgba(255,255,255,0.45)">Antecipações recebidas</span>
         <div style="text-align:right"><span style="color:#93c5fd;font-size:12px">+${fmtBRL2(entradas)}</span></div><div></div>
@@ -2867,6 +2962,176 @@ function exRenderDRE(){
 
   html+=`</div>`;
   el.innerHTML=html;
+}
+
+// ════════════════════════════════
+//  CLIENTES ANTECIPAÇÃO
+// ════════════════════════════════
+
+function renderAntecipClientes(){
+  const el=document.getElementById('antecip-clientes-lista');
+  if(!el)return;
+  if(!antecipClientes.length){
+    el.innerHTML=`<div style="text-align:center;padding:48px;color:var(--muted);font-size:12px">Nenhuma família cadastrada ainda.<br>Clique em <b>Nova Família</b> para começar.</div>`;
+    return;
+  }
+  el.innerHTML=antecipClientes.map(c=>{
+    const itens=antecipItens.filter(i=>i.cliente_id===c.id);
+    return`<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02)">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#fff">${c.nome}</div>
+          ${c.obs?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${c.obs}</div>`:''}
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-sm btn-outline" onclick="abrirModalAntecipItem('${c.id}')">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Membro
+          </button>
+          <button class="btn btn-sm btn-outline" onclick="abrirModalAntecipCliente('${c.id}')">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deletarAntecipCliente('${c.id}')">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+        </div>
+      </div>
+      ${itens.length?itens.map(i=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px 10px 36px;border-bottom:1px solid rgba(255,255,255,0.02)">
+        <div>
+          <span style="font-size:12px;color:rgba(255,255,255,0.7)">${i.nome}</span>
+          ${i.obs?`<span style="font-size:10px;color:var(--muted);margin-left:8px">${i.obs}</span>`:''}
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-outline" onclick="abrirModalAntecipItem('${c.id}','${i.id}')">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deletarAntecipItem('${i.id}')">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </div>
+      </div>`).join(''):`<div style="padding:12px 18px 12px 36px;font-size:11px;color:var(--muted)">Nenhum membro cadastrado. Clique em + Membro.</div>`}
+    </div>`;
+  }).join('');
+}
+
+function abrirModalAntecipCliente(id){
+  const m=document.getElementById('modal-antecip-cliente');
+  document.getElementById('antecip-cliente-id').value=id||'';
+  document.getElementById('antecip-cliente-title').textContent=id?'Editar Família':'Nova Família';
+  if(id){
+    const c=antecipClientes.find(x=>x.id===id);
+    document.getElementById('antecip-cliente-nome').value=c?.nome||'';
+    document.getElementById('antecip-cliente-obs').value=c?.obs||'';
+  } else {
+    document.getElementById('antecip-cliente-nome').value='';
+    document.getElementById('antecip-cliente-obs').value='';
+  }
+  m.classList.add('open');
+  setTimeout(()=>document.getElementById('antecip-cliente-nome').focus(),100);
+}
+
+async function salvarAntecipCliente(){
+  const id=document.getElementById('antecip-cliente-id').value;
+  const nome=document.getElementById('antecip-cliente-nome').value.trim();
+  const obs=document.getElementById('antecip-cliente-obs').value.trim();
+  if(!nome){alert('Informe o nome da família/cliente.');return;}
+  const payload={nome,obs:obs||null};
+  let err;
+  if(id){
+    const {error}=await _sb.from('admin_antecip_clientes').update(payload).eq('id',id);
+    err=error;
+  } else {
+    const {error}=await _sb.from('admin_antecip_clientes').insert(payload);
+    err=error;
+  }
+  if(err){alert('Erro: '+err.message);return;}
+  closeModal('modal-antecip-cliente');
+  const [ac,ai]=await Promise.all([
+    _sb.from('admin_antecip_clientes').select('*').order('nome'),
+    _sb.from('admin_antecip_itens').select('*').order('nome'),
+  ]);
+  antecipClientes=ac.data||[];
+  antecipItens=ai.data||[];
+  renderAntecipClientes();
+}
+
+async function deletarAntecipCliente(id){
+  const c=antecipClientes.find(x=>x.id===id);
+  const itens=antecipItens.filter(i=>i.cliente_id===id);
+  const msg=itens.length
+    ?`Excluir "${c?.nome}" e seus ${itens.length} membro(s)? Esta ação não pode ser desfeita.`
+    :`Excluir "${c?.nome}"? Esta ação não pode ser desfeita.`;
+  if(!confirm(msg))return;
+  if(itens.length) await _sb.from('admin_antecip_itens').delete().eq('cliente_id',id);
+  await _sb.from('admin_antecip_clientes').delete().eq('id',id);
+  const [ac,ai]=await Promise.all([
+    _sb.from('admin_antecip_clientes').select('*').order('nome'),
+    _sb.from('admin_antecip_itens').select('*').order('nome'),
+  ]);
+  antecipClientes=ac.data||[];
+  antecipItens=ai.data||[];
+  renderAntecipClientes();
+}
+
+function abrirModalAntecipItem(clienteId,itemId){
+  const m=document.getElementById('modal-antecip-item');
+  document.getElementById('antecip-item-cliente-id').value=clienteId;
+  document.getElementById('antecip-item-id').value=itemId||'';
+  const cli=antecipClientes.find(c=>c.id===clienteId);
+  document.getElementById('antecip-item-title').textContent=(itemId?'Editar Membro':'Novo Membro')+(cli?' — '+cli.nome:'');
+  if(itemId){
+    const i=antecipItens.find(x=>x.id===itemId);
+    document.getElementById('antecip-item-nome').value=i?.nome||'';
+    document.getElementById('antecip-item-obs').value=i?.obs||'';
+  } else {
+    document.getElementById('antecip-item-nome').value='';
+    document.getElementById('antecip-item-obs').value='';
+  }
+  m.classList.add('open');
+  setTimeout(()=>document.getElementById('antecip-item-nome').focus(),100);
+}
+
+async function salvarAntecipItem(){
+  const id=document.getElementById('antecip-item-id').value;
+  const clienteId=document.getElementById('antecip-item-cliente-id').value;
+  const nome=document.getElementById('antecip-item-nome').value.trim();
+  const obs=document.getElementById('antecip-item-obs').value.trim();
+  if(!nome){alert('Informe o nome do membro.');return;}
+  const payload={nome,obs:obs||null,cliente_id:clienteId};
+  let err;
+  if(id){
+    const {error}=await _sb.from('admin_antecip_itens').update(payload).eq('id',id);
+    err=error;
+  } else {
+    const {error}=await _sb.from('admin_antecip_itens').insert(payload);
+    err=error;
+  }
+  if(err){alert('Erro: '+err.message);return;}
+  closeModal('modal-antecip-item');
+  const [ac,ai]=await Promise.all([
+    _sb.from('admin_antecip_clientes').select('*').order('nome'),
+    _sb.from('admin_antecip_itens').select('*').order('nome'),
+  ]);
+  antecipClientes=ac.data||[];
+  antecipItens=ai.data||[];
+  renderAntecipClientes();
+  // Re-renderiza extrato se aberto (para atualizar o dropdown)
+  if(_exRows.length) exRender();
+}
+
+async function deletarAntecipItem(id){
+  const i=antecipItens.find(x=>x.id===id);
+  if(!confirm(`Excluir "${i?.nome}"? Esta ação não pode ser desfeita.`))return;
+  await _sb.from('admin_antecip_itens').delete().eq('id',id);
+  const [ac,ai]=await Promise.all([
+    _sb.from('admin_antecip_clientes').select('*').order('nome'),
+    _sb.from('admin_antecip_itens').select('*').order('nome'),
+  ]);
+  antecipClientes=ac.data||[];
+  antecipItens=ai.data||[];
+  renderAntecipClientes();
+  if(_exRows.length) exRender();
 }
 
 // ════════════════════════════════
