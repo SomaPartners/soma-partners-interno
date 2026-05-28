@@ -337,9 +337,14 @@ body{display:flex;flex-direction:column;overflow:hidden}
       <select class="toolbar-select" id="lanc-mes" onchange="renderLanc()">
         <option value="">Todos os meses</option>
       </select>
+      <select class="toolbar-select" id="lanc-origem" onchange="renderLanc()">
+        <option value="">Todas as origens</option>
+        <option value="manual">Manuais</option>
+        <option value="btg">Importados BTG</option>
+      </select>
     </div>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Vencimento</th><th>Pagamento</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Origem</th><th>Vencimento</th><th>Pagamento</th><th>Valor</th><th>Status</th><th></th></tr></thead>
       <tbody id="tbl-lanc"></tbody>
     </table></div>
   </div>
@@ -1374,25 +1379,39 @@ function renderLanc(){
   const tp=document.getElementById('lanc-tipo')?.value||'';
   const st=document.getElementById('lanc-status')?.value||'';
   const ms=document.getElementById('lanc-mes')?.value||'';
+  const ori=document.getElementById('lanc-origem')?.value||'';
   let rows=lancamentos.filter(l=>{
     if(q&&!(l.descricao||'').toLowerCase().includes(q)&&!(l.categoria||'').toLowerCase().includes(q))return false;
     if(tp&&l.tipo!==tp)return false;
     if(st&&l.status!==st)return false;
     if(ms&&!l.data_vencimento?.startsWith(ms))return false;
+    const isBTG=(l.obs||'').startsWith('BTG·');
+    if(ori==='manual'&&isBTG)return false;
+    if(ori==='btg'&&!isBTG)return false;
     return true;
   });
   const tbody=document.getElementById('tbl-lanc');
-  tbody.innerHTML=rows.length?rows.map(l=>`
-    <tr onclick="editarLanc('${l.id}')">
+  tbody.innerHTML=rows.length?rows.map(l=>{
+    const isBTG=(l.obs||'').startsWith('BTG·');
+    const origemBadge=isBTG
+      ?`<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(99,102,241,0.12);color:#a5b4fc;border:1px solid rgba(99,102,241,0.2);border-radius:5px;padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:0.5px">
+          <svg viewBox="0 0 24 24" style="width:9px;height:9px;stroke:currentColor;stroke-width:2;fill:none"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>BTG
+        </span>`
+      :`<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(201,150,60,0.1);color:var(--gold);border:1px solid rgba(201,150,60,0.2);border-radius:5px;padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:0.5px">
+          <svg viewBox="0 0 24 24" style="width:9px;height:9px;stroke:currentColor;stroke-width:2;fill:none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Manual
+        </span>`;
+    return`<tr onclick="editarLanc('${l.id}')">
       <td style="font-weight:600">${l.descricao||'—'}</td>
       <td style="font-size:11px;color:var(--muted)">${l.categoria||'—'}</td>
       <td><span class="badge badge-${l.tipo}">${l.tipo==='receita'?'Receita':'Despesa'}</span></td>
+      <td>${origemBadge}</td>
       <td style="font-size:11px">${fmtDate(l.data_vencimento)}</td>
       <td style="font-size:11px">${fmtDate(l.data_pagamento)}</td>
       <td style="font-weight:700;color:${l.tipo==='receita'?'#6ee7b7':'#fca5a5'}">${BRL(l.valor)}</td>
       <td><span class="badge badge-${l.status}">${{pendente:'Pendente',pago:'Pago',atrasado:'Atrasado'}[l.status]||l.status}</span></td>
       <td onclick="event.stopPropagation()"><button class="btn btn-danger btn-sm" onclick="deletarLanc('${l.id}')">×</button></td>
-    </tr>`).join(''):'<tr class="empty-row"><td colspan="8">Nenhum lançamento encontrado</td></tr>';
+    </tr>`;
+  }).join(''):'<tr class="empty-row"><td colspan="9">Nenhum lançamento encontrado</td></tr>';
 }
 
 const PASSAGEM_CATS=new Set(['antecip_entrada','pgto_cliente','fee_soma']);
