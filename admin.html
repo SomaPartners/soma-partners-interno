@@ -2647,10 +2647,11 @@ function exRenderDRE(){
   const ncEntradas=rows.filter(r=>r.categoria==='nc'&&r.valor>0).reduce((s,r)=>s+r.valor,0);
   const ncSaidas=rows.filter(r=>r.categoria==='nc'&&r.valor<0).reduce((s,r)=>s+r.valor,0);
 
-  const recBruta=agg.honorarios+agg.rendimento+agg.outras_rec+ncEntradas;
+  // nc não entra no cálculo — fica pendente até ser categorizado
+  const recBruta=agg.honorarios+agg.rendimento+agg.outras_rec;
   const deducoes=agg.impostos;
   const recLiq=recBruta+deducoes;
-  const despTotal=agg.prolabore+agg.prestadores+agg.eventos+agg.marketing+agg.juridico+agg.tecnologia+agg.infraestrutura+agg.telecom+agg.treinamento+agg.taxas+agg.outros+ncSaidas;
+  const despTotal=agg.prolabore+agg.prestadores+agg.eventos+agg.marketing+agg.juridico+agg.tecnologia+agg.infraestrutura+agg.telecom+agg.treinamento+agg.taxas+agg.outros;
   const resultado=recLiq+despTotal;
   const antecipSaldo=agg.antecip_entrada+agg.pgto_cliente;
   const label=filtMes?`${filtMes}`:'Todos os períodos';
@@ -2737,10 +2738,10 @@ function exRenderDRE(){
     ${ncEntradas?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 40px;border-bottom:1px solid rgba(255,255,255,0.025);background:rgba(245,158,11,0.05)">
       <span style="font-size:11.5px;color:#fcd34d;display:flex;align-items:center;gap:7px;font-weight:600">
         <span style="display:inline-block;width:2px;height:10px;border-radius:1px;background:#fcd34d;flex-shrink:0"></span>
-        ⚠ Entradas Não Categorizadas
+        ⚠ Entradas Pendentes — não contabilizadas
       </span>
-      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px">+${fmtBRL2(ncEntradas)}</span></div>
-      <div style="text-align:right">${recLiq?`<span style="color:rgba(252,211,77,0.6);font-size:10px">+${((ncEntradas/recLiq)*100).toFixed(1)}%</span>`:''}</div>
+      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px;text-decoration:line-through;opacity:0.7">+${fmtBRL2(ncEntradas)}</span></div>
+      <div style="text-align:right"><span style="color:rgba(252,211,77,0.5);font-size:9px;letter-spacing:0.5px">PENDENTE</span></div>
     </div>`:''}
     ${totalRow('(+) Receita Bruta',recBruta,'rgba(16,185,129,0.2)')}
 
@@ -2765,10 +2766,10 @@ function exRenderDRE(){
     ${ncSaidas?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 40px;border-bottom:1px solid rgba(255,255,255,0.025);background:rgba(245,158,11,0.05)">
       <span style="font-size:11.5px;color:#fcd34d;display:flex;align-items:center;gap:7px;font-weight:600">
         <span style="display:inline-block;width:2px;height:10px;border-radius:1px;background:#fcd34d;flex-shrink:0"></span>
-        ⚠ Saídas Não Categorizadas
+        ⚠ Saídas Pendentes — não contabilizadas
       </span>
-      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px">${fmtBRL2(ncSaidas)}</span></div>
-      <div style="text-align:right">${recLiq?`<span style="color:rgba(252,211,77,0.6);font-size:10px">${((ncSaidas/recLiq)*100).toFixed(1)}%</span>`:''}</div>
+      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px;text-decoration:line-through;opacity:0.7">${fmtBRL2(ncSaidas)}</span></div>
+      <div style="text-align:right"><span style="color:rgba(252,211,77,0.5);font-size:9px;letter-spacing:0.5px">PENDENTE</span></div>
     </div>`:''}
     ${totalRow('(–) Total de Despesas',despTotal,'rgba(239,68,68,0.25)')}
 
