@@ -771,10 +771,10 @@ body{display:flex;flex-direction:column;overflow:hidden}
       <div class="field"><label>Vencimento</label><input type="date" id="lanc-f-venc"></div>
       <div class="field"><label>Data Pagamento</label><input type="date" id="lanc-f-pgto"></div>
     </div>
-    <div class="field" id="lanc-f-cliente-wrap" style="display:none">
-      <label>Sub-cliente / Membro</label>
+    <div class="field" id="lanc-f-cliente-wrap">
+      <label>Cliente / Membro <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
       <select id="lanc-f-cliente-item">
-        <option value="">— Selecionar membro —</option>
+        <option value="">— Sem cliente vinculado —</option>
       </select>
     </div>
     <div class="field"><label>Observação</label><textarea id="lanc-f-obs" placeholder="Notas adicionais…"></textarea></div>
@@ -1418,19 +1418,14 @@ function renderLanc(){
 
 const PASSAGEM_CATS=new Set(['antecip_entrada','pgto_cliente','fee_soma']);
 function lancCatChange(){
-  const cat=document.getElementById('lanc-f-cat').value;
-  const wrap=document.getElementById('lanc-f-cliente-wrap');
+  // Atualiza o dropdown de clientes (sempre visível)
   const sel=document.getElementById('lanc-f-cliente-item');
-  if(PASSAGEM_CATS.has(cat)){
-    sel.innerHTML='<option value="">— Selecionar membro —</option>'+antecipClientes.map(c=>{
-      const itens=antecipItens.filter(i=>i.cliente_id===c.id);
-      return itens.length?`<optgroup label="${c.nome}">${itens.map(i=>`<option value="${i.id}">${i.nome}</option>`).join('')}</optgroup>`:'';
-    }).join('');
-    wrap.style.display='';
-  } else {
-    wrap.style.display='none';
-    sel.value='';
-  }
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— Sem cliente vinculado —</option>'+antecipClientes.map(c=>{
+    const itens=antecipItens.filter(i=>i.cliente_id===c.id);
+    return itens.length?`<optgroup label="${c.nome}">${itens.map(i=>`<option value="${i.id}"${i.id===cur?' selected':''}>${i.nome}</option>`).join('')}</optgroup>`:'';
+  }).join('');
+  if(cur) sel.value=cur;
 }
 
 function abrirModalLanc(){
@@ -1440,7 +1435,7 @@ function abrirModalLanc(){
   document.getElementById('lanc-f-tipo').value='receita';
   document.getElementById('lanc-f-status').value='pendente';
   document.getElementById('lanc-f-conta').value='';
-  document.getElementById('lanc-f-cliente-wrap').style.display='none';
+  lancCatChange();
   document.getElementById('lanc-f-cliente-item').value='';
   openModal('modal-lanc');
 }
@@ -1458,14 +1453,8 @@ function editarLanc(id){
   document.getElementById('lanc-f-pgto').value=l.data_pagamento||'';
   document.getElementById('lanc-f-obs').value=l.obs||'';
   document.getElementById('lanc-f-conta').value=l.conta||'';
-  // Sub-cliente
-  if(l.categoria&&PASSAGEM_CATS.has(l.categoria)){
-    lancCatChange();
-    document.getElementById('lanc-f-cliente-item').value=l.cliente_item_id||'';
-  } else {
-    document.getElementById('lanc-f-cliente-wrap').style.display='none';
-    document.getElementById('lanc-f-cliente-item').value='';
-  }
+  lancCatChange();
+  document.getElementById('lanc-f-cliente-item').value=l.cliente_item_id||'';
   openModal('modal-lanc');
 }
 
