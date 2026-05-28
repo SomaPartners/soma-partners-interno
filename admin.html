@@ -555,7 +555,9 @@ body{display:flex;flex-direction:column;overflow:hidden}
         </div>
         <div class="toolbar">
           <input class="toolbar-search" id="ex-search" placeholder="Buscar lançamento…" oninput="exRender()">
-          <input class="toolbar-search" id="ex-search-valor" placeholder="Buscar por valor…" oninput="exRender()" style="width:150px">
+          <input class="toolbar-search" id="ex-search-valor" placeholder="Buscar por valor…" oninput="exRender()" style="width:140px">
+          <input type="date" class="toolbar-select" id="ex-filter-data-de" onchange="exRender()" title="Data de" style="width:135px">
+          <input type="date" class="toolbar-select" id="ex-filter-data-ate" onchange="exRender()" title="Data até" style="width:135px">
           <select class="toolbar-select" id="ex-filter-mes" onchange="exRender()"><option value="">Todos os meses</option></select>
           <select class="toolbar-select" id="ex-filter-familia" onchange="exRender()"><option value="">Todas as famílias</option></select>
           <select class="toolbar-select" id="ex-filter-cat" onchange="exRender()">
@@ -2769,6 +2771,8 @@ function exRender(){
   const filtMes=document.getElementById('ex-filter-mes').value;
   const filtCat=document.getElementById('ex-filter-cat').value;
   const filtFamilia=document.getElementById('ex-filter-familia')?.value||'';
+  const filtDataDe=document.getElementById('ex-filter-data-de')?.value||'';
+  const filtDataAte=document.getElementById('ex-filter-data-ate')?.value||'';
   let base=_exEmpresaAtiva?_exRows.filter(r=>r.empresa===_exEmpresaAtiva):_exRows;
   const filtered=base.filter(r=>{
     if(filtMes&&r.mes!==filtMes) return false;
@@ -2777,6 +2781,8 @@ function exRender(){
     if(filtCat&&filtCat!=='nc'&&filtCat!=='!interno'&&r.categoria!==filtCat) return false;
     if(search&&!r.descricao.toLowerCase().includes(search)) return false;
     if(searchValor&&!String(Math.abs(r.valor)).includes(searchValor)&&!Math.abs(r.valor).toFixed(2).includes(searchValor)) return false;
+    if(filtDataDe&&r.data<filtDataDe) return false;
+    if(filtDataAte&&r.data>filtDataAte) return false;
     if(filtFamilia){
       const item=r.cliente_item_id?antecipItens.find(i=>i.id===r.cliente_item_id):null;
       if(!item||item.cliente_id!==filtFamilia) return false;
