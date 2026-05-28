@@ -712,7 +712,31 @@ body{display:flex;flex-direction:column;overflow:hidden}
       </select></div>
     <div class="field"><label>Descrição</label><input type="text" id="lanc-f-desc" placeholder="Ex: Salários, Mensalidade cliente…"></div>
     <div class="form-row">
-      <div class="field"><label>Categoria</label><input type="text" id="lanc-f-cat" placeholder="Ex: RH, Marketing, Honorários…"></div>
+      <div class="field"><label>Categoria</label>
+        <select id="lanc-f-cat">
+          <option value="">— Selecionar —</option>
+          <optgroup label="Receitas">
+            <option value="honorarios">Honorários / Fees</option>
+            <option value="fee_soma">Fee Soma (desc. saldo cliente)</option>
+            <option value="rendimento">Rendimento (Conta Remunerada)</option>
+            <option value="outras_rec">Outras Receitas</option>
+          </optgroup>
+          <optgroup label="Despesas">
+            <option value="prolabore">Pró-labore / Sócios</option>
+            <option value="impostos">Impostos (DAS / ISS / DARF)</option>
+            <option value="prestadores">Prestadores / Parceiros</option>
+            <option value="eventos">Eventos / Viagens</option>
+            <option value="marketing">Marketing</option>
+            <option value="juridico">Honorários Jurídicos</option>
+            <option value="tecnologia">Tecnologia / Sistemas</option>
+            <option value="infraestrutura">Infraestrutura</option>
+            <option value="telecom">Telefone / Internet</option>
+            <option value="treinamento">Treinamento</option>
+            <option value="taxas">Taxas / Regulatório</option>
+            <option value="desp_pessoais">Despesas Pessoais</option>
+            <option value="outros">Outros</option>
+          </optgroup>
+        </select></div>
       <div class="field"><label>Valor (R$)</label><input type="number" id="lanc-f-valor" step="0.01" placeholder="0,00"></div>
     </div>
     <div class="form-row">
