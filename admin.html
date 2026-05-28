@@ -552,6 +552,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
           <input class="toolbar-search" id="ex-search" placeholder="Buscar lançamento…" oninput="exRender()">
           <input class="toolbar-search" id="ex-search-valor" placeholder="Buscar por valor…" oninput="exRender()" style="width:150px">
           <select class="toolbar-select" id="ex-filter-mes" onchange="exRender()"><option value="">Todos os meses</option></select>
+          <select class="toolbar-select" id="ex-filter-familia" onchange="exRender()"><option value="">Todas as famílias</option></select>
           <select class="toolbar-select" id="ex-filter-cat" onchange="exRender()">
             <option value="">Todas as categorias</option>
             <option value="nc">⚠ Não categorizados</option>
@@ -2582,6 +2583,11 @@ function exInitFilters(){
   const meses=[...new Set(rows.map(r=>r.mes))].filter(Boolean).sort();
   const sel=document.getElementById('ex-filter-mes');
   if(sel) sel.innerHTML='<option value="">Todos os meses</option>'+meses.map(m=>`<option value="${m}">${m}</option>`).join('');
+  // Popula famílias (apenas as que têm lançamentos no extrato atual)
+  const itemIdsPresentes=new Set(rows.map(r=>r.cliente_item_id).filter(Boolean));
+  const familiasPresentes=antecipClientes.filter(c=>antecipItens.some(i=>i.cliente_id===c.id&&itemIdsPresentes.has(i.id)));
+  const selFam=document.getElementById('ex-filter-familia');
+  if(selFam) selFam.innerHTML='<option value="">Todas as famílias</option>'+familiasPresentes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
 }
 
 function exUpdateNcBadge(){
@@ -2624,6 +2630,7 @@ function exRender(){
   const searchValor=(document.getElementById('ex-search-valor')?.value||'').replace(',','.').trim();
   const filtMes=document.getElementById('ex-filter-mes').value;
   const filtCat=document.getElementById('ex-filter-cat').value;
+  const filtFamilia=document.getElementById('ex-filter-familia')?.value||'';
   let base=_exEmpresaAtiva?_exRows.filter(r=>r.empresa===_exEmpresaAtiva):_exRows;
   const filtered=base.filter(r=>{
     if(filtMes&&r.mes!==filtMes) return false;
@@ -2632,6 +2639,10 @@ function exRender(){
     if(filtCat&&filtCat!=='nc'&&filtCat!=='!interno'&&r.categoria!==filtCat) return false;
     if(search&&!r.descricao.toLowerCase().includes(search)) return false;
     if(searchValor&&!String(Math.abs(r.valor)).includes(searchValor)&&!Math.abs(r.valor).toFixed(2).includes(searchValor)) return false;
+    if(filtFamilia){
+      const item=r.cliente_item_id?antecipItens.find(i=>i.id===r.cliente_item_id):null;
+      if(!item||item.cliente_id!==filtFamilia) return false;
+    }
     return true;
   });
   const tbody=document.getElementById('ex-tbody');
