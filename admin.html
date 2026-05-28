@@ -2348,6 +2348,7 @@ const EX_CATS = {
   outras_rec:      {label:'Outras Receitas',            group:'receita'},
   antecip_entrada: {label:'Antecipação (Entrada)',      group:'neutro'},
   pgto_cliente:    {label:'Pgto por Conta do Cliente',  group:'neutro'},
+  fee_soma:        {label:'Fee Soma (desc. do saldo)',  group:'neutro'},
   interno:         {label:'Movimentação Interna',       group:'interno'},
   prolabore:       {label:'Pró-labore / Sócios',        group:'despesa'},
   impostos:        {label:'Impostos (DAS/ISS/DARF)',    group:'despesa'},
@@ -2508,7 +2509,7 @@ function exUpdateNcBadge(){
 function exCatOptions(selected){
   const groups=[
     {label:'Receitas',keys:['honorarios','rendimento','outras_rec']},
-    {label:'Fluxo de Passagem',keys:['antecip_entrada','pgto_cliente']},
+    {label:'Fluxo de Passagem',keys:['antecip_entrada','pgto_cliente','fee_soma']},
     {label:'Despesas',keys:['prolabore','impostos','prestadores','eventos','marketing','juridico','tecnologia','infraestrutura','telecom','treinamento','taxas','desp_pessoais','outros']},
     {label:'Sistema',keys:['interno','nc']},
   ];
@@ -2538,7 +2539,7 @@ function exRender(){
   tbody.innerHTML=filtered.map(r=>{
     const nc=r.categoria==='nc';
     const isInt=r.categoria==='interno';
-    const isPassagem=r.categoria==='antecip_entrada'||r.categoria==='pgto_cliente';
+    const isPassagem=r.categoria==='antecip_entrada'||r.categoria==='pgto_cliente'||r.categoria==='fee_soma';
     const vclr=isInt?'rgba(255,255,255,0.15)':(r.valor>0?'#6ee7b7':'#fca5a5');
     const rowStyle=nc?'background:rgba(252,211,77,0.02)':isInt?'opacity:0.45':isPassagem?'background:rgba(59,130,246,0.03)':'';
     const dateFmt=r.data.split('-').reverse().join('/');
@@ -2652,8 +2653,10 @@ function exRenderDRE(){
   const ncEntradas=rows.filter(r=>r.categoria==='nc'&&r.valor>0).reduce((s,r)=>s+r.valor,0);
   const ncSaidas=rows.filter(r=>r.categoria==='nc'&&r.valor<0).reduce((s,r)=>s+r.valor,0);
 
+  // fee_soma entra como receita (honorários) mesmo sendo desconto do saldo do cliente
+  const feeTotal=rows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s+Math.abs(r.valor),0);
   // nc não entra no cálculo — fica pendente até ser categorizado
-  const recBruta=agg.honorarios+agg.rendimento+agg.outras_rec;
+  const recBruta=agg.honorarios+agg.rendimento+agg.outras_rec+feeTotal;
   const deducoes=agg.impostos;
   const recLiq=recBruta+deducoes;
   const despTotal=agg.prolabore+agg.prestadores+agg.eventos+agg.marketing+agg.juridico+agg.tecnologia+agg.infraestrutura+agg.telecom+agg.treinamento+agg.taxas+agg.outros;
@@ -2739,6 +2742,7 @@ function exRenderDRE(){
     <!-- ── RECEITAS OPERACIONAIS ── -->
     ${secao('Receitas Operacionais','#6ee7b7','rgba(16,185,129,0.03)')}
     ${item('Honorários / Fees',agg.honorarios,'#6ee7b7')}
+    ${item('Fee Soma (desc. saldo cliente)',feeTotal,'#6ee7b7')}
     ${item('Rendimento (Conta Remunerada)',agg.rendimento,'#6ee7b7')}
     ${item('Outras Receitas',agg.outras_rec,'#6ee7b7')}
     ${ncEntradas?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 40px;border-bottom:1px solid rgba(255,255,255,0.025);background:rgba(245,158,11,0.05)">
@@ -2796,7 +2800,7 @@ function exRenderDRE(){
   }
 
   // ── Fluxo de Passagem por Cliente ──
-  const passagemRows=rows.filter(r=>r.categoria==='antecip_entrada'||r.categoria==='pgto_cliente');
+  const passagemRows=rows.filter(r=>r.categoria==='antecip_entrada'||r.categoria==='pgto_cliente'||r.categoria==='fee_soma');
   if(passagemRows.length){
     // Agrupa por cliente
     const clientes=[...new Set(passagemRows.map(r=>r.cliente||'— Cliente não informado'))].sort();
@@ -2810,7 +2814,8 @@ function exRenderDRE(){
       const cliRows=passagemRows.filter(r=>(r.cliente||'— Cliente não informado')===cli);
       const entradas=cliRows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+r.valor,0);
       const pagamentos=cliRows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+r.valor,0);
-      const saldo=entradas+pagamentos;
+      const feeCli=cliRows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s-Math.abs(r.valor),0);
+      const saldo=entradas+pagamentos+feeCli;
       const saldoCor=saldo>0?'#93c5fd':saldo<0?'#fca5a5':'rgba(255,255,255,0.3)';
       html+=`
       <div style="padding:8px 20px 4px;border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.02)">
@@ -2823,6 +2828,10 @@ function exRenderDRE(){
       ${pagamentos?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
         <span style="font-size:11px;color:rgba(255,255,255,0.45)">Pagamentos realizados</span>
         <div style="text-align:right"><span style="color:#fca5a5;font-size:12px">${fmtBRL2(pagamentos)}</span></div><div></div>
+      </div>`:''}
+      ${feeCli?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
+        <span style="font-size:11px;color:rgba(255,255,255,0.45)">Fee Soma Partners</span>
+        <div style="text-align:right"><span style="color:#fca5a5;font-size:12px">${fmtBRL2(feeCli)}</span></div><div></div>
       </div>`:''}
       <div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 44px;border-bottom:1px solid rgba(59,130,246,0.1);background:rgba(59,130,246,0.04)">
         <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7)">Saldo a devolver</span>
