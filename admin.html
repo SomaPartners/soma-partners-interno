@@ -2667,7 +2667,8 @@ function exRenderDRE(){
   // Formatação % em relação à receita líquida
   const Pct=(v)=>{
     if(!recLiq||v===0)return`<span style="color:rgba(255,255,255,0.18);font-size:10px">—</span>`;
-    const p=((v/recLiq)*100).toFixed(1);
+    const raw=(v/recLiq)*100;
+    const p=Math.abs(raw)<0.1?'<0.1':raw.toFixed(1);
     const c=v>0?'rgba(110,231,183,0.6)':'rgba(252,165,165,0.6)';
     return`<span style="color:${c};font-size:10px;font-variant-numeric:tabular-nums">${v>0?'+':''}${p}%</span>`;
   };
@@ -2740,8 +2741,8 @@ function exRenderDRE(){
         <span style="display:inline-block;width:2px;height:10px;border-radius:1px;background:#fcd34d;flex-shrink:0"></span>
         ⚠ Entradas Pendentes — não contabilizadas
       </span>
-      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px;text-decoration:line-through;opacity:0.7">+${fmtBRL2(ncEntradas)}</span></div>
-      <div style="text-align:right"><span style="color:rgba(252,211,77,0.5);font-size:9px;letter-spacing:0.5px">PENDENTE</span></div>
+      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px">+${fmtBRL2(ncEntradas)}</span></div>
+      <div style="text-align:right"><span style="background:rgba(252,211,77,0.15);color:#fcd34d;font-size:8px;font-weight:700;letter-spacing:0.8px;padding:2px 5px;border-radius:4px;white-space:nowrap">PENDENTE</span></div>
     </div>`:''}
     ${totalRow('(+) Receita Bruta',recBruta,'rgba(16,185,129,0.2)')}
 
@@ -2768,8 +2769,8 @@ function exRenderDRE(){
         <span style="display:inline-block;width:2px;height:10px;border-radius:1px;background:#fcd34d;flex-shrink:0"></span>
         ⚠ Saídas Pendentes — não contabilizadas
       </span>
-      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px;text-decoration:line-through;opacity:0.7">${fmtBRL2(ncSaidas)}</span></div>
-      <div style="text-align:right"><span style="color:rgba(252,211,77,0.5);font-size:9px;letter-spacing:0.5px">PENDENTE</span></div>
+      <div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px">${fmtBRL2(ncSaidas)}</span></div>
+      <div style="text-align:right"><span style="background:rgba(252,211,77,0.15);color:#fcd34d;font-size:8px;font-weight:700;letter-spacing:0.8px;padding:2px 5px;border-radius:4px;white-space:nowrap">PENDENTE</span></div>
     </div>`:''}
     ${totalRow('(–) Total de Despesas',despTotal,'rgba(239,68,68,0.25)')}
 
