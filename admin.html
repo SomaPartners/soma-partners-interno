@@ -346,19 +346,12 @@ body{display:flex;flex-direction:column;overflow:hidden}
 
   <!-- ════ FINANCEIRO — DRE ════ -->
   <div class="section" id="section-fin-dre">
-    <div class="tbl-header" style="margin-bottom:4px">
+    <div class="tbl-header" style="margin-bottom:8px">
       <div>
         <div class="sec-title">DRE</div>
         <div class="sec-sub" style="margin-bottom:0">Demonstração do Resultado do Exercício</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <select class="toolbar-select" id="dre-conta" onchange="renderDRE()">
-          <option value="">Todas as contas</option>
-          <option value="soma">Soma Partners</option>
-          <option value="trai">TR AI</option>
-          <option value="wealth">Soma Wealth</option>
-          <option value="trserv">TR Serviços</option>
-        </select>
         <select class="toolbar-select" id="dre-mes" onchange="renderDRE()">
           <option value="">Ano completo</option>
           <option value="01">Janeiro</option><option value="02">Fevereiro</option>
@@ -370,6 +363,13 @@ body{display:flex;flex-direction:column;overflow:hidden}
         </select>
         <select class="toolbar-select" id="dre-ano" onchange="renderDRE()"></select>
       </div>
+    </div>
+    <div class="tabs" id="dre-conta-tabs" style="margin-bottom:12px">
+      <div class="tab active" data-conta="" onclick="setDreConta('')">Consolidado</div>
+      <div class="tab" data-conta="soma" onclick="setDreConta('soma')">Soma Partners</div>
+      <div class="tab" data-conta="trai" onclick="setDreConta('trai')">TR AI</div>
+      <div class="tab" data-conta="wealth" onclick="setDreConta('wealth')">Soma Wealth</div>
+      <div class="tab" data-conta="trserv" onclick="setDreConta('trserv')">TR Serviços</div>
     </div>
     <div id="dre-content"></div>
   </div>
@@ -1202,6 +1202,7 @@ function logout(){sessionStorage.removeItem('soma_auth');sessionStorage.removeIt
 let lancamentos=[],equipe=[],ausencias=[],avaliacoes=[];
 let mktConteudo=[],mktCampanhas=[],mktMateriais=[],mktMetricas=[];
 let antecipClientes=[],antecipItens=[];
+let _dreConta='';
 
 async function loadAll(){
   const[l,e,a,av,mc,mca,mm,mme,ex,ac,ai]=await Promise.all([
@@ -1459,6 +1460,12 @@ async function deletarLanc(id){
 // ════════════════════════════════
 //  FINANCEIRO — DRE
 // ════════════════════════════════
+function setDreConta(conta){
+  _dreConta=conta;
+  document.querySelectorAll('#dre-conta-tabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.conta===conta));
+  renderDRE();
+}
+
 function renderDRE(){
   // Popula anos
   const selAno=document.getElementById('dre-ano');
@@ -1468,7 +1475,7 @@ function renderDRE(){
   if(!selAno.options.length) selAno.innerHTML=anos.map(a=>`<option value="${a}">${a}</option>`).join('');
   const ano=selAno.value||curAno;
   const mes=document.getElementById('dre-mes')?.value||'';
-  const conta=document.getElementById('dre-conta')?.value||'';
+  const conta=_dreConta;
 
   // Filtra lançamentos do período e conta
   const prefix=mes?`${ano}-${mes}`:ano;
