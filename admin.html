@@ -1477,52 +1477,58 @@ function renderDRE(){
   const mes=document.getElementById('dre-mes')?.value||'';
   const conta=_dreConta;
 
-  // Filtra lançamentos do período e conta
   const prefix=mes?`${ano}-${mes}`:ano;
-  const contaLabel=conta?({'soma':'Soma Partners','trai':'TR AI','wealth':'Soma Wealth','trserv':'TR Serviços'}[conta]||conta):'Todas as Contas';
+  const contaLabel=conta?({'soma':'Soma Partners Ltda','trai':'TR AI Ltda','wealth':'Soma Wealth Consultoria Ltda','trserv':'TR Serviços Financeiros Ltda'}[conta]||conta):'Consolidado (todas as contas)';
+  const periodoLabel=mes?`${['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][parseInt(mes)]} ${ano}`:`Acumulado ${ano}`;
   const lancs=lancamentos.filter(l=>l.data_vencimento?.startsWith(prefix)&&(!conta||l.conta===conta));
+  const el=document.getElementById('dre-content');
+  if(!lancs.length){el.innerHTML='<div style="text-align:center;padding:48px;color:var(--muted);font-size:12px">Nenhum lançamento no período selecionado.</div>';return;}
 
-  // Agrupa por categoria
-  const receitas=lancs.filter(l=>l.tipo==='receita');
-  const despesas=lancs.filter(l=>l.tipo==='despesa');
-  const catRec=[...new Set(receitas.map(l=>l.categoria||'Outras Receitas'))].sort();
-  const catDesp=[...new Set(despesas.map(l=>l.categoria||'Outras Despesas'))].sort();
-  const sumCatRec=(cat)=>receitas.filter(l=>(l.categoria||'Outras Receitas')===cat).reduce((s,l)=>s+(l.valor||0),0);
-  const sumCatDesp=(cat)=>despesas.filter(l=>(l.categoria||'Outras Despesas')===cat).reduce((s,l)=>s+(l.valor||0),0);
+  // Agrega por categoria com sinal (receitas positivas, despesas negativas — igual ao extrato BTG)
+  const agg={};
+  Object.keys(EX_CATS).forEach(k=>agg[k]=0);
+  lancs.forEach(l=>{
+    const v=l.tipo==='receita'?(l.valor||0):-(l.valor||0);
+    if(l.categoria) agg[l.categoria]=(agg[l.categoria]||0)+v;
+  });
 
-  const totalRec=receitas.reduce((s,l)=>s+(l.valor||0),0);
-  const totalDesp=despesas.reduce((s,l)=>s+(l.valor||0),0);
-  const resultado=totalRec-totalDesp;
-  const margem=totalRec?((resultado/totalRec)*100).toFixed(1):0;
+  // nc: separa entradas/saídas (ficam como PENDENTE, fora do resultado)
+  const ncEntradas=lancs.filter(l=>l.categoria==='nc'&&l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+  const ncSaidas=lancs.filter(l=>l.categoria==='nc'&&l.tipo==='despesa').reduce((s,l)=>s-(l.valor||0),0);
+
+  // fee_soma como receita (mesmo comportamento do extrato)
+  const feeTotal=Math.abs(agg.fee_soma||0);
+  const recBruta=(agg.honorarios||0)+(agg.rendimento||0)+(agg.outras_rec||0)+feeTotal;
+  const deducoes=agg.impostos||0; // já é negativo
+  const recLiq=recBruta+deducoes;
+  const despTotal=(agg.prolabore||0)+(agg.prestadores||0)+(agg.eventos||0)+(agg.marketing||0)+(agg.juridico||0)+(agg.tecnologia||0)+(agg.infraestrutura||0)+(agg.telecom||0)+(agg.treinamento||0)+(agg.taxas||0)+(agg.outros||0);
+  const resultado=recLiq+despTotal;
+  const margem=recLiq?((resultado/recLiq)*100).toFixed(1):0;
   const lucro=resultado>=0;
 
-  const periodoLabel=mes
-    ?`${['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][parseInt(mes)]} ${ano}`
-    :`Acumulado ${ano}`;
-
-  // ── Helpers visuais ──────────────────────────────────────
+  // Helpers idênticos ao exRenderDRE
   const V=(v,size=13,bold=700)=>{
     if(v===0)return`<span style="color:rgba(255,255,255,0.2);font-size:${size}px">—</span>`;
     const c=v>0?'#6ee7b7':'#fca5a5';
-    return`<span style="color:${c};font-weight:${bold};font-size:${size}px;font-variant-numeric:tabular-nums">${v>0?'+':''}${BRL(v)}</span>`;
+    return`<span style="color:${c};font-weight:${bold};font-size:${size}px;font-variant-numeric:tabular-nums">${v>0?'+':''}${fmtBRL2(v)}</span>`;
   };
-  const Pct=(v,base)=>{
-    if(!base||v===0)return`<span style="color:rgba(255,255,255,0.18);font-size:10px">—</span>`;
-    const p=((v/base)*100).toFixed(1);
+  const Pct=(v)=>{
+    if(!recLiq||v===0)return`<span style="color:rgba(255,255,255,0.18);font-size:10px">—</span>`;
+    const raw=(v/recLiq)*100;
+    const p=Math.abs(raw)<0.1?'<0.1':raw.toFixed(1);
     const c=v>0?'rgba(110,231,183,0.6)':'rgba(252,165,165,0.6)';
     return`<span style="color:${c};font-size:10px;font-variant-numeric:tabular-nums">${v>0?'+':''}${p}%</span>`;
   };
-  const item=(nome,val,cor,base)=>`
-    <div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:6px 20px 6px 40px;border-bottom:1px solid rgba(255,255,255,0.025);transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,0.025)'" onmouseout="this.style.background='transparent'">
+  const item=(nome,val,cor='rgba(255,255,255,0.5)')=>val===0?'':`
+    <div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 40px;border-bottom:1px solid rgba(255,255,255,0.025);transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,0.025)'" onmouseout="this.style.background='transparent'">
       <span style="font-size:11.5px;color:rgba(255,255,255,0.55);display:flex;align-items:center;gap:7px">
-        <span style="display:inline-block;width:2px;height:10px;border-radius:1px;background:${cor};opacity:0.7;flex-shrink:0"></span>
-        ${nome}
+        <span style="display:inline-block;width:2px;height:10px;border-radius:1px;background:${cor};opacity:0.7;flex-shrink:0"></span>${nome}
       </span>
       <div style="text-align:right">${V(val)}</div>
-      <div style="text-align:right">${Pct(val,base||totalRec)}</div>
+      <div style="text-align:right">${Pct(val)}</div>
     </div>`;
   const secao=(nome,cor,bg)=>`
-    <div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:12px 20px 9px;background:${bg};border-top:1px solid rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.04)">
+    <div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:12px 20px 9px;background:${bg};border-top:1px solid rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.04)">
       <div style="display:flex;align-items:center;gap:8px">
         <div style="width:2px;height:12px;border-radius:1px;background:${cor}"></div>
         <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${cor}">${nome}</span>
@@ -1530,158 +1536,131 @@ function renderDRE(){
       <div style="text-align:right;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.2)">Valor</div>
       <div style="text-align:right;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.2)">% Rec.</div>
     </div>`;
-  const totalRow=(nome,val,accentColor)=>`
-    <div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:10px 20px;background:rgba(255,255,255,0.03);border-top:1px solid ${accentColor};border-bottom:1px solid rgba(255,255,255,0.04)">
+  const totalRow=(nome,val,accentColor='rgba(255,255,255,0.08)')=>`
+    <div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:10px 20px;background:rgba(255,255,255,0.03);border-top:1px solid ${accentColor};border-bottom:1px solid rgba(255,255,255,0.04)">
       <span style="font-size:11.5px;font-weight:800;color:rgba(255,255,255,0.85);letter-spacing:0.2px">${nome}</span>
       <div style="text-align:right">${V(val,13,900)}</div>
-      <div style="text-align:right">${Pct(val,totalRec)}</div>
+      <div style="text-align:right">${Pct(val)}</div>
     </div>`;
 
-  // ── Linhas de receita e despesa ───────────────────────────
-  const recRows=catRec.length
-    ?catRec.map(cat=>item(cat,sumCatRec(cat),'#6ee7b7',totalRec)).join('')
-    :`<div style="padding:10px 20px 10px 40px;font-size:12px;color:var(--muted);font-style:italic">Nenhuma receita no período</div>`;
-
-  const despRows=catDesp.length
-    ?catDesp.map(cat=>item(cat,-sumCatDesp(cat),'#fca5a5',totalRec)).join('')
-    :`<div style="padding:10px 20px 10px 40px;font-size:12px;color:var(--muted);font-style:italic">Nenhuma despesa no período</div>`;
-
-  document.getElementById('dre-content').innerHTML=`
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;font-family:'Inter','Montserrat',sans-serif">
-
-    <!-- ── Cabeçalho ── -->
+  let html=`<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;font-family:'Inter','Montserrat',sans-serif">
     <div style="padding:18px 20px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.01)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div>
           <div style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Demonstração do Resultado</div>
-          <div style="font-size:15px;font-weight:900;letter-spacing:0.3px">Financeiro — DRE${conta?` · ${contaLabel}`:''}</div>
+          <div style="font-size:15px;font-weight:900;letter-spacing:0.3px">${contaLabel}</div>
         </div>
         <div style="font-size:11px;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:4px 10px">${periodoLabel}</div>
       </div>
-      <!-- KPIs -->
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px">
         <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.18);border-radius:8px;padding:10px 14px">
-          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(110,231,183,0.7);margin-bottom:4px">Total Receitas</div>
-          <div style="font-size:15px;font-weight:900;color:#6ee7b7;font-variant-numeric:tabular-nums">${BRL(totalRec)}</div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(110,231,183,0.7);margin-bottom:4px">Receita Líquida</div>
+          <div style="font-size:15px;font-weight:900;color:#6ee7b7;font-variant-numeric:tabular-nums">${fmtBRL2(recLiq)}</div>
         </div>
         <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.18);border-radius:8px;padding:10px 14px">
           <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(252,165,165,0.7);margin-bottom:4px">Total Despesas</div>
-          <div style="font-size:15px;font-weight:900;color:#fca5a5;font-variant-numeric:tabular-nums">${BRL(totalDesp)}</div>
+          <div style="font-size:15px;font-weight:900;color:#fca5a5;font-variant-numeric:tabular-nums">${fmtBRL2(despTotal)}</div>
         </div>
         <div style="background:${lucro?'rgba(16,185,129,0.09)':'rgba(239,68,68,0.09)'};border:1px solid ${lucro?'rgba(16,185,129,0.25)':'rgba(239,68,68,0.25)'};border-radius:8px;padding:10px 14px">
           <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${lucro?'rgba(110,231,183,0.7)':'rgba(252,165,165,0.7)'};margin-bottom:4px">Resultado · ${margem}%</div>
-          <div style="font-size:15px;font-weight:900;color:${lucro?'#6ee7b7':'#fca5a5'};font-variant-numeric:tabular-nums">${resultado>=0?'+':''}${BRL(resultado)}</div>
+          <div style="font-size:15px;font-weight:900;color:${lucro?'#6ee7b7':'#fca5a5'};font-variant-numeric:tabular-nums">${resultado>=0?'+':''}${fmtBRL2(resultado)}</div>
         </div>
       </div>
     </div>
-
-    <!-- ── RECEITAS ── -->
     ${secao('Receitas Operacionais','#6ee7b7','rgba(16,185,129,0.03)')}
-    ${recRows}
-    ${totalRow('(+) Total de Receitas',totalRec,'rgba(16,185,129,0.2)')}
-
-    <!-- ── DESPESAS ── -->
+    ${item('Honorários / Fees',agg.honorarios,'#6ee7b7')}
+    ${item('Fee Soma (desc. saldo cliente)',feeTotal,'#6ee7b7')}
+    ${item('Rendimento (Conta Remunerada)',agg.rendimento,'#6ee7b7')}
+    ${item('Outras Receitas',agg.outras_rec,'#6ee7b7')}
+    ${ncEntradas?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 40px;border-bottom:1px solid rgba(255,255,255,0.025);background:rgba(245,158,11,0.05)"><span style="font-size:11.5px;color:#fcd34d;display:flex;align-items:center;gap:7px;font-weight:600"><span style="display:inline-block;width:2px;height:10px;border-radius:1px;background:#fcd34d;flex-shrink:0"></span>⚠ Entradas Pendentes — não contabilizadas</span><div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px">+${fmtBRL2(ncEntradas)}</span></div><div style="text-align:right"><span style="background:rgba(252,211,77,0.15);color:#fcd34d;font-size:8px;font-weight:700;letter-spacing:0.8px;padding:2px 5px;border-radius:4px;white-space:nowrap">PENDENTE</span></div></div>`:''}
+    ${totalRow('(+) Receita Bruta',recBruta,'rgba(16,185,129,0.2)')}
+    ${secao('Deduções da Receita','#fca5a5','rgba(239,68,68,0.025)')}
+    ${item('Impostos (DAS / ISS / DARF)',agg.impostos,'#fca5a5')}
+    ${totalRow('(=) Receita Líquida',recLiq,'rgba(16,185,129,0.25)')}
     ${secao('Despesas Operacionais','#fca5a5','rgba(239,68,68,0.025)')}
-    ${despRows}
-    ${totalRow('(–) Total de Despesas',-totalDesp,'rgba(239,68,68,0.2)')}
-
-    <!-- ── RESULTADO ── -->
+    ${item('Pró-labore / Sócios',agg.prolabore,'#fca5a5')}
+    ${item('Prestadores / Parceiros',agg.prestadores,'#fca5a5')}
+    ${item('Eventos / Viagens',agg.eventos,'#fca5a5')}
+    ${item('Marketing',agg.marketing,'#fca5a5')}
+    ${item('Honorários Jurídicos',agg.juridico,'#fca5a5')}
+    ${item('Tecnologia / Sistemas',agg.tecnologia,'#fca5a5')}
+    ${item('Infraestrutura',agg.infraestrutura,'#fca5a5')}
+    ${item('Telefone / Internet',agg.telecom,'#fca5a5')}
+    ${item('Treinamento',agg.treinamento,'#fca5a5')}
+    ${item('Taxas / Regulatório',agg.taxas,'#fca5a5')}
+    ${item('Outros Serviços',agg.outros,'#fca5a5')}
+    ${ncSaidas?`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 40px;border-bottom:1px solid rgba(255,255,255,0.025);background:rgba(245,158,11,0.05)"><span style="font-size:11.5px;color:#fcd34d;display:flex;align-items:center;gap:7px;font-weight:600"><span style="display:inline-block;width:2px;height:10px;border-radius:1px;background:#fcd34d;flex-shrink:0"></span>⚠ Saídas Pendentes — não contabilizadas</span><div style="text-align:right"><span style="color:#fcd34d;font-weight:700;font-size:13px">${fmtBRL2(ncSaidas)}</span></div><div style="text-align:right"><span style="background:rgba(252,211,77,0.15);color:#fcd34d;font-size:8px;font-weight:700;letter-spacing:0.8px;padding:2px 5px;border-radius:4px;white-space:nowrap">PENDENTE</span></div></div>`:''}
+    ${totalRow('(–) Total de Despesas',despTotal,'rgba(239,68,68,0.25)')}
     <div style="display:grid;grid-template-columns:1fr auto;align-items:center;padding:18px 20px;background:${lucro?'rgba(16,185,129,0.08)':'rgba(239,68,68,0.08)'};border-top:2px solid ${lucro?'rgba(16,185,129,0.3)':'rgba(239,68,68,0.3)'}">
       <div>
         <div style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${lucro?'rgba(110,231,183,0.8)':'rgba(252,165,165,0.8)'};margin-bottom:5px">${lucro?'▲ Resultado Positivo':'▼ Resultado Negativo'} · Margem ${margem}%</div>
         <div style="font-size:14px;font-weight:900;letter-spacing:0.3px">(=) Resultado Líquido do Período</div>
       </div>
-      <div style="font-size:26px;font-weight:900;color:${lucro?'#6ee7b7':'#fca5a5'};font-variant-numeric:tabular-nums">${resultado>=0?'+':''}${BRL(resultado)}</div>
-    </div>
+      <div style="font-size:26px;font-weight:900;color:${lucro?'#6ee7b7':'#fca5a5'};font-variant-numeric:tabular-nums">${resultado>=0?'+':''}${fmtBRL2(resultado)}</div>
+    </div>`;
 
-    <!-- ── FLUXO DE PASSAGEM ── -->
-    ${(()=>{
-      const passRows=lancs.filter(l=>l.categoria==='antecip_entrada'||l.categoria==='pgto_cliente'||l.categoria==='fee_soma');
-      if(!passRows.length) return '';
-      // Agrupa por família via cliente_item_id
-      const cliMap={};
-      passRows.forEach(l=>{
-        const itm=l.cliente_item_id?antecipItens.find(i=>i.id===l.cliente_item_id):null;
-        const key=itm?itm.cliente_id:'__unknown__';
-        const cli=itm?antecipClientes.find(c=>c.id===itm.cliente_id):null;
-        if(!cliMap[key])cliMap[key]={cliNome:cli?cli.nome:'— Cliente não informado',rows:[]};
-        cliMap[key].rows.push({...l,itemNome:itm?itm.nome:'—'});
-      });
-      const totalDev=Object.values(cliMap).reduce((sum,g)=>{
-        const ent=g.rows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+(r.valor||0),0);
-        const pgt=g.rows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+(r.valor||0),0);
-        const fee=g.rows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s+(r.valor||0),0);
-        return sum+ent-pgt-fee;
-      },0);
-      const secPassagem=`
-        <div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:12px 20px 9px;background:rgba(59,130,246,0.04);border-top:1px solid rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.04)">
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:2px;height:12px;border-radius:1px;background:#93c5fd"></div>
-            <span style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#93c5fd">Fluxo de Passagem — Por Cliente</span>
-          </div>
-          <div style="text-align:right;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.2)">Valor</div>
-          <div style="text-align:right;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.2)">% Rec.</div>
-        </div>`;
-      let html=secPassagem;
-      Object.values(cliMap).sort((a,b)=>a.cliNome.localeCompare(b.cliNome)).forEach(({cliNome,rows:cr})=>{
-        const ent=cr.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+(r.valor||0),0);
-        const pgt=cr.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+(r.valor||0),0);
-        const fee=cr.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s+(r.valor||0),0);
-        const saldo=ent-pgt-fee;
-        const saldoCor=saldo>0?'#93c5fd':saldo<0?'#fca5a5':'rgba(255,255,255,0.3)';
-        html+=`<div style="padding:8px 20px 4px;border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.02)">
-          <span style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(147,197,253,0.8)">${cliNome}</span>
-        </div>`;
-        // Sub-itens
-        const itemIds=[...new Set(cr.map(r=>r.cliente_item_id||'__none__'))];
-        if(itemIds.length>1||(itemIds.length===1&&itemIds[0]!=='__none__')){
-          itemIds.forEach(iid=>{
-            const iNome=iid==='__none__'?'—':(antecipItens.find(i=>i.id===iid)?.nome||iid);
-            const iRows=cr.filter(r=>(r.cliente_item_id||'__none__')===iid);
-            const iEnt=iRows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+(r.valor||0),0);
-            const iPgt=iRows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+(r.valor||0),0);
-            const iFee=iRows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s+(r.valor||0),0);
-            const iSaldo=iEnt-iPgt-iFee;
-            if(!iSaldo&&!iEnt&&!iPgt&&!iFee)return;
-            html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:4px 20px 4px 36px;border-bottom:1px solid rgba(255,255,255,0.015)">
-              <span style="font-size:10px;color:rgba(147,197,253,0.5);font-weight:600">${iNome}</span>
-              <div style="text-align:right"><span style="color:${iSaldo>=0?'#93c5fd':'#fca5a5'};font-size:11px">${iSaldo>=0?'+':''}${BRL(Math.abs(iSaldo))}</span></div><div></div>
-            </div>`;
-          });
-        }
-        if(ent) html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
-          <span style="font-size:11px;color:rgba(255,255,255,0.45)">Antecipações recebidas</span>
-          <div style="text-align:right"><span style="color:#93c5fd;font-size:12px">+${BRL(ent)}</span></div><div></div>
-        </div>`;
-        if(pgt) html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
-          <span style="font-size:11px;color:rgba(255,255,255,0.45)">Pagamentos realizados</span>
-          <div style="text-align:right"><span style="color:#fca5a5;font-size:12px">-${BRL(pgt)}</span></div><div></div>
-        </div>`;
-        if(fee) html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)">
-          <span style="font-size:11px;color:rgba(255,255,255,0.45)">Fee Soma Partners</span>
-          <div style="text-align:right"><span style="color:#fca5a5;font-size:12px">-${BRL(fee)}</span></div><div></div>
-        </div>`;
-        html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:6px 20px 6px 44px;border-bottom:1px solid rgba(59,130,246,0.1);background:rgba(59,130,246,0.04)">
-          <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7)">Saldo a devolver</span>
-          <div style="text-align:right"><span style="color:${saldoCor};font-weight:800;font-size:12px">${saldo>=0?'+':''}${BRL(Math.abs(saldo))}</span></div><div></div>
-        </div>`;
-      });
-      // Total geral
-      const totCor=totalDev>0?'#93c5fd':totalDev<0?'#fca5a5':'rgba(255,255,255,0.3)';
-      html+=`<div style="display:grid;grid-template-columns:1fr 100px 56px;align-items:center;padding:10px 20px;background:rgba(255,255,255,0.03);border-top:1px solid rgba(59,130,246,0.3);border-bottom:1px solid rgba(255,255,255,0.04)">
-        <span style="font-size:11.5px;font-weight:800;color:rgba(255,255,255,0.85);letter-spacing:0.2px">Total a Devolver (todos os clientes)</span>
-        <div style="text-align:right"><span style="color:${totCor};font-weight:900;font-size:13px">${totalDev>=0?'+':''}${BRL(Math.abs(totalDev))}</span></div>
-        <div style="text-align:right">${Pct(totalDev,totalRec)}</div>
+  // Despesas pessoais (fora do resultado)
+  if(agg.desp_pessoais){
+    html+=secao('Despesas Pessoais — fora do resultado','#fcd34d','rgba(245,158,11,0.03)');
+    html+=item('Despesas Pessoais',agg.desp_pessoais,'#fcd34d');
+  }
+
+  // Fluxo de Passagem por cliente (idêntico ao exRenderDRE, adaptado para lancamentos)
+  const passagemRows=lancs.filter(l=>l.categoria==='antecip_entrada'||l.categoria==='pgto_cliente'||l.categoria==='fee_soma');
+  if(passagemRows.length){
+    const clienteMap={};
+    passagemRows.forEach(r=>{
+      const itm=r.cliente_item_id?antecipItens.find(i=>i.id===r.cliente_item_id):null;
+      const cliKey=itm?itm.cliente_id:'__unknown__';
+      const cli=itm?antecipClientes.find(c=>c.id===itm.cliente_id):null;
+      if(!clienteMap[cliKey])clienteMap[cliKey]={cliNome:cli?cli.nome:'— Cliente não informado',rows:[]};
+      clienteMap[cliKey].rows.push({...r,itemNome:itm?itm.nome:'—'});
+    });
+    const totalDevolver=Object.values(clienteMap).reduce((sum,g)=>{
+      const ent=g.rows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+(r.valor||0),0);
+      const pgt=g.rows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+(r.valor||0),0);
+      const fee=g.rows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s+(r.valor||0),0);
+      return sum+ent-pgt-fee;
+    },0);
+    html+=secao('Fluxo de Passagem — Por Cliente','#93c5fd','rgba(59,130,246,0.03)');
+    Object.values(clienteMap).sort((a,b)=>a.cliNome.localeCompare(b.cliNome)).forEach(({cliNome,rows:cliRows})=>{
+      const entradas=cliRows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+(r.valor||0),0);
+      const pagamentos=cliRows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+(r.valor||0),0);
+      const feeCli=cliRows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s+(r.valor||0),0);
+      const saldo=entradas-pagamentos-feeCli;
+      const saldoCor=saldo>0?'#93c5fd':saldo<0?'#fca5a5':'rgba(255,255,255,0.3)';
+      html+=`<div style="padding:8px 20px 4px;border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(59,130,246,0.02)">
+        <span style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(147,197,253,0.8)">${cliNome}</span>
       </div>`;
-      return html;
-    })()}
+      const itemIds=[...new Set(cliRows.map(r=>r.cliente_item_id||'—'))];
+      if(itemIds.length>1||(itemIds.length===1&&itemIds[0]!=='—')){
+        itemIds.forEach(iid=>{
+          const iNome=iid==='—'?'—':(antecipItens.find(i=>i.id===iid)?.nome||iid);
+          const iRows=cliRows.filter(r=>(r.cliente_item_id||'—')===iid);
+          const iEnt=iRows.filter(r=>r.categoria==='antecip_entrada').reduce((s,r)=>s+(r.valor||0),0);
+          const iPgt=iRows.filter(r=>r.categoria==='pgto_cliente').reduce((s,r)=>s+(r.valor||0),0);
+          const iFee=iRows.filter(r=>r.categoria==='fee_soma').reduce((s,r)=>s+(r.valor||0),0);
+          const iSaldo=iEnt-iPgt-iFee;
+          if(!iSaldo&&!iEnt&&!iPgt&&!iFee)return;
+          html+=`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:4px 20px 4px 36px;border-bottom:1px solid rgba(255,255,255,0.015)">
+            <span style="font-size:10px;color:rgba(147,197,253,0.5);font-weight:600">${iNome}</span>
+            <div style="text-align:right"><span style="color:${iSaldo>=0?'#93c5fd':'#fca5a5'};font-size:11px">${iSaldo>=0?'+':''}${fmtBRL2(Math.abs(iSaldo))}</span></div><div></div>
+          </div>`;
+        });
+      }
+      if(entradas) html+=`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)"><span style="font-size:11px;color:rgba(255,255,255,0.45)">Antecipações recebidas</span><div style="text-align:right"><span style="color:#93c5fd;font-size:12px">+${fmtBRL2(entradas)}</span></div><div></div></div>`;
+      if(pagamentos) html+=`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)"><span style="font-size:11px;color:rgba(255,255,255,0.45)">Pagamentos realizados</span><div style="text-align:right"><span style="color:#fca5a5;font-size:12px">-${fmtBRL2(pagamentos)}</span></div><div></div></div>`;
+      if(feeCli) html+=`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:5px 20px 5px 44px;border-bottom:1px solid rgba(255,255,255,0.02)"><span style="font-size:11px;color:rgba(255,255,255,0.45)">Fee Soma Partners</span><div style="text-align:right"><span style="color:#fca5a5;font-size:12px">-${fmtBRL2(feeCli)}</span></div><div></div></div>`;
+      html+=`<div style="display:grid;grid-template-columns:1fr 90px 56px;align-items:center;padding:6px 20px 6px 44px;border-bottom:1px solid rgba(59,130,246,0.1);background:rgba(59,130,246,0.04)">
+        <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7)">Saldo a devolver</span>
+        <div style="text-align:right"><span style="color:${saldoCor};font-weight:800;font-size:12px">${saldo>=0?'+':''}${fmtBRL2(Math.abs(saldo))}</span></div><div></div>
+      </div>`;
+    });
+    html+=totalRow('Total a Devolver (todos os clientes)',totalDevolver,'rgba(59,130,246,0.3)');
+  }
 
-    <!-- ── Rodapé ── -->
-    <div style="padding:8px 20px;border-top:1px solid rgba(255,255,255,0.04);display:flex;gap:16px">
-      <span style="font-size:10px;color:rgba(255,255,255,0.25)">Lançamentos no período: <strong style="color:rgba(255,255,255,0.4)">${lancs.length}</strong></span>
-    </div>
-
-  </div>`;
+  html+=`</div>`;
+  el.innerHTML=html;
 }
 
 // ════════════════════════════════
