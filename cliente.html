@@ -1812,7 +1812,7 @@ function renderFinCalendario(){
     recs.map(r=>`<div class="rec-item">
       <div class="rec-day-badge ${r.tipo==='ENTRADA'?'rec-day-entrada':'rec-day-saida'}">${r.dia}</div>
       <div style="flex:1"><div class="rec-nome">${r.nome}</div><div class="rec-meta"><span>${r.cat||''}</span><span class="rec-freq-tag">${r.freq}</span></div></div>
-      <div class="rec-valor" style="color:${r.tipo==='ENTRADA'?'#6ee7b7':'#fca5a5'}">${r.tipo==='ENTRADA'?'+':'-'}${r.valor}</div>
+      <div class="rec-valor" style="color:${r.tipo==='ENTRADA'?'#6ee7b7':'#fca5a5'}">${r.tipo==='ENTRADA'?'+':'-'}${fmtMoney(parseCurrency(r.valor))}</div>
     </div>`).join('');
 }
 function finCalPrev(){finCalMonth--;if(finCalMonth<0){finCalMonth=11;finCalYear--;}renderFinCalendario();}
@@ -1965,7 +1965,7 @@ function renderRecorrentesList(){
         </div>
       </div>
       <div>
-        <div class="rec-valor" style="color:${r.tipo==='ENTRADA'?'#6ee7b7':'#fca5a5'}">${r.tipo==='ENTRADA'?'+':'-'}${r.valor}</div>
+        <div class="rec-valor" style="color:${r.tipo==='ENTRADA'?'#6ee7b7':'#fca5a5'}">${r.tipo==='ENTRADA'?'+':'-'}${fmtMoney(parseCurrency(r.valor))}</div>
         <div style="text-align:right;margin-top:4px;display:flex;gap:4px;justify-content:flex-end">
           <button onclick="editRecorrente(${r._origIdx})" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;padding:2px 6px;border-radius:4px;transition:all 0.18s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--muted2)'">Editar</button>
           <button onclick="deleteRecorrente(${r._origIdx})" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;padding:2px 6px;border-radius:4px;transition:all 0.18s" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='var(--muted2)'">Excluir</button>
@@ -3672,9 +3672,10 @@ function formatCurrency(digits){
 }
 
 function parseCurrency(str){
-  if(!str) return 0;
-  // "1.000,00" → 1000.00
-  return parseFloat(str.replace(/\./g,'').replace(',','.')) || 0;
+  if(!str && str!==0) return 0;
+  if(typeof str === 'number') return str;
+  // Remove R$, spaces, then convert "1.000,00" → 1000.00
+  return parseFloat(str.toString().replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.')) || 0;
 }
 
 function initAllCurrencyInputs(){
