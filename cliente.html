@@ -2009,17 +2009,27 @@ async function saveRecorrente(){
 
 function editRecorrente(i){
   const r = recorrentes[i];
-  openModal('modal-recorrente'); // abre e reseta primeiro
-  document.getElementById('rec-idx').value = i;
-  document.getElementById('mt-rec').textContent = 'Editar Recorrente';
-  document.getElementById('rec-nome').value = r.nome||'';
-  document.getElementById('rec-tipo').value = r.tipo||'SAÍDA';
-  document.getElementById('rec-valor').value = r.valor||'';
-  document.getElementById('rec-dia').value = r.dia||'';
-  document.getElementById('rec-freq').value = r.freq||'mensal';
-  document.getElementById('rec-cat').value = r.cat||'SERVIÇOS';
-  document.getElementById('rec-obs').value = r.obs||'';
-  const rfim=document.getElementById('rec-fim');if(rfim)rfim.value=r.dataFim||'';
+  // Abre no modal-pgto (padrão) com toggle recorrente ativo
+  openModal('modal-pgto');
+  document.getElementById('mt-pgto').textContent = 'Editar Recorrente';
+  document.getElementById('pgto-id').value = ''; // não é transação avulsa
+  // Constrói uma data fictícia usando o dia do recorrente no mês atual
+  const hoje = new Date();
+  const dia = parseInt(r.dia)||1;
+  const dataRef = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(Math.min(dia,28)).padStart(2,'0')}`;
+  const dataEl = document.getElementById('pgto-data'); if(dataEl) dataEl.value = dataRef;
+  const carac = document.getElementById('pgto-carac'); if(carac) carac.value = r.nome||'';
+  const tipo = document.getElementById('pgto-tipo'); if(tipo) tipo.value = r.cat||'SERVIÇOS';
+  const desc = document.getElementById('pgto-desc'); if(desc) desc.value = r.tipo||'SAÍDA';
+  const obs = document.getElementById('pgto-obs'); if(obs) obs.value = r.obs||'';
+  const valEl = document.getElementById('pgto-val');
+  if(valEl){const v=parseFloat((r.valor||'0').toString().replace(/\./g,'').replace(',','.'))||0;const digits=Math.round(v*100).toString();valEl.value=formatCurrency(digits);}
+  // Ativa toggle recorrente
+  if(!_pgtoRecorrente) toggleRecorrenteFields();
+  const freqEl = document.getElementById('pgto-rec-freq'); if(freqEl) freqEl.value = r.freq||'mensal';
+  const fimEl = document.getElementById('pgto-rec-fim'); if(fimEl) fimEl.value = r.dataFim||'';
+  // Guarda índice original para savePgto saber que é edição
+  _editRecIdx = i;
 }
 
 async function deleteRecorrente(i){
@@ -2490,22 +2500,24 @@ async function savePgto(){
   if(!carac||!val){alert('Preencha Característica e Valor');return}
 
   if(_pgtoRecorrente){
-    // Recorrente: salva APENAS como recorrente, não como transação avulsa
-    // Dia extraído automaticamente da data da transação
+    // Recorrente: salva como recorrente (novo ou edição)
     const dataField = document.getElementById('pgto-data').value;
     if(!dataField){ alert('Informe a data da transação primeiro'); return; }
     const dia = new Date(dataField+'T12:00:00').getDate().toString();
     if(!CLIENT.recorrentes) CLIENT.recorrentes = [];
-    CLIENT.recorrentes.push({
+    const recObj = {
       nome: carac,
       dia: parseInt(dia),
       tipo: document.getElementById('pgto-desc').value,
       valor: val,
       freq: document.getElementById('pgto-rec-freq').value||'mensal',
       cat: document.getElementById('pgto-tipo').value,
-      dataInicio: today(),
+      obs: document.getElementById('pgto-obs').value||'',
+      dataInicio: _editRecIdx>=0?(CLIENT.recorrentes[_editRecIdx]?.dataInicio||today()):today(),
       dataFim: document.getElementById('pgto-rec-fim')?.value||''
-    });
+    };
+    if(_editRecIdx >= 0){ CLIENT.recorrentes[_editRecIdx] = recObj; }
+    else { CLIENT.recorrentes.push(recObj); }
     const{error}=await _sb.from('concierge_clientes').upsert({id:CLIENT.id, data:CLIENT});
     if(error){showToast('Erro ao salvar recorrente');return}
     recorrentes = CLIENT.recorrentes;
@@ -2597,7 +2609,7 @@ function openModal(id){
   }
   if(id==='modal-membro'){document.getElementById('membro-idx').value='-1';document.getElementById('mt-membro').textContent='Adicionar Membro';['m-nome','m-cpf','m-nasc','m-nasc-local','m-pai','m-mae','m-tel','m-email','m-email2','m-end','m-profissao','m-cnh-num','m-cnh-cat','m-cnh-emissao','m-cnh-venc','m-cnh-orgao','m-cnh-1hab','m-veiculo','m-placa','m-obs','m-foto'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});document.getElementById('m-rel').value='outro';clearMembroFotoPreview();const dl=document.getElementById('docs-list');if(dl){dl.innerHTML='';_docCount=0;}}
   if(id==='modal-pgto'){document.getElementById('pgto-id').value='';['pgto-carac','pgto-val','pgto-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});setTimeout(()=>initCurrencyInput(document.getElementById('pgto-val')),50);const pd=document.getElementById('pgto-data');if(pd)pd.value=today();const pt=document.getElementById('pgto-tipo');if(pt)pt.value='SERVIÇOS';const pd2=document.getElementById('pgto-desc');if(pd2)pd2.value='SAÍDA';// Reset toggle
-    _pgtoRecorrente=false;const tog=document.getElementById('pgto-rec-toggle');const kn=document.getElementById('pgto-rec-knob');const rf=document.getElementById('pgto-rec-fields');if(tog){tog.style.background='rgba(255,255,255,0.1)';tog.style.borderColor='rgba(255,255,255,0.15)';}if(kn){kn.style.left='2px';kn.style.opacity='0.4';}if(rf)rf.style.display='none';
+    _pgtoRecorrente=false;_editRecIdx=-1;const tog=document.getElementById('pgto-rec-toggle');const kn=document.getElementById('pgto-rec-knob');const rf=document.getElementById('pgto-rec-fields');if(tog){tog.style.background='rgba(255,255,255,0.1)';tog.style.borderColor='rgba(255,255,255,0.15)';}if(kn){kn.style.left='2px';kn.style.opacity='0.4';}if(rf)rf.style.display='none';
     // Reset pagador
     setPagador('familia');
     // Popula membros da família
@@ -3143,6 +3155,7 @@ async function finKanbanDrop(event, newStatus){
 
 // ── TOGGLE RECORRENTE NO MODAL ──
 let _pgtoRecorrente = false;
+let _editRecIdx = -1; // índice do recorrente em edição (-1 = novo)
 function toggleRecorrenteFields(){
   _pgtoRecorrente = !_pgtoRecorrente;
   const toggle = document.getElementById('pgto-rec-toggle');
