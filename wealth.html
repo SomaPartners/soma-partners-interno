@@ -1961,13 +1961,27 @@ function gerarRelatorioOnboarding(){
 
   const statusColor={pendente:'#e53e3e',andamento:'#d97706',feito:'#059669',na:'#718096'};
 
+  const mkCabecalho=(resp,totalPendResp)=>`
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid #c9963c">
+      <div>
+        <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:4px">Soma Partners · Onboarding</div>
+        <div style="font-size:20px;font-weight:800;color:#1a202c">${resp}</div>
+        <div style="font-size:11px;color:#718096;margin-top:3px;text-transform:capitalize">${dataFmt}</div>
+      </div>
+      <div style="text-align:center;background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px">
+        <div style="font-size:20px;font-weight:800;color:#e53e3e">${totalPendResp}</div>
+        <div style="font-size:9px;color:#718096;font-weight:700;letter-spacing:0.5px;text-transform:uppercase">Tarefas abertas</div>
+      </div>
+    </div>`;
+
   let respBlocks='';
-  Object.keys(byResp).sort().forEach(resp=>{
+  Object.keys(byResp).sort().forEach((resp,ri)=>{
     const clientes=byResp[resp];
+    const totalPendResp=clientes.reduce((a,c)=>a+c.pendTasks.length+c.andTasks.length,0);
     const rows=clientes.map(c=>{
       const pct=c.aplic?Math.round((c.feitos/c.aplic)*100):100;
       const barColor=pct===100?'#059669':pct>=60?'#d97706':'#e53e3e';
-        const pendLine=c.pendTasks.length?`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:${c.andTasks.length?'6px':'0'}"><span style="display:inline-flex;align-items:center;gap:3px;background:#c53030;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">✗ PENDENTE</span><span style="font-size:10px;color:#9b1c1c;font-weight:500">${c.pendTasks.join(', ')}</span></div>`:'';
+      const pendLine=c.pendTasks.length?`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:${c.andTasks.length?'6px':'0'}"><span style="display:inline-flex;align-items:center;gap:3px;background:#c53030;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">✗ PENDENTE</span><span style="font-size:10px;color:#9b1c1c;font-weight:500">${c.pendTasks.join(', ')}</span></div>`:'';
       const andLine=c.andTasks.length?`<div style="display:flex;align-items:baseline;gap:6px"><span style="display:inline-flex;align-items:center;gap:3px;background:#d97706;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">↗ AG. ASSINATURA</span><span style="font-size:10px;color:#92400e;font-weight:500">${c.andTasks.join(', ')}</span></div>`:'';
       return`<tr>
         <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:11px;color:#1a202c;vertical-align:top">${c.nome}</td>
@@ -1983,14 +1997,14 @@ function gerarRelatorioOnboarding(){
       </tr>`;
     }).join('');
     respBlocks+=`
-      <div style="margin-bottom:20px;break-inside:avoid">
-        <div style="background:#1a202c;color:#c9963c;padding:8px 14px;border-radius:6px 6px 0 0;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase">${resp}</div>
-        <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:0 0 6px 6px;overflow:hidden;border:1px solid #e2e8f0;border-top:none">
+      <div style="${ri>0?'page-break-before:always;padding-top:32px;':''}">
+        ${mkCabecalho(resp,totalPendResp)}
+        <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:6px;overflow:hidden;border:1px solid #e2e8f0">
           <thead>
-            <tr style="background:#f7fafc">
-              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:800;color:#718096;letter-spacing:0.8px;text-transform:uppercase;width:30%">Cliente</th>
-              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:800;color:#718096;letter-spacing:0.8px;text-transform:uppercase;width:18%">Progresso</th>
-              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:800;color:#718096;letter-spacing:0.8px;text-transform:uppercase">Pendências</th>
+            <tr style="background:#1a202c">
+              <th style="padding:8px 10px;text-align:left;font-size:9px;font-weight:800;color:#c9963c;letter-spacing:0.8px;text-transform:uppercase;width:30%">Cliente</th>
+              <th style="padding:8px 10px;text-align:left;font-size:9px;font-weight:800;color:#c9963c;letter-spacing:0.8px;text-transform:uppercase;width:18%">Progresso</th>
+              <th style="padding:8px 10px;text-align:left;font-size:9px;font-weight:800;color:#c9963c;letter-spacing:0.8px;text-transform:uppercase">Pendências</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -2006,6 +2020,43 @@ function gerarRelatorioOnboarding(){
       </div>
     </div>`:'';
 
+  // Página de capa com resumo geral com resumo geral
+  const capa=`
+    <div style="page-break-after:always;padding:32px 0">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:3px solid #c9963c">
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:4px">Soma Partners</div>
+          <div style="font-size:24px;font-weight:800;color:#1a202c;line-height:1.2">Relatório de Onboarding</div>
+          <div style="font-size:12px;color:#718096;margin-top:4px;text-transform:capitalize">${dataFmt}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+        <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:#e53e3e">${comPend.length}</div>
+          <div style="font-size:9px;color:#718096;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-top:4px">Com pendência</div>
+        </div>
+        <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:#d97706">${totalPend}</div>
+          <div style="font-size:9px;color:#718096;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-top:4px">Tarefas abertas</div>
+        </div>
+        <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:#059669">${completos.length}</div>
+          <div style="font-size:9px;color:#718096;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-top:4px">Completos</div>
+        </div>
+        <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:#1a202c">${_obRows.length}</div>
+          <div style="font-size:9px;color:#718096;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-top:4px">Total clientes</div>
+        </div>
+      </div>
+      <div style="padding:12px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px">
+        <div style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#92400e;margin-bottom:7px">Etapas do Onboarding</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${OB_TASK_COLS.map(c=>`<span style="display:inline-block;background:#fff;border:1px solid #fde68a;border-radius:4px;font-size:9px;font-weight:700;color:#92400e;padding:2px 7px">${OB_TASK_LABEL_LONG[c.label]||c.label}</span>`).join('')}
+        </div>
+      </div>
+      ${completosLista}
+    </div>`;
+
   const html=`<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -2020,47 +2071,17 @@ function gerarRelatorioOnboarding(){
     .no-print{display:none!important}
     @page{margin:15mm 12mm;size:A4 portrait}
   }
-  .page{max-width:800px;margin:0 auto;background:#fff;padding:32px 36px;min-height:100vh}
+  .page{max-width:800px;margin:0 auto;background:#fff;padding:32px 36px}
   .btn-print{background:#c9963c;color:#fff;border:none;padding:10px 22px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;margin-right:8px;letter-spacing:0.5px}
   .btn-close{background:#e2e8f0;color:#4a5568;border:none;padding:10px 18px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="page">
-  <!-- HEADER -->
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:3px solid #c9963c">
-    <div>
-      <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:4px">Soma Partners</div>
-      <div style="font-size:22px;font-weight:800;color:#1a202c;line-height:1.2">Relatório de Onboarding</div>
-      <div style="font-size:12px;color:#718096;margin-top:4px;text-transform:capitalize">${dataFmt}</div>
-    </div>
-    <div style="text-align:right">
-      <div style="display:inline-flex;gap:12px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 18px">
-        <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#e53e3e">${comPend.length}</div><div style="font-size:9px;color:#718096;font-weight:700;letter-spacing:0.5px;text-transform:uppercase">Com pendência</div></div>
-        <div style="width:1px;background:#e2e8f0"></div>
-        <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#d97706">${totalPend}</div><div style="font-size:9px;color:#718096;font-weight:700;letter-spacing:0.5px;text-transform:uppercase">Tarefas abertas</div></div>
-        <div style="width:1px;background:#e2e8f0"></div>
-        <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#059669">${completos.length}</div><div style="font-size:9px;color:#718096;font-weight:700;letter-spacing:0.5px;text-transform:uppercase">Completos</div></div>
-        <div style="width:1px;background:#e2e8f0"></div>
-        <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#1a202c">${_obRows.length}</div><div style="font-size:9px;color:#718096;font-weight:700;letter-spacing:0.5px;text-transform:uppercase">Total clientes</div></div>
-      </div>
-    </div>
-  </div>
+  ${capa}
+  ${comPend.length?respBlocks:'<div style="text-align:center;padding:40px;color:#059669;font-weight:700">🎉 Nenhuma pendência em aberto!</div>'}
 
-  <!-- LEGENDA ETAPAS -->
-  <div style="margin-bottom:20px;padding:12px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px">
-    <div style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#92400e;margin-bottom:7px">Etapas do Onboarding</div>
-    <div style="display:flex;flex-wrap:wrap;gap:4px">
-      ${OB_TASK_COLS.map(c=>`<span style="display:inline-block;background:#fff;border:1px solid #fde68a;border-radius:4px;font-size:9px;font-weight:700;color:#92400e;padding:2px 7px">${OB_TASK_LABEL_LONG[c.label]||c.label}</span>`).join('')}
-    </div>
-  </div>
-
-  <!-- CLIENTES COM PENDÊNCIA -->
-  ${comPend.length?`<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#e53e3e;margin-bottom:12px;display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:3px;height:14px;background:#e53e3e;border-radius:2px"></span>Pendências por Responsável</div>${respBlocks}`:'<div style="text-align:center;padding:40px;color:#059669;font-weight:700">🎉 Nenhuma pendência em aberto!</div>'}
-
-  ${completosLista}
-
-  <!-- RODAPÉ -->
+  <!-- RODAPÉ (última página) -->
   <div style="margin-top:32px;padding-top:14px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
     <div style="font-size:9px;color:#a0aec0">Gerado em ${hoje.toLocaleString('pt-BR')} · Soma Partners · Site Interno</div>
     <div style="font-size:9px;color:#a0aec0">Distribuição interna — confidencial</div>
