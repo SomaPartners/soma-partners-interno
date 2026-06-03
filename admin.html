@@ -246,6 +246,10 @@ body{display:flex;flex-direction:column;overflow:hidden}
     <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
     <span>Avaliações</span>
   </div>
+  <div class="nav-item" data-sec="rh-360" onclick="nav('rh-360',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span>Avaliação 360°</span>
+  </div>
 
   <div class="sidebar-section">Marketing</div>
   <div class="nav-item" data-sec="mkt-visao" onclick="nav('mkt-visao',this)">
@@ -488,6 +492,32 @@ body{display:flex;flex-direction:column;overflow:hidden}
       <thead><tr><th>Colaborador</th><th>Período</th><th>Nota</th><th>Pontos Fortes</th><th>A Melhorar</th><th></th></tr></thead>
       <tbody id="tbl-avaliacoes"></tbody>
     </table></div>
+  </div>
+
+  <!-- ════ RH — AVALIAÇÃO 360 ════ -->
+  <div class="section" id="section-rh-360">
+    <div class="tbl-header">
+      <div>
+        <div class="sec-title">Avaliação 360°</div>
+        <div class="sec-sub" style="margin-bottom:0">Feedback mútuo entre toda a equipe</div>
+      </div>
+      <button class="btn btn-primary" onclick="criarRodada360()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nova Rodada
+      </button>
+    </div>
+
+    <!-- Lista de rodadas -->
+    <div id="rodadas360-list" style="margin-bottom:28px"></div>
+
+    <!-- Resultados de uma rodada -->
+    <div id="resultados360" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <button onclick="fecharResultados360()" style="background:rgba(255,255,255,0.07);border:1px solid var(--border);color:#fff;padding:6px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif">← Voltar</button>
+        <div id="resultado360-titulo" style="font-size:16px;font-weight:800"></div>
+      </div>
+      <div id="resultado360-cards"></div>
+    </div>
   </div>
 
   <!-- ════ EXTRATO BTG ════ -->
@@ -1208,11 +1238,12 @@ function logout(){sessionStorage.removeItem('soma_auth');sessionStorage.removeIt
 // ── DATA ──
 let lancamentos=[],equipe=[],ausencias=[],avaliacoes=[];
 let mktConteudo=[],mktCampanhas=[],mktMateriais=[],mktMetricas=[];
+let rodadas360=[],respostas360=[];
 let antecipClientes=[],antecipItens=[];
 let _dreConta='';
 
 async function loadAll(){
-  const[l,e,a,av,mc,mca,mm,mme,ex,ac,ai]=await Promise.all([
+  const[l,e,a,av,mc,mca,mm,mme,ex,ac,ai,r360,rs360]=await Promise.all([
     _sb.from('admin_lancamentos').select('*').order('data_vencimento'),
     _sb.from('wealth_responsaveis').select('id,data').order('created_at'),
     _sb.from('admin_ausencias').select('*').order('data_inicio',{ascending:false}),
@@ -1224,11 +1255,16 @@ async function loadAll(){
     _sb.from('admin_extrato').select('*').order('data'),
     _sb.from('admin_antecip_clientes').select('*').order('nome'),
     _sb.from('admin_antecip_itens').select('*').order('nome'),
+    _sb.from('admin_aval360_rodadas').select('*').order('created_at',{ascending:false}),
+    _sb.from('admin_aval360_respostas').select('*').order('created_at',{ascending:false}),
   ]);
   lancamentos=l.data||[];
   equipe=(e.data||[]).map(r=>({id:r.id,nome:r.data?.nome||'',cargo:r.data?.cargo||'',email:r.data?.email||'',telefone:r.data?.telefone||'',sigla:r.data?.sigla||'',cpf:r.data?.cpf||'',nascimento:r.data?.nascimento||'',cidade:r.data?.cidade||'',status:r.data?.status||'ativo',salario:r.data?.salario||null,data_entrada:r.data?.data_entrada||'',contrato_tipo:r.data?.contrato_tipo||null,contrato_gerado_em:r.data?.contrato_gerado_em||null,contrato_impresso:r.data?.contrato_impresso||false,contrato_assinado:r.data?.contrato_assinado||false,_data:r.data||{}})).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
   ausencias=a.data||[];
   avaliacoes=av.data||[];
+  rodadas360=(r360.data||[]).map(r=>({id:r.id,created_at:r.created_at,...(r.data||{})}));
+  respostas360=(rs360.data||[]).map(r=>({id:r.id,rodada_id:r.rodada_id,created_at:r.created_at,...(r.data||{})}));
+  renderRodadas360();
   mktConteudo=mc.data||[];
   mktCampanhas=mca.data||[];
   mktMateriais=mm.data||[];
@@ -3664,6 +3700,159 @@ async function gerarContrato(tipo){
     }
   }
 }
+
+// ════════════════════════════════
+//  AVALIAÇÃO 360°
+// ════════════════════════════════
+const CRITERIOS_360=[
+  {id:'comunicacao',   label:'Comunicação'},
+  {id:'proatividade',  label:'Proatividade'},
+  {id:'tecnico',       label:'Conhecimento Técnico'},
+  {id:'equipe',        label:'Trabalho em Equipe'},
+  {id:'prazos',        label:'Entrega / Prazos'},
+];
+
+async function criarRodada360(){
+  const nome=prompt('Nome da rodada (ex: Q2 2026):');
+  if(!nome||!nome.trim())return;
+  const id=crypto.randomUUID();
+  const rec={id,rodada_id:null,data:{nome:nome.trim(),status:'ativa',criado_em:new Date().toISOString()}};
+  const{error}=await _sb.from('admin_aval360_rodadas').insert({id,data:{nome:nome.trim(),status:'ativa',criado_em:new Date().toISOString()}});
+  if(error){alert('Erro: '+error.message);return;}
+  await loadAll();
+}
+
+async function encerrarRodada360(id){
+  if(!confirm('Encerrar esta rodada? Ninguém mais poderá responder.'))return;
+  await _sb.from('admin_aval360_rodadas').update({data:{...rodadas360.find(r=>r.id===id),status:'encerrada'}}).eq('id',id);
+  await loadAll();
+}
+
+async function deletarRodada360(id){
+  if(!confirm('Deletar rodada e todas as respostas?'))return;
+  await _sb.from('admin_aval360_respostas').delete().eq('rodada_id',id);
+  await _sb.from('admin_aval360_rodadas').delete().eq('id',id);
+  await loadAll();
+}
+
+function copiarLink360(id){
+  const url=`${location.origin}/avaliacao360.html?r=${id}`;
+  navigator.clipboard.writeText(url).then(()=>showToast('Link copiado!','ok')).catch(()=>{prompt('Copie o link:',url);});
+}
+
+function showToast(msg,tipo){
+  let t=document.getElementById('_toast360');
+  if(!t){t=document.createElement('div');t.id='_toast360';t.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;font-family:Montserrat,sans-serif;transition:opacity 0.3s';document.body.appendChild(t);}
+  t.textContent=msg;t.style.background=tipo==='ok'?'rgba(16,185,129,0.9)':'rgba(239,68,68,0.9)';t.style.color='#fff';t.style.opacity='1';
+  clearTimeout(t._to);t._to=setTimeout(()=>{t.style.opacity='0';},2500);
+}
+
+function renderRodadas360(){
+  const el=document.getElementById('rodadas360-list');
+  if(!el)return;
+  if(!rodadas360.length){
+    el.innerHTML='<div style="text-align:center;padding:48px;color:rgba(255,255,255,0.3);font-size:13px">Nenhuma rodada criada ainda</div>';
+    return;
+  }
+  el.innerHTML=rodadas360.map(r=>{
+    const total=respostas360.filter(x=>x.rodada_id===r.id).length;
+    const avaliadores=[...new Set(respostas360.filter(x=>x.rodada_id===r.id).map(x=>x.avaliador_id))].length;
+    const isAtiva=r.status==='ativa';
+    return`<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px 20px;margin-bottom:10px;display:flex;align-items:center;gap:16px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:800;margin-bottom:4px">${r.nome}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4)">${avaliadores} avaliador${avaliadores!==1?'es':''} · ${total} resposta${total!==1?'s':''}</div>
+      </div>
+      <span style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;background:${isAtiva?'rgba(16,185,129,0.15)':'rgba(255,255,255,0.07)'};color:${isAtiva?'#6ee7b7':'rgba(255,255,255,0.35)'};">${isAtiva?'ATIVA':'ENCERRADA'}</span>
+      <div style="display:flex;gap:8px">
+        ${isAtiva?`<button onclick="copiarLink360('${r.id}')" style="background:rgba(201,150,60,0.15);border:1px solid rgba(201,150,60,0.3);color:var(--gold);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif">🔗 Link</button>`:''}
+        ${total>0?`<button onclick="verResultados360('${r.id}')" style="background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.3);color:#a5b4fc;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif">📊 Resultados</button>`:''}
+        ${isAtiva?`<button onclick="encerrarRodada360('${r.id}')" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);color:#fcd34d;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif">⏹ Encerrar</button>`:''}
+        <button onclick="deletarRodada360('${r.id}')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#fca5a5;padding:7px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function verResultados360(rodadaId){
+  const rodada=rodadas360.find(r=>r.id===rodadaId);
+  const resps=respostas360.filter(r=>r.rodada_id===rodadaId);
+  const avaliadores=[...new Set(resps.map(r=>r.avaliador_id))];
+
+  document.getElementById('resultado360-titulo').textContent=`Resultados — ${rodada?.nome||''}`;
+  document.getElementById('rodadas360-list').style.display='none';
+  document.getElementById('resultados360').style.display='block';
+  document.querySelector('#section-rh-360 .tbl-header').style.display='none';
+
+  // Agrupa por avaliado
+  const porAvaliado={};
+  resps.forEach(resp=>{
+    const id=resp.avaliado_id;
+    if(!porAvaliado[id])porAvaliado[id]={notas:{},comentarios:[]};
+    (resp.criterios||[]).forEach(c=>{
+      if(!porAvaliado[id].notas[c.id])porAvaliado[id].notas[c.id]=[];
+      if(c.nota)porAvaliado[id].notas[c.id].push(c.nota);
+    });
+    if(resp.comentario&&resp.comentario.trim())porAvaliado[id].comentarios.push({texto:resp.comentario,avaliador:resp.avaliador_id});
+  });
+
+  const cards=Object.entries(porAvaliado).map(([avaliadoId,dados])=>{
+    const f=equipe.find(x=>x.id===avaliadoId);
+    const nome=f?.nome||avaliadoId;
+    const mediaGeral=CRITERIOS_360.map(c=>{
+      const ns=dados.notas[c.id]||[];
+      return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null;
+    }).filter(x=>x!==null);
+    const media=mediaGeral.length?(mediaGeral.reduce((a,b)=>a+b,0)/mediaGeral.length).toFixed(1):'-';
+
+    const critHtml=CRITERIOS_360.map(c=>{
+      const ns=dados.notas[c.id]||[];
+      const avg=ns.length?(ns.reduce((a,b)=>a+b,0)/ns.length):0;
+      const stars=[1,2,3,4,5].map(n=>`<span style="color:${n<=Math.round(avg)?'#f59e0b':'rgba(255,255,255,0.12)';font-size:14px">★</span>`).join('');
+      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span style="font-size:12px;color:rgba(255,255,255,0.7)">${c.label}</span>
+        <div style="display:flex;align-items:center;gap:8px">${stars}<span style="font-size:11px;font-weight:700;color:${avg>=4?'#6ee7b7':avg>=3?'#fcd34d':'#fca5a5'};min-width:24px;text-align:right">${ns.length?avg.toFixed(1):'-'}</span></div>
+      </div>`;
+    }).join('');
+
+    const comsHtml=dados.comentarios.length?dados.comentarios.map(c=>{
+      const av=equipe.find(x=>x.id===c.avaliador);
+      return`<div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:12px;line-height:1.5;color:rgba(255,255,255,0.75)">"${c.texto}"<div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px">— ${av?.nome||'Anônimo'}</div></div>`;
+    }).join(''):'<div style="font-size:12px;color:rgba(255,255,255,0.25);padding:8px 0">Nenhum comentário</div>';
+
+    return`<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:22px 24px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div>
+          <div style="font-size:16px;font-weight:800">${nome}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px">${f?.cargo||''} · ${avaliadores.length} avaliador${avaliadores.length!==1?'es':''}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:36px;font-weight:800;color:${parseFloat(media)>=4?'#6ee7b7':parseFloat(media)>=3?'#fcd34d':'#fca5a5'};line-height:1">${media}</div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase">média geral</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div>
+          <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px">Por Critério</div>
+          ${critHtml}
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px">Comentários</div>
+          ${comsHtml}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('resultado360-cards').innerHTML=cards||'<div style="text-align:center;padding:48px;color:rgba(255,255,255,0.3)">Nenhuma resposta ainda</div>';
+}
+
+function fecharResultados360(){
+  document.getElementById('resultados360').style.display='none';
+  document.getElementById('rodadas360-list').style.display='block';
+  document.querySelector('#section-rh-360 .tbl-header').style.display='flex';
+}
+
 </script>
 </body>
 </html>

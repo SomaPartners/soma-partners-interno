@@ -118,3 +118,25 @@ CREATE INDEX IF NOT EXISTS idx_eventos_convidados_evento_id ON eventos_convidado
 CREATE INDEX IF NOT EXISTS idx_wealth_followups_lead_id ON wealth_followups(lead_id);
 CREATE INDEX IF NOT EXISTS idx_admin_ausencias_func ON admin_ausencias(funcionario_id);
 CREATE INDEX IF NOT EXISTS idx_admin_avaliacoes_func ON admin_avaliacoes(funcionario_id);
+
+-- AVALIAÇÃO 360°
+CREATE TABLE IF NOT EXISTS admin_aval360_rodadas (
+  id TEXT PRIMARY KEY,
+  data JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS admin_aval360_respostas (
+  id TEXT PRIMARY KEY,
+  rodada_id TEXT NOT NULL,
+  data JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE admin_aval360_rodadas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_aval360_respostas ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "anon_all_aval360_rodadas"   ON admin_aval360_rodadas   FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "anon_all_aval360_respostas" ON admin_aval360_respostas FOR ALL TO anon USING (true) WITH CHECK (true);
+
+CREATE INDEX IF NOT EXISTS idx_aval360_respostas_rodada ON admin_aval360_respostas(rodada_id);

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Avaliação 360° — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0b1e30;--navy2:#0f2438;--gold:#c9963c;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.45);--muted2:rgba(255,255,255,0.25)}
+body{min-height:100vh;background:var(--navy);color:#fff;font-family:'Montserrat',sans-serif;padding:0 0 60px}
+.header{background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:center;gap:14px;margin-bottom:0}
+.logo{font-size:14px;font-weight:800;letter-spacing:2px;color:var(--gold)}
+.header-sub{font-size:12px;color:var(--muted);font-weight:500}
+.wrap{max-width:680px;margin:0 auto;padding:28px 20px}
+.step{display:none}.step.active{display:block}
+
+/* Seleção de quem está avaliando */
+.select-box{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:28px 24px;margin-bottom:24px}
+.select-label{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+select.fc{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:#fff;padding:12px 14px;border-radius:10px;font-size:14px;font-weight:600;font-family:'Montserrat',sans-serif;appearance:none;cursor:pointer}
+select.fc option{background:#0f2438;color:#fff}
+
+.btn-primary{background:linear-gradient(135deg,rgba(201,150,60,0.9),rgba(180,130,40,0.9));border:none;color:#fff;padding:14px 32px;border-radius:10px;font-size:13px;font-weight:800;letter-spacing:1px;cursor:pointer;font-family:'Montserrat',sans-serif;width:100%;transition:opacity 0.18s}
+.btn-primary:hover{opacity:0.88}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed}
+
+/* Cards de avaliação */
+.pessoa-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:22px 22px;margin-bottom:16px}
+.pessoa-nome{font-size:15px;font-weight:800;margin-bottom:4px}
+.pessoa-cargo{font-size:11px;color:var(--muted);margin-bottom:18px}
+.criterio-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.criterio-row:last-of-type{border-bottom:none}
+.criterio-label{font-size:12px;color:rgba(255,255,255,0.75);font-weight:600}
+.stars{display:flex;gap:4px}
+.star{font-size:22px;cursor:pointer;color:rgba(255,255,255,0.15);transition:color 0.12s;user-select:none;-webkit-user-select:none}
+.star.on{color:#f59e0b}
+.star:hover{color:#fcd34d}
+.comment-area{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#fff;padding:10px 12px;border-radius:9px;font-size:12px;font-family:'Montserrat',sans-serif;resize:none;margin-top:14px;line-height:1.5}
+.comment-area::placeholder{color:var(--muted2)}
+.comment-area:focus{outline:none;border-color:rgba(201,150,60,0.4)}
+
+.progress-bar-wrap{background:rgba(255,255,255,0.06);border-radius:4px;height:4px;margin-bottom:28px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--gold);border-radius:4px;transition:width 0.4s}
+
+/* Tela de sucesso */
+.success-box{text-align:center;padding:60px 20px}
+.success-icon{font-size:56px;margin-bottom:20px}
+.success-title{font-size:22px;font-weight:800;margin-bottom:10px}
+.success-sub{font-size:14px;color:var(--muted);line-height:1.6}
+
+/* Error / loading */
+.loading{text-align:center;padding:80px 20px;color:var(--muted);font-size:14px}
+.error-box{text-align:center;padding:60px 20px;color:#fca5a5}
+
+.nav-btns{display:flex;gap:10px;margin-top:24px}
+.btn-outline{background:rgba(255,255,255,0.06);border:1px solid var(--border);color:#fff;padding:13px 24px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;flex:1;transition:background 0.18s}
+.btn-outline:hover{background:rgba(255,255,255,0.1)}
+.secao-title{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">SOMA</div>
+  <div class="header-sub">Avaliação 360° da Equipe</div>
+</div>
+
+<div class="wrap">
+  <!-- Loading -->
+  <div id="step-loading" class="step active loading">Carregando...</div>
+
+  <!-- Erro -->
+  <div id="step-erro" class="step error-box">
+    <div style="font-size:40px;margin-bottom:16px">⚠️</div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:8px">Link inválido</div>
+    <div style="font-size:13px;color:var(--muted)">Esta rodada não existe ou foi encerrada.</div>
+  </div>
+
+  <!-- Passo 1: quem é você -->
+  <div id="step-quem" class="step">
+    <div class="select-box">
+      <div style="font-size:22px;font-weight:800;margin-bottom:8px">Olá! 👋</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6">Você foi convidado para participar de uma <strong style="color:#fff">Avaliação 360°</strong>. Isso significa que você vai dar um feedback honesto sobre cada membro da equipe.</div>
+      <div class="select-label">Quem é você?</div>
+      <select class="fc" id="sel-avaliador">
+        <option value="">Selecione seu nome...</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="iniciarAvaliacao()" id="btn-iniciar">Começar Avaliação →</button>
+  </div>
+
+  <!-- Passo 2: avaliar cada pessoa -->
+  <div id="step-avaliar" class="step">
+    <div id="rodada-nome-display" style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:6px"></div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    <div id="cards-avaliar"></div>
+    <div class="nav-btns">
+      <button class="btn-outline" id="btn-enviar" onclick="enviarAvaliacao()" disabled>✓ Enviar Avaliações</button>
+    </div>
+  </div>
+
+  <!-- Sucesso -->
+  <div id="step-sucesso" class="step success-box">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Avaliações enviadas!</div>
+    <div class="success-sub">Obrigado pelo seu feedback.<br>Os resultados ficarão disponíveis para o time no painel administrativo.</div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL='https://mdftseanzfganeiyotlf.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
+const _sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+
+const CRITERIOS=[
+  {id:'comunicacao',   label:'Comunicação'},
+  {id:'proatividade',  label:'Proatividade'},
+  {id:'tecnico',       label:'Conhecimento Técnico'},
+  {id:'equipe',        label:'Trabalho em Equipe'},
+  {id:'prazos',        label:'Entrega / Prazos'},
+];
+
+let _rodada=null;
+let _equipe=[];
+let _avaliadorId=null;
+// notas[avaliadoId][criterioId] = 1..5
+const _notas={};
+// comentarios[avaliadoId] = string
+const _comentarios={};
+
+function showStep(id){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function init(){
+  const params=new URLSearchParams(location.search);
+  const rodadaId=params.get('r');
+  if(!rodadaId){showStep('step-erro');return;}
+
+  const[{data:rodadas},{data:resp}]=await Promise.all([
+    _sb.from('admin_aval360_rodadas').select('*').eq('id',rodadaId).single(),
+    _sb.from('wealth_responsaveis').select('id,data').order('created_at'),
+  ]);
+
+  if(!rodadas||rodadas.data?.status!=='ativa'){showStep('step-erro');return;}
+  _rodada=rodadas;
+  _equipe=(resp||[]).map(r=>({id:r.id,nome:r.data?.nome||'',cargo:r.data?.cargo||'',status:r.data?.status||'ativo'})).filter(r=>r.status==='ativo'&&r.nome).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+
+  // Popular select
+  const sel=document.getElementById('sel-avaliador');
+  _equipe.forEach(f=>{
+    const o=document.createElement('option');
+    o.value=f.id;o.textContent=f.nome;
+    sel.appendChild(o);
+  });
+
+  showStep('step-quem');
+}
+
+function iniciarAvaliacao(){
+  const sel=document.getElementById('sel-avaliador');
+  if(!sel.value){sel.focus();return;}
+  _avaliadorId=sel.value;
+
+  const avaliados=_equipe.filter(f=>f.id!==_avaliadorId);
+  document.getElementById('rodada-nome-display').textContent=_rodada.data?.nome||'';
+
+  const cards=avaliados.map(f=>{
+    _notas[f.id]={};
+    _comentarios[f.id]='';
+    const critRows=CRITERIOS.map(c=>`
+      <div class="criterio-row">
+        <span class="criterio-label">${c.label}</span>
+        <div class="stars" id="stars-${f.id}-${c.id}">
+          ${[1,2,3,4,5].map(n=>`<span class="star" data-av="${f.id}" data-crit="${c.id}" data-n="${n}" onclick="setNota('${f.id}','${c.id}',${n})">★</span>`).join('')}
+        </div>
+      </div>`).join('');
+    return`<div class="pessoa-card" id="card-${f.id}">
+      <div class="pessoa-nome">${f.nome}</div>
+      <div class="pessoa-cargo">${f.cargo||'Colaborador'}</div>
+      ${critRows}
+      <textarea class="comment-area" id="cmt-${f.id}" rows="2" placeholder="Comentário opcional sobre ${f.nome.split(' ')[0]}..." oninput="_comentarios['${f.id}']=this.value"></textarea>
+    </div>`;
+  }).join('');
+
+  document.getElementById('cards-avaliar').innerHTML=cards;
+  atualizarProgresso();
+  showStep('step-avaliar');
+}
+
+function setNota(avaliadoId,criterioId,nota){
+  if(!_notas[avaliadoId])_notas[avaliadoId]={};
+  _notas[avaliadoId][criterioId]=nota;
+  // Atualizar visual
+  const container=document.getElementById(`stars-${avaliadoId}-${criterioId}`);
+  if(container)container.querySelectorAll('.star').forEach(s=>{
+    s.classList.toggle('on',parseInt(s.dataset.n)<=nota);
+  });
+  atualizarProgresso();
+}
+
+function atualizarProgresso(){
+  const avaliados=_equipe.filter(f=>f.id!==_avaliadorId);
+  if(!avaliados.length)return;
+  let completos=0;
+  avaliados.forEach(f=>{
+    const ns=_notas[f.id]||{};
+    if(CRITERIOS.every(c=>ns[c.id]))completos++;
+  });
+  const pct=Math.round((completos/avaliados.length)*100);
+  document.getElementById('progress-fill').style.width=pct+'%';
+  const btn=document.getElementById('btn-enviar');
+  btn.disabled=completos<avaliados.length;
+  btn.textContent=completos<avaliados.length?`✓ Preencha todos (${completos}/${avaliados.length})`:'✓ Enviar Avaliações';
+}
+
+async function enviarAvaliacao(){
+  const btn=document.getElementById('btn-enviar');
+  btn.disabled=true;btn.textContent='Enviando...';
+
+  const avaliados=_equipe.filter(f=>f.id!==_avaliadorId);
+  const inserts=avaliados.map(f=>({
+    id: crypto.randomUUID(),
+    rodada_id: _rodada.id,
+    data:{
+      rodada_id: _rodada.id,
+      avaliador_id: _avaliadorId,
+      avaliado_id: f.id,
+      criterios: CRITERIOS.map(c=>({id:c.id,nota:_notas[f.id]?.[c.id]||null})),
+      comentario: _comentarios[f.id]||'',
+      submetido_em: new Date().toISOString(),
+    }
+  }));
+
+  const{error}=await _sb.from('admin_aval360_respostas').insert(inserts);
+  if(error){
+    alert('Erro ao enviar: '+error.message);
+    btn.disabled=false;btn.textContent='✓ Enviar Avaliações';
+    return;
+  }
+  showStep('step-sucesso');
+}
+
+init();
+</script>
+</body>
+</html>
