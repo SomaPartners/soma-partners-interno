@@ -1382,7 +1382,7 @@ function renderPainel(){
   // ── Onboarding ──
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
   const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio'||s==='adiado');
-  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na'||s==='adiado');
+  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na');
 
   if(!_obRows.length){
     document.getElementById('p-ob-tbody').innerHTML='<tr><td colspan="4" style="text-align:center;padding:24px;font-size:11px;color:rgba(7,12,24,0.3)">Abra a aba Onboarding para carregar os dados</td></tr>';
@@ -1809,7 +1809,7 @@ function renderOnboarding(){
 
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
   const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio'||s==='adiado');
-  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na'||s==='adiado');
+  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na');
 
   let rows=_obRows;
   if(filtResp) rows=rows.filter(r=>(r[OB_RESP_IDX]||'').trim()===filtResp);
@@ -1933,7 +1933,7 @@ function gerarRelatorioOnboarding(){
   const dataFmt=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
   const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio'||s==='adiado');
-  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na'||s==='adiado');
+  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na');
 
   const comPend=_obRows.filter(isPendente);
   const completos=_obRows.filter(isCompleto);
