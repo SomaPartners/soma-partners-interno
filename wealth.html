@@ -1741,16 +1741,16 @@ const OB_SHEET_URL='https://docs.google.com/spreadsheets/d/1edEI7Hw-tRBeCKR--A2W
 // A=0 Cliente, B=1 Responsavel, C=2 Sigla, D=3 Cad.SF, E=4 Contrato, F=5 BTG, G=6 XP, H=7 Email, I=8 Suitability, J=9 KYC, K=10 Billing(skip), L=11 Termo, M=12 Tem fundo?(skip), N=13 Cad.Vita
 const OB_RESP_IDX=1; // responsável = coluna B
 const OB_TASK_COLS=[
-  {idx:3, label:'Cad. SF',       getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'na';if(l.includes('sim')||l.includes('feito'))return'feito';return'pendente';}},
-  {idx:4, label:'Contrato Vita', getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'na';if(l.includes('assinado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
-  {idx:5, label:'BTG',           getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'na';if(l.includes('sim'))return'feito';if(l.includes('aprova'))return'andamento';return'pendente';}},
-  {idx:6, label:'XP',            getStatus:v=>{if(!v)return'na';const l=v.trim().toLowerCase();if(l==='-')return'na';if(l.includes('sim'))return'feito';if(l.includes('aprova'))return'andamento';return'pendente';}},
-  {idx:7, label:'E-mail BV',     getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');if(l==='-')return'na';if(l.includes('enviado')||l.includes('nao sera'))return'feito';return'pendente';}},
-  {idx:8, label:'Suitability',   getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'na';if(l.includes('feito'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
-  {idx:9, label:'KYC',           getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'na';if(l.includes('feito'))return'feito';return'pendente';}},
-  {idx:11,label:'Termo Fundo',   getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'na';if(l.includes('aprovado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
-  {idx:12,label:'Tem fundo?',    getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'na';if(l.includes('sim'))return'feito';return'pendente';}},
-  {idx:13,label:'Cad. Vita',     getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'na';if(l.includes('sim'))return'feito';return'pendente';}},
+  {idx:3, label:'Cad. SF',       getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'feito';if(l.includes('sim')||l.includes('feito'))return'feito';return'pendente';}},
+  {idx:4, label:'Contrato Vita', getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'feito';if(l.includes('assinado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:5, label:'BTG',           getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'feito';if(l.includes('sim'))return'feito';if(l.includes('aprova'))return'andamento';return'pendente';}},
+  {idx:6, label:'XP',            getStatus:v=>{if(!v)return'na';const l=v.trim().toLowerCase();if(l==='-')return'feito';if(l.includes('sim'))return'feito';if(l.includes('aprova'))return'andamento';return'pendente';}},
+  {idx:7, label:'E-mail BV',     getStatus:v=>{if(!v)return'vazio';const l=v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');if(l.includes('enviado')||l.includes('nao sera'))return'feito';return'pendente';}},
+  {idx:8, label:'Suitability',   getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'feito';if(l.includes('feito'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:9, label:'KYC',           getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'feito';if(l.includes('feito'))return'feito';return'pendente';}},
+  {idx:11,label:'Termo Fundo',   getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'feito';if(l.includes('aprovado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:12,label:'Tem fundo?',    getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'feito';if(l.includes('sim'))return'feito';return'pendente';}},
+  {idx:13,label:'Cad. Vita',     getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'feito';if(l.includes('sim'))return'feito';return'pendente';}},
 ];
 let _obRows=[];
 let _obSortCol=null, _obSortDir='asc';
