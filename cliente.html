@@ -1954,8 +1954,8 @@ function renderRecorrentesList(){
     container.innerHTML = '<div class="empty-msg">Nenhum pagamento recorrente. Clique em "+ Novo".</div>';
     return;
   }
-  const sorted = [...recorrentes].sort((a,b) => parseInt(a.dia) - parseInt(b.dia));
-  container.innerHTML = sorted.map((r,i) => `
+  const sorted = [...recorrentes].map((r,origIdx)=>({...r,_origIdx:origIdx})).sort((a,b) => parseInt(a.dia) - parseInt(b.dia));
+  container.innerHTML = sorted.map(r => `
     <div class="rec-item">
       <div class="rec-day-badge ${r.tipo==='ENTRADA'?'rec-day-entrada':'rec-day-saida'}">${r.dia}</div>
       <div style="flex:1;min-width:0">
@@ -1968,8 +1968,8 @@ function renderRecorrentesList(){
       <div>
         <div class="rec-valor" style="color:${r.tipo==='ENTRADA'?'#6ee7b7':'#fca5a5'}">${r.tipo==='ENTRADA'?'+':'-'}${r.valor}</div>
         <div style="text-align:right;margin-top:4px;display:flex;gap:4px;justify-content:flex-end">
-          <button onclick="editRecorrente(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;padding:2px 6px;border-radius:4px;transition:all 0.18s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--muted2)'">Editar</button>
-          <button onclick="deleteRecorrente(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;padding:2px 6px;border-radius:4px;transition:all 0.18s" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='var(--muted2)'">Excluir</button>
+          <button onclick="editRecorrente(${r._origIdx})" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;padding:2px 6px;border-radius:4px;transition:all 0.18s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--muted2)'">Editar</button>
+          <button onclick="deleteRecorrente(${r._origIdx})" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;padding:2px 6px;border-radius:4px;transition:all 0.18s" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='var(--muted2)'">Excluir</button>
         </div>
         ${r.dataFim?`<div style="font-size:9px;color:var(--orange);margin-top:3px">Encerra em ${fmtDate(r.dataFim)}</div>`:''}
       </div>
