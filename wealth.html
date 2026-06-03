@@ -141,6 +141,7 @@ tbody tr:hover .del-btn{color:rgba(7,12,24,0.35)}
 .ob-chip-andamento{background:rgba(245,158,11,0.18);color:#fcd34d}
 .ob-chip-pendente,.ob-chip-vazio,.ob-chip-outro{background:rgba(239,68,68,0.18);color:#fca5a5}
 .ob-chip-na{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.2)}
+.ob-chip-adiado{background:rgba(100,116,139,0.15);color:rgba(148,163,184,0.7)}
 .ob-table{width:100%;border-collapse:collapse;table-layout:fixed}
 .ob-th{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;padding:5px 6px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:#f0ece4;z-index:2;color:rgba(7,12,24,0.5)}
 .ob-th-left{text-align:left}
@@ -1381,7 +1382,7 @@ function renderPainel(){
   // ── Onboarding ──
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
   const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio');
-  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na');
+  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na'||s==='adiado');
 
   if(!_obRows.length){
     document.getElementById('p-ob-tbody').innerHTML='<tr><td colspan="4" style="text-align:center;padding:24px;font-size:11px;color:rgba(7,12,24,0.3)">Abra a aba Onboarding para carregar os dados</td></tr>';
@@ -1740,19 +1741,19 @@ const OB_SHEET_URL='https://docs.google.com/spreadsheets/d/1edEI7Hw-tRBeCKR--A2W
 // CSV não exporta coluna B (vazia). Índices reais (0-based, sem col B):
 // A=0 Cliente, B=1 Responsavel, C=2 Sigla, D=3 Cad.SF, E=4 Contrato, F=5 BTG, G=6 XP, H=7 Email, I=8 Suitability, J=9 KYC, K=10 Billing(skip), L=11 Termo, M=12 Tem fundo?(skip), N=13 Cad.Vita
 const OB_RESP_IDX=1; // responsável = coluna B
-const _obDone=l=>l==='-'||l.includes('nao sera')||l.normalize('NFD').replace(/[̀-ͯ]/g,'').includes('nao sera');
+const _obNaoFara=l=>l.includes('nao sera')||l.normalize('NFD').replace(/[̀-ͯ]/g,'').includes('nao sera');
 const OB_TASK_LABEL_LONG={'Cad. SF':'Cadastro Sales Force','Contrato Vita':'Contrato Vita','BTG':'BTG','XP':'XP','E-mail BV':'E-mail Boas-Vindas','Suitability':'Suitability','KYC':'KYC','Termo Fundo':'Termo do Fundo','Tem fundo?':'Tem o Fundo?','Cad. Vita':'Cadastro Vita'};
 const OB_TASK_COLS=[
-  {idx:3, label:'Cad. SF',       getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('sim')||l.includes('feito'))return'feito';return'pendente';}},
-  {idx:4, label:'Contrato Vita', getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('assinado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
-  {idx:5, label:'BTG',           getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('sim'))return'feito';if(l.includes('aprova'))return'andamento';return'pendente';}},
-  {idx:6, label:'XP',            getStatus:v=>{if(!v)return'na';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('sim'))return'feito';if(l.includes('aprova'))return'andamento';return'pendente';}},
-  {idx:7, label:'E-mail BV',     getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('enviado'))return'feito';return'pendente';}},
-  {idx:8, label:'Suitability',   getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('feito'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
-  {idx:9, label:'KYC',           getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('feito'))return'feito';return'pendente';}},
-  {idx:11,label:'Termo Fundo',   getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('aprovado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
-  {idx:12,label:'Tem fundo?',    getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('sim'))return'feito';return'pendente';}},
-  {idx:13,label:'Cad. Vita',     getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('sim'))return'feito';return'pendente';}},
+  {idx:3, label:'Cad. SF',       getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'adiado';if(_obNaoFara(l))return'feito';if(l.includes('sim')||l.includes('feito'))return'feito';return'pendente';}},
+  {idx:4, label:'Contrato Vita', getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'adiado';if(_obNaoFara(l))return'feito';if(l.includes('assinado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:5, label:'BTG',           getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'adiado';if(_obNaoFara(l))return'feito';if(l.includes('sim'))return'feito';if(l.includes('aprova'))return'andamento';return'pendente';}},
+  {idx:6, label:'XP',            getStatus:v=>{if(!v)return'na';const l=v.trim().toLowerCase();if(l==='-')return'adiado';if(_obNaoFara(l))return'feito';if(l.includes('sim'))return'feito';if(l.includes('aprova'))return'andamento';return'pendente';}},
+  {idx:7, label:'E-mail BV',     getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'adiado';if(_obNaoFara(l))return'feito';if(l.includes('enviado'))return'feito';return'pendente';}},
+  {idx:8, label:'Suitability',   getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'adiado';if(_obNaoFara(l))return'feito';if(l.includes('feito'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:9, label:'KYC',           getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'adiado';if(_obNaoFara(l))return'feito';if(l.includes('feito'))return'feito';return'pendente';}},
+  {idx:11,label:'Termo Fundo',   getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'adiado';if(_obNaoFara(l))return'feito';if(l.includes('aprovado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
+  {idx:12,label:'Tem fundo?',    getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'adiado';if(_obNaoFara(l))return'feito';if(l.includes('sim'))return'feito';return'pendente';}},
+  {idx:13,label:'Cad. Vita',     getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(l==='-')return'adiado';if(_obNaoFara(l))return'feito';if(l.includes('sim'))return'feito';return'pendente';}},
 ];
 let _obRows=[];
 let _obSortCol=null, _obSortDir='asc';
@@ -1808,7 +1809,7 @@ function renderOnboarding(){
 
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
   const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio');
-  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na');
+  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na'||s==='adiado');
 
   let rows=_obRows;
   if(filtResp) rows=rows.filter(r=>(r[OB_RESP_IDX]||'').trim()===filtResp);
@@ -1857,7 +1858,7 @@ function renderOnboarding(){
 
   if(!rows.length){tbody.innerHTML='<tr><td colspan="12" class="ob-empty">Nenhum cliente encontrado.</td></tr>';return;}
 
-  const chipIcons={feito:'✓',andamento:'↗',pendente:'✗',vazio:'✗',na:'—'};
+  const chipIcons={feito:'✓',andamento:'↗',pendente:'✗',vazio:'✗',na:'—',adiado:'·'};
   tbody.innerHTML=rows.map(r=>{
     const nome=(r[0]||'').trim();
     const resp=(r[OB_RESP_IDX]||'').trim();
@@ -1932,7 +1933,7 @@ function gerarRelatorioOnboarding(){
   const dataFmt=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
   const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio');
-  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na');
+  const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na'||s==='adiado');
 
   const comPend=_obRows.filter(isPendente);
   const completos=_obRows.filter(isCompleto);
@@ -1954,9 +1955,10 @@ function gerarRelatorioOnboarding(){
     const sts=getStatuses(r);
     const pendTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='pendente'||sts[i]==='vazio').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label);
     const andTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='andamento').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label);
+    const adiTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='adiado').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label);
     const feitos=sts.filter(s=>s==='feito').length;
     const aplic=sts.filter(s=>s!=='na').length;
-    byResp[resp].push({nome:(r[0]||'').trim(), pendTasks, andTasks, feitos, aplic});
+    byResp[resp].push({nome:(r[0]||'').trim(), pendTasks, andTasks, adiTasks, feitos, aplic});
   });
 
   const statusColor={pendente:'#e53e3e',andamento:'#d97706',feito:'#059669',na:'#718096'};
@@ -1981,8 +1983,11 @@ function gerarRelatorioOnboarding(){
     const rows=clientes.map(c=>{
       const pct=c.aplic?Math.round((c.feitos/c.aplic)*100):100;
       const barColor=pct===100?'#059669':pct>=60?'#d97706':'#e53e3e';
-      const pendLine=c.pendTasks.length?`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:${c.andTasks.length?'6px':'0'}"><span style="display:inline-flex;align-items:center;gap:3px;background:#c53030;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">✗ PENDENTE</span><span style="font-size:10px;color:#9b1c1c;font-weight:500">${c.pendTasks.join(', ')}</span></div>`:'';
-      const andLine=c.andTasks.length?`<div style="display:flex;align-items:baseline;gap:6px"><span style="display:inline-flex;align-items:center;gap:3px;background:#d97706;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">↗ AG. ASSINATURA</span><span style="font-size:10px;color:#92400e;font-weight:500">${c.andTasks.join(', ')}</span></div>`:'';
+      const hasMore=(c.andTasks.length||c.adiTasks.length)?'6px':'0';
+      const hasMoreAdi=c.adiTasks.length?'6px':'0';
+      const pendLine=c.pendTasks.length?`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:${hasMore}"><span style="display:inline-flex;align-items:center;gap:3px;background:#c53030;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">✗ PENDENTE</span><span style="font-size:10px;color:#9b1c1c;font-weight:500">${c.pendTasks.join(', ')}</span></div>`:'';
+      const andLine=c.andTasks.length?`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:${hasMoreAdi}"><span style="display:inline-flex;align-items:center;gap:3px;background:#d97706;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">↗ AG. ASSINATURA</span><span style="font-size:10px;color:#92400e;font-weight:500">${c.andTasks.join(', ')}</span></div>`:'';
+      const adiLine=c.adiTasks.length?`<div style="display:flex;align-items:baseline;gap:6px"><span style="display:inline-flex;align-items:center;gap:3px;background:#64748b;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">· PARA FAZER (FUTURO)</span><span style="font-size:10px;color:#64748b;font-weight:500">${c.adiTasks.join(', ')}</span></div>`:'';
       return`<tr>
         <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:11px;color:#1a202c;vertical-align:top">${c.nome}</td>
         <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top">
@@ -1993,7 +1998,7 @@ function gerarRelatorioOnboarding(){
             <span style="font-size:10px;color:${barColor};font-weight:700;white-space:nowrap">${c.feitos}/${c.aplic}</span>
           </div>
         </td>
-        <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top">${pendLine}${andLine}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top">${pendLine}${andLine}${adiLine}</td>
       </tr>`;
     }).join('');
     respBlocks+=`
@@ -2119,9 +2124,10 @@ function abrirDetalheOnboarding(idx){
   document.getElementById('ob-modal-bar').style.background=progColor;
   const statusInfo={
     feito:{icon:'✓',label:'Concluído',bg:'rgba(16,185,129,0.12)',border:'rgba(16,185,129,0.25)',color:'#6ee7b7'},
-    andamento:{icon:'↗',label:'Em andamento',bg:'rgba(245,158,11,0.12)',border:'rgba(245,158,11,0.25)',color:'#fcd34d'},
+    andamento:{icon:'↗',label:'Aguardando assinatura',bg:'rgba(245,158,11,0.12)',border:'rgba(245,158,11,0.25)',color:'#fcd34d'},
     pendente:{icon:'✗',label:'Pendente',bg:'rgba(239,68,68,0.12)',border:'rgba(239,68,68,0.25)',color:'#fca5a5'},
     vazio:{icon:'✗',label:'Pendente',bg:'rgba(239,68,68,0.12)',border:'rgba(239,68,68,0.25)',color:'#fca5a5'},
+    adiado:{icon:'·',label:'Para fazer (futuro)',bg:'rgba(100,116,139,0.08)',border:'rgba(100,116,139,0.2)',color:'rgba(148,163,184,0.8)'},
     na:{icon:'—',label:'N/A',bg:'rgba(255,255,255,0.04)',border:'rgba(255,255,255,0.08)',color:'var(--muted2)'},
   };
   document.getElementById('ob-modal-tarefas').innerHTML=OB_TASK_COLS.map((c,i)=>{
