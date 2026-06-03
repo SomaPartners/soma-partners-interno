@@ -246,11 +246,6 @@ body{display:flex;flex-direction:column;overflow:hidden}
     <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
     <span>Avaliações</span>
   </div>
-  <div class="nav-item" data-sec="rh-360" onclick="nav('rh-360',this)">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    <span>Avaliação 360°</span>
-  </div>
-
   <div class="sidebar-section">Marketing</div>
   <div class="nav-item" data-sec="mkt-visao" onclick="nav('mkt-visao',this)">
     <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
@@ -479,44 +474,78 @@ body{display:flex;flex-direction:column;overflow:hidden}
     </table></div>
   </div>
 
-  <!-- ════ RH — AVALIAÇÕES ════ -->
+  <!-- ════ RH — AVALIAÇÕES (Individual + 360° + Méritos) ════ -->
   <div class="section" id="section-rh-avaliacoes">
-    <div class="tbl-header">
+    <div class="tbl-header" id="aval-header">
       <div><div class="sec-title">Avaliações</div><div class="sec-sub" style="margin-bottom:0">Performance da equipe</div></div>
-      <button class="btn btn-primary" onclick="abrirModalAval()">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nova Avaliação
-      </button>
+      <div id="aval-header-btn"></div>
     </div>
-    <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Colaborador</th><th>Período</th><th>Nota</th><th>Pontos Fortes</th><th>A Melhorar</th><th></th></tr></thead>
-      <tbody id="tbl-avaliacoes"></tbody>
-    </table></div>
-  </div>
 
-  <!-- ════ RH — AVALIAÇÃO 360 ════ -->
-  <div class="section" id="section-rh-360">
-    <div class="tbl-header">
+    <!-- Tabs -->
+    <div class="tabs" id="aval-tabs" style="margin-bottom:20px">
+      <div class="tab active" onclick="avalTab('individual',this)">Individual</div>
+      <div class="tab" onclick="avalTab('360',this)">360°</div>
+      <div class="tab" onclick="avalTab('meritos',this)">Méritos</div>
+    </div>
+
+    <!-- TAB: INDIVIDUAL -->
+    <div id="avaltab-individual">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+        <button class="btn btn-primary" onclick="abrirModalAval()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova Avaliação
+        </button>
+      </div>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Colaborador</th><th>Período</th><th>Nota</th><th>Pontos Fortes</th><th>A Melhorar</th><th></th></tr></thead>
+        <tbody id="tbl-avaliacoes"></tbody>
+      </table></div>
+    </div>
+
+    <!-- TAB: 360° -->
+    <div id="avaltab-360" style="display:none">
+      <!-- Vista: lista de rodadas -->
+      <div id="aval360-vista-lista">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+          <button class="btn btn-primary" onclick="criarRodada360()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nova Rodada
+          </button>
+        </div>
+        <div id="rodadas360-list"></div>
+      </div>
+      <!-- Vista: resultados de uma rodada -->
+      <div id="aval360-vista-resultado" style="display:none">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <button onclick="fecharResultados360()" style="background:rgba(255,255,255,0.07);border:1px solid var(--border);color:#fff;padding:6px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif">← Voltar</button>
+          <div id="resultado360-titulo" style="font-size:16px;font-weight:800"></div>
+        </div>
+        <div id="resultado360-cards"></div>
+      </div>
+    </div>
+
+    <!-- TAB: MÉRITOS -->
+    <div id="avaltab-meritos" style="display:none">
+      <!-- Ranking -->
+      <div style="margin-bottom:32px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:16px">🏆 Ranking Geral (Média 360°)</div>
+        <div id="meritos-ranking"></div>
+      </div>
+      <!-- Badges -->
+      <div style="margin-bottom:32px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:16px">🎖 Badges & Conquistas</div>
+        <div id="meritos-badges"></div>
+      </div>
+      <!-- Histórico de evolução -->
+      <div style="margin-bottom:32px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:16px">📈 Evolução por Rodada</div>
+        <div id="meritos-historico"></div>
+      </div>
+      <!-- Comentários destacados -->
       <div>
-        <div class="sec-title">Avaliação 360°</div>
-        <div class="sec-sub" style="margin-bottom:0">Feedback mútuo entre toda a equipe</div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:16px">💬 Comentários em Destaque</div>
+        <div id="meritos-destaques"></div>
       </div>
-      <button class="btn btn-primary" onclick="criarRodada360()">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nova Rodada
-      </button>
-    </div>
-
-    <!-- Lista de rodadas -->
-    <div id="rodadas360-list" style="margin-bottom:28px"></div>
-
-    <!-- Resultados de uma rodada -->
-    <div id="resultados360" style="display:none">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-        <button onclick="fecharResultados360()" style="background:rgba(255,255,255,0.07);border:1px solid var(--border);color:#fff;padding:6px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif">← Voltar</button>
-        <div id="resultado360-titulo" style="font-size:16px;font-weight:800"></div>
-      </div>
-      <div id="resultado360-cards"></div>
     </div>
   </div>
 
@@ -3702,6 +3731,19 @@ async function gerarContrato(tipo){
 }
 
 // ════════════════════════════════
+//  AVALIAÇÕES — TABS
+// ════════════════════════════════
+function avalTab(tab, el){
+  document.querySelectorAll('#aval-tabs .tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  ['individual','360','meritos'].forEach(t=>{
+    const el=document.getElementById('avaltab-'+t);
+    if(el) el.style.display=t===tab?'block':'none';
+  });
+  if(tab==='meritos') renderMeritos();
+}
+
+// ════════════════════════════════
 //  AVALIAÇÃO 360°
 // ════════════════════════════════
 const CRITERIOS_360=[
@@ -3780,9 +3822,8 @@ function verResultados360(rodadaId){
   const avaliadores=[...new Set(resps.map(r=>r.avaliador_id))];
 
   document.getElementById('resultado360-titulo').textContent=`Resultados — ${rodada?.nome||''}`;
-  document.getElementById('rodadas360-list').style.display='none';
-  document.getElementById('resultados360').style.display='block';
-  document.querySelector('#section-rh-360 .tbl-header').style.display='none';
+  document.getElementById('aval360-vista-lista').style.display='none';
+  document.getElementById('aval360-vista-resultado').style.display='block';
 
   // Agrupa por avaliado
   const porAvaliado={};
@@ -3848,9 +3889,153 @@ function verResultados360(rodadaId){
 }
 
 function fecharResultados360(){
-  document.getElementById('resultados360').style.display='none';
-  document.getElementById('rodadas360-list').style.display='block';
-  document.querySelector('#section-rh-360 .tbl-header').style.display='flex';
+  document.getElementById('aval360-vista-resultado').style.display='none';
+  document.getElementById('aval360-vista-lista').style.display='block';
+}
+
+// ════════════════════════════════
+//  MÉRITOS
+// ════════════════════════════════
+const BADGES_DISPONIVEIS=[
+  {id:'melhor_mes',   emoji:'🥇', label:'Melhor do Mês',       cor:'#f59e0b'},
+  {id:'alta_perf',    emoji:'🚀', label:'Alta Performance',     cor:'#6366f1'},
+  {id:'destaque_eq',  emoji:'🤝', label:'Destaque em Equipe',   cor:'#10b981'},
+  {id:'criativo',     emoji:'💡', label:'Criatividade',         cor:'#ec4899'},
+  {id:'lider',        emoji:'👑', label:'Liderança',            cor:'#c9963c'},
+  {id:'dedicacao',    emoji:'💪', label:'Dedicação',            cor:'#3b82f6'},
+  {id:'cliente',      emoji:'⭐', label:'Foco no Cliente',      cor:'#14b8a6'},
+  {id:'inovacao',     emoji:'🔬', label:'Inovação',             cor:'#8b5cf6'},
+];
+
+function calcularMedia360(funcId){
+  const resps=respostas360.filter(r=>r.avaliado_id===funcId);
+  if(!resps.length) return null;
+  const notas=resps.flatMap(r=>(r.criterios||[]).map(c=>c.nota).filter(Boolean));
+  return notas.length?(notas.reduce((a,b)=>a+b,0)/notas.length):null;
+}
+
+function calcularMediaPorRodada(funcId){
+  return rodadas360.map(rod=>{
+    const resps=respostas360.filter(r=>r.rodada_id===rod.id&&r.avaliado_id===funcId);
+    const notas=resps.flatMap(r=>(r.criterios||[]).map(c=>c.nota).filter(Boolean));
+    return{rodada:rod.nome,media:notas.length?(notas.reduce((a,b)=>a+b,0)/notas.length):null};
+  }).filter(x=>x.media!==null);
+}
+
+async function toggleBadge(funcId,badgeId){
+  const f=equipe.find(x=>x.id===funcId);
+  if(!f)return;
+  const badges=f._data.badges||[];
+  const idx=badges.findIndex(b=>b.id===badgeId);
+  if(idx>=0) badges.splice(idx,1);
+  else badges.push({id:badgeId,data:new Date().toISOString().slice(0,10)});
+  const novoData={...f._data,badges};
+  await _sb.from('wealth_responsaveis').upsert({id:funcId,data:novoData});
+  await loadAll();
+  renderMeritos();
+}
+
+async function toggleDestaque(respId){
+  const resp=respostas360.find(r=>r.id===respId);
+  if(!resp)return;
+  const novoData={...resp,destacado:!resp.destacado};
+  // remove internal fields before saving
+  const {id,rodada_id,created_at,...data}=novoData;
+  await _sb.from('admin_aval360_respostas').update({data}).eq('id',respId);
+  await loadAll();
+  renderMeritos();
+}
+
+function renderMeritos(){
+  const ativo=equipe.filter(f=>f.status==='ativo');
+
+  // ── RANKING ──
+  const ranking=ativo.map(f=>({...f,media:calcularMedia360(f.id)}))
+    .sort((a,b)=>(b.media||0)-(a.media||0));
+  const maxMedia=ranking[0]?.media||5;
+  document.getElementById('meritos-ranking').innerHTML=ranking.map((f,i)=>{
+    const m=f.media;
+    const pct=m?Math.round((m/5)*100):0;
+    const medalha=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    const cor=m>=4?'#6ee7b7':m>=3?'#fcd34d':m?'#fca5a5':'rgba(255,255,255,0.15)';
+    return`<div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+      <div style="font-size:16px;width:24px;text-align:center">${medalha||`<span style="font-size:11px;color:var(--muted)">${i+1}</span>`}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;margin-bottom:5px">${f.nome} <span style="font-size:10px;color:var(--muted);font-weight:500">${f.cargo||''}</span></div>
+        <div style="background:rgba(255,255,255,0.07);border-radius:4px;height:5px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${cor};border-radius:4px;transition:width 0.5s"></div>
+        </div>
+      </div>
+      <div style="font-size:20px;font-weight:800;color:${cor};min-width:36px;text-align:right">${m?m.toFixed(1):'—'}</div>
+    </div>`;
+  }).join('');
+
+  // ── BADGES ──
+  document.getElementById('meritos-badges').innerHTML=ativo.map(f=>{
+    const badgesFunc=f._data.badges||[];
+    const badgesBtns=BADGES_DISPONIVEIS.map(b=>{
+      const ativo2=badgesFunc.some(x=>x.id===b.id);
+      return`<button onclick="toggleBadge('${f.id}','${b.id}')" title="${ativo2?'Remover':'Dar'} badge" style="background:${ativo2?`rgba(${hexToRgb(b.cor)},0.2)`:'rgba(255,255,255,0.04)'};border:1px solid ${ativo2?b.cor:'rgba(255,255,255,0.1)'};border-radius:8px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700;color:${ativo2?b.cor:'rgba(255,255,255,0.3)'};font-family:'Montserrat',sans-serif;transition:all 0.18s">${b.emoji} ${b.label}</button>`;
+    }).join('');
+    return`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 18px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:800;margin-bottom:12px">${f.nome}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${badgesBtns}</div>
+    </div>`;
+  }).join('');
+
+  // ── HISTÓRICO DE EVOLUÇÃO ──
+  if(rodadas360.length<2){
+    document.getElementById('meritos-historico').innerHTML='<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:16px 0">Necessário ter pelo menos 2 rodadas para ver a evolução.</div>';
+  } else {
+    document.getElementById('meritos-historico').innerHTML=ativo.map(f=>{
+      const hist=calcularMediaPorRodada(f.id);
+      if(!hist.length) return '';
+      const w=400,h=80,pad=32;
+      const ys=hist.map(h=>h.media);
+      const minY=1,maxY=5;
+      const points=hist.map((p,i)=>{
+        const x=pad+(i/(Math.max(hist.length-1,1)))*(w-2*pad);
+        const y=h-pad-((p.media-minY)/(maxY-minY))*(h-2*pad);
+        return{x,y,media:p.media,rodada:p.rodada};
+      });
+      const polyline=points.map(p=>`${p.x},${p.y}`).join(' ');
+      const dots=points.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4" fill="${p.media>=4?'#6ee7b7':p.media>=3?'#fcd34d':'#fca5a5'}" /><title>${p.rodada}: ${p.media.toFixed(1)}</title>`).join('');
+      const labels=points.map(p=>`<text x="${p.x}" y="${h-6}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Montserrat">${p.rodada.length>8?p.rodada.slice(0,8)+'…':p.rodada}</text>`).join('');
+      const scores=points.map(p=>`<text x="${p.x}" y="${p.y-8}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.7)" font-family="Montserrat" font-weight="700">${p.media.toFixed(1)}</text>`).join('');
+      return`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 18px;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:800;margin-bottom:12px">${f.nome}</div>
+        <svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;overflow:visible">
+          <polyline points="${polyline}" fill="none" stroke="rgba(201,150,60,0.5)" stroke-width="2" stroke-linejoin="round"/>
+          ${dots}${scores}${labels}
+        </svg>
+      </div>`;
+    }).filter(Boolean).join('')||'<div style="color:rgba(255,255,255,0.3);font-size:13px">Nenhuma avaliação 360° ainda.</div>';
+  }
+
+  // ── COMENTÁRIOS DESTACADOS ──
+  const comsTodos=respostas360.filter(r=>r.comentario&&r.comentario.trim());
+  const comsDestacados=comsTodos.filter(r=>r.destacado);
+  const comsOutros=comsTodos.filter(r=>!r.destacado).slice(0,20);
+  const renderCom=(r,destaque)=>{
+    const av=equipe.find(x=>x.id===r.avaliador_id);
+    const avd=equipe.find(x=>x.id===r.avaliado_id);
+    return`<div style="background:${destaque?'rgba(201,150,60,0.07)':'rgba(255,255,255,0.02)'};border:1px solid ${destaque?'rgba(201,150,60,0.25)':'rgba(255,255,255,0.06)'};border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:4px">Sobre ${avd?.nome||'?'}</div>
+        <div style="font-size:12px;line-height:1.6;color:rgba(255,255,255,0.8)">"${r.comentario}"</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px">— ${av?.nome||'Anônimo'}</div>
+      </div>
+      <button onclick="toggleDestaque('${r.id}')" title="${destaque?'Remover destaque':'Destacar comentário'}" style="background:none;border:none;cursor:pointer;font-size:18px;opacity:${destaque?1:0.3};transition:opacity 0.18s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=${destaque?1:0.3}">⭐</button>
+    </div>`;
+  };
+  document.getElementById('meritos-destaques').innerHTML=
+    (comsDestacados.length?`<div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(201,150,60,0.7);margin-bottom:10px">Fixados</div>${comsDestacados.map(r=>renderCom(r,true)).join('')}<div style="height:16px"></div>`:'')
+    +(comsOutros.length?`<div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:10px">Todos os comentários</div>${comsOutros.map(r=>renderCom(r,false)).join('')}`:'<div style="color:rgba(255,255,255,0.3);font-size:13px">Nenhum comentário nas avaliações 360°.</div>');
+}
+
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return`${r},${g},${b}`;
 }
 
 </script>
