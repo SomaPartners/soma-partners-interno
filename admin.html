@@ -1020,7 +1020,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
     <div style="display:flex;flex-direction:column;gap:14px;padding:4px 0 8px">
       <div>
         <label class="fl">Nome da rodada *</label>
-        <input class="fc" id="r360-nome" placeholder="Ex: Q2 2026, Avaliação Semestral...">
+        <input id="r360-nome" placeholder="Ex: Q2 2026, Avaliação Semestral..." style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:10px 14px;border-radius:9px;font-size:13px;font-family:'Montserrat',sans-serif;outline:none;margin-top:6px" onfocus="this.style.borderColor='rgba(201,150,60,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"">
       </div>
       <div>
         <label class="fl">Escopo</label>
@@ -1031,8 +1031,8 @@ body{display:flex;flex-direction:column;overflow:hidden}
       </div>
       <div id="r360-pessoa-wrap" style="display:none">
         <label class="fl">Quem será avaliado?</label>
-        <select class="fc" id="r360-avaliado">
-          <option value="">Selecione...</option>
+        <select id="r360-avaliado" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:10px 14px;border-radius:9px;font-size:13px;font-family:'Montserrat',sans-serif;outline:none;margin-top:6px;appearance:none;cursor:pointer">
+          <option value="" style="background:#0f2438">Selecione...</option>
         </select>
         <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px">A equipe vai avaliar apenas esta pessoa.</div>
       </div>
