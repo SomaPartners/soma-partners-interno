@@ -1966,7 +1966,7 @@ function gerarRelatorioOnboarding(){
       const pct=c.aplic?Math.round((c.feitos/c.aplic)*100):100;
       const barColor=pct===100?'#059669':pct>=60?'#d97706':'#e53e3e';
         const pendLine=c.pendTasks.length?`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:${c.andTasks.length?'5px':'0'}"><span style="font-size:9px;font-weight:800;color:#c53030;letter-spacing:0.6px;white-space:nowrap;flex-shrink:0">✗ PENDENTE</span><span style="font-size:10px;color:#c53030">${c.pendTasks.join(', ')}</span></div>`:'';
-      const andLine=c.andTasks.length?`<div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:9px;font-weight:800;color:#92400e;letter-spacing:0.6px;white-space:nowrap;flex-shrink:0">↗ EM ANDAMENTO</span><span style="font-size:10px;color:#92400e">${c.andTasks.join(', ')}</span></div>`:'';
+      const andLine=c.andTasks.length?`<div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:9px;font-weight:800;color:#b45309;letter-spacing:0.6px;white-space:nowrap;flex-shrink:0">↗ AGUARDANDO ASSINATURA</span><span style="font-size:10px;color:#b45309">${c.andTasks.join(', ')}</span></div>`:'';
       return`<tr>
         <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:11px;color:#1a202c;vertical-align:top">${c.nome}</td>
         <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top">
