@@ -624,9 +624,21 @@ textarea.fc{resize:vertical;min-height:70px}
             <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Atualizar
           </button>
-          <button class="ob-refresh-btn" onclick="gerarRelatorioOnboarding()" style="background:rgba(201,150,60,0.12);border-color:rgba(201,150,60,0.3);color:#c9963c">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            Gerar Relatório
+          <button class="ob-refresh-btn" onclick="gerarRelatorioOnboarding('pendente')" style="background:rgba(217,119,6,0.12);border-color:rgba(217,119,6,0.3);color:#fcd34d">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Pendentes
+          </button>
+          <button class="ob-refresh-btn" onclick="gerarRelatorioOnboarding('cliente')" style="background:rgba(37,99,235,0.12);border-color:rgba(37,99,235,0.3);color:#93c5fd">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Pend. Cliente
+          </button>
+          <button class="ob-refresh-btn" onclick="gerarRelatorioOnboarding('futuro')" style="background:rgba(197,48,48,0.12);border-color:rgba(197,48,48,0.3);color:#fca5a5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Futuras
+          </button>
+          <button class="ob-refresh-btn" onclick="gerarRelatorioOnboarding('consolidado')" style="background:rgba(201,150,60,0.12);border-color:rgba(201,150,60,0.3);color:#c9963c">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Consolidado
           </button>
         </div>
         <div class="ob-kpi-row" id="ob-kpis"></div>
@@ -1933,17 +1945,26 @@ async function sincronizarLeadsOnboarding(){
   renderVisao();renderLeads();
 }
 
-function gerarRelatorioOnboarding(){
+function gerarRelatorioOnboarding(tipo='consolidado'){
   if(!_obRows.length){showToast('Carregue o onboarding primeiro','err');return;}
   const hoje=new Date();
   const dataFmt=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
-  const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio'||s==='adiado');
   const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na');
 
-  const comPend=_obRows.filter(isPendente);
+  const tipoConfig={
+    pendente:   {label:'Pendentes (Nós)',     cor:'#d97706', statusFiltro:['pendente','vazio']},
+    cliente:    {label:'Pendentes (Cliente)', cor:'#2563eb', statusFiltro:['andamento']},
+    futuro:     {label:'Tarefas Futuras',     cor:'#c53030', statusFiltro:['adiado']},
+    consolidado:{label:'Consolidado',         cor:'#c9963c', statusFiltro:['pendente','vazio','andamento','adiado']},
+  };
+  const cfg=tipoConfig[tipo]||tipoConfig.consolidado;
+  // filtra clientes que têm pelo menos uma tarefa do tipo solicitado
+  const temTipo=r=>getStatuses(r).some(s=>cfg.statusFiltro.includes(s));
+
+  const comPend=_obRows.filter(temTipo);
   const completos=_obRows.filter(isCompleto);
-  const totalPend=_obRows.reduce((acc,r)=>acc+getStatuses(r).filter(s=>'pendente vazio'.includes(s)).length,0);
+  const totalPend=_obRows.reduce((acc,r)=>acc+getStatuses(r).filter(s=>cfg.statusFiltro.includes(s)).length,0);
 
   // Mapa sigla → nome completo (usa _responsaveis do Supabase ou EQUIPE_SOMA como fallback)
   const siglaMap={};
@@ -1959,9 +1980,12 @@ function gerarRelatorioOnboarding(){
     const resp=resolveResp(sigla)||'Sem responsável';
     if(!byResp[resp]) byResp[resp]=[];
     const sts=getStatuses(r);
-    const pendTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='pendente'||sts[i]==='vazio').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label);
-    const andTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='andamento').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label);
-    const adiTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='adiado').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label);
+    const mostrarPend=tipo==='pendente'||tipo==='consolidado';
+    const mostrarCliente=tipo==='cliente'||tipo==='consolidado';
+    const mostrarFuturo=tipo==='futuro'||tipo==='consolidado';
+    const pendTasks=mostrarPend?OB_TASK_COLS.filter((_,i)=>sts[i]==='pendente'||sts[i]==='vazio').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label):[];
+    const andTasks=mostrarCliente?OB_TASK_COLS.filter((_,i)=>sts[i]==='andamento').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label):[];
+    const adiTasks=mostrarFuturo?OB_TASK_COLS.filter((_,i)=>sts[i]==='adiado').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label):[];
     const feitos=sts.filter(s=>s==='feito').length;
     const aplic=sts.filter(s=>s!=='na').length;
     byResp[resp].push({nome:(r[0]||'').trim(), pendTasks, andTasks, adiTasks, feitos, aplic});
@@ -1970,7 +1994,7 @@ function gerarRelatorioOnboarding(){
   const statusColor={pendente:'#e53e3e',andamento:'#d97706',feito:'#059669',na:'#718096'};
 
   const mkCabecalho=(resp,totalPendResp)=>`
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid #c9963c">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid ${cfg.cor}">
       <div>
         <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:4px">Soma Partners · Onboarding</div>
         <div style="font-size:20px;font-weight:800;color:#1a202c">${resp}</div>
@@ -2036,8 +2060,8 @@ function gerarRelatorioOnboarding(){
     <div style="page-break-after:always;padding:32px 0">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:3px solid #c9963c">
         <div>
-          <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:4px">Soma Partners</div>
-          <div style="font-size:24px;font-weight:800;color:#1a202c;line-height:1.2">Relatório de Onboarding</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:4px">Soma Partners · Onboarding</div>
+          <div style="font-size:24px;font-weight:800;color:#1a202c;line-height:1.2">${cfg.label}</div>
           <div style="font-size:12px;color:#718096;margin-top:4px;text-transform:capitalize">${dataFmt}</div>
         </div>
       </div>
