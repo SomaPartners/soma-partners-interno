@@ -843,7 +843,6 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
       <div class="card" style="margin-top:16px">
         <div class="card-header">
           <span class="card-title">Pagamentos Recorrentes</span>
-          <button class="add-btn" onclick="openModal('modal-recorrente')">+ Novo</button>
         </div>
         <div class="card-body" id="resumo-recorrentes-list"></div>
       </div>
@@ -1951,7 +1950,7 @@ function renderRecorrentesList(){
   const container = document.getElementById(listId);
   if(!container) return;
   if(recorrentes.length === 0){
-    container.innerHTML = '<div class="empty-msg">Nenhum pagamento recorrente. Clique em "+ Novo".</div>';
+    container.innerHTML = '<div class="empty-msg">Nenhum pagamento recorrente cadastrado.</div>';
     return;
   }
   const sorted = [...recorrentes].map((r,origIdx)=>({...r,_origIdx:origIdx})).sort((a,b) => parseInt(a.dia) - parseInt(b.dia));
