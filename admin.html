@@ -3747,12 +3747,20 @@ function avalTab(tab, el){
 //  AVALIAÇÃO 360°
 // ════════════════════════════════
 const CRITERIOS_360=[
-  {id:'comunicacao',   label:'Comunicação'},
-  {id:'proatividade',  label:'Proatividade'},
-  {id:'tecnico',       label:'Conhecimento Técnico'},
-  {id:'equipe',        label:'Trabalho em Equipe'},
-  {id:'prazos',        label:'Entrega / Prazos'},
+  {id:'com_cliente',  grupo:'Relacionamento & Comunicação', label:'Comunicação com Clientes'},
+  {id:'com_interna',  grupo:'Relacionamento & Comunicação', label:'Comunicação Interna'},
+  {id:'rel_cliente',  grupo:'Relacionamento & Comunicação', label:'Gestão de Relacionamento'},
+  {id:'tecnico',      grupo:'Técnico & Comercial',          label:'Conhecimento Técnico / Mercado'},
+  {id:'captacao',     grupo:'Técnico & Comercial',          label:'Captação / Resultados'},
+  {id:'compliance',   grupo:'Técnico & Comercial',          label:'Ética e Compliance'},
+  {id:'prazos',       grupo:'Execução & Entrega',           label:'Entrega e Prazos'},
+  {id:'organizacao',  grupo:'Execução & Entrega',           label:'Organização e Planejamento'},
+  {id:'problemas',    grupo:'Execução & Entrega',           label:'Resolução de Problemas'},
+  {id:'proatividade', grupo:'Comportamento & Cultura',      label:'Proatividade'},
+  {id:'equipe',       grupo:'Comportamento & Cultura',      label:'Trabalho em Equipe'},
+  {id:'lideranca',    grupo:'Comportamento & Cultura',      label:'Liderança / Influência'},
 ];
+const GRUPOS_360=[...new Set(CRITERIOS_360.map(c=>c.grupo))];
 
 async function criarRodada360(){
   const nome=prompt('Nome da rodada (ex: Q2 2026):');
@@ -3837,6 +3845,8 @@ function verResultados360(rodadaId){
     if(resp.comentario&&resp.comentario.trim())porAvaliado[id].comentarios.push({texto:resp.comentario,avaliador:resp.avaliador_id});
   });
 
+  const n360cor=n=>n>=8?'#6ee7b7':n>=5?'#fcd34d':'#fca5a5';
+
   const cards=Object.entries(porAvaliado).map(([avaliadoId,dados])=>{
     const f=equipe.find(x=>x.id===avaliadoId);
     const nome=f?.nome||avaliadoId;
@@ -3845,14 +3855,21 @@ function verResultados360(rodadaId){
       return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null;
     }).filter(x=>x!==null);
     const media=mediaGeral.length?(mediaGeral.reduce((a,b)=>a+b,0)/mediaGeral.length).toFixed(1):'-';
+    const mediaN=parseFloat(media)||0;
 
+    // Critérios agrupados
+    let grupoAtual='';
     const critHtml=CRITERIOS_360.map(c=>{
       const ns=dados.notas[c.id]||[];
-      const avg=ns.length?(ns.reduce((a,b)=>a+b,0)/ns.length):0;
-      const stars=[1,2,3,4,5].map(n=>`<span style="color:${n<=Math.round(avg)?'#f59e0b':'rgba(255,255,255,0.12)'};font-size:14px">★</span>`).join('');
-      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-        <span style="font-size:12px;color:rgba(255,255,255,0.7)">${c.label}</span>
-        <div style="display:flex;align-items:center;gap:8px">${stars}<span style="font-size:11px;font-weight:700;color:${avg>=4?'#6ee7b7':avg>=3?'#fcd34d':'#fca5a5'};min-width:24px;text-align:right">${ns.length?avg.toFixed(1):'-'}</span></div>
+      const avg=ns.length?(ns.reduce((a,b)=>a+b,0)/ns.length):null;
+      const pct=avg!==null?Math.round((avg/10)*100):0;
+      const cor=avg!==null?n360cor(avg):'rgba(255,255,255,0.12)';
+      let grupoHtml='';
+      if(c.grupo!==grupoAtual){grupoAtual=c.grupo;grupoHtml=`<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(201,150,60,0.6);padding:10px 0 4px">${c.grupo}</div>`;}
+      return`${grupoHtml}<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <span style="font-size:11px;color:rgba(255,255,255,0.65);flex:1;min-width:0">${c.label}</span>
+        <div style="width:80px;background:rgba(255,255,255,0.07);border-radius:3px;height:4px;flex-shrink:0"><div style="width:${pct}%;height:100%;background:${cor};border-radius:3px"></div></div>
+        <span style="font-size:12px;font-weight:800;color:${cor};min-width:28px;text-align:right">${avg!==null?avg.toFixed(1):'—'}</span>
       </div>`;
     }).join('');
 
@@ -3868,15 +3885,12 @@ function verResultados360(rodadaId){
           <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px">${f?.cargo||''} · ${avaliadores.length} avaliador${avaliadores.length!==1?'es':''}</div>
         </div>
         <div style="text-align:center">
-          <div style="font-size:36px;font-weight:800;color:${parseFloat(media)>=4?'#6ee7b7':parseFloat(media)>=3?'#fcd34d':'#fca5a5'};line-height:1">${media}</div>
-          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase">média geral</div>
+          <div style="font-size:42px;font-weight:800;color:${n360cor(mediaN)};line-height:1">${media}</div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase">/ 10 · média geral</div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-        <div>
-          <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px">Por Critério</div>
-          ${critHtml}
-        </div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:28px">
+        <div>${critHtml}</div>
         <div>
           <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px">Comentários</div>
           ${comsHtml}
@@ -3957,7 +3971,7 @@ function renderMeritos(){
     const m=f.media;
     const pct=m?Math.round((m/5)*100):0;
     const medalha=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-    const cor=m>=4?'#6ee7b7':m>=3?'#fcd34d':m?'#fca5a5':'rgba(255,255,255,0.15)';
+    const cor=m>=8?'#6ee7b7':m>=5?'#fcd34d':m?'#fca5a5':'rgba(255,255,255,0.15)';
     return`<div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
       <div style="font-size:16px;width:24px;text-align:center">${medalha||`<span style="font-size:11px;color:var(--muted)">${i+1}</span>`}</div>
       <div style="flex:1;min-width:0">
@@ -3966,7 +3980,7 @@ function renderMeritos(){
           <div style="width:${pct}%;height:100%;background:${cor};border-radius:4px;transition:width 0.5s"></div>
         </div>
       </div>
-      <div style="font-size:20px;font-weight:800;color:${cor};min-width:36px;text-align:right">${m?m.toFixed(1):'—'}</div>
+      <div style="font-size:20px;font-weight:800;color:${cor};min-width:44px;text-align:right">${m?m.toFixed(1):'—'}<span style="font-size:10px;color:rgba(255,255,255,0.3)">/10</span></div>
     </div>`;
   }).join('');
 
@@ -3992,14 +4006,14 @@ function renderMeritos(){
       if(!hist.length) return '';
       const w=400,h=80,pad=32;
       const ys=hist.map(h=>h.media);
-      const minY=1,maxY=5;
+      const minY=0,maxY=10;
       const points=hist.map((p,i)=>{
         const x=pad+(i/(Math.max(hist.length-1,1)))*(w-2*pad);
         const y=h-pad-((p.media-minY)/(maxY-minY))*(h-2*pad);
         return{x,y,media:p.media,rodada:p.rodada};
       });
       const polyline=points.map(p=>`${p.x},${p.y}`).join(' ');
-      const dots=points.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4" fill="${p.media>=4?'#6ee7b7':p.media>=3?'#fcd34d':'#fca5a5'}" /><title>${p.rodada}: ${p.media.toFixed(1)}</title>`).join('');
+      const dots=points.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4" fill="${p.media>=8?'#6ee7b7':p.media>=5?'#fcd34d':'#fca5a5'}" /><title>${p.rodada}: ${p.media.toFixed(1)}</title>`).join('');
       const labels=points.map(p=>`<text x="${p.x}" y="${h-6}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Montserrat">${p.rodada.length>8?p.rodada.slice(0,8)+'…':p.rodada}</text>`).join('');
       const scores=points.map(p=>`<text x="${p.x}" y="${p.y-8}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.7)" font-family="Montserrat" font-weight="700">${p.media.toFixed(1)}</text>`).join('');
       return`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 18px;margin-bottom:10px">
