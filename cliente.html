@@ -2024,6 +2024,8 @@ function editRecorrente(i){
   const obs = document.getElementById('pgto-obs'); if(obs) obs.value = r.obs||'';
   const valEl = document.getElementById('pgto-val');
   if(valEl){const v=parseFloat((r.valor||'0').toString().replace(/\./g,'').replace(',','.'))||0;const digits=Math.round(v*100).toString();valEl.value=formatCurrency(digits);}
+  // Pago por
+  setPagador(r.pagador||'familia');
   // Ativa toggle recorrente
   if(!_pgtoRecorrente) toggleRecorrenteFields();
   const freqEl = document.getElementById('pgto-rec-freq'); if(freqEl) freqEl.value = r.freq||'mensal';
@@ -2514,7 +2516,8 @@ async function savePgto(){
       cat: document.getElementById('pgto-tipo').value,
       obs: document.getElementById('pgto-obs').value||'',
       dataInicio: _editRecIdx>=0?(CLIENT.recorrentes[_editRecIdx]?.dataInicio||today()):today(),
-      dataFim: document.getElementById('pgto-rec-fim')?.value||''
+      dataFim: document.getElementById('pgto-rec-fim')?.value||'',
+      pagador: document.getElementById('pgto-pagador')?.value||'familia'
     };
     if(_editRecIdx >= 0){ CLIENT.recorrentes[_editRecIdx] = recObj; }
     else { CLIENT.recorrentes.push(recObj); }
