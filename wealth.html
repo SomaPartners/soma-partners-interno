@@ -1741,6 +1741,7 @@ const OB_SHEET_URL='https://docs.google.com/spreadsheets/d/1edEI7Hw-tRBeCKR--A2W
 // A=0 Cliente, B=1 Responsavel, C=2 Sigla, D=3 Cad.SF, E=4 Contrato, F=5 BTG, G=6 XP, H=7 Email, I=8 Suitability, J=9 KYC, K=10 Billing(skip), L=11 Termo, M=12 Tem fundo?(skip), N=13 Cad.Vita
 const OB_RESP_IDX=1; // responsável = coluna B
 const _obDone=l=>l==='-'||l.includes('nao sera')||l.normalize('NFD').replace(/[̀-ͯ]/g,'').includes('nao sera');
+const OB_TASK_LABEL_LONG={'Cad. SF':'Cadastro Sales Force','Contrato Vita':'Contrato Vita','BTG':'BTG','XP':'XP','E-mail BV':'E-mail Boas-Vindas','Suitability':'Suitability','KYC':'KYC','Termo Fundo':'Termo do Fundo','Tem fundo?':'Tem o Fundo?','Cad. Vita':'Cadastro Vita'};
 const OB_TASK_COLS=[
   {idx:3, label:'Cad. SF',       getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('sim')||l.includes('feito'))return'feito';return'pendente';}},
   {idx:4, label:'Contrato Vita', getStatus:v=>{if(!v)return'vazio';const l=v.trim().toLowerCase();if(_obDone(l))return'feito';if(l.includes('assinado')||l.includes('pro bono'))return'feito';if(l.includes('enviado'))return'andamento';return'pendente';}},
@@ -1951,8 +1952,8 @@ function gerarRelatorioOnboarding(){
     const resp=resolveResp(sigla)||'Sem responsável';
     if(!byResp[resp]) byResp[resp]=[];
     const sts=getStatuses(r);
-    const pendTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='pendente'||sts[i]==='vazio').map(c=>c.label);
-    const andTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='andamento').map(c=>c.label);
+    const pendTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='pendente'||sts[i]==='vazio').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label);
+    const andTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='andamento').map(c=>OB_TASK_LABEL_LONG[c.label]||c.label);
     const feitos=sts.filter(s=>s==='feito').length;
     const aplic=sts.filter(s=>s!=='na').length;
     byResp[resp].push({nome:(r[0]||'').trim(), pendTasks, andTasks, feitos, aplic});
@@ -2050,7 +2051,7 @@ function gerarRelatorioOnboarding(){
   <div style="margin-bottom:20px;padding:12px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px">
     <div style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#92400e;margin-bottom:7px">Etapas do Onboarding</div>
     <div style="display:flex;flex-wrap:wrap;gap:4px">
-      ${OB_TASK_COLS.map(c=>`<span style="display:inline-block;background:#fff;border:1px solid #fde68a;border-radius:4px;font-size:9px;font-weight:700;color:#92400e;padding:2px 7px">${c.label}</span>`).join('')}
+      ${OB_TASK_COLS.map(c=>`<span style="display:inline-block;background:#fff;border:1px solid #fde68a;border-radius:4px;font-size:9px;font-weight:700;color:#92400e;padding:2px 7px">${OB_TASK_LABEL_LONG[c.label]||c.label}</span>`).join('')}
     </div>
   </div>
 
