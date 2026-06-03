@@ -2009,6 +2009,7 @@ async function saveRecorrente(){
 
 function editRecorrente(i){
   const r = recorrentes[i];
+  openModal('modal-recorrente'); // abre e reseta primeiro
   document.getElementById('rec-idx').value = i;
   document.getElementById('mt-rec').textContent = 'Editar Recorrente';
   document.getElementById('rec-nome').value = r.nome||'';
@@ -2019,7 +2020,6 @@ function editRecorrente(i){
   document.getElementById('rec-cat').value = r.cat||'SERVIÇOS';
   document.getElementById('rec-obs').value = r.obs||'';
   const rfim=document.getElementById('rec-fim');if(rfim)rfim.value=r.dataFim||'';
-  openModal('modal-recorrente');
 }
 
 async function deleteRecorrente(i){
