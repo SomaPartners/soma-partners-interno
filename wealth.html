@@ -138,7 +138,7 @@ tbody tr:hover .del-btn{color:rgba(7,12,24,0.35)}
 .ob-filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .ob-chip{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;width:28px;height:22px;border-radius:5px;cursor:default}
 .ob-chip-feito{background:rgba(16,185,129,0.18);color:#6ee7b7}
-.ob-chip-andamento{background:rgba(245,158,11,0.18);color:#fcd34d}
+.ob-chip-andamento{background:rgba(37,99,235,0.18);color:#93c5fd}
 .ob-chip-pendente,.ob-chip-vazio,.ob-chip-outro{background:rgba(239,68,68,0.18);color:#fca5a5}
 .ob-chip-na{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.2)}
 .ob-chip-adiado{background:rgba(100,116,139,0.15);color:rgba(148,163,184,0.7)}
@@ -1986,7 +1986,7 @@ function gerarRelatorioOnboarding(){
       const hasMore=(c.andTasks.length||c.adiTasks.length)?'6px':'0';
       const hasMoreAdi=c.adiTasks.length?'6px':'0';
       const pendLine=c.pendTasks.length?`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:${hasMore}"><span style="display:inline-flex;align-items:center;gap:3px;background:#c53030;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">✗ PENDENTE</span><span style="font-size:10px;color:#9b1c1c;font-weight:500">${c.pendTasks.join(', ')}</span></div>`:'';
-      const andLine=c.andTasks.length?`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:${hasMoreAdi}"><span style="display:inline-flex;align-items:center;gap:3px;background:#d97706;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">↗ AG. ASSINATURA</span><span style="font-size:10px;color:#92400e;font-weight:500">${c.andTasks.join(', ')}</span></div>`:'';
+      const andLine=c.andTasks.length?`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:${hasMoreAdi}"><span style="display:inline-flex;align-items:center;gap:3px;background:#2563eb;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">⏳ PENDENTE CLIENTE</span><span style="font-size:10px;color:#1e40af;font-weight:500">${c.andTasks.join(', ')}</span></div>`:'';
       const adiLine=c.adiTasks.length?`<div style="display:flex;align-items:baseline;gap:6px"><span style="display:inline-flex;align-items:center;gap:3px;background:#64748b;color:#fff;font-size:8px;font-weight:800;letter-spacing:0.6px;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0">· PARA FAZER (FUTURO)</span><span style="font-size:10px;color:#64748b;font-weight:500">${c.adiTasks.join(', ')}</span></div>`:'';
       return`<tr>
         <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:11px;color:#1a202c;vertical-align:top">${c.nome}</td>
@@ -2124,7 +2124,7 @@ function abrirDetalheOnboarding(idx){
   document.getElementById('ob-modal-bar').style.background=progColor;
   const statusInfo={
     feito:{icon:'✓',label:'Concluído',bg:'rgba(16,185,129,0.12)',border:'rgba(16,185,129,0.25)',color:'#6ee7b7'},
-    andamento:{icon:'↗',label:'Aguardando assinatura',bg:'rgba(245,158,11,0.12)',border:'rgba(245,158,11,0.25)',color:'#fcd34d'},
+    andamento:{icon:'↗',label:'Pendente cliente',bg:'rgba(37,99,235,0.12)',border:'rgba(37,99,235,0.25)',color:'#93c5fd'},
     pendente:{icon:'✗',label:'Pendente',bg:'rgba(239,68,68,0.12)',border:'rgba(239,68,68,0.25)',color:'#fca5a5'},
     vazio:{icon:'✗',label:'Pendente',bg:'rgba(239,68,68,0.12)',border:'rgba(239,68,68,0.25)',color:'#fca5a5'},
     adiado:{icon:'·',label:'Para fazer (futuro)',bg:'rgba(100,116,139,0.08)',border:'rgba(100,116,139,0.2)',color:'rgba(148,163,184,0.8)'},
