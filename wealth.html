@@ -1936,10 +1936,18 @@ function gerarRelatorioOnboarding(){
   const completos=_obRows.filter(isCompleto);
   const totalPend=_obRows.reduce((acc,r)=>acc+getStatuses(r).filter(s=>'pendente vazio'.includes(s)).length,0);
 
+  // Mapa sigla → nome completo (usa _responsaveis do Supabase ou EQUIPE_SOMA como fallback)
+  const siglaMap={};
+  (_responsaveis.length?_responsaveis.map(r=>r.data||r):EQUIPE_SOMA).forEach(p=>{
+    if(p.sigla&&p.nome) siglaMap[p.sigla.toUpperCase()]=p.nome;
+  });
+  const resolveResp=s=>{const k=(s||'').trim().toUpperCase();return siglaMap[k]||s||'Sem responsável';};
+
   // Agrupa pendentes por responsável
   const byResp={};
   comPend.forEach(r=>{
-    const resp=(r[OB_RESP_IDX]||'Sem responsável').trim()||'Sem responsável';
+    const sigla=(r[OB_RESP_IDX]||'').trim();
+    const resp=resolveResp(sigla)||'Sem responsável';
     if(!byResp[resp]) byResp[resp]=[];
     const sts=getStatuses(r);
     const pendTasks=OB_TASK_COLS.filter((_,i)=>sts[i]==='pendente'||sts[i]==='vazio').map(c=>c.label);
