@@ -1965,8 +1965,8 @@ function gerarRelatorioOnboarding(){
     const rows=clientes.map(c=>{
       const pct=c.aplic?Math.round((c.feitos/c.aplic)*100):100;
       const barColor=pct===100?'#059669':pct>=60?'#d97706':'#e53e3e';
-      const pendChips=c.pendTasks.map(t=>`<span style="display:inline-block;background:#fff0f0;color:#c53030;border:1px solid #fed7d7;border-radius:4px;font-size:9px;font-weight:700;padding:2px 6px;margin:1px;white-space:nowrap">${t}</span>`).join('');
-      const andChips=c.andTasks.map(t=>`<span style="display:inline-block;background:#fffbeb;color:#92400e;border:1px solid #fde68a;border-radius:4px;font-size:9px;font-weight:700;padding:2px 6px;margin:1px;white-space:nowrap">${t}</span>`).join('');
+        const pendLine=c.pendTasks.length?`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:${c.andTasks.length?'5px':'0'}"><span style="font-size:9px;font-weight:800;color:#c53030;letter-spacing:0.6px;white-space:nowrap;flex-shrink:0">✗ PENDENTE</span><span style="font-size:10px;color:#c53030">${c.pendTasks.join(', ')}</span></div>`:'';
+      const andLine=c.andTasks.length?`<div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:9px;font-weight:800;color:#92400e;letter-spacing:0.6px;white-space:nowrap;flex-shrink:0">↗ EM ANDAMENTO</span><span style="font-size:10px;color:#92400e">${c.andTasks.join(', ')}</span></div>`:'';
       return`<tr>
         <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:11px;color:#1a202c;vertical-align:top">${c.nome}</td>
         <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top">
@@ -1977,7 +1977,7 @@ function gerarRelatorioOnboarding(){
             <span style="font-size:10px;color:${barColor};font-weight:700;white-space:nowrap">${c.feitos}/${c.aplic}</span>
           </div>
         </td>
-        <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top">${pendChips}${andChips?`<br><span style="font-size:8px;color:#92400e;font-weight:600;margin-top:3px;display:inline-block">EM ANDAMENTO:</span> ${andChips}`:''}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top">${pendLine}${andLine}</td>
       </tr>`;
     }).join('');
     respBlocks+=`
