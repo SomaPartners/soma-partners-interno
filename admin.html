@@ -1010,6 +1010,21 @@ body{display:flex;flex-direction:column;overflow:hidden}
   </div>
 </div>
 
+<!-- MODAL RELATÓRIO 360 -->
+<div class="modal-overlay" id="modal-relatorio360" style="z-index:1100">
+  <div class="modal" style="max-width:700px;max-height:90vh;overflow-y:auto" id="modal-relatorio360-inner">
+    <div class="modal-title" style="position:sticky;top:0;background:#0f1c2e;z-index:10;border-bottom:1px solid rgba(255,255,255,0.07);padding-bottom:14px">
+      <span id="rel360-titulo">Relatório 360°</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="copiarLinkRelatorio360()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:7px;padding:6px 14px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);cursor:pointer;letter-spacing:0.5px" id="btn-copiar-link-rel">🔗 Copiar Link</button>
+        <button onclick="imprimirRelatorio360()" style="background:rgba(201,150,60,0.15);border:1px solid rgba(201,150,60,0.3);border-radius:7px;padding:6px 14px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#c9963c;cursor:pointer;letter-spacing:0.5px">🖨 Imprimir / PDF</button>
+        <button class="mc" onclick="closeModal('modal-relatorio360')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+    </div>
+    <div id="rel360-conteudo" style="padding:8px 0"></div>
+  </div>
+</div>
+
 <!-- MODAL NOVA RODADA 360 -->
 <div class="modal-overlay" id="modal-rodada360">
   <div class="modal" style="max-width:460px">
@@ -2245,9 +2260,12 @@ function renderAvaliacoes(){
           <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px">${f.cargo||'Colaborador'} · ${totalAvaliadores} avaliador${totalAvaliadores!==1?'es':''} em ${totalRodadas} rodada${totalRodadas!==1?'s':''}</div>
           ${badgesHtml}
         </div>
-        <div style="text-align:center;flex-shrink:0;margin-left:16px">
-          <div style="font-size:40px;font-weight:800;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
-          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.25);text-transform:uppercase">/ 10</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0;margin-left:16px">
+          <div style="text-align:center">
+            <div style="font-size:40px;font-weight:800;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.25);text-transform:uppercase">/ 10</div>
+          </div>
+          <button onclick="gerarRelatorio360('${f.id}')" style="background:rgba(201,150,60,0.12);border:1px solid rgba(201,150,60,0.25);border-radius:7px;padding:6px 14px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#c9963c;cursor:pointer;white-space:nowrap;letter-spacing:0.3px">📄 Relatório</button>
         </div>
       </div>
       <!-- Grid -->
@@ -2272,6 +2290,132 @@ function renderAvaliacoes(){
     </div>`;
   }).join('');
 }
+// ─── RELATÓRIO 360° ──────────────────────────────────
+let _relatorio360FuncId=null;
+function gerarRelatorio360(funcId){
+  _relatorio360FuncId=funcId;
+  const f=equipe.find(x=>x.id===funcId);
+  if(!f) return;
+  const resps=respostas360.filter(r=>r.avaliado_id===funcId);
+
+  const medias=CRITERIOS_360.map(c=>{
+    const ns=resps.flatMap(r=>(r.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!==null&&x!==undefined));
+    return{...c,avg:ns.length?(ns.reduce((a,b)=>a+b,0)/ns.length):null,count:ns.length};
+  }).filter(c=>c.avg!==null);
+
+  const mediaGeral=medias.length?medias.reduce((a,b)=>a+b.avg,0)/medias.length:0;
+  const ordenado=[...medias].sort((a,b)=>b.avg-a.avg);
+  const fortes=ordenado.filter(c=>c.avg>=7);
+  const melhorar=ordenado.filter(c=>c.avg>=4&&c.avg<7);
+  const fracos=ordenado.filter(c=>c.avg<4);
+  const comentarios=resps.filter(r=>r.comentario&&r.comentario.trim()).map(r=>({
+    texto:r.comentario,
+    avaliador:equipe.find(x=>x.id===r.avaliador_id)?.nome||'Anônimo',
+  }));
+  const totalAv=[...new Set(resps.map(r=>r.avaliador_id))].length;
+  const totalRod=[...new Set(resps.map(r=>r.rodada_id))].length;
+  const badges=(f._data?.badges||[]);
+  const cor=mediaGeral>=8?'#6ee7b7':mediaGeral>=5?'#fcd34d':'#fca5a5';
+  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+
+  // Grupos com médias
+  const grupoRows=GRUPOS_360.map(g=>{
+    const cg=medias.filter(c=>c.grupo===g);
+    if(!cg.length) return '';
+    const mgAvg=cg.reduce((a,b)=>a+b.avg,0)/cg.length;
+    const mgCor=mgAvg>=8?'#6ee7b7':mgAvg>=5?'#fcd34d':'#fca5a5';
+    const rows=cg.sort((a,b)=>b.avg-a.avg).map(c=>{
+      const pct=Math.round(c.avg*10);
+      const cc=c.avg>=8?'#6ee7b7':c.avg>=5?'#fcd34d':'#fca5a5';
+      return`<tr>
+        <td style="padding:8px 12px;font-size:12px;color:#ccc;border-bottom:1px solid rgba(255,255,255,0.05)">${c.label}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:6px;width:100%"><div style="background:${cc};height:6px;border-radius:4px;width:${pct}%"></div></div>
+        </td>
+        <td style="padding:8px 12px;font-size:13px;font-weight:800;color:${cc};text-align:right;border-bottom:1px solid rgba(255,255,255,0.05);white-space:nowrap">${c.avg.toFixed(1)}</td>
+      </tr>`;
+    }).join('');
+    return`<div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4)">${g}</div>
+        <div style="font-size:13px;font-weight:800;color:${mgCor}">${mgAvg.toFixed(1)}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse">${rows}</table>
+    </div>`;
+  }).join('');
+
+  const badgesHtml=badges.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px">${badges.map(b=>{const bd=BADGES_DISPONIVEIS.find(x=>x.id===b.id);return bd?`<span style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,0.7)">${bd.emoji} ${bd.label}</span>`:''}).join('')}</div>`:'';
+
+  const col=(label,items,c)=>items.length?`<div style="flex:1;min-width:160px">
+    <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${c};margin-bottom:10px">${label}</div>
+    ${items.map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:11px;color:#bbb">${x.label}</span><span style="font-size:12px;font-weight:800;color:${c}">${x.avg.toFixed(1)}</span></div>`).join('')}
+  </div>`:'';
+
+  const resumoCols=[col('✦ Pontos Fortes',fortes,'#6ee7b7'),col('↑ A Melhorar',melhorar,'#fcd34d'),col('▼ Pontos Fracos',fracos,'#fca5a5')].filter(Boolean).join('');
+
+  const comsHtml=comentarios.length?comentarios.map(c=>`<div style="background:rgba(255,255,255,0.04);border-left:3px solid rgba(201,150,60,0.4);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px"><div style="font-size:12px;color:#ccc;line-height:1.6;font-style:italic">"${c.texto}"</div><div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px">— ${c.avaliador}</div></div>`).join(''):`<div style="font-size:12px;color:rgba(255,255,255,0.25)">Nenhum comentário registrado.</div>`;
+
+  document.getElementById('rel360-titulo').textContent=`Relatório 360° — ${f.nome}`;
+  document.getElementById('rel360-conteudo').innerHTML=`
+    <div id="rel360-printarea" style="font-family:'Montserrat',sans-serif;color:#fff">
+      <!-- Cabeçalho do relatório -->
+      <div style="background:linear-gradient(135deg,rgba(201,150,60,0.15),rgba(201,150,60,0.04));border:1px solid rgba(201,150,60,0.2);border-radius:12px;padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(201,150,60,0.7);margin-bottom:4px">Avaliação 360° · Soma Partners</div>
+          <div style="font-size:22px;font-weight:800">${f.nome}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px">${f.cargo||'Colaborador'} · ${totalAv} avaliador${totalAv!==1?'es':''} em ${totalRod} rodada${totalRod!==1?'s':''}</div>
+          ${badgesHtml}
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:56px;font-weight:900;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
+          <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:1px">MÉDIA GERAL / 10</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:4px">${hoje}</div>
+        </div>
+      </div>
+
+      <!-- Resumo -->
+      ${resumoCols?`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 24px;margin-bottom:24px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:16px">Resumo por Categoria</div>
+        <div style="display:flex;gap:24px;flex-wrap:wrap">${resumoCols}</div>
+      </div>`:''}
+
+      <!-- Detalhamento por grupo -->
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 24px;margin-bottom:24px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:20px">Detalhamento por Critério</div>
+        ${grupoRows}
+      </div>
+
+      <!-- Comentários -->
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 24px;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:16px">💬 Comentários da Equipe</div>
+        ${comsHtml}
+      </div>
+    </div>`;
+
+  openModal('modal-relatorio360');
+}
+
+function imprimirRelatorio360(){
+  const area=document.getElementById('rel360-printarea');
+  if(!area) return;
+  const w=window.open('','_blank','width=900,height=700');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório 360°</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0b1e30;color:#fff;font-family:'Montserrat',sans-serif;padding:40px}@media print{body{background:#0b1e30!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style>
+  </head><body>${area.outerHTML}<script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  w.document.close();
+}
+
+function copiarLinkRelatorio360(){
+  if(!_relatorio360FuncId) return;
+  const base=window.location.origin;
+  const link=`${base}/avaliacao360.html?resultado=${_relatorio360FuncId}`;
+  navigator.clipboard.writeText(link).then(()=>{
+    const btn=document.getElementById('btn-copiar-link-rel');
+    if(btn){btn.textContent='✓ Copiado!';setTimeout(()=>{btn.textContent='🔗 Copiar Link';},2000);}
+  }).catch(()=>alert('Link: '+base+'/avaliacao360.html?resultado='+_relatorio360FuncId));
+}
+
 function abrirModalAval(){
   document.getElementById('aval-id').value='';
   ['aval-f-periodo','aval-f-fortes','aval-f-melhoria','aval-f-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});

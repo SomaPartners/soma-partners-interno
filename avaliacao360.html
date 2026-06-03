@@ -102,6 +102,12 @@ select.fc option{background:#0f2438;color:#fff}
     <div style="font-size:22px;font-weight:800;margin-bottom:10px">Avaliações enviadas!</div>
     <div style="font-size:14px;color:var(--muted);line-height:1.6">Obrigado pelo seu feedback honesto.<br>Os resultados ficam disponíveis para o time no painel administrativo.</div>
   </div>
+
+  <!-- MODO RESULTADO (link compartilhável) -->
+  <div id="step-resultado" class="step">
+    <div id="resultado-conteudo"></div>
+    <button onclick="window.print()" style="margin-top:20px;background:rgba(201,150,60,0.15);border:1px solid rgba(201,150,60,0.3);border-radius:10px;padding:13px 28px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:#c9963c;cursor:pointer;width:100%">🖨 Imprimir / Salvar PDF</button>
+  </div>
 </div>
 
 <script>
@@ -149,6 +155,14 @@ function showStep(id){document.querySelectorAll('.step').forEach(s=>s.classList.
 
 async function init(){
   const params=new URLSearchParams(location.search);
+
+  // Modo resultado: link compartilhável ?resultado=funcId
+  const resultadoId=params.get('resultado');
+  if(resultadoId){
+    await mostrarResultado(resultadoId);
+    return;
+  }
+
   const rodadaId=params.get('r');
   if(!rodadaId){showStep('step-erro');return;}
   const[{data:rodada},{data:resp}]=await Promise.all([
@@ -252,6 +266,97 @@ async function enviarAvaliacao(){
   const{error}=await _sb.from('admin_aval360_respostas').insert(inserts);
   if(error){alert('Erro ao enviar: '+error.message);btn.disabled=false;btn.textContent='✓ Enviar Avaliações';return;}
   showStep('step-sucesso');
+}
+
+async function mostrarResultado(funcId){
+  // Buscar dados da pessoa e respostas
+  const[{data:funcData},{data:respostasData}]=await Promise.all([
+    _sb.from('wealth_responsaveis').select('id,data').eq('id',funcId).single(),
+    _sb.from('admin_aval360_respostas').select('*').eq('data->>avaliado_id',funcId),
+  ]);
+
+  if(!funcData){
+    document.getElementById('resultado-conteudo').innerHTML='<div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.3)">Resultado não encontrado.</div>';
+    showStep('step-resultado');
+    return;
+  }
+
+  const f={id:funcData.id,...(funcData.data||{})};
+  const resps=(respostasData||[]).map(r=>({id:r.id,rodada_id:r.rodada_id,created_at:r.created_at,...(r.data||{})}));
+
+  const medias=CRITERIOS.map(c=>{
+    const ns=resps.flatMap(r=>(r.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!==null&&x!==undefined));
+    return{...c,avg:ns.length?(ns.reduce((a,b)=>a+b,0)/ns.length):null};
+  }).filter(c=>c.avg!==null);
+
+  const mediaGeral=medias.length?medias.reduce((a,b)=>a+b.avg,0)/medias.length:0;
+  const cor=mediaGeral>=8?'#6ee7b7':mediaGeral>=5?'#fcd34d':'#fca5a5';
+  const ordenado=[...medias].sort((a,b)=>b.avg-a.avg);
+  const fortes=ordenado.filter(c=>c.avg>=7);
+  const melhorar=ordenado.filter(c=>c.avg>=4&&c.avg<7);
+  const fracos=ordenado.filter(c=>c.avg<4);
+  const totalAv=[...new Set(resps.map(r=>r.avaliador_id))].length;
+  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+
+  const grupoRows=GRUPOS.map(g=>{
+    const cg=medias.filter(c=>c.grupo===g);
+    if(!cg.length) return '';
+    const mgAvg=cg.reduce((a,b)=>a+b.avg,0)/cg.length;
+    const mgCor=mgAvg>=8?'#6ee7b7':mgAvg>=5?'#fcd34d':'#fca5a5';
+    return`<div style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35)">${g}</div>
+        <div style="font-size:13px;font-weight:800;color:${mgCor}">${mgAvg.toFixed(1)}</div>
+      </div>
+      ${cg.sort((a,b)=>b.avg-a.avg).map(c=>{
+        const cc=c.avg>=8?'#6ee7b7':c.avg>=5?'#fcd34d':'#fca5a5';
+        const pct=Math.round(c.avg*10);
+        return`<div style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <div style="flex:1;font-size:12px;color:rgba(255,255,255,0.7)">${c.label}</div>
+          <div style="width:120px;background:rgba(255,255,255,0.06);border-radius:4px;height:5px"><div style="background:${cc};height:5px;border-radius:4px;width:${pct}%"></div></div>
+          <div style="font-size:13px;font-weight:800;color:${cc};min-width:28px;text-align:right">${c.avg.toFixed(1)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  const col=(label,items,c)=>items.length?`<div style="flex:1;min-width:160px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px">
+    <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${c};margin-bottom:10px">${label}</div>
+    ${items.map(x=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="font-size:11px;color:#bbb">${x.label}</span><span style="font-size:12px;font-weight:800;color:${c}">${x.avg.toFixed(1)}</span></div>`).join('')}
+  </div>`:'';
+
+  const comsHtml=resps.filter(r=>r.comentario&&r.comentario.trim()).map(r=>`<div style="background:rgba(255,255,255,0.03);border-left:3px solid rgba(201,150,60,0.35);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px"><div style="font-size:12px;color:#ccc;line-height:1.6;font-style:italic">"${r.comentario}"</div></div>`).join('');
+
+  document.getElementById('resultado-conteudo').innerHTML=`
+    <div style="background:linear-gradient(135deg,rgba(201,150,60,0.15),rgba(201,150,60,0.04));border:1px solid rgba(201,150,60,0.2);border-radius:14px;padding:24px 22px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+      <div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(201,150,60,0.6);margin-bottom:4px">Avaliação 360° · Soma Partners</div>
+        <div style="font-size:22px;font-weight:900">${f.nome||'Colaborador'}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:3px">${f.cargo||''} · ${totalAv} avaliador${totalAv!==1?'es':''} · ${hoje}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:52px;font-weight:900;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
+        <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:1px">MÉDIA GERAL / 10</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px">
+      ${col('✦ Pontos Fortes',fortes,'#6ee7b7')}
+      ${col('↑ A Melhorar',melhorar,'#fcd34d')}
+      ${col('▼ Pontos Fracos',fracos,'#fca5a5')}
+    </div>
+
+    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin-bottom:${comsHtml?'20px':'0'}">
+      <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:18px">Detalhamento por Critério</div>
+      ${grupoRows}
+    </div>
+
+    ${comsHtml?`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:14px">💬 Comentários</div>
+      ${comsHtml}
+    </div>`:''}
+  `;
+  showStep('step-resultado');
 }
 
 init();
