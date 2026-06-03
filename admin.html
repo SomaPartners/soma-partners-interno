@@ -3808,7 +3808,7 @@ function verResultados360(rodadaId){
     const critHtml=CRITERIOS_360.map(c=>{
       const ns=dados.notas[c.id]||[];
       const avg=ns.length?(ns.reduce((a,b)=>a+b,0)/ns.length):0;
-      const stars=[1,2,3,4,5].map(n=>`<span style="color:${n<=Math.round(avg)?'#f59e0b':'rgba(255,255,255,0.12)';font-size:14px">★</span>`).join('');
+      const stars=[1,2,3,4,5].map(n=>`<span style="color:${n<=Math.round(avg)?'#f59e0b':'rgba(255,255,255,0.12)'};font-size:14px">★</span>`).join('');
       return`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
         <span style="font-size:12px;color:rgba(255,255,255,0.7)">${c.label}</span>
         <div style="display:flex;align-items:center;gap:8px">${stars}<span style="font-size:11px;font-weight:700;color:${avg>=4?'#6ee7b7':avg>=3?'#fcd34d':'#fca5a5'};min-width:24px;text-align:right">${ns.length?avg.toFixed(1):'-'}</span></div>
