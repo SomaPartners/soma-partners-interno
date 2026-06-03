@@ -1381,7 +1381,7 @@ function renderPainel(){
 
   // ── Onboarding ──
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
-  const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio');
+  const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio'||s==='adiado');
   const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na'||s==='adiado');
 
   if(!_obRows.length){
@@ -1808,7 +1808,7 @@ function renderOnboarding(){
   const filtStatus=document.getElementById('ob-filtro-status')?.value||'';
 
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
-  const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio');
+  const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio'||s==='adiado');
   const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na'||s==='adiado');
 
   let rows=_obRows;
@@ -1932,7 +1932,7 @@ function gerarRelatorioOnboarding(){
   const hoje=new Date();
   const dataFmt=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const getStatuses=r=>OB_TASK_COLS.map(c=>c.getStatus((r[c.idx]||'').trim()));
-  const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio');
+  const isPendente=r=>getStatuses(r).some(s=>s==='pendente'||s==='vazio'||s==='adiado');
   const isCompleto=r=>getStatuses(r).every(s=>s==='feito'||s==='na'||s==='adiado');
 
   const comPend=_obRows.filter(isPendente);
