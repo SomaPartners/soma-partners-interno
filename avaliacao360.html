@@ -167,8 +167,13 @@ function iniciarAvaliacao(){
   const sel=document.getElementById('sel-avaliador');
   if(!sel.value){sel.focus();return;}
   _avaliadorId=sel.value;
-  const avaliados=_equipe.filter(f=>f.id!==_avaliadorId);
-  document.getElementById('rodada-nome-display').textContent=_rodada.data?.nome||'';
+  const _avaliadoEsp=_rodada.data?.avaliado_especifico||null;
+  const avaliados=_avaliadoEsp
+    ? _equipe.filter(f=>f.id===_avaliadoEsp)
+    : _equipe.filter(f=>f.id!==_avaliadorId);
+  document.getElementById('rodada-nome-display').textContent=_avaliadoEsp
+    ? `${_rodada.data?.nome||''} · Avaliando ${_rodada.data?.avaliado_nome||''}`
+    : (_rodada.data?.nome||'');
 
   const cards=avaliados.map(f=>{
     _notas[f.id]={};_comentarios[f.id]='';
@@ -213,7 +218,8 @@ function setNota(avaliadoId,criterioId,nota){
 }
 
 function atualizarProgresso(){
-  const avaliados=_equipe.filter(f=>f.id!==_avaliadorId);
+  const _avaliadoEsp=_rodada?.data?.avaliado_especifico||null;
+  const avaliados=_avaliadoEsp?_equipe.filter(f=>f.id===_avaliadoEsp):_equipe.filter(f=>f.id!==_avaliadorId);
   if(!avaliados.length)return;
   let total=avaliados.length*CRITERIOS.length,preenchidos=0;
   avaliados.forEach(f=>CRITERIOS.forEach(c=>{if(_notas[f.id]?.[c.id]!==undefined)preenchidos++;}));
@@ -229,7 +235,8 @@ function atualizarProgresso(){
 async function enviarAvaliacao(){
   const btn=document.getElementById('btn-enviar');
   btn.disabled=true;btn.textContent='Enviando...';
-  const avaliados=_equipe.filter(f=>f.id!==_avaliadorId);
+  const _avaliadoEsp=_rodada?.data?.avaliado_especifico||null;
+  const avaliados=_avaliadoEsp?_equipe.filter(f=>f.id===_avaliadoEsp):_equipe.filter(f=>f.id!==_avaliadorId);
   const inserts=avaliados.map(f=>({
     id:crypto.randomUUID(),
     rodada_id:_rodada.id,

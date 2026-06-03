@@ -1010,6 +1010,40 @@ body{display:flex;flex-direction:column;overflow:hidden}
   </div>
 </div>
 
+<!-- MODAL NOVA RODADA 360 -->
+<div class="modal-overlay" id="modal-rodada360">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-title">
+      <span>Nova Rodada 360°</span>
+      <button class="mc" onclick="closeModal('modal-rodada360')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;padding:4px 0 8px">
+      <div>
+        <label class="fl">Nome da rodada *</label>
+        <input class="fc" id="r360-nome" placeholder="Ex: Q2 2026, Avaliação Semestral...">
+      </div>
+      <div>
+        <label class="fl">Escopo</label>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button id="r360-btn-equipe" onclick="setEscopo360('equipe')" style="flex:1;padding:10px;border-radius:9px;border:1px solid rgba(201,150,60,0.5);background:rgba(201,150,60,0.12);color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.18s">👥 Toda a equipe</button>
+          <button id="r360-btn-pessoa" onclick="setEscopo360('pessoa')" style="flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.18s">👤 Pessoa específica</button>
+        </div>
+      </div>
+      <div id="r360-pessoa-wrap" style="display:none">
+        <label class="fl">Quem será avaliado?</label>
+        <select class="fc" id="r360-avaliado">
+          <option value="">Selecione...</option>
+        </select>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px">A equipe vai avaliar apenas esta pessoa.</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-rodada360')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarRodada360()">Criar Rodada</button>
+    </div>
+  </div>
+</div>
+
 <!-- AVALIAÇÃO -->
 <div class="modal-overlay" id="modal-aval">
   <div class="modal">
@@ -3762,13 +3796,46 @@ const CRITERIOS_360=[
 ];
 const GRUPOS_360=[...new Set(CRITERIOS_360.map(c=>c.grupo))];
 
-async function criarRodada360(){
-  const nome=prompt('Nome da rodada (ex: Q2 2026):');
-  if(!nome||!nome.trim())return;
+function criarRodada360(){
+  // Popular select de avaliado
+  const sel=document.getElementById('r360-avaliado');
+  sel.innerHTML='<option value="">Selecione...</option>';
+  equipe.filter(f=>f.status==='ativo').sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).forEach(f=>{
+    const o=document.createElement('option');o.value=f.id;o.textContent=f.nome+(f.cargo?` — ${f.cargo}`:'');sel.appendChild(o);
+  });
+  document.getElementById('r360-nome').value='';
+  setEscopo360('equipe');
+  openModal('modal-rodada360');
+}
+
+function setEscopo360(tipo){
+  const btnEq=document.getElementById('r360-btn-equipe');
+  const btnPe=document.getElementById('r360-btn-pessoa');
+  const wrap=document.getElementById('r360-pessoa-wrap');
+  if(tipo==='equipe'){
+    btnEq.style.cssText='flex:1;padding:10px;border-radius:9px;border:1px solid rgba(201,150,60,0.5);background:rgba(201,150,60,0.12);color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif';
+    btnPe.style.cssText='flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif';
+    wrap.style.display='none';
+  } else {
+    btnPe.style.cssText='flex:1;padding:10px;border-radius:9px;border:1px solid rgba(201,150,60,0.5);background:rgba(201,150,60,0.12);color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif';
+    btnEq.style.cssText='flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif';
+    wrap.style.display='block';
+  }
+  btnEq.dataset.tipo=tipo;
+}
+
+async function salvarRodada360(){
+  const nome=document.getElementById('r360-nome').value.trim();
+  if(!nome){document.getElementById('r360-nome').focus();return;}
+  const escopo=document.getElementById('r360-btn-equipe').dataset.tipo||'equipe';
+  const avaliadoId=escopo==='pessoa'?document.getElementById('r360-avaliado').value:'';
+  if(escopo==='pessoa'&&!avaliadoId){document.getElementById('r360-avaliado').focus();return;}
+  const f=avaliadoId?equipe.find(x=>x.id===avaliadoId):null;
   const id=crypto.randomUUID();
-  const rec={id,rodada_id:null,data:{nome:nome.trim(),status:'ativa',criado_em:new Date().toISOString()}};
-  const{error}=await _sb.from('admin_aval360_rodadas').insert({id,data:{nome:nome.trim(),status:'ativa',criado_em:new Date().toISOString()}});
+  const data={nome,status:'ativa',criado_em:new Date().toISOString(),escopo,avaliado_especifico:avaliadoId||null,avaliado_nome:f?.nome||null};
+  const{error}=await _sb.from('admin_aval360_rodadas').insert({id,data});
   if(error){alert('Erro: '+error.message);return;}
+  closeModal('modal-rodada360');
   await loadAll();
 }
 
@@ -3808,10 +3875,11 @@ function renderRodadas360(){
     const total=respostas360.filter(x=>x.rodada_id===r.id).length;
     const avaliadores=[...new Set(respostas360.filter(x=>x.rodada_id===r.id).map(x=>x.avaliador_id))].length;
     const isAtiva=r.status==='ativa';
+    const isPessoa=r.escopo==='pessoa'&&r.avaliado_especifico;
     return`<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px 20px;margin-bottom:10px;display:flex;align-items:center;gap:16px">
       <div style="flex:1;min-width:0">
         <div style="font-size:15px;font-weight:800;margin-bottom:4px">${r.nome}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.4)">${avaliadores} avaliador${avaliadores!==1?'es':''} · ${total} resposta${total!==1?'s':''}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4)">${isPessoa?`👤 Avaliação de <strong style="color:rgba(255,255,255,0.7)">${r.avaliado_nome||'?'}</strong> · `:'👥 Toda a equipe · '}${avaliadores} avaliador${avaliadores!==1?'es':''} · ${total} resposta${total!==1?'s':''}</div>
       </div>
       <span style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;background:${isAtiva?'rgba(16,185,129,0.15)':'rgba(255,255,255,0.07)'};color:${isAtiva?'#6ee7b7':'rgba(255,255,255,0.35)'};">${isAtiva?'ATIVA':'ENCERRADA'}</span>
       <div style="display:flex;gap:8px">
