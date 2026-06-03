@@ -1328,6 +1328,7 @@ async function loadAll(){
   rodadas360=(r360.data||[]).map(r=>({id:r.id,created_at:r.created_at,...(r.data||{})}));
   respostas360=(rs360.data||[]).map(r=>({id:r.id,rodada_id:r.rodada_id,created_at:r.created_at,...(r.data||{})}));
   renderRodadas360();
+  renderAvaliacoes();
   mktConteudo=mc.data||[];
   mktCampanhas=mca.data||[];
   mktMateriais=mm.data||[];
@@ -2163,17 +2164,113 @@ function setNota(n){
   });
 }
 function renderAvaliacoes(){
-  document.getElementById('tbl-avaliacoes').innerHTML=avaliacoes.length?avaliacoes.map(a=>{
-    const f=equipe.find(x=>x.id===a.funcionario_id);
-    const stars=[1,2,3,4,5].map(n=>`<span class="star${n<=(a.nota||0)?' on':''}">★</span>`).join('');
-    return`<tr>
-      <td style="font-weight:600">${f?.nome||'—'}</td>
-      <td style="font-size:11px">${a.periodo||'—'}</td>
-      <td><div class="stars">${stars}</div></td>
-      <td style="font-size:11px;color:var(--muted)">${a.pontos_fortes||'—'}</td>
-      <td style="font-size:11px;color:var(--muted)">${a.pontos_melhoria||'—'}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="deletarAval('${a.id}')">×</button></td>
-    </tr>`;}).join(''):'<tr class="empty-row"><td colspan="6">Nenhuma avaliação registrada</td></tr>';
+  const container=document.getElementById('tbl-avaliacoes');
+  if(!container) return;
+
+  // Consolidar dados do 360° por pessoa
+  const ativos=equipe.filter(f=>f.status==='ativo');
+  const comDados=ativos.map(f=>{
+    const resps=respostas360.filter(r=>r.avaliado_id===f.id);
+    if(!resps.length) return null;
+
+    // Média por critério
+    const medias=CRITERIOS_360.map(c=>{
+      const ns=resps.flatMap(r=>(r.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!==null&&x!==undefined));
+      return{...c,avg:ns.length?(ns.reduce((a,b)=>a+b,0)/ns.length):null,count:ns.length};
+    }).filter(c=>c.avg!==null);
+
+    if(!medias.length) return null;
+
+    const mediaGeral=medias.reduce((a,b)=>a+b.avg,0)/medias.length;
+    const ordenado=[...medias].sort((a,b)=>b.avg-a.avg);
+
+    // Pontos fortes: top 3 acima de 7
+    const fortes=ordenado.filter(c=>c.avg>=7).slice(0,3);
+    // A melhorar: scores médios 4-6.9
+    const melhorar=ordenado.filter(c=>c.avg>=4&&c.avg<7).slice(0,3);
+    // Pontos fracos: abaixo de 4
+    const fracos=ordenado.filter(c=>c.avg<4);
+
+    // Comentários de todas as rodadas
+    const comentarios=resps.filter(r=>r.comentario&&r.comentario.trim()).map(r=>({
+      texto:r.comentario,
+      avaliador:equipe.find(x=>x.id===r.avaliador_id)?.nome||'Anônimo',
+      rodada:rodadas360.find(x=>x.id===r.rodada_id)?.nome||''
+    }));
+
+    return{f,mediaGeral,fortes,melhorar,fracos,comentarios,totalAvaliadores:[...new Set(resps.map(r=>r.avaliador_id))].length,totalRodadas:[...new Set(resps.map(r=>r.rodada_id))].length};
+  }).filter(Boolean).sort((a,b)=>b.mediaGeral-a.mediaGeral);
+
+  if(!comDados.length){
+    container.innerHTML='<tr class="empty-row"><td colspan="6" style="text-align:center;padding:48px;color:var(--muted)">Nenhuma avaliação 360° realizada ainda. Crie uma rodada na aba 360° e compartilhe o link com a equipe.</td></tr>';
+    return;
+  }
+
+  // Renderizar como cards em vez de tabela
+  container.closest('.tbl-wrap').style.display='none';
+  let cardsDiv=document.getElementById('aval-individual-cards');
+  if(!cardsDiv){cardsDiv=document.createElement('div');cardsDiv.id='aval-individual-cards';container.closest('#avaltab-individual').appendChild(cardsDiv);}
+
+  const n360cor=n=>n>=8?'#6ee7b7':n>=5?'#fcd34d':'#fca5a5';
+
+  cardsDiv.innerHTML=comDados.map(({f,mediaGeral,fortes,melhorar,fracos,comentarios,totalAvaliadores,totalRodadas})=>{
+    const cor=n360cor(mediaGeral);
+
+    const pill=(label,cor,bg)=>`<span style="background:${bg};color:${cor};font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap">${label}</span>`;
+
+    const fortesHtml=fortes.length
+      ?fortes.map(c=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="font-size:11px;color:rgba(255,255,255,0.75)">${c.label}</span><span style="font-size:12px;font-weight:800;color:#6ee7b7">${c.avg.toFixed(1)}</span></div>`).join('')
+      :`<div style="font-size:11px;color:rgba(255,255,255,0.2);padding:4px 0">—</div>`;
+
+    const melhorarHtml=melhorar.length
+      ?melhorar.map(c=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="font-size:11px;color:rgba(255,255,255,0.75)">${c.label}</span><span style="font-size:12px;font-weight:800;color:#fcd34d">${c.avg.toFixed(1)}</span></div>`).join('')
+      :`<div style="font-size:11px;color:rgba(255,255,255,0.2);padding:4px 0">—</div>`;
+
+    const fracosHtml=fracos.length
+      ?fracos.map(c=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="font-size:11px;color:rgba(255,255,255,0.75)">${c.label}</span><span style="font-size:12px;font-weight:800;color:#fca5a5">${c.avg.toFixed(1)}</span></div>`).join('')
+      :`<div style="font-size:11px;color:rgba(255,255,255,0.2);padding:4px 0">Sem pontos fracos identificados ✓</div>`;
+
+    const comsHtml=comentarios.length
+      ?comentarios.slice(0,3).map(c=>`<div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:9px 11px;margin-bottom:6px"><div style="font-size:11px;color:rgba(255,255,255,0.7);line-height:1.5">"${c.texto}"</div><div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:4px">— ${c.avaliador}${c.rodada?' · '+c.rodada:''}</div></div>`).join('')+(comentarios.length>3?`<div style="font-size:10px;color:rgba(255,255,255,0.25);padding:4px 0">+${comentarios.length-3} mais comentários na aba 360°</div>`:'')
+      :`<div style="font-size:11px;color:rgba(255,255,255,0.2);padding:4px 0">Nenhum comentário</div>`;
+
+    const badges=(f._data?.badges||[]);
+    const badgesHtml=badges.length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${badges.map(b=>{const bd=BADGES_DISPONIVEIS.find(x=>x.id===b.id);return bd?`<span style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:2px 8px;font-size:10px;color:rgba(255,255,255,0.6)">${bd.emoji} ${bd.label}</span>`:''}).join('')}</div>`:'';
+
+    return`<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px 22px;margin-bottom:12px">
+      <!-- Cabeçalho -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:15px;font-weight:800">${f.nome}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px">${f.cargo||'Colaborador'} · ${totalAvaliadores} avaliador${totalAvaliadores!==1?'es':''} em ${totalRodadas} rodada${totalRodadas!==1?'s':''}</div>
+          ${badgesHtml}
+        </div>
+        <div style="text-align:center;flex-shrink:0;margin-left:16px">
+          <div style="font-size:40px;font-weight:800;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.25);text-transform:uppercase">/ 10</div>
+        </div>
+      </div>
+      <!-- Grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6ee7b7;margin-bottom:8px">✦ Pontos Fortes</div>
+          ${fortesHtml}
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#fcd34d;margin-bottom:8px">↑ A Melhorar</div>
+          ${melhorarHtml}
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#fca5a5;margin-bottom:8px">▼ Pontos Fracos</div>
+          ${fracosHtml}
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px">💬 Comentários</div>
+          ${comsHtml}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 function abrirModalAval(){
   document.getElementById('aval-id').value='';
