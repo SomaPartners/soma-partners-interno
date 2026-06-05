@@ -2843,53 +2843,174 @@ function exportarExcel(){
 function exportarPDF(){
   const virtual = gerarTransacoesRecorrentes();
   const txs = [...pagamentos,...virtual].sort((a,b)=>(a.data||a.dataVencimento||'').localeCompare(b.data||b.dataVencimento||''));
-  let saldo=0;
-  const total_ent = txs.filter(p=>p.descricao==='ENTRADA').reduce((s,p)=>s+parseFloat(p.valor||0),0);
-  const total_sai = txs.filter(p=>p.descricao!=='ENTRADA').reduce((s,p)=>s+parseFloat(p.valor||0),0);
-  const rows = txs.map(p=>{
-    const ent=p.descricao==='ENTRADA'; const val=parseFloat(p.valor||0);
-    if(ent) saldo+=val; else saldo-=val;
-    return `<tr style="border-bottom:1px solid #e2e8f0">
-      <td style="padding:6px 8px;font-size:11px">${p.data?fmtDate(p.data):fmtDate(p.dataVencimento)}</td>
-      <td style="padding:6px 8px;font-size:11px;font-weight:600">${p.carac||p.caracteristica||''}</td>
-      <td style="padding:6px 8px;font-size:10px;color:#64748b">${p.tipo||''}</td>
-      <td style="padding:6px 8px;font-size:10px;font-weight:700;color:${ent?'#059669':'#dc2626'}">${p.descricao||'SAÍDA'}</td>
-      <td style="padding:6px 8px;font-size:11px;font-weight:700;text-align:right;color:${ent?'#059669':'#dc2626'}">${ent?'+':'-'}${fmtMoney(val)}</td>
-      <td style="padding:6px 8px;font-size:11px;font-weight:800;text-align:right;color:${saldo>=0?'#059669':'#dc2626'}">${fmtMoney(saldo)}</td>
-    </tr>`;
+
+  // Agrupar por mês
+  const MESES_NOMES = ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+  const porMes = {};
+  txs.forEach(p=>{
+    const d = p.data||p.dataVencimento||'';
+    const mes = d.substring(0,7); // YYYY-MM
+    if(!porMes[mes]) porMes[mes]=[];
+    porMes[mes].push(p);
+  });
+
+  // Todos os meses do ano corrente (ou do range dos dados)
+  const anosSet = new Set(txs.map(p=>(p.data||p.dataVencimento||'').substring(0,4)).filter(Boolean));
+  const ano = anosSet.size===1?[...anosSet][0]:new Date().getFullYear().toString();
+  const todosMeses = Array.from({length:12},(_,i)=>`${ano}-${String(i+1).padStart(2,'0')}`);
+
+  function fmtBRL(v){
+    const neg=v<0; v=Math.abs(v);
+    const s=v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return neg?`-R$ ${s}`:`R$ ${s}`;
+  }
+
+  function makeTableRows(rows){
+    return rows.map((p,idx)=>{
+      const ent=p.descricao==='ENTRADA';
+      const val=parseCurrency(p.valor);
+      const bg=idx%2===0?'#f9fafb':'#ffffff';
+      return `<tr style="background:${bg}">
+        <td style="padding:5px 8px;font-size:10px;border-bottom:1px solid #e5e7eb">${p.data?fmtDate(p.data):fmtDate(p.dataVencimento)}</td>
+        <td style="padding:5px 8px;font-size:10px;font-weight:600;border-bottom:1px solid #e5e7eb">${p.carac||p.caracteristica||''}</td>
+        <td style="padding:5px 8px;font-size:10px;color:#6b7280;border-bottom:1px solid #e5e7eb">${p.tipo||''}</td>
+        <td style="padding:5px 8px;font-size:10px;font-weight:700;text-align:center;border-bottom:1px solid #e5e7eb;background:${ent?'#c6efce':'#ffc7ce'};color:${ent?'#276221':'#9c0006'}">${p.descricao||'SAÍDA'}</td>
+        <td style="padding:5px 8px;font-size:10px;font-weight:700;text-align:right;border-bottom:1px solid #e5e7eb;color:${ent?'#276221':'#9c0006'}">${fmtBRL(ent?val:-val)}</td>
+        <td style="padding:5px 8px;font-size:10px;border-bottom:1px solid #e5e7eb"></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Consolidado
+  const consolidado = todosMeses.map(mes=>{
+    const rows=porMes[mes]||[];
+    const ent=rows.filter(p=>p.descricao==='ENTRADA').reduce((s,p)=>s+parseCurrency(p.valor),0);
+    const sai=rows.filter(p=>p.descricao!=='ENTRADA').reduce((s,p)=>s+parseCurrency(p.valor),0);
+    return{mes,rows,ent,sai,resultado:ent-sai};
+  });
+  const totEnt=consolidado.reduce((s,m)=>s+m.ent,0);
+  const totSai=consolidado.reduce((s,m)=>s+m.sai,0);
+  const totRes=totEnt-totSai;
+
+  // HTML dos meses
+  const mesesHtml = todosMeses.map((mes,i)=>{
+    const nome=MESES_NOMES[i];
+    const rows=porMes[mes]||[];
+    const ent=rows.filter(p=>p.descricao==='ENTRADA').reduce((s,p)=>s+parseCurrency(p.valor),0);
+    const sai=rows.filter(p=>p.descricao!=='ENTRADA').reduce((s,p)=>s+parseCurrency(p.valor),0);
+    const res=ent-sai;
+    const pbreak=i>0?'page-break-before:always;':'';
+    const tbody = rows.length
+      ? makeTableRows(rows)+`<tr style="background:#0f1a30">
+          <td colspan="3"></td>
+          <td style="padding:6px 8px;font-size:10px;font-weight:800;color:#fff;text-align:left">TOTAL DO MÊS</td>
+          <td style="padding:6px 8px;font-size:10px;font-weight:800;text-align:right;color:${res>=0?'#6ee7b7':'#fca5a5'}">${fmtBRL(res)}</td>
+          <td></td>
+        </tr>`
+      : `<tr><td colspan="6" style="padding:16px;text-align:center;color:#9ca3af;font-size:11px">Sem movimentações neste mês.</td></tr>`;
+    return `<div style="${pbreak}padding:32px 36px 28px">
+      <!-- Cabeçalho repetido por página -->
+      <div style="display:flex;justify-content:space-between;align-items:stretch;background:#1a2744;border-radius:10px 10px 0 0;overflow:hidden;margin-bottom:0">
+        <div style="padding:14px 20px;flex:1">
+          <div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:3px">SOMA PARTNERS · RELATÓRIO FINANCEIRO</div>
+          <div style="font-size:20px;font-weight:900;color:#fff">${CLIENT.nome}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px">Gerado em ${fmtDate(today())}</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.2);border-left:1px solid #c9963c;padding:14px 24px;text-align:center;min-width:120px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:4px">SALDO</div>
+          <div style="font-size:18px;font-weight:900;color:#e8b96a">${fmtBRL(totRes)}</div>
+        </div>
+      </div>
+      <!-- Título do mês -->
+      <div style="background:#0f1a30;padding:10px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13px;font-weight:800;color:#fff;letter-spacing:1px">● ${nome}</div>
+        ${rows.length?`<div style="font-size:10px;color:rgba(255,255,255,0.4)">${rows.length} movimentaç${rows.length===1?'ão':'ões'}</div>`:''}
+      </div>
+      <!-- Tabela -->
+      <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb">
+        <thead>
+          <tr style="background:#1a2744">
+            <th style="padding:7px 8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:left;width:10%">Data</th>
+            <th style="padding:7px 8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:left;width:28%">Características</th>
+            <th style="padding:7px 8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:left;width:18%">Tipo</th>
+            <th style="padding:7px 8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:center;width:13%">Descrição</th>
+            <th style="padding:7px 8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:right;width:16%">Valor</th>
+            <th style="padding:7px 8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:right;width:15%">Saldo</th>
+          </tr>
+        </thead>
+        <tbody>${tbody}</tbody>
+      </table>
+    </div>`;
   }).join('');
+
+  // HTML do consolidado
+  const consolidadoHtml = `<div style="page-break-before:always;padding:32px 36px 28px">
+    <div style="display:flex;justify-content:space-between;align-items:stretch;background:#1a2744;border-radius:10px 10px 0 0;overflow:hidden">
+      <div style="padding:14px 20px;flex:1">
+        <div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:3px">SOMA PARTNERS · RELATÓRIO FINANCEIRO</div>
+        <div style="font-size:20px;font-weight:900;color:#fff">${CLIENT.nome}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px">Gerado em ${fmtDate(today())}</div>
+      </div>
+      <div style="background:rgba(0,0,0,0.2);border-left:1px solid #c9963c;padding:14px 24px;text-align:center;min-width:120px;display:flex;flex-direction:column;justify-content:center">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:4px">SALDO</div>
+        <div style="font-size:18px;font-weight:900;color:#e8b96a">${fmtBRL(totRes)}</div>
+      </div>
+    </div>
+    <div style="background:#0f1a30;padding:10px 20px">
+      <div style="font-size:13px;font-weight:800;color:#fff;letter-spacing:1px">● CONSOLIDADO GERAL</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb">
+      <thead>
+        <tr style="background:#1a2744">
+          <th style="padding:8px 10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:left">Mês</th>
+          <th style="padding:8px 10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:right">Entradas</th>
+          <th style="padding:8px 10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:right">Saídas</th>
+          <th style="padding:8px 10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:right">Resultado</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${consolidado.map((m,i)=>{
+          const bg=i%2===0?'#f9fafb':'#ffffff';
+          const rc=m.resultado>=0?'#276221':'#9c0006';
+          const hasData=m.rows.length>0;
+          return `<tr style="background:${bg}">
+            <td style="padding:7px 10px;font-size:11px;font-weight:700;color:#1a2744;border-bottom:1px solid #e5e7eb">${MESES_NOMES[i]}</td>
+            <td style="padding:7px 10px;font-size:11px;font-weight:600;text-align:right;border-bottom:1px solid #e5e7eb;color:#276221">${hasData?fmtBRL(m.ent):'—'}</td>
+            <td style="padding:7px 10px;font-size:11px;font-weight:600;text-align:right;border-bottom:1px solid #e5e7eb;color:#9c0006">${hasData?fmtBRL(m.sai):'—'}</td>
+            <td style="padding:7px 10px;font-size:11px;font-weight:800;text-align:right;border-bottom:1px solid #e5e7eb;color:${rc}">${hasData?fmtBRL(m.resultado):'—'}</td>
+          </tr>`;
+        }).join('')}
+        <tr style="background:#0f1a30;border-top:2px solid #c9963c">
+          <td style="padding:9px 10px;font-size:11px;font-weight:900;color:#fff">TOTAL GERAL</td>
+          <td style="padding:9px 10px;font-size:11px;font-weight:900;text-align:right;color:#6ee7b7">${fmtBRL(totEnt)}</td>
+          <td style="padding:9px 10px;font-size:11px;font-weight:900;text-align:right;color:#fca5a5">${fmtBRL(totSai)}</td>
+          <td style="padding:9px 10px;font-size:11px;font-weight:900;text-align:right;color:#e8b96a">${fmtBRL(totRes)}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:12px;font-size:9px;color:#9ca3af;text-align:center">Soma Partners · Relatório Financeiro — ${CLIENT.nome} · Confidencial</div>
+  </div>`;
 
   const win = window.open('','_blank');
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
     <title>Relatório Financeiro — ${CLIENT.nome}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',sans-serif;background:#fff;color:#0f172a;padding:32px}
-    .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:16px;border-bottom:2px solid #0b1e30}
-    .logo{font-size:20px;font-weight:300}.logo strong{font-weight:800}
-    h1{font-size:22px;font-weight:900;margin-bottom:4px}.meta{font-size:12px;color:#64748b}
-    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-    .kpi{border:1px solid #e2e8f0;border-radius:8px;padding:14px 16px}
-    .kpi-val{font-size:20px;font-weight:800;margin-bottom:2px}.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b}
-    table{width:100%;border-collapse:collapse}
-    thead tr{background:#f8fafc;border-bottom:2px solid #e2e8f0}
-    th{padding:8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#64748b}
-    @media print{body{padding:16px}}</style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{font-family:'Montserrat',sans-serif;background:#fff;color:#111}
+      @media print{
+        @page{margin:0;size:A4}
+        body{background:#fff!important}
+        -webkit-print-color-adjust:exact;
+        print-color-adjust:exact;
+      }
+    </style>
   </head><body>
-    <div class="header">
-      <div><div class="logo">Soma <strong>PARTNERS</strong></div><div class="meta">Relatório Financeiro</div></div>
-      <div style="text-align:right"><h1>${CLIENT.nome}</h1><div class="meta">Gerado em ${fmtDate(today())}</div></div>
-    </div>
-    <div class="kpis">
-      <div class="kpi"><div class="kpi-val" style="color:#059669">${fmtMoney(total_ent)}</div><div class="kpi-label">Total Entradas</div></div>
-      <div class="kpi"><div class="kpi-val" style="color:#dc2626">${fmtMoney(total_sai)}</div><div class="kpi-label">Total Saídas</div></div>
-      <div class="kpi"><div class="kpi-val" style="color:${(total_ent-total_sai)>=0?'#059669':'#dc2626'}">${fmtMoney(total_ent-total_sai)}</div><div class="kpi-label">Saldo Atual</div></div>
-    </div>
-    <table><thead><tr><th>Data</th><th>Característica</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor</th><th style="text-align:right">Saldo</th></tr></thead>
-    <tbody>${rows}</tbody></table>
-  
-</body></html>`);
+    ${mesesHtml}
+    ${consolidadoHtml}
+    <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
   win.document.close();
-  setTimeout(()=>win.print(),600);
 }
 
 // ─ IMPORT ─
