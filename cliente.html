@@ -2944,7 +2944,7 @@ function exportarPDF(){
   }).join('');
 
   // HTML do consolidado
-  const consolidadoHtml = `<div style="page-break-before:always;padding:32px 36px 28px">
+  const consolidadoHtml = `<div style="padding:32px 36px 28px">
     <div style="display:flex;justify-content:space-between;align-items:stretch;background:#1a2744;border-radius:10px 10px 0 0;overflow:hidden">
       <div style="padding:14px 20px;flex:1">
         <div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:3px">SOMA PARTNERS · RELATÓRIO FINANCEIRO</div>
@@ -2998,16 +2998,12 @@ function exportarPDF(){
     <style>
       *{margin:0;padding:0;box-sizing:border-box}
       body{font-family:'Montserrat',sans-serif;background:#fff;color:#111}
-      @media print{
-        @page{margin:0;size:A4}
-        body{background:#fff!important}
-        -webkit-print-color-adjust:exact;
-        print-color-adjust:exact;
-      }
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
+      @media print{@page{margin:0;size:A4}}
     </style>
   </head><body>
-    ${mesesHtml}
     ${consolidadoHtml}
+    ${mesesHtml}
     <script>window.onload=()=>{window.print();}<\/script>
   </body></html>`);
   win.document.close();
