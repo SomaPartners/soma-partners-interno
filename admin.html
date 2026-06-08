@@ -1083,6 +1083,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
             <th style="padding:10px 14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:rgba(201,150,60,0.8);text-align:center;border-bottom:1px solid rgba(255,255,255,0.08)">Jurídico</th>
             <th style="padding:10px 14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:rgba(79,70,229,0.8);text-align:center;border-bottom:1px solid rgba(255,255,255,0.08)">Investimentos</th>
             <th style="padding:10px 14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:rgba(16,185,129,0.8);text-align:center;border-bottom:1px solid rgba(255,255,255,0.08)">Serviços</th>
+            <th style="padding:10px 14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:rgba(239,68,68,0.8);text-align:center;border-bottom:1px solid rgba(255,255,255,0.08)">Comercial</th>
           </tr>
         </thead>
         <tbody id="pesos-tbody"></tbody>
@@ -1361,22 +1362,35 @@ const AREAS_360=[
   {id:'juridico',      label:'Jurídico'},
   {id:'investimentos', label:'Investimentos'},
   {id:'servicos',      label:'Serviços'},
+  {id:'comercial',     label:'Comercial'},
 ];
 let _pesos360={
   juridico:      {com_cliente:1,  com_interna:1.5,rel_cliente:1.5,tecnico:2,  captacao:1,  compliance:3,  prazos:1,  organizacao:1.5,problemas:1.5,proatividade:1,  equipe:1,  lideranca:1},
   investimentos: {com_cliente:1.5,com_interna:1,  rel_cliente:2,  tecnico:3,  captacao:2.5,compliance:2,  prazos:1,  organizacao:1,  problemas:1.5,proatividade:1.5,equipe:1,  lideranca:1.5},
   servicos:      {com_cliente:3,  com_interna:2,  rel_cliente:2.5,tecnico:1,  captacao:2,  compliance:1,  prazos:2.5,organizacao:2,  problemas:2,  proatividade:1.5,equipe:2,  lideranca:1},
+  comercial:     {com_cliente:3,  com_interna:1.5,rel_cliente:3,  tecnico:1.5,captacao:3,  compliance:1.5,prazos:1.5,organizacao:1.5,problemas:2,  proatividade:2.5,equipe:1.5,lideranca:2},
 };
+// Retorna array de áreas da pessoa (busca da rodada mais recente)
 function getAreaPessoa360(funcId){
-  for(let i=rodadas360.length-1;i>=0;i--){const a=rodadas360[i].areas;if(a&&a[funcId])return a[funcId];}
-  return null;
+  for(let i=rodadas360.length-1;i>=0;i--){
+    const a=rodadas360[i].areas;
+    if(a&&a[funcId]){
+      const v=a[funcId];
+      return Array.isArray(v)?v:(v?[v]:[]);
+    }
+  }
+  return [];
 }
-function calcMediaPonderada360(criteriosComMedia,area){
+// Calcula média ponderada com múltiplas áreas (média dos pesos entre as áreas selecionadas)
+function calcMediaPonderada360(criteriosComMedia,areas){
   const valid=criteriosComMedia.filter(c=>c.avg!==null&&c.avg!==undefined);
   if(!valid.length)return 0;
-  if(!area||!_pesos360[area]) return valid.reduce((a,b)=>a+b.avg,0)/valid.length;
-  const pesoTotal=valid.reduce((s,c)=>s+(_pesos360[area][c.id]||1),0);
-  const soma=valid.reduce((s,c)=>s+c.avg*(_pesos360[area][c.id]||1),0);
+  const areasValidas=(areas||[]).filter(a=>_pesos360[a]);
+  if(!areasValidas.length) return valid.reduce((a,b)=>a+b.avg,0)/valid.length;
+  // Peso efetivo = média dos pesos de cada área selecionada
+  const pesoEfetivo=c=>areasValidas.reduce((s,a)=>s+(_pesos360[a][c.id]||1),0)/areasValidas.length;
+  const pesoTotal=valid.reduce((s,c)=>s+pesoEfetivo(c),0);
+  const soma=valid.reduce((s,c)=>s+c.avg*pesoEfetivo(c),0);
   return pesoTotal>0?soma/pesoTotal:0;
 }
 let _dreConta='';
@@ -2384,7 +2398,7 @@ function gerarRelatorio360(funcId){
   const totalAv=[...new Set(resps.map(r=>r.avaliador_id))].length;
   const totalRod=[...new Set(resps.map(r=>r.rodada_id))].length;
   const badges=(f._data?.badges||[]);
-  const areaLabel=AREAS_360.find(x=>x.id===area)?.label||null;
+  const areaLabel=area&&area.length?area.map(id=>AREAS_360.find(x=>x.id===id)?.label).filter(Boolean).join(' · ')||null:null;
   const cor=mediaGeral>=4?'#6ee7b7':mediaGeral>=3?'#fcd34d':'#fca5a5';
   const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
 
@@ -2486,7 +2500,7 @@ function imprimirRelatorio360(){
   const totalRod=[...new Set(resps.map(r=>r.rodada_id))].length;
   const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
   const badges=(f._data?.badges||[]);
-  const areaLabelImp=AREAS_360.find(x=>x.id===areaImp)?.label||null;
+  const areaLabelImp=areaImp&&areaImp.length?areaImp.map(id=>AREAS_360.find(x=>x.id===id)?.label).filter(Boolean).join(' · ')||null:null;
 
   // Cores para fundo BRANCO
   const cor=mediaGeral>=4?'#059669':mediaGeral>=3?'#d97706':'#dc2626';
@@ -4218,14 +4232,16 @@ function criarRodada360(){
   ativos.forEach(f=>{
     const o=document.createElement('option');o.value=f.id;o.textContent=f.nome+(f.cargo?` — ${f.cargo}`:'');sel.appendChild(o);
   });
-  // Popular lista de áreas por pessoa
+  // Popular lista de áreas por pessoa (checkboxes múltiplos)
   const areasList=document.getElementById('r360-areas-list');
-  const areaOpts=AREAS_360.map(a=>`<option value="${a.id}" style="background:#0f2438">${a.label}</option>`).join('');
-  areasList.innerHTML=ativos.map(f=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,0.04)">
-    <div style="flex:1;font-size:12px;font-weight:600">${f.nome}<span style="font-size:10px;color:rgba(255,255,255,0.3);margin-left:6px">${f.cargo||''}</span></div>
-    <select id="r360-area-${f.id}" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:5px 8px;border-radius:7px;font-size:11px;font-family:'Montserrat',sans-serif;cursor:pointer;min-width:130px">
-      <option value="" style="background:#0f2438">— Área —</option>${areaOpts}
-    </select>
+  areasList.innerHTML=ativos.map(f=>`<div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04)">
+    <div style="font-size:12px;font-weight:600;margin-bottom:5px">${f.nome}<span style="font-size:10px;color:rgba(255,255,255,0.3);margin-left:6px">${f.cargo||''}</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${AREAS_360.map(a=>`<label style="display:flex;align-items:center;gap:4px;font-size:11px;color:rgba(255,255,255,0.6);cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 8px">
+        <input type="checkbox" id="r360-area-${f.id}-${a.id}" value="${a.id}" style="accent-color:#c9963c;cursor:pointer">
+        ${a.label}
+      </label>`).join('')}
+    </div>
   </div>`).join('');
   document.getElementById('r360-nome').value='';
   setEscopo360('equipe');
@@ -4255,11 +4271,11 @@ async function salvarRodada360(){
   const avaliadoId=escopo==='pessoa'?document.getElementById('r360-avaliado').value:'';
   if(escopo==='pessoa'&&!avaliadoId){document.getElementById('r360-avaliado').focus();return;}
   const f=avaliadoId?equipe.find(x=>x.id===avaliadoId):null;
-  // Coletar áreas por pessoa
+  // Coletar áreas por pessoa (múltiplas seleções)
   const areas={};
   equipe.filter(x=>x.status==='ativo').forEach(x=>{
-    const s=document.getElementById(`r360-area-${x.id}`);
-    if(s&&s.value) areas[x.id]=s.value;
+    const checked=AREAS_360.map(a=>document.getElementById(`r360-area-${x.id}-${a.id}`)).filter(el=>el&&el.checked).map(el=>el.value);
+    if(checked.length) areas[x.id]=checked;
   });
   const id=crypto.randomUUID();
   const data={nome,status:'ativa',criado_em:new Date().toISOString(),escopo,avaliado_especifico:avaliadoId||null,avaliado_nome:f?.nome||null,areas};
