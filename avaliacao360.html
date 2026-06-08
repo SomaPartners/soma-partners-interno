@@ -80,7 +80,7 @@ select.fc option{background:#0f2438;color:#fff}
   <div id="step-quem" class="step">
     <div class="select-box">
       <div style="font-size:22px;font-weight:800;margin-bottom:8px">Olá! 👋</div>
-      <div style="font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6">Você foi convidado para participar de uma <strong style="color:#fff">Avaliação 360°</strong>. Avalie cada colega de 0 a 10 em 12 critérios.</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6">Você foi convidado para participar de uma <strong style="color:#fff">Avaliação 360°</strong>. Avalie cada colega de <strong style="color:var(--gold)">1 a 5</strong> em 12 critérios.</div>
       <div style="font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Quem é você?</div>
       <select class="fc" id="sel-avaliador">
         <option value="">Selecione seu nome...</option>
@@ -141,13 +141,13 @@ const _notas={},_comentarios={};
 
 function notaCor(n){
   if(n===null||n===undefined)return'rgba(255,255,255,0.3)';
-  if(n<=3)return'#fca5a5';
-  if(n<=6)return'#fcd34d';
+  if(n<=2)return'#fca5a5';
+  if(n<=3)return'#fcd34d';
   return'#6ee7b7';
 }
 function notaClasse(n){
-  if(n<=3)return'sel-baixo';
-  if(n<=6)return'sel-medio';
+  if(n<=2)return'sel-baixo';
+  if(n<=3)return'sel-medio';
   return'sel-alto';
 }
 
@@ -195,7 +195,7 @@ function iniciarAvaliacao(){
     const rows=CRITERIOS.map(c=>{
       let grupoHtml='';
       if(c.grupo!==grupoAtual){grupoAtual=c.grupo;grupoHtml=`<div class="grupo-label">${c.grupo}</div>`;}
-      const btns=[0,1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="nota-btn" id="nb-${f.id}-${c.id}-${n}" onclick="setNota('${f.id}','${c.id}',${n})">${n}</button>`).join('');
+      const btns=[1,2,3,4,5].map(n=>`<button class="nota-btn" id="nb-${f.id}-${c.id}-${n}" onclick="setNota('${f.id}','${c.id}',${n})">${n}</button>`).join('');
       return`${grupoHtml}<div class="criterio-row">
         <div class="criterio-top">
           <div><div class="criterio-label">${c.label}</div><div class="criterio-desc">${c.desc}</div></div>
@@ -220,7 +220,7 @@ function setNota(avaliadoId,criterioId,nota){
   if(!_notas[avaliadoId])_notas[avaliadoId]={};
   _notas[avaliadoId][criterioId]=nota;
   // Atualizar botões
-  [0,1,2,3,4,5,6,7,8,9,10].forEach(n=>{
+  [1,2,3,4,5].forEach(n=>{
     const btn=document.getElementById(`nb-${avaliadoId}-${criterioId}-${n}`);
     if(!btn)return;
     btn.className='nota-btn'+(n===nota?' '+notaClasse(nota):'');
@@ -290,11 +290,11 @@ async function mostrarResultado(funcId){
   }).filter(c=>c.avg!==null);
 
   const mediaGeral=medias.length?medias.reduce((a,b)=>a+b.avg,0)/medias.length:0;
-  const cor=mediaGeral>=8?'#6ee7b7':mediaGeral>=5?'#fcd34d':'#fca5a5';
+  const cor=mediaGeral>=4?'#6ee7b7':mediaGeral>=3?'#fcd34d':'#fca5a5';
   const ordenado=[...medias].sort((a,b)=>b.avg-a.avg);
-  const fortes=ordenado.filter(c=>c.avg>=7);
-  const melhorar=ordenado.filter(c=>c.avg>=4&&c.avg<7);
-  const fracos=ordenado.filter(c=>c.avg<4);
+  const fortes=ordenado.filter(c=>c.avg>=4);
+  const melhorar=ordenado.filter(c=>c.avg>=3&&c.avg<4);
+  const fracos=ordenado.filter(c=>c.avg<3);
   const totalAv=[...new Set(resps.map(r=>r.avaliador_id))].length;
   const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
 
@@ -302,15 +302,15 @@ async function mostrarResultado(funcId){
     const cg=medias.filter(c=>c.grupo===g);
     if(!cg.length) return '';
     const mgAvg=cg.reduce((a,b)=>a+b.avg,0)/cg.length;
-    const mgCor=mgAvg>=8?'#6ee7b7':mgAvg>=5?'#fcd34d':'#fca5a5';
+    const mgCor=mgAvg>=4?'#6ee7b7':mgAvg>=3?'#fcd34d':'#fca5a5';
     return`<div style="margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35)">${g}</div>
         <div style="font-size:13px;font-weight:800;color:${mgCor}">${mgAvg.toFixed(1)}</div>
       </div>
       ${cg.sort((a,b)=>b.avg-a.avg).map(c=>{
-        const cc=c.avg>=8?'#6ee7b7':c.avg>=5?'#fcd34d':'#fca5a5';
-        const pct=Math.round(c.avg*10);
+        const cc=c.avg>=4?'#6ee7b7':c.avg>=3?'#fcd34d':'#fca5a5';
+        const pct=Math.round((c.avg/5)*100);
         return`<div style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
           <div style="flex:1;font-size:12px;color:rgba(255,255,255,0.7)">${c.label}</div>
           <div style="width:120px;background:rgba(255,255,255,0.06);border-radius:4px;height:5px"><div style="background:${cc};height:5px;border-radius:4px;width:${pct}%"></div></div>
@@ -336,7 +336,7 @@ async function mostrarResultado(funcId){
       </div>
       <div style="text-align:center">
         <div style="font-size:52px;font-weight:900;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
-        <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:1px">MÉDIA GERAL / 10</div>
+        <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:1px">MÉDIA GERAL / 5</div>
       </div>
     </div>
 
