@@ -4486,15 +4486,13 @@ function renderRodadas360(){
       const respsP=respsR.filter(x=>x.avaliado_id===avaliadoId);
       const mediasC=CRITERIOS_360.map(c=>{
         const ns=respsP.flatMap(resp=>(resp.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!=null));
-        return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null;
-      }).filter(x=>x!==null);
-      const media=mediasC.length?mediasC.reduce((a,b)=>a+b,0)/mediasC.length:null;
+        return{...c,avg:ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null};
+      }).filter(x=>x.avg!==null);
+      const areasP=getAreaPessoa360(avaliadoId);
+      const media=mediasC.length?calcMediaPonderada360(mediasC,areasP):null;
       const cor=media!==null?n360cor(media):'rgba(255,255,255,0.2)';
-      // Tooltip: top 3 critérios
-      const mediasObj=CRITERIOS_360.map(c=>{
-        const ns=respsP.flatMap(resp=>(resp.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!=null));
-        return{label:c.label,avg:ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null};
-      }).filter(x=>x.avg!==null).sort((a,b)=>b.avg-a.avg);
+      // Tooltip: top critérios (reutiliza mediasC já calculado)
+      const mediasObj=[...mediasC].sort((a,b)=>b.avg-a.avg);
       const tooltipLines=mediasObj.slice(0,4).map(x=>`${x.label}: ${x.avg.toFixed(1)}`).join('&#10;');
       const nAv=respsP.map(x=>x.avaliador_id).filter((v,i,a)=>a.indexOf(v)===i).length;
       return`<div title="${tooltipLines}" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:7px 12px;cursor:default;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
