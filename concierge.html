@@ -628,7 +628,10 @@ document.addEventListener('input',function(e){
         <button id="pc-tab-pagamentos" onclick="setPcTab('pagamentos')" style="padding:5px 18px;border-radius:6px;border:none;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all 0.15s;background:transparent;color:rgba(7,12,24,0.5)">💰 Pagamentos</button>
       </div>
     </div>
-    <button onclick="togglePainelConcierge()" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;color:#fca5a5;cursor:pointer;font-family:'Montserrat',sans-serif">× Sair do Painel</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button onclick="exportarPainelPDF()" style="background:rgba(201,150,60,0.15);border:1px solid rgba(201,150,60,0.3);border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;color:#c9963c;cursor:pointer;font-family:'Montserrat',sans-serif">📄 Relatório</button>
+      <button onclick="togglePainelConcierge()" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;color:#fca5a5;cursor:pointer;font-family:'Montserrat',sans-serif">× Sair do Painel</button>
+    </div>
   </div>
 
   <!-- ABA TAREFAS -->
@@ -974,6 +977,167 @@ function pcClock(){
   const dias=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const el=document.getElementById('painel-c-clock');
   if(el)el.textContent=`${dias[n.getDay()]}, ${n.getDate()} ${meses[n.getMonth()]} · ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+}
+
+function exportarPainelPDF(){
+  const hoje=pcToday();
+  const fmtD=d=>{if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`};
+  const fmtV=v=>{if(!v&&v!==0)return'—';const n=parseFloat(String(v).replace(/[^\d.,]/g,'').replace(',','.'));return isNaN(n)?String(v):'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})};
+  const SL={a_fazer:'A Fazer',em_andamento:'Em Andamento',concluido:'Concluído',concluida:'Concluído',aberta:'A Fazer',nao_realizado:'Não Realizado'};
+  const dataHoje=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+  // Coleta tarefas do DOM do painel (já renderizadas)
+  // Busca direto do Supabase para ter dados completos
+  Promise.all([
+    _sb.from('concierge_tarefas').select('id,data').order('created_at'),
+    _sb.from('concierge_pagamentos').select('id,data').order('created_at'),
+    _sb.from('concierge_clientes').select('id,data').order('created_at'),
+  ]).then(([{data:tasks},{data:pays},{data:clis}])=>{
+    const allTarefas=(tasks||[]).map(r=>({id:r.id,...(r.data||{})}));
+    const allPags=(pays||[]).map(r=>({id:r.id,...(r.data||{})}));
+    const allCli=(clis||[]).map(r=>({id:r.id,...(r.data||{})}));
+    const cliNome=id=>allCli.find(c=>c.id===id)?.nome||'—';
+
+    const fim7=new Date();fim7.setDate(fim7.getDate()+7);
+    const fim7s=fim7.toISOString().split('T')[0];
+    const ini30=new Date();ini30.setDate(ini30.getDate()-30);
+    const ini30s=ini30.toISOString().split('T')[0];
+    const freqMap={mensal:1,bimestral:2,trimestral:3,semestral:6,anual:12};
+
+    // Tarefas por status
+    const abertas=allTarefas.filter(t=>!['concluido','concluida','nao_realizado'].includes(t.status||'a_fazer'));
+    const atrasadas=abertas.filter(t=>t.prazo&&t.prazo<hoje).sort((a,b)=>a.prazo.localeCompare(b.prazo));
+    const paraHoje=abertas.filter(t=>t.prazo===hoje);
+    const proxSemana=abertas.filter(t=>t.prazo&&t.prazo>hoje&&t.prazo<=fim7s).sort((a,b)=>a.prazo.localeCompare(b.prazo));
+
+    // Pagamentos do período (reais + recorrentes)
+    const paysData=[];
+    allPags.forEach(p=>{
+      const ds=p.data||p.dataVencimento||'';
+      if(!ds||ds<ini30s||ds>fim7s)return;
+      if(p.status==='pago')return;
+      paysData.push({dateStr:ds,desc:p.carac||p.caracteristica||'Pagamento',valor:fmtV(p.valor),cliente:cliNome(p.clienteId),status:p.status||''});
+    });
+    const deYM=ini30.getFullYear()*12+ini30.getMonth();
+    const ateYM=fim7.getFullYear()*12+fim7.getMonth();
+    allCli.forEach(c=>{
+      (c.recorrentes||[]).forEach(r=>{
+        const dia=parseInt(r.dia)||1;
+        const interval=freqMap[r.freq]||1;
+        for(let ym=deYM;ym<=ateYM;ym++){
+          const yr=Math.floor(ym/12),mo=ym%12;
+          const d=new Date(yr,mo,Math.min(dia,new Date(yr,mo+1,0).getDate()),12,0,0);
+          const ds=d.toISOString().split('T')[0];
+          if(ds<ini30s||ds>fim7s)continue;
+          if(r.dataInicio){const sd=new Date(r.dataInicio);if((yr*12+mo-(sd.getFullYear()*12+sd.getMonth()))%interval!==0)continue;}
+          if(r.dataFim&&ds>r.dataFim)continue;
+          const jaExiste=paysData.some(p=>p.desc===(r.carac||r.desc||'')&&p.dateStr===ds&&p.cliente===c.nome);
+          if(!jaExiste) paysData.push({dateStr:ds,desc:r.carac||r.desc||r.tipo||'Recorrente',valor:fmtV(r.valor),cliente:c.nome||'—',status:''});
+        }
+      });
+    });
+    paysData.sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
+    const paysAtrasados=paysData.filter(p=>p.dateStr<hoje);
+    const paysHoje=paysData.filter(p=>p.dateStr===hoje);
+    const paysProximos=paysData.filter(p=>p.dateStr>hoje);
+
+    // Helpers HTML
+    const CSS=`*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+    body{font-family:'Montserrat',sans-serif;background:#fff;color:#111}
+    @media print{@page{margin:1.2cm;size:A4}}`;
+
+    const cabecalho=`<div style="background:#1a2744;border-radius:10px;overflow:hidden;margin-bottom:20px;display:flex;justify-content:space-between;align-items:stretch">
+      <div style="padding:18px 24px">
+        <div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:4px">SOMA PARTNERS · CONCIERGE</div>
+        <div style="font-size:20px;font-weight:900;color:#fff">Relatório Operacional</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;text-transform:capitalize">${dataHoje}</div>
+      </div>
+      <div style="background:rgba(0,0,0,0.2);border-left:1px solid #c9963c;padding:18px 24px;display:flex;flex-direction:column;justify-content:center;text-align:center;min-width:130px">
+        <div style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px">RESUMO</div>
+        <div style="font-size:13px;font-weight:700;color:#fca5a5">${atrasadas.length} tarefa${atrasadas.length!==1?'s':''} atrasada${atrasadas.length!==1?'s':''}</div>
+        <div style="font-size:13px;font-weight:700;color:#fcd34d;margin-top:2px">${paraHoje.length} para hoje</div>
+        <div style="font-size:13px;font-weight:700;color:#fca5a5;margin-top:2px">${paysAtrasados.length} pgto${paysAtrasados.length!==1?'s':''} atrasado${paysAtrasados.length!==1?'s':''}</div>
+      </div>
+    </div>`;
+
+    const secTitle=(label,cor)=>`<div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${cor};margin:18px 0 8px;padding-bottom:5px;border-bottom:2px solid ${cor}22">${label}</div>`;
+
+    const tarRow=(t,corData)=>{
+      const cl=cliNome(t.clienteId);
+      const st=SL[t.status||'a_fazer'];
+      const prio=t.prioridade==='alta'?'🔴':t.prioridade==='baixa'?'🟢':'🟡';
+      return`<tr>
+        <td style="padding:6px 10px;font-size:11px;font-weight:700;border-bottom:1px solid #f3f4f6">${t.titulo||'—'}</td>
+        <td style="padding:6px 10px;font-size:11px;border-bottom:1px solid #f3f4f6;color:#374151">${cl}</td>
+        <td style="padding:6px 10px;font-size:10px;border-bottom:1px solid #f3f4f6;color:#6b7280">${t.tipo||'—'}</td>
+        <td style="padding:6px 10px;font-size:10px;border-bottom:1px solid #f3f4f6;text-align:center">${prio} ${t.prioridade||'média'}</td>
+        <td style="padding:6px 10px;font-size:11px;font-weight:700;border-bottom:1px solid #f3f4f6;color:${corData};text-align:right">${fmtD(t.prazo)}</td>
+      </tr>`;
+    };
+
+    const tblHeader=(cols)=>`<table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+      <thead><tr style="background:#1a2744">${cols.map(c=>`<th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#fff;text-align:${c.r?'right':'left'}">${c.l}</th>`).join('')}</tr></thead><tbody>`;
+
+    // Seção tarefas atrasadas
+    const secAtrasadas=atrasadas.length
+      ?secTitle('⚠ Tarefas Atrasadas','#dc2626')+
+        tblHeader([{l:'Tarefa'},{l:'Família'},{l:'Tipo'},{l:'Prioridade'},{l:'Prazo',r:1}])+
+        atrasadas.map(t=>tarRow(t,'#dc2626')).join('')+'</tbody></table>'
+      :'';
+
+    const secHoje=paraHoje.length
+      ?secTitle('📋 Tarefas de Hoje','#d97706')+
+        tblHeader([{l:'Tarefa'},{l:'Família'},{l:'Tipo'},{l:'Prioridade'},{l:'Prazo',r:1}])+
+        paraHoje.map(t=>tarRow(t,'#d97706')).join('')+'</tbody></table>'
+      :'';
+
+    const secSemana=proxSemana.length
+      ?secTitle('📅 Esta Semana','#0f766e')+
+        tblHeader([{l:'Tarefa'},{l:'Família'},{l:'Tipo'},{l:'Prioridade'},{l:'Prazo',r:1}])+
+        proxSemana.map(t=>tarRow(t,'#374151')).join('')+'</tbody></table>'
+      :'';
+
+    const pgtoRow=(p,corData)=>`<tr>
+      <td style="padding:6px 10px;font-size:11px;border-bottom:1px solid #f3f4f6;font-weight:700;color:${corData}">${fmtD(p.dateStr)}</td>
+      <td style="padding:6px 10px;font-size:11px;border-bottom:1px solid #f3f4f6;font-weight:600">${p.cliente}</td>
+      <td style="padding:6px 10px;font-size:11px;border-bottom:1px solid #f3f4f6">${p.desc}</td>
+      <td style="padding:6px 10px;font-size:11px;font-weight:800;border-bottom:1px solid #f3f4f6;text-align:right;color:#dc2626">${p.valor}</td>
+    </tr>`;
+
+    const pgtoColDef=[{l:'Data'},{l:'Família'},{l:'Descrição'},{l:'Valor',r:1}];
+    const secPgAtrasados=paysAtrasados.length
+      ?secTitle('⚠ Pagamentos Atrasados','#dc2626')+
+        tblHeader(pgtoColDef)+paysAtrasados.map(p=>pgtoRow(p,'#dc2626')).join('')+'</tbody></table>'
+      :'';
+    const secPgHoje=paysHoje.length
+      ?secTitle('💳 Pagamentos de Hoje','#d97706')+
+        tblHeader(pgtoColDef)+paysHoje.map(p=>pgtoRow(p,'#d97706')).join('')+'</tbody></table>'
+      :'';
+    const secPgProximos=paysProximos.length
+      ?secTitle('📆 Próximos Pagamentos (7 dias)','#0f766e')+
+        tblHeader(pgtoColDef)+paysProximos.map(p=>pgtoRow(p,'#374151')).join('')+'</tbody></table>'
+      :'';
+
+    const nada=(!atrasadas.length&&!paraHoje.length&&!proxSemana.length&&!paysAtrasados.length&&!paysHoje.length&&!paysProximos.length)
+      ?'<div style="text-align:center;padding:40px;color:#9ca3af;font-size:13px">Nenhum item pendente para o período.</div>':'';
+
+    const rodape=`<div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:12px;font-size:9px;color:#9ca3af;text-align:center">Soma Partners · Relatório Operacional Concierge · ${dataHoje} · Confidencial</div>`;
+
+    const win=window.open('','_blank');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório Operacional — Concierge</title>
+      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+      <style>${CSS}</style></head><body>
+      <div style="padding:32px 36px">
+        ${cabecalho}
+        ${secAtrasadas}${secHoje}${secSemana}
+        ${(secPgAtrasados||secPgHoje||secPgProximos)?`<div style="margin-top:24px;padding-top:4px;border-top:2px solid #e5e7eb"><div style="font-size:12px;font-weight:800;color:#1a2744;margin-bottom:4px">PAGAMENTOS</div>${secPgAtrasados}${secPgHoje}${secPgProximos}</div>`:''}
+        ${nada}
+        ${rodape}
+      </div>
+      <script>window.onload=()=>window.print()<\/script>
+    </body></html>`);
+    win.document.close();
+  });
 }
 
 function togglePainelConcierge(){

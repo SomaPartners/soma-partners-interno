@@ -705,15 +705,42 @@ function exportVencExcel(){
 function exportVencPDF(){
   const items=getAllVencimentos();
   if(!items.length){showToast('Nenhum item para exportar');return;}
-  const rows=items.map(v=>{
-    const diff=v.diff;
-    const urgLabel=diff<0?`<span style="color:#dc2626">${Math.abs(diff)}d atraso</span>`:diff===0?`<span style="color:#d97706">Hoje</span>`:`${diff}d`;
-    return`<tr style="border-bottom:1px solid #f1f5f9"><td>${fmtDate(v.dateStr)}</td><td style="font-weight:700">${v.clienteNome}</td><td>${v.desc}</td><td style="color:#64748b">${v.tipo}</td><td style="text-align:right;font-weight:800;color:${v.descricao==='ENTRADA'?'#059669':'#dc2626'}">${v.descricao==='ENTRADA'?'+':'-'}${v.valor}</td><td>${urgLabel}</td></tr>`;
-  }).join('');
+  const CSS=`*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{font-family:'Montserrat',sans-serif;background:#fff;color:#111}@media print{@page{margin:1.2cm;size:A4}}`;
+  const atrasados=items.filter(v=>v.diff<0);
+  const deHoje=items.filter(v=>v.diff===0);
+  const proximos=items.filter(v=>v.diff>0);
+  const rowsFor=(arr,corData)=>arr.map((v,i)=>`<tr style="background:${i%2===0?'#f9fafb':'#fff'}">
+    <td style="padding:6px 10px;font-size:11px;font-weight:700;border-bottom:1px solid #e5e7eb;color:${corData}">${fmtDate(v.dateStr)}</td>
+    <td style="padding:6px 10px;font-size:11px;font-weight:700;border-bottom:1px solid #e5e7eb">${v.clienteNome}</td>
+    <td style="padding:6px 10px;font-size:11px;border-bottom:1px solid #e5e7eb">${v.desc}</td>
+    <td style="padding:6px 10px;font-size:10px;color:#6b7280;border-bottom:1px solid #e5e7eb">${v.tipo}</td>
+    <td style="padding:6px 10px;font-size:11px;font-weight:800;text-align:right;border-bottom:1px solid #e5e7eb;color:${v.descricao==='ENTRADA'?'#276221':'#9c0006'};background:${v.descricao==='ENTRADA'?'#c6efce':'#ffc7ce'}">${v.descricao==='ENTRADA'?'+':'-'}${v.valor}</td>
+    <td style="padding:6px 10px;font-size:10px;text-align:center;font-weight:700;border-bottom:1px solid #e5e7eb;color:${v.diff<0?'#dc2626':v.diff===0?'#d97706':'#374151'}">${v.diff<0?Math.abs(v.diff)+'d atraso':v.diff===0?'Hoje':v.diff+'d'}</td>
+  </tr>`).join('');
+  const tblH=`<table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb"><thead><tr style="background:#1a2744"><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff;text-align:left">Data</th><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff;text-align:left">Família</th><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff;text-align:left">Descrição</th><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff;text-align:left">Tipo</th><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff;text-align:right">Valor</th><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff;text-align:center">Urgência</th></tr></thead><tbody>`;
+  const secT=(label,cor)=>`<div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${cor};margin:20px 0 8px;padding-bottom:5px;border-bottom:2px solid ${cor}33">${label}</div>`;
   const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Vencimentos</title><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',sans-serif;background:#fff;color:#0f172a;padding:28px}.header{display:flex;justify-content:space-between;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid #0b1e30}.logo{font-size:18px;font-weight:300}.logo strong{font-weight:800}h1{font-size:18px;font-weight:900}table{width:100%;border-collapse:collapse}thead tr{background:#f8fafc;border-bottom:2px solid #e2e8f0}th{padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b}td{padding:8px 10px;font-size:12px}</style></head><body><div class="header"><div><div class="logo">Soma <strong>PARTNERS</strong></div><div style="font-size:12px;color:#64748b;margin-top:4px">Relatório de Vencimentos</div></div><div style="text-align:right"><h1>Vencimentos</h1><div style="font-size:12px;color:#64748b">Gerado em ${fmtDate(today())}</div></div></div><table><thead><tr><th>Data</th><th>Família</th><th>Descrição</th><th>Tipo</th><th style="text-align:right">Valor</th><th>Urgência</th></tr></thead><tbody>${rows}</tbody></table>
-</body></html>`);
-  win.document.close();setTimeout(()=>win.print(),500);
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Vencimentos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>${CSS}</style></head><body><div style="padding:32px 36px">
+  <div style="background:#1a2744;border-radius:10px;overflow:hidden;margin-bottom:24px;display:flex;justify-content:space-between;align-items:stretch">
+    <div style="padding:18px 24px">
+      <div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:4px">SOMA PARTNERS · CONCIERGE</div>
+      <div style="font-size:20px;font-weight:900;color:#fff">Relatório de Vencimentos</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px">Gerado em ${fmtDate(today())}</div>
+    </div>
+    <div style="background:rgba(0,0,0,0.2);border-left:1px solid #c9963c;padding:18px 24px;text-align:center;display:flex;flex-direction:column;justify-content:center;min-width:130px">
+      <div style="font-size:28px;font-weight:900;color:#e8b96a;line-height:1">${items.length}</div>
+      <div style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-top:4px">VENCIMENTOS</div>
+      <div style="font-size:12px;font-weight:700;color:#fca5a5;margin-top:6px">${atrasados.length} atrasado${atrasados.length!==1?'s':''}</div>
+    </div>
+  </div>
+  ${atrasados.length?secT('⚠ Atrasados','#dc2626')+tblH+rowsFor(atrasados,'#dc2626')+'</tbody></table>':''}
+  ${deHoje.length?secT('📋 Hoje','#d97706')+tblH+rowsFor(deHoje,'#d97706')+'</tbody></table>':''}
+  ${proximos.length?secT('📅 Próximos','#0f766e')+tblH+rowsFor(proximos,'#374151')+'</tbody></table>':''}
+  <div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:12px;font-size:9px;color:#9ca3af;text-align:center">Soma Partners · Relatório de Vencimentos · ${fmtDate(today())} · Confidencial</div>
+  </div><script>window.onload=()=>window.print()<\/script></body></html>`);
+  win.document.close();
 }
 
 function exportTarExcel(){
@@ -728,17 +755,57 @@ function exportTarExcel(){
 }
 
 function exportTarPDF(){
-  const SL={a_fazer:'A Fazer',em_andamento:'Em Andamento',concluido:'Concluído',aberta:'A Fazer',concluida:'Concluído'};
-  const rows=allTarefas.map(t=>{
+  const SL={a_fazer:'A Fazer',em_andamento:'Em Andamento',concluido:'Concluído',aberta:'A Fazer',concluida:'Concluído',nao_realizado:'Não Realizado'};
+  const CSS=`*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{font-family:'Montserrat',sans-serif;background:#fff;color:#111}@media print{@page{margin:1.2cm;size:A4}}`;
+  const abertas=allTarefas.filter(t=>!['concluido','concluida'].includes(t.status||'a_fazer'));
+  const concluidas=allTarefas.filter(t=>['concluido','concluida'].includes(t.status));
+  const rowFor=(arr,corData)=>arr.map((t,i)=>{
     const cli=allClientes.find(c=>c.id===t.clienteId);
     const st=t.status==='aberta'?'a_fazer':t.status==='concluida'?'concluido':t.status||'a_fazer';
     const overdue=isOverdue(t.prazo)&&st!=='concluido';
-    return`<tr style="border-bottom:1px solid #f1f5f9"><td style="font-weight:700">${cli?.nome||'—'}</td><td>${t.titulo}</td><td>${t.prioridade||'média'}</td><td>${SL[st]}</td><td style="color:${overdue?'#dc2626':'#0f172a'}">${fmtDate(t.prazo)}</td></tr>`;
+    const prio=t.prioridade==='alta'?'🔴':t.prioridade==='baixa'?'🟢':'🟡';
+    const stCor=st==='concluido'?'#276221':overdue?'#dc2626':'#374151';
+    const stBg=st==='concluido'?'#c6efce':overdue?'#ffc7ce':'#f3f4f6';
+    return`<tr style="background:${i%2===0?'#f9fafb':'#fff'}">
+      <td style="padding:6px 10px;font-size:11px;font-weight:700;border-bottom:1px solid #e5e7eb">${cli?.nome||'—'}</td>
+      <td style="padding:6px 10px;font-size:11px;border-bottom:1px solid #e5e7eb">${t.titulo||'—'}</td>
+      <td style="padding:6px 10px;font-size:10px;border-bottom:1px solid #e5e7eb;color:#6b7280">${t.tipo||'—'}</td>
+      <td style="padding:6px 10px;font-size:10px;border-bottom:1px solid #e5e7eb;text-align:center">${prio} ${t.prioridade||'média'}</td>
+      <td style="padding:6px 10px;font-size:10px;font-weight:700;border-bottom:1px solid #e5e7eb;text-align:center;background:${stBg};color:${stCor}">${SL[st]}</td>
+      <td style="padding:6px 10px;font-size:11px;font-weight:700;border-bottom:1px solid #e5e7eb;text-align:right;color:${overdue?'#dc2626':'#374151'}">${fmtDate(t.prazo)}</td>
+    </tr>`;
   }).join('');
+  const tblH=`<table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb"><thead><tr style="background:#1a2744"><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff">Família</th><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff">Tarefa</th><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff">Tipo</th><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff;text-align:center">Prioridade</th><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff;text-align:center">Status</th><th style="padding:7px 10px;font-size:9px;font-weight:800;text-transform:uppercase;color:#fff;text-align:right">Prazo</th></tr></thead><tbody>`;
+  const secT=(label,cor)=>`<div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${cor};margin:20px 0 8px;padding-bottom:5px;border-bottom:2px solid ${cor}33">${label}</div>`;
+  const atrasadas=abertas.filter(t=>isOverdue(t.prazo));
+  const paraHoje=abertas.filter(t=>t.prazo===today());
+  const futuras=abertas.filter(t=>t.prazo&&t.prazo>today());
+  const semData=abertas.filter(t=>!t.prazo);
   const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Tarefas</title><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',sans-serif;background:#fff;color:#0f172a;padding:28px}.header{display:flex;justify-content:space-between;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid #0b1e30}.logo{font-size:18px;font-weight:300}.logo strong{font-weight:800}table{width:100%;border-collapse:collapse}thead tr{background:#f8fafc;border-bottom:2px solid #e2e8f0}th{padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b}td{padding:8px 10px;font-size:12px}</style></head><body><div class="header"><div><div class="logo">Soma <strong>PARTNERS</strong></div></div><div style="text-align:right"><h1 style="font-size:18px;font-weight:900">Relatório de Tarefas</h1><div style="font-size:12px;color:#64748b">Gerado em ${fmtDate(today())}</div></div></div><table><thead><tr><th>Família</th><th>Tarefa</th><th>Prioridade</th><th>Status</th><th>Prazo</th></tr></thead><tbody>${rows}</tbody></table>
-</body></html>`);
-  win.document.close();setTimeout(()=>win.print(),500);
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Tarefas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>${CSS}</style></head><body><div style="padding:32px 36px">
+  <div style="background:#1a2744;border-radius:10px;overflow:hidden;margin-bottom:24px;display:flex;justify-content:space-between;align-items:stretch">
+    <div style="padding:18px 24px">
+      <div style="font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:4px">SOMA PARTNERS · CONCIERGE</div>
+      <div style="font-size:20px;font-weight:900;color:#fff">Relatório de Tarefas</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px">Gerado em ${fmtDate(today())}</div>
+    </div>
+    <div style="background:rgba(0,0,0,0.2);border-left:1px solid #c9963c;padding:18px 24px;text-align:center;display:flex;flex-direction:column;justify-content:center;min-width:150px;gap:4px">
+      <div style="font-size:12px;font-weight:700;color:#fca5a5">${atrasadas.length} atrasada${atrasadas.length!==1?'s':''}</div>
+      <div style="font-size:12px;font-weight:700;color:#fcd34d">${paraHoje.length} para hoje</div>
+      <div style="font-size:12px;font-weight:700;color:#6ee7b7">${futuras.length} futuras</div>
+      <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.4)">${concluidas.length} concluídas</div>
+    </div>
+  </div>
+  ${atrasadas.length?secT('⚠ Atrasadas','#dc2626')+tblH+rowFor(atrasadas,'#dc2626')+'</tbody></table>':''}
+  ${paraHoje.length?secT('📋 Para Hoje','#d97706')+tblH+rowFor(paraHoje,'#d97706')+'</tbody></table>':''}
+  ${futuras.length?secT('📅 Próximas','#0f766e')+tblH+rowFor(futuras,'#374151')+'</tbody></table>':''}
+  ${semData.length?secT('📌 Sem Prazo Definido','#6b7280')+tblH+rowFor(semData,'#6b7280')+'</tbody></table>':''}
+  ${concluidas.length?secT('✓ Concluídas','#276221')+tblH+rowFor(concluidas,'#276221')+'</tbody></table>':''}
+  <div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:12px;font-size:9px;color:#9ca3af;text-align:center">Soma Partners · Relatório de Tarefas · ${fmtDate(today())} · Confidencial</div>
+  </div><script>window.onload=()=>window.print()<\/script></body></html>`);
+  win.document.close();
 }
 
 // ── TABS ──
