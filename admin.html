@@ -4292,21 +4292,6 @@ function showToast(msg,tipo){
   clearTimeout(t._to);t._to=setTimeout(()=>{t.style.opacity='0';},2500);
 }
 
-const CRITERIOS_360=[
-  {id:'com_cliente',    label:'Comunicação com cliente'},
-  {id:'com_interna',    label:'Comunicação interna'},
-  {id:'rel_cliente',    label:'Relacionamento com cliente'},
-  {id:'tecnico',        label:'Conhecimento técnico'},
-  {id:'captacao',       label:'Captação / comercial'},
-  {id:'compliance',     label:'Compliance / ética'},
-  {id:'prazos',         label:'Cumprimento de prazos'},
-  {id:'organizacao',    label:'Organização'},
-  {id:'problemas',      label:'Resolução de problemas'},
-  {id:'proatividade',   label:'Proatividade'},
-  {id:'equipe',         label:'Trabalho em equipe'},
-  {id:'lideranca',      label:'Liderança'},
-];
-
 function abrirPesos360(){
   const tbody=document.getElementById('pesos-tbody');
   tbody.innerHTML=CRITERIOS_360.map(c=>`
