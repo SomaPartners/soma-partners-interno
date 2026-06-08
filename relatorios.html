@@ -697,7 +697,7 @@ function renderAlertas(){
 // ── EXPORT ──
 function exportVencExcel(){
   const items=getAllVencimentos();
-  const rows=items.map(v=>({'Data':fmtDate(v.dateStr),'Família':v.clienteNome,'Descrição':v.desc,'Tipo':v.tipo,'Valor':v.valor,'Status':v.status}));
+  const rows=items.map(v=>({'Data':fmtDate(v.dateStr),'Família':v.clienteNome,'Características':v.desc,'Tipo':v.tipo,'Valor':v.valor,'Status':v.status}));
   const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:12},{wch:24},{wch:28},{wch:16},{wch:14},{wch:12}];
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Vencimentos');
   XLSX.writeFile(wb,'relatorio_vencimentos.xlsx');showToast('Excel exportado!','ok');
