@@ -1382,7 +1382,7 @@ function calcMediaPonderada360(criteriosComMedia,area){
 let _dreConta='';
 
 async function loadAll(){
-  const[l,e,a,av,mc,mca,mm,mme,ex,ac,ai,r360,rs360,cfgPesos]=await Promise.all([
+  const[l,e,a,av,mc,mca,mm,mme,ex,ac,ai,r360,rs360]=await Promise.all([
     _sb.from('admin_lancamentos').select('*').order('data_vencimento'),
     _sb.from('wealth_responsaveis').select('id,data').order('created_at'),
     _sb.from('admin_ausencias').select('*').order('data_inicio',{ascending:false}),
@@ -1396,7 +1396,6 @@ async function loadAll(){
     _sb.from('admin_antecip_itens').select('*').order('nome'),
     _sb.from('admin_aval360_rodadas').select('*').order('created_at',{ascending:false}),
     _sb.from('admin_aval360_respostas').select('*').order('created_at',{ascending:false}),
-    _sb.from('admin_aval360_config').select('*').eq('id','pesos').maybeSingle(),
   ]);
   lancamentos=l.data||[];
   equipe=(e.data||[]).map(r=>({id:r.id,nome:r.data?.nome||'',cargo:r.data?.cargo||'',email:r.data?.email||'',telefone:r.data?.telefone||'',sigla:r.data?.sigla||'',cpf:r.data?.cpf||'',nascimento:r.data?.nascimento||'',cidade:r.data?.cidade||'',status:r.data?.status||'ativo',salario:r.data?.salario||null,data_entrada:r.data?.data_entrada||'',contrato_tipo:r.data?.contrato_tipo||null,contrato_gerado_em:r.data?.contrato_gerado_em||null,contrato_impresso:r.data?.contrato_impresso||false,contrato_assinado:r.data?.contrato_assinado||false,_data:r.data||{}})).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
@@ -1404,9 +1403,12 @@ async function loadAll(){
   avaliacoes=av.data||[];
   rodadas360=(r360.data||[]).map(r=>({id:r.id,created_at:r.created_at,...(r.data||{})}));
   respostas360=(rs360.data||[]).map(r=>({id:r.id,rodada_id:r.rodada_id,created_at:r.created_at,...(r.data||{})}));
-  // Carregar pesos salvos do Supabase
-  const pesosData=cfgPesos?.data?.data;
-  if(pesosData){Object.keys(pesosData).forEach(area=>{if(_pesos360[area])Object.assign(_pesos360[area],pesosData[area]);});}
+  // Carregar pesos salvos do Supabase (isolado para não quebrar o loadAll se a tabela não existir)
+  try{
+    const cfgPesos=await _sb.from('admin_aval360_config').select('*').eq('id','pesos').maybeSingle();
+    const pesosData=cfgPesos?.data?.data;
+    if(pesosData&&typeof pesosData==='object'){Object.keys(pesosData).forEach(area=>{if(_pesos360[area])Object.assign(_pesos360[area],pesosData[area]);});}
+  }catch(e){console.warn('admin_aval360_config não carregado:',e);}
   renderRodadas360();
   renderAvaliacoes();
   mktConteudo=mc.data||[];
