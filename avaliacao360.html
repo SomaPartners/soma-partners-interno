@@ -136,8 +136,16 @@ const CRITERIOS=[
 
 const GRUPOS=[...new Set(CRITERIOS.map(c=>c.grupo))];
 
+const PERGUNTAS_PADRAO=[
+  {id:'pp_escritorio',   label:'Presença no escritório',  desc:'Frequência de presença física no dia a dia'},
+  {id:'pp_eventos',      label:'Presença em eventos',     desc:'Comparecimento a eventos, treinamentos e reuniões'},
+  {id:'pp_pontualidade', label:'Pontualidade',            desc:'Cumpre horários e prazos combinados'},
+  {id:'pp_postura',      label:'Postura profissional',    desc:'Vestimenta, linguagem e comportamento adequados'},
+  {id:'pp_engajamento',  label:'Engajamento',             desc:'Motivação e comprometimento com a empresa'},
+];
+
 let _rodada=null,_equipe=[],_avaliadorId=null;
-const _notas={},_comentarios={};
+const _notas={},_notasGerais={},_comentarios={};
 
 function notaCor(n){
   if(n===null||n===undefined)return'rgba(255,255,255,0.3)';
@@ -204,16 +212,42 @@ function iniciarAvaliacao(){
         <div class="nota-btns">${btns}</div>
       </div>`;
     }).join('');
+    const ppRows=PERGUNTAS_PADRAO.map(p=>{
+      const btns=[1,2,3,4,5].map(n=>`<button class="nota-btn" id="nb-g-${f.id}-${p.id}-${n}" onclick="setNotaGeral('${f.id}','${p.id}',${n})">${n}</button>`).join('');
+      return`<div class="criterio-row">
+        <div class="criterio-top">
+          <div><div class="criterio-label">${p.label}</div><div class="criterio-desc">${p.desc}</div></div>
+          <div class="criterio-nota-display" id="nd-g-${f.id}-${p.id}" style="color:rgba(255,255,255,0.2)">—</div>
+        </div>
+        <div class="nota-btns">${btns}</div>
+      </div>`;
+    }).join('');
     return`<div class="pessoa-card" id="card-${f.id}">
       <div class="pessoa-nome">${f.nome}</div>
       <div class="pessoa-cargo">${f.cargo||'Colaborador'}</div>
       ${rows}
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">
+        <div class="grupo-label" style="padding-top:0;margin-bottom:4px">Comportamento Geral <span style="font-size:8px;color:rgba(255,255,255,0.2);font-weight:500">(opcional)</span></div>
+        ${ppRows}
+      </div>
       <textarea class="comment-area" rows="2" placeholder="Comentário geral sobre ${f.nome.split(' ')[0]}... (opcional)" oninput="_comentarios['${f.id}']=this.value"></textarea>
     </div>`;
   }).join('');
   document.getElementById('cards-avaliar').innerHTML=cards;
   atualizarProgresso();
   showStep('step-avaliar');
+}
+
+function setNotaGeral(avaliadoId,questaoId,nota){
+  if(!_notasGerais[avaliadoId])_notasGerais[avaliadoId]={};
+  _notasGerais[avaliadoId][questaoId]=nota;
+  [1,2,3,4,5].forEach(n=>{
+    const btn=document.getElementById(`nb-g-${avaliadoId}-${questaoId}-${n}`);
+    if(!btn)return;
+    btn.className='nota-btn'+(n===nota?' '+notaClasse(nota):'');
+  });
+  const nd=document.getElementById(`nd-g-${avaliadoId}-${questaoId}`);
+  if(nd){nd.textContent=nota;nd.style.color=notaCor(nota);}
 }
 
 function setNota(avaliadoId,criterioId,nota){
@@ -259,6 +293,7 @@ async function enviarAvaliacao(){
       avaliador_id:_avaliadorId,
       avaliado_id:f.id,
       criterios:CRITERIOS.map(c=>({id:c.id,nota:_notas[f.id]?.[c.id]??null})),
+      notas_gerais:_notasGerais[f.id]||{},
       comentario:_comentarios[f.id]||'',
       submetido_em:new Date().toISOString(),
     }

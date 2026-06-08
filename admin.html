@@ -2310,7 +2310,12 @@ function renderAvaliacoes(){
 
   const n360cor=n=>n>=4?'#6ee7b7':n>=3?'#fcd34d':'#fca5a5';
 
+  // Losango individual em cada card
   cardsDiv.innerHTML=comDados.map(({f,mediaGeral,fortes,melhorar,fracos,comentarios,totalAvaliadores,totalRodadas})=>{
+    const scores360=calcScoresAreas360((() => {
+      const resps=respostas360.filter(r=>r.avaliado_id===f.id);
+      return CRITERIOS_360.map(c=>{const ns=resps.flatMap(r=>(r.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!=null));return{...c,avg:ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null};}).filter(c=>c.avg!==null);
+    })());
     const cor=n360cor(mediaGeral);
 
     const pill=(label,cor,bg)=>`<span style="background:${bg};color:${cor};font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap">${label}</span>`;
@@ -2342,12 +2347,15 @@ function renderAvaliacoes(){
           <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px">${f.cargo||'Colaborador'} · ${totalAvaliadores} avaliador${totalAvaliadores!==1?'es':''} em ${totalRodadas} rodada${totalRodadas!==1?'s':''}</div>
           ${badgesHtml}
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0;margin-left:16px">
-          <div style="text-align:center">
-            <div style="font-size:40px;font-weight:800;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
-            <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.25);text-transform:uppercase">/ 10</div>
+        <div style="display:flex;align-items:center;gap:16px;flex-shrink:0;margin-left:16px">
+          ${svgDiamond(scores360,{size:110})}
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+            <div style="text-align:center">
+              <div style="font-size:40px;font-weight:800;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
+              <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.25);text-transform:uppercase">/ 5</div>
+            </div>
+            <button onclick="gerarRelatorio360('${f.id}')" style="background:rgba(201,150,60,0.12);border:1px solid rgba(201,150,60,0.25);border-radius:7px;padding:6px 14px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#c9963c;cursor:pointer;white-space:nowrap;letter-spacing:0.3px">📄 Relatório</button>
           </div>
-          <button onclick="gerarRelatorio360('${f.id}')" style="background:rgba(201,150,60,0.12);border:1px solid rgba(201,150,60,0.25);border-radius:7px;padding:6px 14px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#c9963c;cursor:pointer;white-space:nowrap;letter-spacing:0.3px">📄 Relatório</button>
         </div>
       </div>
       <!-- Grid -->
@@ -2371,6 +2379,11 @@ function renderAvaliacoes(){
       </div>
     </div>`;
   }).join('');
+
+  // Mapa da equipe
+  let mapaDiv=document.getElementById('mapa-equipe-360');
+  if(!mapaDiv){mapaDiv=document.createElement('div');mapaDiv.id='mapa-equipe-360';mapaDiv.style.cssText='margin-top:24px';container.closest('#avaltab-individual').appendChild(mapaDiv);}
+  renderMapaEquipe360();
 }
 // ─── RELATÓRIO 360° ──────────────────────────────────
 let _relatorio360FuncId=null;
@@ -2439,21 +2452,35 @@ function gerarRelatorio360(funcId){
 
   const comsHtml=comentarios.length?comentarios.map(c=>`<div style="background:rgba(255,255,255,0.04);border-left:3px solid rgba(201,150,60,0.4);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px"><div style="font-size:12px;color:#ccc;line-height:1.6;font-style:italic">"${c.texto}"</div><div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px">— ${c.avaliador}</div></div>`).join(''):`<div style="font-size:12px;color:rgba(255,255,255,0.25)">Nenhum comentário registrado.</div>`;
 
+  // Losango de área
+  const areaScores=calcScoresAreas360(medias);
+  const diamondSvg=svgDiamond(areaScores,{size:180});
+
+  // Perguntas gerais
+  const pgData=PERGUNTAS_PADRAO_360.map(p=>{
+    const ns=resps.map(r=>r.notas_gerais?.[p.id]).filter(n=>n!=null);
+    return{...p,avg:ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null,count:ns.length};
+  }).filter(p=>p.avg!==null);
+  const pgHtml=pgData.length?pgData.map(p=>{const cor2=p.avg>=4?'#6ee7b7':p.avg>=3?'#fcd34d':'#fca5a5';const pct=Math.round((p.avg/5)*100);return`<div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="flex:1;font-size:12px;color:#ccc">${p.label}</span><div style="width:100px;background:rgba(255,255,255,0.06);border-radius:3px;height:5px"><div style="background:${cor2};height:5px;border-radius:3px;width:${pct}%"></div></div><span style="font-size:12px;font-weight:800;color:${cor2};min-width:28px;text-align:right">${p.avg.toFixed(1)}</span></div>`;}).join(''):'';
+
   document.getElementById('rel360-titulo').textContent=`Relatório 360° — ${f.nome}`;
   document.getElementById('rel360-conteudo').innerHTML=`
     <div id="rel360-printarea" style="font-family:'Montserrat',sans-serif;color:#fff">
-      <!-- Cabeçalho do relatório -->
-      <div style="background:linear-gradient(135deg,rgba(201,150,60,0.15),rgba(201,150,60,0.04));border:1px solid rgba(201,150,60,0.2);border-radius:12px;padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between">
+      <!-- Cabeçalho -->
+      <div style="background:linear-gradient(135deg,rgba(201,150,60,0.15),rgba(201,150,60,0.04));border:1px solid rgba(201,150,60,0.2);border-radius:12px;padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
         <div>
           <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(201,150,60,0.7);margin-bottom:4px">Avaliação 360° · Soma Partners</div>
           <div style="font-size:22px;font-weight:800">${f.nome}</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px">${f.cargo||'Colaborador'} · ${totalAv} avaliador${totalAv!==1?'es':''} em ${totalRod} rodada${totalRod!==1?'s':''}</div>
           ${badgesHtml}
         </div>
-        <div style="text-align:center">
-          <div style="font-size:56px;font-weight:900;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
-          <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:1px">MÉDIA GERAL / 5</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:4px">${hoje}</div>
+        <div style="display:flex;align-items:center;gap:20px">
+          ${diamondSvg}
+          <div style="text-align:center">
+            <div style="font-size:56px;font-weight:900;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
+            <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:1px">MÉDIA GERAL / 5</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:4px">${hoje}</div>
+          </div>
         </div>
       </div>
 
@@ -2468,6 +2495,12 @@ function gerarRelatorio360(funcId){
         <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:20px">Detalhamento por Critério</div>
         ${grupoRows}
       </div>
+
+      <!-- Perguntas gerais -->
+      ${pgHtml?`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 24px;margin-bottom:24px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:16px">Comportamento Geral</div>
+        ${pgHtml}
+      </div>`:''}
 
       <!-- Comentários -->
       <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 24px;margin-bottom:8px">
@@ -4223,6 +4256,95 @@ const CRITERIOS_360=[
   {id:'lideranca',    grupo:'Comportamento & Cultura',      label:'Liderança / Influência'},
 ];
 const GRUPOS_360=[...new Set(CRITERIOS_360.map(c=>c.grupo))];
+
+const PERGUNTAS_PADRAO_360=[
+  {id:'pp_escritorio',   label:'Presença no escritório'},
+  {id:'pp_eventos',      label:'Presença em eventos'},
+  {id:'pp_pontualidade', label:'Pontualidade'},
+  {id:'pp_postura',      label:'Postura profissional'},
+  {id:'pp_engajamento',  label:'Engajamento'},
+];
+
+// Calcula score de cada área para um conjunto de medias de critérios
+function calcScoresAreas360(medias){
+  if(!medias.length)return Object.fromEntries(AREAS_360.map(a=>[a.id,0]));
+  return Object.fromEntries(AREAS_360.map(a=>[a.id,calcMediaPonderada360(medias,[a.id])]));
+}
+
+// Gera SVG do losango (radar 4 eixos)
+function svgDiamond(scores,{size=220,dark=true,labelExtra=null}={}){
+  const pad=42,total=size+pad*2,cx=total/2,cy=total/2,R=size/2*0.82;
+  const axes=[
+    {key:'comercial',    label:'Comercial',    ax:0,  ay:-1},
+    {key:'investimentos',label:'Invest.',      ax:1,  ay:0},
+    {key:'servicos',     label:'Serviços',     ax:0,  ay:1},
+    {key:'juridico',     label:'Jurídico',     ax:-1, ay:0},
+  ];
+  const d=dark;
+  const grid=[1,.8,.6,.4,.2].map(f=>{
+    const pts=axes.map(a=>`${cx+a.ax*R*f},${cy+a.ay*R*f}`).join(' ');
+    return`<polygon points="${pts}" fill="none" stroke="${d?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)'}" stroke-width="0.8"/>`;
+  }).join('');
+  const axLines=axes.map(a=>`<line x1="${cx}" y1="${cy}" x2="${cx+a.ax*R}" y2="${cy+a.ay*R}" stroke="${d?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)'}" stroke-width="0.8"/>`).join('');
+  const dpts=axes.map(a=>{const s=Math.min(5,Math.max(0,scores[a.key]||0));return`${cx+a.ax*R*(s/5)},${cy+a.ay*R*(s/5)}`;}).join(' ');
+  const fc=d?'rgba(201,150,60,0.2)':'rgba(201,150,60,0.28)';
+  const sc=d?'rgba(201,150,60,0.85)':'rgba(180,120,30,1)';
+  const dots=axes.map(a=>{const s=Math.min(5,Math.max(0,scores[a.key]||0));return`<circle cx="${cx+a.ax*R*(s/5)}" cy="${cy+a.ay*R*(s/5)}" r="3.5" fill="${sc}"/>`;}).join('');
+  const lbls=axes.map(a=>{
+    const s=scores[a.key]||0;
+    const lx=cx+a.ax*(R+pad*0.78),ly=cy+a.ay*(R+pad*0.78);
+    const anch=a.ax>0.5?'start':a.ax<-0.5?'end':'middle';
+    const tc=d?'rgba(255,255,255,0.5)':'#666';
+    const nc=d?'rgba(201,150,60,0.9)':'rgba(160,100,20,1)';
+    const dy=a.ay>0.5?14:a.ay<-0.5?-4:4;
+    const dy2=a.ay>0.5?26:a.ay<-0.5?8:18;
+    return`<text x="${lx}" y="${ly+dy}" text-anchor="${anch}" font-size="9" font-weight="800" font-family="Montserrat,sans-serif" letter-spacing="0.5" fill="${tc}">${a.label.toUpperCase()}</text>
+           <text x="${lx}" y="${ly+dy2}" text-anchor="${anch}" font-size="12" font-weight="900" font-family="Montserrat,sans-serif" fill="${nc}">${s.toFixed(1)}</text>`;
+  }).join('');
+  const extra=labelExtra?`<text x="${cx}" y="${total-5}" text-anchor="middle" font-size="9" font-weight="600" font-family="Montserrat,sans-serif" fill="${d?'rgba(255,255,255,0.25)':'#aaa'}">${labelExtra}</text>`:'';
+  return`<svg viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" xmlns="http://www.w3.org/2000/svg">
+    ${grid}${axLines}<polygon points="${dpts}" fill="${fc}" stroke="${sc}" stroke-width="1.5"/>${dots}${lbls}${extra}
+  </svg>`;
+}
+
+// Renderiza o Mapa da Equipe na aba 360°
+function renderMapaEquipe360(){
+  const el=document.getElementById('mapa-equipe-360');
+  if(!el)return;
+  const membros=equipe.filter(f=>f.status==='ativo').map(f=>{
+    const resps=respostas360.filter(r=>r.avaliado_id===f.id);
+    if(!resps.length)return null;
+    const medias=CRITERIOS_360.map(c=>{
+      const ns=resps.flatMap(r=>(r.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!=null));
+      return{...c,avg:ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null};
+    }).filter(c=>c.avg!==null);
+    if(!medias.length)return null;
+    return{f,scores:calcScoresAreas360(medias)};
+  }).filter(Boolean);
+  if(!membros.length){el.innerHTML='<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.2);font-size:12px">Nenhuma avaliação disponível.</div>';return;}
+  const avgScores=Object.fromEntries(AREAS_360.map(a=>[a.id,membros.reduce((s,m)=>s+m.scores[a.id],0)/membros.length]));
+  const topArea=AREAS_360.find(a=>a.id===Object.entries(avgScores).sort((a,b)=>b[1]-a[1])[0][0])?.label||'';
+  const individuais=membros.map(({f,scores})=>`
+    <div style="text-align:center">
+      <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.45);margin-bottom:2px;white-space:nowrap">${f.nome.split(' ')[0]}</div>
+      ${svgDiamond(scores,{size:90})}
+    </div>`).join('');
+  el.innerHTML=`
+    <div style="margin-bottom:28px">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:14px">Perfil Individual · Posicionamento por Área</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">${individuais}</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:16px">Média da Equipe · ${membros.length} colaborador${membros.length!==1?'es':''}</div>
+      <div style="display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+        ${svgDiamond(avgScores,{size:180})}
+        <div style="flex:1;min-width:150px">
+          ${AREAS_360.map(a=>{const s=avgScores[a.id];const cor=s>=4?'#6ee7b7':s>=3?'#fcd34d':'#fca5a5';const pct=Math.round((s/5)*100);return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:11px;color:rgba(255,255,255,0.55);font-weight:600">${a.label}</span><span style="font-size:13px;font-weight:900;color:${cor}">${s.toFixed(1)}</span></div><div style="background:rgba(255,255,255,0.07);border-radius:3px;height:5px"><div style="background:${cor};height:5px;border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')}
+          <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.25);line-height:1.6">Área mais forte da equipe:<br><span style="color:rgba(201,150,60,0.8);font-weight:700">${topArea}</span></div>
+        </div>
+      </div>
+    </div>`;
+}
 
 function criarRodada360(){
   // Popular select de avaliado
