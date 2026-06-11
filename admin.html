@@ -4941,53 +4941,70 @@ function limparAtualizaInfo(){
 async function confirmarLimparImport(){
   const modo = document.getElementById('limpar-modo').value;
   const btg = lancamentos.filter(l=>(l.obs||'').startsWith('BTG·'));
-  let alvo = [];
+  let alvoLanc = [];
   if(modo==='todos'){
-    alvo = btg;
+    alvoLanc = btg;
   } else if(modo==='mes'){
     const mes = document.getElementById('limpar-mes-sel').value;
-    alvo = btg.filter(l=>(l.data_vencimento||'').startsWith(mes));
+    alvoLanc = btg.filter(l=>(l.data_vencimento||'').startsWith(mes));
   } else {
     const n = parseInt(document.getElementById('limpar-n-val').value)||0;
     const sorted = [...btg].sort((a,b)=>((b.data_vencimento||'')>(a.data_vencimento||'')?1:-1));
-    alvo = sorted.slice(0, n);
+    alvoLanc = sorted.slice(0, n);
   }
-  if(!alvo.length) return;
-  if(!confirm(`Apagar ${alvo.length} lançamento${alvo.length!==1?'s':''} importado${alvo.length!==1?'s':''}? Isso remove também do Extrato BTG. Esta ação não pode ser desfeita.`)) return;
+  if(!alvoLanc.length) return;
+  if(!confirm(`Apagar ${alvoLanc.length} lançamento${alvoLanc.length!==1?'s':''} importado${alvoLanc.length!==1?'s':''}? Isso remove também do Extrato BTG. Esta ação não pode ser desfeita.`)) return;
   const btn = document.getElementById('limpar-btn-confirm');
   btn.disabled = true; btn.textContent = 'Apagando…';
-  // Descobre empresas e meses afetados a partir de obs (BTG·empresa|mes)
-  const empresasMeses = new Set(alvo.map(l=>(l.obs||'').replace('BTG·','')));
-  // Deleta admin_lancamentos em batches de 50
-  const ids = alvo.map(l=>l.id);
-  for(let i=0; i<ids.length; i+=50){
-    const batch = ids.slice(i, i+50);
-    await _sb.from('admin_lancamentos').delete().in('id', batch);
+
+  // 1. Apaga de admin_lancamentos em batches
+  const idsLanc = alvoLanc.map(l=>l.id);
+  for(let i=0; i<idsLanc.length; i+=50){
+    await _sb.from('admin_lancamentos').delete().in('id', idsLanc.slice(i,i+50));
   }
-  // Descobre datas dos lançamentos apagados para limpar admin_extrato correspondente
-  const datas = [...new Set(alvo.map(l=>l.data_vencimento).filter(Boolean))];
-  const empresas = [...new Set(alvo.map(l=>(l.obs||'').split('|')[0].replace('BTG·','')).filter(Boolean))];
-  // Apaga do admin_extrato: mesma empresa + data dentro do período apagado
-  if(empresas.length && datas.length){
-    for(const emp of empresas){
-      let q = _sb.from('admin_extrato').delete().eq('empresa', emp);
-      if(modo==='mes'){
-        const mes = document.getElementById('limpar-mes-sel').value;
-        q = _sb.from('admin_extrato').delete().eq('empresa', emp).like('data', mes+'%');
-      } else if(modo==='todos'){
-        // apaga tudo da empresa
-        q = _sb.from('admin_extrato').delete().eq('empresa', emp);
-      } else {
-        // últimos N — apaga pelo conjunto exato de datas
-        const datasSet = datas;
-        q = _sb.from('admin_extrato').delete().eq('empresa', emp).in('data', datasSet);
-      }
-      await q;
+
+  // 2. Apaga de admin_extrato pelo mesmo critério
+  // admin_extrato tem campo 'mes' (ex: '2025-03') e 'empresa'
+  if(modo==='todos'){
+    // Apaga tudo do admin_extrato
+    for(const emp of Object.keys(EX_EMPRESAS)){
+      await _sb.from('admin_extrato').delete().eq('empresa', emp);
+    }
+  } else if(modo==='mes'){
+    const mes = document.getElementById('limpar-mes-sel').value;
+    await _sb.from('admin_extrato').delete().eq('mes', mes);
+  } else {
+    // Últimos N: pega os IDs correspondentes do _exRows
+    // Os lancamentos apagados têm data_vencimento; o extrato tem campo 'data' igual
+    const datasApagadas = new Set(alvoLanc.map(l=>l.data_vencimento).filter(Boolean));
+    const exIds = _exRows.filter(r=>datasApagadas.has(r.data)).map(r=>r.id);
+    for(let i=0; i<exIds.length; i+=50){
+      await _sb.from('admin_extrato').delete().in('id', exIds.slice(i,i+50));
     }
   }
+
+  // 3. Limpa _exRows em memória para refletir imediatamente
+  if(modo==='todos'){
+    _exRows = [];
+  } else if(modo==='mes'){
+    const mes = document.getElementById('limpar-mes-sel').value;
+    _exRows = _exRows.filter(r=>r.mes !== mes);
+  } else {
+    const datasApagadas = new Set(alvoLanc.map(l=>l.data_vencimento).filter(Boolean));
+    _exRows = _exRows.filter(r=>!datasApagadas.has(r.data));
+  }
+
   closeModal('modal-limpar-import');
+  // Atualiza displays do extrato
+  exRender(); exRenderDRE(); exUpdateNcBadge();
+  Object.keys(EX_EMPRESAS).forEach(emp=>{
+    const cnt=_exRows.filter(r=>r.empresa===emp).length;
+    const el=document.getElementById('ex-status-'+emp);
+    if(el) el.innerHTML = cnt>0 ? `<span style="color:#6ee7b7">✓ ${cnt} lançamentos</span>` : '';
+  });
+  if(!_exRows.length) document.getElementById('ex-review').style.display='none';
   await loadAll();
-  showToast(`${alvo.length} lançamento${alvo.length!==1?'s':''} apagado${alvo.length!==1?'s':''}!`, 'ok');
+  showToast(`${alvoLanc.length} lançamento${alvoLanc.length!==1?'s':''} apagado${alvoLanc.length!==1?'s':''}!`, 'ok');
 }
 
 </script>
