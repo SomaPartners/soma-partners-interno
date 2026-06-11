@@ -341,6 +341,10 @@ body{display:flex;flex-direction:column;overflow:hidden}
         <option value="manual">Manuais</option>
         <option value="btg">Importados BTG</option>
       </select>
+      <button onclick="abrirModalLimparImport()" style="display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:700;color:#fca5a5;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;transition:all 0.18s" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+        <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Limpar Importados
+      </button>
     </div>
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Origem</th><th>Vencimento</th><th>Pagamento</th><th>Valor</th><th>Status</th><th></th></tr></thead>
@@ -2619,7 +2623,42 @@ function imprimirRelatorio360(){
   <div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:14px;font-size:10px;color:#9ca3af;text-align:center">Relatório gerado em ${hoje} · Soma Partners · Confidencial</div>
 
   <script>window.onload=()=>{window.print();}<\/script>
-  </body></html>`;
+  
+<!-- ════ MODAL LIMPAR IMPORTADOS ════ -->
+<div class="modal-overlay" id="modal-limpar-import">
+  <div class="modal" style="max-width:420px">
+    <div class="mh">
+      <div class="mt">🗑 Limpar Lançamentos Importados</div>
+      <button class="mc" onclick="closeModal('modal-limpar-import')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="mb" style="padding:20px">
+      <div id="limpar-import-info" style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#fca5a5;font-weight:600"></div>
+      <div style="margin-bottom:14px">
+        <label class="fl" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(7,12,24,0.45);display:block;margin-bottom:6px">Modo de exclusão</label>
+        <select id="limpar-modo" class="form-control" onchange="limparModoChange()" style="width:100%">
+          <option value="todos">Apagar todos os importados</option>
+          <option value="mes">Apagar por mês específico</option>
+          <option value="ultimos">Apagar os últimos N importados</option>
+        </select>
+      </div>
+      <div id="limpar-extra-mes" style="display:none;margin-bottom:14px">
+        <label class="fl" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(7,12,24,0.45);display:block;margin-bottom:6px">Mês</label>
+        <select id="limpar-mes-sel" class="form-control" onchange="limparAtualizaInfo()" style="width:100%"></select>
+      </div>
+      <div id="limpar-extra-n" style="display:none;margin-bottom:14px">
+        <label class="fl" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(7,12,24,0.45);display:block;margin-bottom:6px">Quantidade</label>
+        <input type="number" id="limpar-n-val" class="form-control" min="1" placeholder="Ex: 50" oninput="limparAtualizaInfo()" style="width:100%">
+      </div>
+      <div id="limpar-preview" style="font-size:11px;color:rgba(7,12,24,0.5);margin-bottom:16px;min-height:18px"></div>
+    </div>
+    <div class="mf" style="padding:12px 20px">
+      <button class="btn btn-outline" onclick="closeModal('modal-limpar-import')">Cancelar</button>
+      <button class="btn" id="limpar-btn-confirm" onclick="confirmarLimparImport()" style="background:#ef4444;color:#fff;font-weight:700">Apagar</button>
+    </div>
+  </div>
+</div>
+
+</body></html>`;
 
   const w=window.open('','_blank','width=960,height=750');
   w.document.write(html);
@@ -4878,6 +4917,85 @@ function renderMeritos(){
 function hexToRgb(hex){
   const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
   return`${r},${g},${b}`;
+}
+
+
+// ════ LIMPAR IMPORTADOS ════
+function abrirModalLimparImport(){
+  const btg = lancamentos.filter(l=>(l.obs||'').startsWith('BTG·'));
+  document.getElementById('limpar-import-info').textContent =
+    `${btg.length} lançamento${btg.length!==1?'s':''} importado${btg.length!==1?'s':''} encontrado${btg.length!==1?'s':''} no total.`;
+  document.getElementById('limpar-modo').value = 'todos';
+  document.getElementById('limpar-extra-mes').style.display = 'none';
+  document.getElementById('limpar-extra-n').style.display = 'none';
+  // Popula meses disponíveis
+  const meses = [...new Set(btg.map(l=>(l.data_vencimento||'').slice(0,7)).filter(Boolean))].sort().reverse();
+  const sel = document.getElementById('limpar-mes-sel');
+  const MESES_PT = {1:'Janeiro',2:'Fevereiro',3:'Março',4:'Abril',5:'Maio',6:'Junho',7:'Julho',8:'Agosto',9:'Setembro',10:'Outubro',11:'Novembro',12:'Dezembro'};
+  sel.innerHTML = meses.map(m=>{
+    const [y,mo] = m.split('-');
+    return `<option value="${m}">${MESES_PT[parseInt(mo)]} ${y}</option>`;
+  }).join('');
+  limparAtualizaInfo();
+  openModal('modal-limpar-import');
+}
+
+function limparModoChange(){
+  const modo = document.getElementById('limpar-modo').value;
+  document.getElementById('limpar-extra-mes').style.display = modo==='mes' ? 'block' : 'none';
+  document.getElementById('limpar-extra-n').style.display = modo==='ultimos' ? 'block' : 'none';
+  limparAtualizaInfo();
+}
+
+function limparAtualizaInfo(){
+  const modo = document.getElementById('limpar-modo').value;
+  const btg = lancamentos.filter(l=>(l.obs||'').startsWith('BTG·'));
+  let alvo = [];
+  if(modo==='todos'){
+    alvo = btg;
+  } else if(modo==='mes'){
+    const mes = document.getElementById('limpar-mes-sel').value;
+    alvo = btg.filter(l=>(l.data_vencimento||'').startsWith(mes));
+  } else {
+    const n = parseInt(document.getElementById('limpar-n-val').value)||0;
+    const sorted = [...btg].sort((a,b)=>((b.data_vencimento||'')>(a.data_vencimento||'')?1:-1));
+    alvo = sorted.slice(0, n);
+  }
+  const preview = document.getElementById('limpar-preview');
+  preview.textContent = alvo.length > 0
+    ? `⚠ Serão apagados ${alvo.length} lançamento${alvo.length!==1?'s':''}.`
+    : 'Nenhum lançamento corresponde à seleção.';
+  preview.style.color = alvo.length > 0 ? '#f59e0b' : 'rgba(7,12,24,0.4)';
+  document.getElementById('limpar-btn-confirm').disabled = alvo.length === 0;
+}
+
+async function confirmarLimparImport(){
+  const modo = document.getElementById('limpar-modo').value;
+  const btg = lancamentos.filter(l=>(l.obs||'').startsWith('BTG·'));
+  let alvo = [];
+  if(modo==='todos'){
+    alvo = btg;
+  } else if(modo==='mes'){
+    const mes = document.getElementById('limpar-mes-sel').value;
+    alvo = btg.filter(l=>(l.data_vencimento||'').startsWith(mes));
+  } else {
+    const n = parseInt(document.getElementById('limpar-n-val').value)||0;
+    const sorted = [...btg].sort((a,b)=>((b.data_vencimento||'')>(a.data_vencimento||'')?1:-1));
+    alvo = sorted.slice(0, n);
+  }
+  if(!alvo.length) return;
+  if(!confirm(`Apagar ${alvo.length} lançamento${alvo.length!==1?'s':''} importado${alvo.length!==1?'s':''}? Esta ação não pode ser desfeita.`)) return;
+  const btn = document.getElementById('limpar-btn-confirm');
+  btn.disabled = true; btn.textContent = 'Apagando…';
+  // Deleta em batches de 50
+  const ids = alvo.map(l=>l.id);
+  for(let i=0; i<ids.length; i+=50){
+    const batch = ids.slice(i, i+50);
+    await _sb.from('admin_lancamentos').delete().in('id', batch);
+  }
+  closeModal('modal-limpar-import');
+  await loadAll();
+  showToast(`${alvo.length} lançamento${alvo.length!==1?'s':''} apagado${alvo.length!==1?'s':''}!`, 'ok');
 }
 
 </script>
