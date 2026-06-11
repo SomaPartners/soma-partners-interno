@@ -4953,14 +4953,37 @@ async function confirmarLimparImport(){
     alvo = sorted.slice(0, n);
   }
   if(!alvo.length) return;
-  if(!confirm(`Apagar ${alvo.length} lançamento${alvo.length!==1?'s':''} importado${alvo.length!==1?'s':''}? Esta ação não pode ser desfeita.`)) return;
+  if(!confirm(`Apagar ${alvo.length} lançamento${alvo.length!==1?'s':''} importado${alvo.length!==1?'s':''}? Isso remove também do Extrato BTG. Esta ação não pode ser desfeita.`)) return;
   const btn = document.getElementById('limpar-btn-confirm');
   btn.disabled = true; btn.textContent = 'Apagando…';
-  // Deleta em batches de 50
+  // Descobre empresas e meses afetados a partir de obs (BTG·empresa|mes)
+  const empresasMeses = new Set(alvo.map(l=>(l.obs||'').replace('BTG·','')));
+  // Deleta admin_lancamentos em batches de 50
   const ids = alvo.map(l=>l.id);
   for(let i=0; i<ids.length; i+=50){
     const batch = ids.slice(i, i+50);
     await _sb.from('admin_lancamentos').delete().in('id', batch);
+  }
+  // Descobre datas dos lançamentos apagados para limpar admin_extrato correspondente
+  const datas = [...new Set(alvo.map(l=>l.data_vencimento).filter(Boolean))];
+  const empresas = [...new Set(alvo.map(l=>(l.obs||'').split('|')[0].replace('BTG·','')).filter(Boolean))];
+  // Apaga do admin_extrato: mesma empresa + data dentro do período apagado
+  if(empresas.length && datas.length){
+    for(const emp of empresas){
+      let q = _sb.from('admin_extrato').delete().eq('empresa', emp);
+      if(modo==='mes'){
+        const mes = document.getElementById('limpar-mes-sel').value;
+        q = _sb.from('admin_extrato').delete().eq('empresa', emp).like('data', mes+'%');
+      } else if(modo==='todos'){
+        // apaga tudo da empresa
+        q = _sb.from('admin_extrato').delete().eq('empresa', emp);
+      } else {
+        // últimos N — apaga pelo conjunto exato de datas
+        const datasSet = datas;
+        q = _sb.from('admin_extrato').delete().eq('empresa', emp).in('data', datasSet);
+      }
+      await q;
+    }
   }
   closeModal('modal-limpar-import');
   await loadAll();
