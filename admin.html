@@ -1098,7 +1098,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
         <tbody id="pesos-tbody"></tbody>
       </table>
     </div>
-    <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.25)">Pesos sugeridos: 1 = padrão · 1.5 = relevante · 2 = importante · 2.5 = muito importante · 3 = crítico</div>
+    <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.25)">Pesos: 0 = não conta · 0.3 = baixo · 0.5 = padrão · 0.7 = relevante · 0.9 = importante · 1.0 = crítico</div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modal-pesos360')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarPesos360()">💾 Salvar Pesos</button>
@@ -1374,10 +1374,10 @@ const AREAS_360=[
   {id:'comercial',     label:'Comercial'},
 ];
 let _pesos360={
-  juridico:      {com_cliente:1,  com_interna:1.5,rel_cliente:1.5,tecnico:2,  captacao:1,  compliance:3,  prazos:1,  organizacao:1.5,problemas:1.5,proatividade:1,  equipe:1,  lideranca:1},
-  investimentos: {com_cliente:1.5,com_interna:1,  rel_cliente:2,  tecnico:3,  captacao:2.5,compliance:2,  prazos:1,  organizacao:1,  problemas:1.5,proatividade:1.5,equipe:1,  lideranca:1.5},
-  servicos:      {com_cliente:3,  com_interna:2,  rel_cliente:2.5,tecnico:1,  captacao:2,  compliance:1,  prazos:2.5,organizacao:2,  problemas:2,  proatividade:1.5,equipe:2,  lideranca:1},
-  comercial:     {com_cliente:3,  com_interna:1.5,rel_cliente:3,  tecnico:1.5,captacao:3,  compliance:1.5,prazos:1.5,organizacao:1.5,problemas:2,  proatividade:2.5,equipe:1.5,lideranca:2},
+  juridico:      {com_cliente:0.3,com_interna:0.5,rel_cliente:0.5,tecnico:0.7,captacao:0.3,compliance:1.0,prazos:0.3,organizacao:0.5,problemas:0.5,proatividade:0.3,equipe:0.3,lideranca:0.3},
+  investimentos: {com_cliente:0.5,com_interna:0.3,rel_cliente:0.7,tecnico:1.0,captacao:0.8,compliance:0.7,prazos:0.3,organizacao:0.3,problemas:0.5,proatividade:0.5,equipe:0.3,lideranca:0.5},
+  servicos:      {com_cliente:1.0,com_interna:0.7,rel_cliente:0.8,tecnico:0.3,captacao:0.7,compliance:0.3,prazos:0.8,organizacao:0.7,problemas:0.7,proatividade:0.5,equipe:0.7,lideranca:0.3},
+  comercial:     {com_cliente:1.0,com_interna:0.5,rel_cliente:1.0,tecnico:0.5,captacao:1.0,compliance:0.5,prazos:0.5,organizacao:0.5,problemas:0.7,proatividade:0.8,equipe:0.5,lideranca:0.7},
 };
 // Retorna array de áreas da pessoa (busca da rodada mais recente)
 function getAreaPessoa360(funcId){
@@ -1397,7 +1397,7 @@ function calcMediaPonderada360(criteriosComMedia,areas){
   const areasValidas=(areas||[]).filter(a=>_pesos360[a]);
   if(!areasValidas.length) return valid.reduce((a,b)=>a+b.avg,0)/valid.length;
   // Peso efetivo = média dos pesos de cada área selecionada
-  const pesoEfetivo=c=>areasValidas.reduce((s,a)=>s+(_pesos360[a][c.id]||1),0)/areasValidas.length;
+  const pesoEfetivo=c=>areasValidas.reduce((s,a)=>s+(_pesos360[a][c.id]||0.5),0)/areasValidas.length;
   const pesoTotal=valid.reduce((s,c)=>s+pesoEfetivo(c),0);
   const soma=valid.reduce((s,c)=>s+c.avg*pesoEfetivo(c),0);
   return pesoTotal>0?soma/pesoTotal:0;
@@ -4523,8 +4523,8 @@ function abrirPesos360(){
       <td style="padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.8);white-space:nowrap">${c.label}</td>
       ${AREAS_360.map(a=>`
         <td style="padding:8px;text-align:center">
-          <input type="number" id="peso-${a.id}-${c.id}" min="0.1" max="10" step="0.1"
-            value="${_pesos360[a.id][c.id]||1}"
+          <input type="number" id="peso-${a.id}-${c.id}" min="0" max="1" step="0.05"
+            value="${(_pesos360[a.id][c.id]||0.5).toFixed(2)}"
             style="width:60px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:4px 6px;text-align:center;font-size:12px;font-family:Montserrat,sans-serif">
         </td>`).join('')}
     </tr>`).join('');
