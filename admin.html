@@ -3052,7 +3052,7 @@ async function gerarImagemPollinations(promptText, canal, previewId, regenBtn){
   const sizes={instagram:{w:1024,h:1024},linkedin:{w:1216,h:832},whatsapp:{w:832,h:1216},email:{w:1216,h:832}};
   const s=sizes[canal]||sizes.linkedin;
   const seed=Math.floor(Math.random()*999999);
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${s.w}&height=${s.h}&model=flux&nologo=true&seed=${seed}`;
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${s.w}&height=${s.h}&model=flux&seed=${seed}`;
 
   // IDs dos campos de prompt/canal para o botão de regerar
   const promptFieldId=previewId==='prompt-img-preview'?'prompt-img-texto':'conteudo-prompt';
