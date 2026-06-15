@@ -2980,56 +2980,68 @@ async function deletarMetrica(id){if(!confirm('Remover métrica?'))return;await 
 // ── PROMPT DE IMAGEM ──
 function gerarPromptImagem(titulo, canal, pessoas){
   const t=(titulo||'').toLowerCase();
-  const style='deep navy blue background (#0b1e30), premium Brazilian wealth management photography, electric blue accent lighting, ultra-clean professional composition, high contrast, cinematic quality, no text overlays, no logos, 85mm lens, shallow depth of field';
+  const brand='Dark navy blue (#0b1e30) background. Electric blue (#3b8bff) accent lines and glows. Ultra-bold condensed white typography. Premium wealth management editorial aesthetic — Bloomberg / Forbes Brasil style.';
+  const fmt=canal==='instagram'?'Square 1:1 Instagram editorial layout.':canal==='whatsapp'?'Vertical 9:16 mobile format, stacked sections.':'Horizontal 16:9 LinkedIn infographic layout.';
 
-  // — MODO PESSOAS: quando há nomes, gera composição de retratos profissionais —
   if(pessoas&&pessoas.trim()){
     const lista=pessoas.split(',').map(p=>p.trim()).filter(Boolean);
-    const fmt=canal==='instagram'?'square 1:1 composition':canal==='whatsapp'?'vertical 9:16 mobile composition':'horizontal 16:9 composition';
-    if(lista.length===1){
-      return `Professional editorial portrait of ${lista[0]}, confident and authoritative expression, sharp focus on face, dark navy (#0b1e30) studio background, electric blue rim lighting on shoulders, premium financial magazine aesthetic, ultra-high-resolution headshot, ${fmt}. No text, no logos, cinematic quality, 85mm portrait lens.`;
-    }
     const nomes=lista.join(', ');
     const count=lista.length;
-    return `${count} professional circular portrait frames arranged in a horizontal row, each showing a high-quality editorial headshot of: ${nomes}. Each portrait inside a white-bordered circle frame, dark navy background (#0b1e30), electric blue accent glow around frames, confident corporate expressions, sharp details, premium financial media aesthetic, ${fmt}. No text overlays, no logos, studio lighting, inspired by Bloomberg/Forbes editorial style.`;
+    if(count===1){
+      return `Premium financial editorial infographic. ${brand}\n\nCOMPOSITION:\n- Top: bold white headline band, electric blue left accent bar, diagonal geometric stripe (top-right corner brand element)\n- Center: large professional portrait of ${nomes} — editorial headshot, confident expression, chest-up, dark studio with electric blue rim lighting. Portrait surrounded by floating data metric cards (bold percentage numbers in green, large white numerals on dark rounded panels)\n- Side: vertical electric blue stripe with subtle geometric pattern\n- Bottom: dark stats panel with 3 KPI boxes — large bold colored numbers, small uppercase labels\n- Overall: cinematic depth, multiple visual layers, high contrast\n\n${fmt} Ultra high resolution.`;
+    }
+    return `Premium financial editorial infographic — ${count} personalities. ${brand}\n\nCOMPOSITION (Bloomberg/Forbes editorial grid style):\n- Top band: bold white headline area, electric blue left accent bar (4px), diagonal stripe pattern top-right corner\n- Middle: horizontal row of ${count} portrait cards for ${nomes}. Each card has: circular company/profile logo with white border at top, professional editorial headshot (confident, chest-up), name in bold white below, key metric in large bold green or red type, thin electric blue divider between cards\n- Bottom: dark rounded panel with 4 KPI summary boxes side by side — large bold colored numbers (green gains / red losses), uppercase labels, electric blue separators\n- Subtle diagonal line texture on background corners (brand identity)\n\n${fmt} Ultra high resolution, cinematic quality.`;
   }
 
-  let conceito;
-  if(t.includes('copom')||t.includes('selic')||t.includes('juros'))
-    conceito='wide-angle modern trading floor with multiple screens displaying live financial charts and market data, blue and amber color grading, motion blur on background traders';
-  else if(t.includes('sucess')||t.includes('legado')||t.includes('famil')||t.includes('herdei'))
-    conceito='elegant three-generation family in a luxurious modern living room, warm golden light through floor-to-ceiling windows, sophisticated interior design, soft bokeh background';
-  else if(t.includes('dólar')||t.includes('dolar')||t.includes('câmbio')||t.includes('cambio')||t.includes('global')||t.includes('internacion'))
-    conceito='aerial nighttime photograph of São Paulo financial district with glowing skyscrapers, subtle globe wireframe overlay in electric blue tones, premium cinematic atmosphere';
-  else if(t.includes('renda fixa')||t.includes('tesouro')||t.includes('cdb'))
-    conceito='sleek macro photography of a premium gold pen resting on financial documents with data charts, dark navy textured surface, soft spot lighting';
-  else if(t.includes('imposto')||t.includes(' ir ')||t.includes('declara')||t.includes('tribut'))
-    conceito='minimalist flat lay of financial documents, glasses and a sleek laptop showing tax calculations on dark navy surface, top-down angle, sharp dramatic shadows';
-  else if(t.includes('diversif')||t.includes('carteira')||t.includes('portf')||t.includes('aloca'))
-    conceito='abstract visualization of investment portfolio as glowing geometric shapes in blue and gold tones against dark background, data visualization aesthetic, motion trails';
-  else if(t.includes('bastidor')||t.includes('equipe')||t.includes('nossa equipe')||t.includes('time soma'))
-    conceito='modern open-plan financial office with team members collaborating around a glass conference table, natural light from floor-to-ceiling windows, premium corporate environment';
-  else if(t.includes('lifestyle')||t.includes('experiên')||t.includes('experienc')||t.includes('fér')||t.includes('fer')||t.includes('viagem'))
-    conceito='affluent couple enjoying sunrise view from a luxury penthouse terrace overlooking a major city skyline, champagne glasses, relaxed premium lifestyle atmosphere';
-  else if(t.includes('patrimônio')||t.includes('patrimonio')||t.includes('riqueza')||t.includes('milh'))
-    conceito='dramatic low-angle view of a luxury glass skyscraper against deep blue sky at dusk, gold and blue reflections, aspirational wealth management aesthetic';
-  else if(t.includes('previdên')||t.includes('aposentad')||t.includes('longo prazo'))
-    conceito='confident executive standing by panoramic office window at golden sunset cityscape, contemplative posture, warmth and financial security atmosphere';
-  else if(t.includes('mercado')||t.includes('bolsa')||t.includes('ibovespa')||t.includes('ações')||t.includes('acoes')||t.includes('volatil'))
-    conceito='extreme close-up of financial candlestick chart on premium curved display with dramatic blue and gold lighting, selective focus, motion blur effect';
-  else if(t.includes('dica')||t.includes('rápid')||t.includes('rapid'))
-    conceito='minimalist premium smartphone on dark marble surface showing a financial portfolio notification, single accent light source, clean geometric shadows';
-  else if(t.includes('fundo')||t.includes('exclusivo')||t.includes('multimercado'))
-    conceito='abstract flowing golden liquid forming chart wave patterns against deep navy background, luxury financial concept art, smooth studio lighting';
-  else if(t.includes('inflação')||t.includes('inflacao')||t.includes('ipca'))
-    conceito='dramatic macro photography of a Brazilian real banknote with selective focus, dark studio background, electric blue rim lighting, financial erosion concept';
-  else if(t.includes('retrospectiva')||t.includes('retrospect')||t.includes('encerrament'))
-    conceito='cinematic split-screen of São Paulo skyline at the beginning and end of the year, left side rainy/moody vs right side golden hour, symbolic year-end reflection';
-  else
-    conceito='sophisticated financial advisor consulting with premium client across a glass desk in a modern high-rise office, city skyline visible through floor-to-ceiling windows, blue and gold color palette';
+  let visual,dados;
+  if(t.includes('copom')||t.includes('selic')||t.includes('juros')){
+    visual='Wide-angle trading floor, multiple screens with live candlestick charts and market data, motion blur on traders, electric blue light from screens, dramatic depth of field';
+    dados='Central overlay panel: large bold interest rate percentage (ex: 13.75% a.a.), up/down arrow, before/after comparison boxes in green/red, horizontal bar chart showing rate history';
+  } else if(t.includes('sucess')||t.includes('legado')||t.includes('famil')||t.includes('herdei')){
+    visual='Elegant multigenerational family silhouette in luxury penthouse with panoramic city view at golden hour, warm light, sophisticated interior';
+    dados='Floating overlay: 3-generation timeline graphic in electric blue, inheritance value indicator with shield icon, percentage protection shown, family tree diagram element';
+  } else if(t.includes('dólar')||t.includes('dolar')||t.includes('câmbio')||t.includes('cambio')||t.includes('global')||t.includes('internacion')){
+    visual='Aerial nighttime São Paulo financial district, glowing skyscrapers, cinematic blue atmosphere';
+    dados='World map wireframe overlay with glowing data nodes connected by electric blue lines, USD/BRL rate in large bold center type, 12-month exchange rate chart line, currency symbols floating';
+  } else if(t.includes('renda fixa')||t.includes('tesouro')||t.includes('cdb')){
+    visual='Macro photography of premium gold pen on financial documents with data charts, dark navy marble surface, soft spot lighting';
+    dados='Floating comparison table: CDI vs IPCA vs Tesouro Direto — bold percentage numbers side by side, green upward arrows, horizontal bar chart in electric blue and gold tones';
+  } else if(t.includes('imposto')||t.includes(' ir ')||t.includes('declara')||t.includes('tribut')){
+    visual='Top-down flat lay: laptop showing tax form on dark marble, glasses, documents, premium pen — dramatic directional shadows';
+    dados='Overlay: calendar deadline indicator, tax saving percentage in bright green, before/after tax comparison boxes, checklist graphic with checkmarks';
+  } else if(t.includes('diversif')||t.includes('carteira')||t.includes('portf')||t.includes('aloca')){
+    visual='Abstract 3D visualization: glowing geometric shapes representing asset classes in blue, gold and white, floating in deep navy space, motion trails';
+    dados='Donut/pie chart overlay with labeled allocation segments (Renda Fixa, Ações, FIIs, Internacional), percentage labels in bold white, total portfolio value in large center type';
+  } else if(t.includes('bastidor')||t.includes('equipe')||t.includes('nossa equipe')||t.includes('time soma')){
+    visual='Modern premium financial office, glass walls, team collaborating around glass conference table, natural window light from floor-to-ceiling windows';
+    dados='Floating stat cards: AuM value, number of clients, years of experience — large bold numbers on dark rounded panels, electric blue accents';
+  } else if(t.includes('lifestyle')||t.includes('experiên')||t.includes('experienc')||t.includes('fér')||t.includes('viagem')){
+    visual='Affluent couple at luxury destination — private yacht or penthouse terrace, warm golden sunset, premium lifestyle atmosphere';
+    dados='Subtle floating wealth metric card ("Patrimônio trabalhando por você"), elegant thin electric blue frame border, lifestyle value indicator, minimal clean overlay';
+  } else if(t.includes('patrimônio')||t.includes('patrimonio')||t.includes('riqueza')||t.includes('milh')){
+    visual='Dramatic low-angle glass skyscraper against deep blue dusk sky, gold reflections, aspirational wealth aesthetic';
+    dados='Bold ascending chart line overlay with milestone markers (R$1M → R$5M → R$10M), CAGR percentage in large type, wealth milestone number as dominant center element at 3x size';
+  } else if(t.includes('previdên')||t.includes('aposentad')||t.includes('longo prazo')){
+    visual='Confident executive at panoramic office window, golden sunset cityscape behind, contemplative and secure posture';
+    dados='Timeline graphic with age milestones (30 → 45 → 60), projected monthly income in large bold green, compound growth curve chart, years-to-goal counter';
+  } else if(t.includes('mercado')||t.includes('bolsa')||t.includes('ibovespa')||t.includes('ações')||t.includes('acoes')||t.includes('volatil')){
+    visual='Extreme close-up of financial candlestick charts on premium curved display, dramatic blue and amber lighting, selective focus, motion blur';
+    dados='Bold index value card (ex: IBOVESPA 128.450), percentage change in large green/red type, support/resistance level annotations, trend line, 30-day volatility indicator';
+  } else if(t.includes('inflação')||t.includes('inflacao')||t.includes('ipca')){
+    visual='Dramatic macro of Brazilian real banknote, dark studio background, electric blue rim lighting, erosion concept';
+    dados='Split comparison graphic: IPCA % erosion vs CDI % protection, purchasing power chart going down vs investment going up, bold percentage contrast in red vs green';
+  } else if(t.includes('fundo')||t.includes('exclusivo')||t.includes('multimercado')){
+    visual='Abstract flowing golden liquid forming wave chart patterns against deep navy, luxury financial concept art, smooth studio lighting';
+    dados='Performance comparison table: 12M / 24M / 36M returns vs CDI benchmark — bold return numbers in green, CDI line for reference, fund highlight card with star icon';
+  } else if(t.includes('retrospectiva')||t.includes('retrospect')||t.includes('encerrament')){
+    visual='Cinematic São Paulo skyline at year-end golden hour, fireworks glow on horizon, celebratory and reflective atmosphere';
+    dados='4-card grid with main year market numbers: Ibovespa %, CDI %, IPCA %, USD/BRL — each card color-coded green/red, electric blue borders, year in large background type';
+  } else {
+    visual='Sophisticated financial advisor with premium client at glass desk in modern high-rise office, city skyline through floor-to-ceiling windows, blue and gold tones';
+    dados='Floating concept cards with bold numbered steps or key insight, dominant statistic in large electric blue type center, supporting icons and data points';
+  }
 
-  const fmt=canal==='instagram'?', square 1:1 composition optimized for Instagram feed':canal==='whatsapp'?', vertical mobile-first composition, clean and minimal':', horizontal 16:9 composition optimized for LinkedIn feed';
-  return `${conceito}. ${style}${fmt}.`;
+  return `Premium financial editorial infographic for social media. ${brand}\n\nCOMPOSITION:\n- Top section: bold white headline band, electric blue left accent bar (4px), diagonal geometric stripe pattern top-right corner (brand element)\n- Main visual layer: ${visual}\n- Data overlay: ${dados}\n- Data style: ultra-bold white/green/red numbers, small uppercase gray labels, thin electric blue dividers, rounded dark semi-transparent panels (rgba dark navy), ONE dominant number at 3x size as hero element\n- Bottom band: dark footer with secondary info or source\n- Lighting: electric blue (#3b8bff) accent glows, subtle gold highlights, high contrast, cinematic depth\n\n${fmt} Multiple visual layers, ultra high resolution.`;
 }
 
 function mostrarPromptImagem(titulo, canal){
