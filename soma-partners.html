@@ -102,10 +102,18 @@
       background: radial-gradient(ellipse at 50% 35%, rgba(180,40,30,0.22) 0%, rgba(10,8,8,1) 65%),
         linear-gradient(135deg, #1e0a08 0%, #110707 60%, #0a0505 100%);
     }
-    .card-calendario .card-placeholder {
-      background: radial-gradient(ellipse at 50% 40%, rgba(20,100,120,0.4) 0%, rgba(6,12,18,1) 65%),
-        linear-gradient(135deg, #061820 0%, #040d14 60%, #030a10 100%);
+    .card-embreve .card-placeholder {
+      background: radial-gradient(ellipse at 50% 40%, rgba(80,80,100,0.18) 0%, rgba(8,8,12,1) 70%),
+        linear-gradient(135deg, #0e0e14 0%, #080810 60%, #060608 100%);
     }
+    .embreve-mark {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(48px, 6vw, 80px); font-weight: 900;
+      color: rgba(255,255,255,0.07); letter-spacing: -2px;
+      z-index: 3; pointer-events: none; user-select: none;
+    }
+    .card-embreve { cursor: default; }
     .card-admin .card-placeholder {
       background: radial-gradient(ellipse at 50% 30%, rgba(100,80,180,0.2) 0%, rgba(8,10,18,1) 65%),
         linear-gradient(135deg, #120f1e 0%, #0a0c16 60%, #080a10 100%);
@@ -168,7 +176,7 @@
       .card-subtitle { font-size: 9px; }
     }
   </style>
-  <!-- PWA v2 -->
+  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#c9963c">
   <meta name="mobile-web-app-capable" content="yes">
@@ -275,13 +283,14 @@
       </div>
     </div>
 
-    <!-- CALENDÁRIO -->
-    <div class="card card-calendario" onclick="window.location.href='calendario.html'">
+    <!-- EM BREVE -->
+    <div class="card card-embreve">
       <div class="card-placeholder"></div>
       <div class="card-tint"></div>
+      <div class="embreve-mark">?</div>
       <div class="card-footer">
-        <div class="card-title">Calendário</div>
-        <div class="card-subtitle">Agenda &amp; Compromissos</div>
+        <div class="card-title">Em Breve</div>
+        <div class="card-subtitle">Novo módulo a caminho</div>
       </div>
     </div>
 
