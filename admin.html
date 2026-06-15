@@ -1148,14 +1148,17 @@ body{display:flex;flex-direction:column;overflow:hidden}
       </div>
       <div class="field"><label>Data de Publicação</label><input type="date" id="conteudo-data" style="color-scheme:dark"></div>
     </div>
-    <div class="field"><label>Título / Assunto</label><input type="text" id="conteudo-titulo" placeholder="Ex: Post sobre planejamento sucessório"></div>
+    <div class="field"><label>Título / Assunto</label><input type="text" id="conteudo-titulo" placeholder="Ex: Relatório de resultados das Gigantes da Tecnologia"></div>
+    <div class="field"><label>Pessoas no Post <span style="font-size:10px;opacity:.55;font-weight:400">(opcional — influencia o prompt de imagem)</span></label>
+      <input type="text" id="conteudo-pessoas" placeholder="Ex: Elon Musk, Tim Cook, Satya Nadella" autocomplete="off">
+    </div>
     <div class="field">
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Prompt de Imagem <span style="font-size:10px;opacity:.6;font-weight:400">(para ChatGPT / Gemini / Gamma)</span></span>
-        <button type="button" class="btn btn-outline btn-sm" style="font-size:10px;padding:2px 10px" onclick="(function(){const t=document.getElementById('conteudo-titulo').value;const c=document.getElementById('conteudo-canal').value;if(!t){showToast('Preencha o título primeiro','err');return;}const p=gerarPromptImagem(t,c);document.getElementById('conteudo-prompt').value=p;document.getElementById('conteudo-prompt-wrap').style.display='block';})()">✨ Gerar Prompt</button>
+        <button type="button" class="btn btn-outline btn-sm" style="font-size:10px;padding:2px 10px" onclick="(function(){const t=document.getElementById('conteudo-titulo').value;const c=document.getElementById('conteudo-canal').value;const pe=document.getElementById('conteudo-pessoas').value;if(!t){showToast('Preencha o título primeiro','err');return;}const p=gerarPromptImagem(t,c,pe);document.getElementById('conteudo-prompt').value=p;document.getElementById('conteudo-prompt-wrap').style.display='block';})()">✨ Gerar Prompt</button>
       </label>
       <div id="conteudo-prompt-wrap" style="display:none;position:relative">
-        <textarea id="conteudo-prompt" rows="4" style="width:100%;background:rgba(59,130,246,0.07);color:var(--text);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:10px 38px 10px 10px;font-size:11px;line-height:1.6;resize:vertical;font-family:monospace" readonly placeholder="Preencha o título e clique em Gerar Prompt"></textarea>
+        <textarea id="conteudo-prompt" rows="5" style="width:100%;background:rgba(59,130,246,0.07);color:var(--text);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:10px 38px 10px 10px;font-size:11px;line-height:1.6;resize:vertical;font-family:monospace" readonly></textarea>
         <button type="button" title="Copiar prompt" onclick="navigator.clipboard.writeText(document.getElementById('conteudo-prompt').value).then(()=>{showToast('Prompt copiado! ✓','ok')})" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;opacity:.7">📋</button>
       </div>
     </div>
@@ -1311,8 +1314,19 @@ body{display:flex;flex-direction:column;overflow:hidden}
 <div class="modal-overlay" id="modal-prompt-img">
   <div class="modal" style="max-width:560px">
     <div class="modal-title">🎨 Prompt de Imagem — <span id="prompt-img-titulo" style="font-weight:400;font-size:13px;opacity:.8"></span></div>
-    <div style="margin:16px 0 8px;font-size:12px;color:var(--muted)">Cole este prompt no ChatGPT, Gemini ou Gamma para gerar a imagem do post:</div>
-    <textarea id="prompt-img-texto" rows="7" style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12px;line-height:1.6;resize:vertical;font-family:monospace" readonly></textarea>
+    <div style="margin:14px 0 6px">
+      <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Pessoas no Post <span style="font-weight:400;opacity:.7">(opcional)</span></label>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <input type="text" id="prompt-img-pessoas" placeholder="Ex: Warren Buffett, Ray Dalio" style="flex:1;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px">
+        <button class="btn btn-outline btn-sm" style="white-space:nowrap" onclick="(function(){const t=document.getElementById('prompt-img-titulo').textContent;const pe=document.getElementById('prompt-img-pessoas').value;const canal=document.getElementById('prompt-img-canal').value||'linkedin';document.getElementById('prompt-img-texto').value=gerarPromptImagem(t,canal,pe);})()">↺ Regerar</button>
+      </div>
+      <input type="hidden" id="prompt-img-canal">
+    </div>
+    <div style="margin:10px 0 6px;font-size:11px;color:var(--muted)">Cole no ChatGPT, Gemini ou Gamma:</div>
+    <div style="position:relative">
+      <textarea id="prompt-img-texto" rows="6" style="width:100%;background:rgba(59,130,246,0.07);color:var(--text);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:10px 38px 10px 10px;font-size:11px;line-height:1.6;resize:vertical;font-family:monospace" readonly></textarea>
+      <button type="button" title="Copiar" onclick="navigator.clipboard.writeText(document.getElementById('prompt-img-texto').value).then(()=>{showToast('Prompt copiado! ✓','ok')})" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;opacity:.7">📋</button>
+    </div>
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
       <button class="btn btn-outline" onclick="closeModal('modal-prompt-img')">Fechar</button>
       <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('prompt-img-texto').value).then(()=>{showToast('Prompt copiado! ✓','ok')})">📋 Copiar Prompt</button>
@@ -2814,7 +2828,7 @@ function renderMetricas(){
 function abrirModalConteudo(){
   document.getElementById('conteudo-id').value='';
   document.getElementById('conteudo-modal-title').textContent='Novo Conteúdo';
-  ['conteudo-titulo','conteudo-desc','conteudo-data','conteudo-link','conteudo-prompt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['conteudo-titulo','conteudo-desc','conteudo-data','conteudo-link','conteudo-prompt','conteudo-pessoas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const pw=document.getElementById('conteudo-prompt-wrap');if(pw)pw.style.display='none';
   document.getElementById('conteudo-canal').value='instagram';
   document.getElementById('conteudo-status').value='rascunho';
@@ -2953,9 +2967,21 @@ async function salvarMetrica(){
 async function deletarMetrica(id){if(!confirm('Remover métrica?'))return;await _sb.from('admin_mkt_metricas').delete().eq('id',id);await loadAll();}
 
 // ── PROMPT DE IMAGEM ──
-function gerarPromptImagem(titulo, canal){
+function gerarPromptImagem(titulo, canal, pessoas){
   const t=(titulo||'').toLowerCase();
   const style='deep navy blue background (#0b1e30), premium Brazilian wealth management photography, electric blue accent lighting, ultra-clean professional composition, high contrast, cinematic quality, no text overlays, no logos, 85mm lens, shallow depth of field';
+
+  // — MODO PESSOAS: quando há nomes, gera composição de retratos profissionais —
+  if(pessoas&&pessoas.trim()){
+    const lista=pessoas.split(',').map(p=>p.trim()).filter(Boolean);
+    const fmt=canal==='instagram'?'square 1:1 composition':canal==='whatsapp'?'vertical 9:16 mobile composition':'horizontal 16:9 composition';
+    if(lista.length===1){
+      return `Professional editorial portrait of ${lista[0]}, confident and authoritative expression, sharp focus on face, dark navy (#0b1e30) studio background, electric blue rim lighting on shoulders, premium financial magazine aesthetic, ultra-high-resolution headshot, ${fmt}. No text, no logos, cinematic quality, 85mm portrait lens.`;
+    }
+    const nomes=lista.join(', ');
+    const count=lista.length;
+    return `${count} professional circular portrait frames arranged in a horizontal row, each showing a high-quality editorial headshot of: ${nomes}. Each portrait inside a white-bordered circle frame, dark navy background (#0b1e30), electric blue accent glow around frames, confident corporate expressions, sharp details, premium financial media aesthetic, ${fmt}. No text overlays, no logos, studio lighting, inspired by Bloomberg/Forbes editorial style.`;
+  }
 
   let conceito;
   if(t.includes('copom')||t.includes('selic')||t.includes('juros'))
@@ -2997,7 +3023,9 @@ function gerarPromptImagem(titulo, canal){
 
 function mostrarPromptImagem(titulo, canal){
   document.getElementById('prompt-img-titulo').textContent=titulo||'Post';
-  document.getElementById('prompt-img-texto').value=gerarPromptImagem(titulo, canal);
+  document.getElementById('prompt-img-canal').value=canal||'linkedin';
+  document.getElementById('prompt-img-pessoas').value='';
+  document.getElementById('prompt-img-texto').value=gerarPromptImagem(titulo, canal, '');
   openModal('modal-prompt-img');
 }
 
