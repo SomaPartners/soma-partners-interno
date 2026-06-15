@@ -1163,8 +1163,10 @@ body{display:flex;flex-direction:column;overflow:hidden}
           <textarea id="conteudo-prompt" rows="4" style="width:100%;background:rgba(59,130,246,0.07);color:var(--text);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:10px 38px 10px 10px;font-size:11px;line-height:1.6;resize:vertical;font-family:monospace" readonly></textarea>
           <button type="button" title="Copiar prompt" onclick="navigator.clipboard.writeText(document.getElementById('conteudo-prompt').value).then(()=>{showToast('Prompt copiado! ✓','ok')})" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;opacity:.7">📋</button>
         </div>
-        <button type="button" class="btn btn-primary btn-sm" id="conteudo-img-gerar-btn" style="margin-top:8px;width:100%" onclick="this.disabled=true;gerarImagemPollinations(document.getElementById('conteudo-prompt').value,document.getElementById('conteudo-canal').value||'instagram','conteudo-img-preview','conteudo-img-gerar-btn')">🖼️ Gerar Imagem com Flux</button>
-        <div id="conteudo-img-preview" style="display:none;margin-top:8px"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button type="button" class="btn btn-outline btn-sm" style="flex:1;background:rgba(16,163,127,0.12);border-color:rgba(16,163,127,0.4);color:#10a37f" onclick="abrirPromptEm('chatgpt','conteudo-prompt')">✦ Abrir no ChatGPT</button>
+          <button type="button" class="btn btn-outline btn-sm" style="flex:1;background:rgba(66,133,244,0.12);border-color:rgba(66,133,244,0.4);color:#4285f4" onclick="abrirPromptEm('gemini','conteudo-prompt')">✦ Abrir no Gemini</button>
+        </div>
       </div>
     </div>
     <div class="field"><label>Descrição / Roteiro</label><textarea id="conteudo-desc" placeholder="O que será dito, link, hashtags…"></textarea></div>
@@ -1332,12 +1334,12 @@ body{display:flex;flex-direction:column;overflow:hidden}
       <textarea id="prompt-img-texto" rows="6" style="width:100%;background:rgba(59,130,246,0.07);color:var(--text);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:10px 38px 10px 10px;font-size:11px;line-height:1.6;resize:vertical;font-family:monospace" readonly></textarea>
       <button type="button" title="Copiar" onclick="navigator.clipboard.writeText(document.getElementById('prompt-img-texto').value).then(()=>{showToast('Prompt copiado! ✓','ok')})" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;opacity:.7">📋</button>
     </div>
-    <div id="prompt-img-preview" style="display:none"></div>
-    <div style="display:flex;gap:8px;margin-top:14px;justify-content:space-between;align-items:center">
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:space-between;align-items:center;flex-wrap:wrap">
       <button class="btn btn-outline" onclick="closeModal('modal-prompt-img')">Fechar</button>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('prompt-img-texto').value).then(()=>{showToast('Prompt copiado! ✓','ok')})">📋 Copiar Prompt</button>
-        <button class="btn btn-primary" id="prompt-img-gerar-btn" onclick="this.disabled=true;gerarImagemPollinations(document.getElementById('prompt-img-texto').value,document.getElementById('prompt-img-canal').value||'linkedin','prompt-img-preview','prompt-img-gerar-btn')">🖼️ Gerar Imagem</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('prompt-img-texto').value).then(()=>{showToast('Prompt copiado! ✓','ok')})">📋 Copiar</button>
+        <button class="btn btn-outline" style="background:rgba(16,163,127,0.12);border-color:rgba(16,163,127,0.4);color:#10a37f" onclick="abrirPromptEm('chatgpt','prompt-img-texto')">✦ Abrir no ChatGPT</button>
+        <button class="btn btn-outline" style="background:rgba(66,133,244,0.12);border-color:rgba(66,133,244,0.4);color:#4285f4" onclick="abrirPromptEm('gemini','prompt-img-texto')">✦ Abrir no Gemini</button>
       </div>
     </div>
   </div>
@@ -2839,8 +2841,6 @@ function abrirModalConteudo(){
   document.getElementById('conteudo-modal-title').textContent='Novo Conteúdo';
   ['conteudo-titulo','conteudo-desc','conteudo-data','conteudo-link','conteudo-prompt','conteudo-pessoas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const pw=document.getElementById('conteudo-prompt-wrap');if(pw)pw.style.display='none';
-  const ip=document.getElementById('conteudo-img-preview');if(ip){ip.style.display='none';ip.innerHTML='';}
-  const gb=document.getElementById('conteudo-img-gerar-btn');if(gb)gb.disabled=false;
   document.getElementById('conteudo-canal').value='instagram';
   document.getElementById('conteudo-status').value='rascunho';
   document.getElementById('conteudo-resp').innerHTML='<option value="">Selecionar…</option>'+equipe.filter(f=>f.status!=='inativo').map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');
@@ -3039,6 +3039,21 @@ function mostrarPromptImagem(titulo, canal){
   document.getElementById('prompt-img-texto').value=gerarPromptImagem(titulo, canal, '');
   const prev=document.getElementById('prompt-img-preview');if(prev){prev.style.display='none';prev.innerHTML='';}
   openModal('modal-prompt-img');
+}
+
+function abrirPromptEm(servico, promptFieldId){
+  const txt=document.getElementById(promptFieldId)?.value||'';
+  if(!txt){showToast('Gere o prompt primeiro','err');return;}
+  navigator.clipboard.writeText(txt).then(()=>{
+    const label=servico==='chatgpt'?'ChatGPT':'Gemini';
+    showToast('Prompt copiado! Cole no '+label+' e mande gerar 🎨','ok');
+    window.open(servico==='chatgpt'?'https://chat.openai.com/':'https://gemini.google.com/app','_blank');
+  }).catch(()=>{
+    // fallback se clipboard falhar
+    const label=servico==='chatgpt'?'ChatGPT':'Gemini';
+    showToast('Abrindo '+label+'… copie o prompt manualmente','ok');
+    window.open(servico==='chatgpt'?'https://chat.openai.com/':'https://gemini.google.com/app','_blank');
+  });
 }
 
 async function gerarImagemPollinations(promptText, canal, previewId, regenBtn){
