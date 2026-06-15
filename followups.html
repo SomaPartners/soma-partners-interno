@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Follow-ups — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0b1e30;--navy2:#0d2035;--white:#fff;--border:rgba(255,255,255,0.09);
+  --gold:#c9963c;--red:#ef4444;--orange:#f59e0b;--green:#10b981;--blue:#3b82f6;--purple:#8b5cf6;
+  --muted:rgba(255,255,255,0.45);--muted2:rgba(255,255,255,0.22);
+}
+html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-serif;color:var(--white)}
+
+/* NAV */
+.topnav{position:sticky;top:0;z-index:100;background:rgba(11,30,48,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:13px;cursor:pointer;text-decoration:none}
+.logo-soma{font-size:17px;font-weight:300;color:#fff;letter-spacing:0.5px}
+.logo-pipe{width:1px;height:20px;background:rgba(255,255,255,0.4)}
+.logo-partners{font-size:10px;font-weight:700;letter-spacing:5px;color:#fff;text-transform:uppercase}
+.nav-right{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all 0.18s;text-decoration:none}
+.btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none}
+.btn-primary{background:rgba(201,150,60,0.18);border:1px solid rgba(201,150,60,0.4);color:#c9963c}.btn-primary:hover{background:rgba(201,150,60,0.3);color:#fff}
+.btn-outline{background:transparent;color:#fff;border:1px solid var(--border)}.btn-outline:hover{background:rgba(255,255,255,0.08)}
+
+/* PAGE */
+.page{padding:32px 40px 60px;max-width:1400px;margin:0 auto}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
+.page-title{font-size:clamp(24px,3vw,36px);font-weight:900;letter-spacing:1px}
+.page-sub{font-size:12px;color:var(--muted);font-weight:500;margin-top:4px}
+.header-actions{display:flex;gap:10px;align-items:center;flex-shrink:0}
+
+/* MONTH BAR */
+.month-bar{display:flex;align-items:center;gap:0;width:100%;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.01);margin-bottom:24px;overflow-x:auto}
+.year-sel{background:rgba(201,150,60,0.15);border:1px solid rgba(201,150,60,0.35);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:800;color:#c9963c;cursor:pointer;font-family:'Montserrat',sans-serif;margin-right:8px;outline:none;flex-shrink:0}
+.year-sel option{background:#0b1e30;color:#fff}
+.month-btn{flex:1;background:transparent;border:none;border-bottom:2px solid transparent;padding:10px 6px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.15s;white-space:nowrap;letter-spacing:0.5px;text-transform:uppercase}
+.month-btn:hover{color:#fff;background:rgba(255,255,255,0.04)}
+.month-btn.active{color:#fff;border-bottom-color:var(--gold)}
+
+/* KANBAN */
+.kanban{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+.k-col{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px}
+.k-col-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.k-col-title{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.k-col-atrasado .k-col-title{color:#fca5a5}
+.k-col-hoje .k-col-title{color:#fcd34d}
+.k-col-semana .k-col-title{color:#6ee7b7}
+.k-col-concluido .k-col-title{color:#c9963c}
+.k-col-count{font-size:11px;font-weight:700;opacity:0.5}
+.k-cards{padding:8px;display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;max-height:calc(100vh - 300px)}
+
+/* CARD */
+.k-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:11px 13px;position:relative;transition:background 0.15s}
+.k-card:hover{background:rgba(255,255,255,0.06)}
+.k-card-atrasado{border-left:3px solid var(--red)}
+.k-card-hoje{border-left:3px solid var(--orange)}
+.k-card-semana{border-left:3px solid var(--green)}
+.k-card-nome{font-size:13px;font-weight:700;margin-bottom:3px}
+.k-card-desc{font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4}
+.k-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.k-card-meta{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted2)}
+.tipo-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:0.5px;text-transform:uppercase}
+.tipo-ligacao{background:rgba(59,130,246,0.15);color:#93c5fd}
+.tipo-whatsapp{background:rgba(16,185,129,0.15);color:#6ee7b7}
+.tipo-email{background:rgba(139,92,246,0.15);color:#c4b5fd}
+.tipo-reuniao{background:rgba(245,158,11,0.15);color:#fcd34d}
+.tipo-outro{background:rgba(255,255,255,0.07);color:var(--muted)}
+.done-btn{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:4px 10px;font-size:9px;font-weight:800;color:#6ee7b7;cursor:pointer;font-family:'Montserrat',sans-serif;letter-spacing:0.5px;transition:all 0.15s;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.done-btn:hover{background:rgba(16,185,129,0.25);color:#fff}
+.done-btn svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0}
+.del-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.15);font-size:16px;line-height:1;padding:0 2px;transition:color 0.15s;flex-shrink:0}
+.del-btn:hover{color:#fca5a5}
+.k-empty{text-align:center;padding:36px 16px;font-size:11px;color:var(--muted2);font-weight:500}
+
+/* MES VIEW */
+.mes-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-dark{background:#0f2236;border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:480px}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:22px;letter-spacing:0.5px}
+.form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.form-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.form-input,.form-select,.form-textarea{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:13px;color:#fff;outline:none;transition:border 0.15s;width:100%}
+.form-textarea{resize:vertical;min-height:72px;line-height:1.5}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:rgba(201,150,60,0.5)}
+.form-select option{background:#0f2236;color:#fff}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+.btn-cancel{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:9px 18px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Montserrat',sans-serif}
+.btn-save{background:rgba(201,150,60,0.2);border:1px solid rgba(201,150,60,0.4);border-radius:8px;padding:9px 20px;font-size:12px;font-weight:700;color:#c9963c;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.18s}
+.btn-save:hover{background:rgba(201,150,60,0.35);color:#fff}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e3a50;border:1px solid var(--border);border-radius:10px;padding:12px 22px;font-size:12px;font-weight:700;letter-spacing:0.3px;opacity:0;transition:all 0.3s;z-index:999;pointer-events:none;white-space:nowrap}
+.toast.ok{border-color:rgba(16,185,129,0.5);color:#6ee7b7}
+.toast.err{border-color:rgba(239,68,68,0.4);color:#fca5a5}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* LOADER */
+.loader-wrap{position:fixed;inset:0;z-index:300;background:rgba(11,30,48,0.7);display:none;align-items:center;justify-content:center}
+.loader-spin{width:36px;height:36px;border:3px solid rgba(201,150,60,0.2);border-top-color:#c9963c;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* BADGES HEADER */
+.stat-chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.stat-chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700}
+.stat-chip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+@media(max-width:900px){
+  .topnav{padding:0 16px}
+  .page{padding:20px 16px 40px}
+  .kanban,.mes-grid{grid-template-columns:1fr 1fr}
+  .k-cards{max-height:none}
+}
+@media(max-width:600px){
+  .kanban,.mes-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="nav-logo" href="soma-partners.html">
+    <span class="logo-soma">Soma</span><div class="logo-pipe"></div><span class="logo-partners">Partners</span>
+  </a>
+  <div class="nav-right">
+    <button class="btn btn-primary" onclick="openModal('modal-fu')">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novo Follow-up
+    </button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Follow-ups</div>
+      <div class="page-sub" id="relogio"></div>
+    </div>
+    <div class="header-actions" style="align-items:flex-end;flex-direction:column;gap:6px">
+      <div class="stat-chips" id="stat-chips"></div>
+    </div>
+  </div>
+
+  <!-- MONTH BAR -->
+  <div class="month-bar">
+    <select class="year-sel" id="year-sel" onchange="changeYear()"></select>
+    <button class="month-btn active" id="mb-atual" onclick="goAtual()">Hoje</button>
+    <button class="month-btn" data-m="0" onclick="goMes(0)">Jan</button>
+    <button class="month-btn" data-m="1" onclick="goMes(1)">Fev</button>
+    <button class="month-btn" data-m="2" onclick="goMes(2)">Mar</button>
+    <button class="month-btn" data-m="3" onclick="goMes(3)">Abr</button>
+    <button class="month-btn" data-m="4" onclick="goMes(4)">Mai</button>
+    <button class="month-btn" data-m="5" onclick="goMes(5)">Jun</button>
+    <button class="month-btn" data-m="6" onclick="goMes(6)">Jul</button>
+    <button class="month-btn" data-m="7" onclick="goMes(7)">Ago</button>
+    <button class="month-btn" data-m="8" onclick="goMes(8)">Set</button>
+    <button class="month-btn" data-m="9" onclick="goMes(9)">Out</button>
+    <button class="month-btn" data-m="10" onclick="goMes(10)">Nov</button>
+    <button class="month-btn" data-m="11" onclick="goMes(11)">Dez</button>
+  </div>
+
+  <!-- KANBAN -->
+  <div id="kanban-wrap"></div>
+</div>
+
+<!-- MODAL NOVO FOLLOW-UP -->
+<div class="modal-overlay" id="modal-fu">
+  <div class="modal-dark">
+    <div class="modal-title">Novo Follow-up</div>
+    <div class="form-row">
+      <label class="form-label">Contato / Lead</label>
+      <select class="form-select" id="fu-lead-id"></select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Descrição</label>
+      <textarea class="form-textarea" id="fu-desc" placeholder="O que precisa ser feito?"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="form-row">
+        <label class="form-label">Data</label>
+        <input type="date" class="form-input" id="fu-data"/>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" id="fu-tipo">
+          <option value="ligacao">Ligação</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="email">E-mail</option>
+          <option value="reuniao">Reunião</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-fu')">Cancelar</button>
+      <button class="btn-save" onclick="saveFu()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="loader-wrap" class="loader-wrap"><div class="loader-spin"></div></div>
+
+<script>
+if(sessionStorage.getItem('soma_auth')!=='1') window.location.href='login.html';
+
+const _sb = supabase.createClient(
+  'https://mdftseanzfganeiyotlf.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo'
+);
+
+function showLoader(on){document.getElementById('loader-wrap').style.display=on?'flex':'none'}
+function showToast(m,t='ok'){const el=document.getElementById('toast');el.textContent=m;el.className='toast '+t+' show';setTimeout(()=>el.className='toast '+t,3000)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function today(){return new Date().toISOString().split('T')[0]}
+function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
+function toDateStr(d){return d.toISOString().split('T')[0]}
+
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const TIPO_TAG={
+  ligacao:'<span class="tipo-tag tipo-ligacao">📞 Ligação</span>',
+  whatsapp:'<span class="tipo-tag tipo-whatsapp">💬 WhatsApp</span>',
+  email:'<span class="tipo-tag tipo-email">✉️ E-mail</span>',
+  reuniao:'<span class="tipo-tag tipo-reuniao">🤝 Reunião</span>',
+  outro:'<span class="tipo-tag tipo-outro">· Outro</span>',
+};
+
+let leads=[], followups=[];
+let _viewAtual=true, _viewMes=new Date().getMonth(), _viewAno=new Date().getFullYear();
+
+// ── RELÓGIO ──
+function tickClock(){
+  const now=new Date();
+  const dias=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('relogio').textContent=`${dias[now.getDay()]}, ${now.getDate()} de ${meses[now.getMonth()]} · ${h}:${m}`;
+}
+tickClock(); setInterval(tickClock,30000);
+
+// ── YEAR SELECT ──
+function initYearSel(){
+  const sel=document.getElementById('year-sel');
+  const cur=new Date().getFullYear();
+  for(let y=cur-2;y<=cur+1;y++){
+    const o=document.createElement('option');
+    o.value=y; o.textContent=y;
+    if(y===_viewAno) o.selected=true;
+    sel.appendChild(o);
+  }
+}
+function changeYear(){
+  _viewAno=parseInt(document.getElementById('year-sel').value);
+  if(_viewAtual) goMes(new Date().getMonth());
+  else render();
+}
+
+// ── DATA HELPERS ──
+function isOverdue(d){return d && d<today()}
+function isToday(d){return d===today()}
+function semanaAtual(){
+  const d=new Date();
+  const dow=d.getDay();
+  const start=new Date(d); start.setDate(d.getDate()-dow);
+  const end=new Date(start); end.setDate(start.getDate()+6);
+  return{start:toDateStr(start),end:toDateStr(end)};
+}
+
+// ── LOAD ──
+async function loadAll(){
+  showLoader(true);
+  try{
+    const[lRes,fRes]=await Promise.all([
+      _sb.from('wealth_leads').select('id,data').order('created_at',{ascending:false}),
+      _sb.from('wealth_followups').select('id,lead_id,data').order('created_at'),
+    ]);
+    leads=(lRes.data||[]).map(r=>({id:r.id,...(r.data||{})}));
+    followups=(fRes.data||[]).map(r=>({id:r.id,lead_id:r.lead_id,...(r.data||{})}));
+  }catch(e){showToast('Erro ao carregar','err')}
+  showLoader(false);
+  populateLeadSel();
+  render();
+}
+
+// ── RENDER ──
+function render(){
+  updateMonthBar();
+  renderStats();
+  if(_viewAtual) renderKanban();
+  else renderMes();
+}
+
+function updateMonthBar(){
+  document.querySelectorAll('.month-btn[data-m]').forEach(b=>{
+    b.classList.toggle('active',!_viewAtual&&parseInt(b.dataset.m)===_viewMes);
+  });
+  document.getElementById('mb-atual').classList.toggle('active',_viewAtual);
+}
+
+function renderStats(){
+  const pending=followups.filter(f=>!f.feito);
+  const at=pending.filter(f=>isOverdue(f.data)).length;
+  const hj=pending.filter(f=>isToday(f.data)).length;
+  const{start,end}=semanaAtual();
+  const sem=pending.filter(f=>!isOverdue(f.data)&&!isToday(f.data)&&f.data>=start&&f.data<=end).length;
+  document.getElementById('stat-chips').innerHTML=`
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:#ef4444"></div><span style="color:#fca5a5">${at} atrasado${at!==1?'s':''}</span></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:#f59e0b"></div><span style="color:#fcd34d">${hj} hoje</span></div>
+    <div class="stat-chip"><div class="stat-chip-dot" style="background:#10b981"></div><span style="color:#6ee7b7">${sem} esta semana</span></div>
+  `;
+}
+
+function renderKanban(){
+  const pending=followups.filter(f=>!f.feito).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  const{start,end}=semanaAtual();
+  const atrasados=pending.filter(f=>isOverdue(f.data));
+  const hoje=pending.filter(f=>isToday(f.data));
+  const semana=pending.filter(f=>!isOverdue(f.data)&&!isToday(f.data)&&f.data>=start&&f.data<=end);
+  const concluidos=followups.filter(f=>f.feito).sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,40);
+
+  document.getElementById('kanban-wrap').innerHTML=`
+    <div class="kanban">
+      <div class="k-col k-col-atrasado">
+        <div class="k-col-head"><span class="k-col-title">Atrasados</span><span class="k-col-count">${atrasados.length}</span></div>
+        <div class="k-cards">${atrasados.length?atrasados.map(f=>cardHTML(f,'atrasado')).join(''):'<div class="k-empty">Nenhum atrasado</div>'}</div>
+      </div>
+      <div class="k-col k-col-hoje">
+        <div class="k-col-head"><span class="k-col-title">Hoje</span><span class="k-col-count">${hoje.length}</span></div>
+        <div class="k-cards">${hoje.length?hoje.map(f=>cardHTML(f,'hoje')).join(''):'<div class="k-empty">Nada para hoje</div>'}</div>
+      </div>
+      <div class="k-col k-col-semana">
+        <div class="k-col-head"><span class="k-col-title">Esta Semana</span><span class="k-col-count">${semana.length}</span></div>
+        <div class="k-cards">${semana.length?semana.map(f=>cardHTML(f,'semana')).join(''):'<div class="k-empty">Semana livre</div>'}</div>
+      </div>
+      <div class="k-col k-col-concluido">
+        <div class="k-col-head"><span class="k-col-title">Concluídos</span><span class="k-col-count">${concluidos.length}</span></div>
+        <div class="k-cards">${concluidos.length?concluidos.map(f=>cardDoneHTML(f)).join(''):'<div class="k-empty">Nenhum ainda</div>'}</div>
+      </div>
+    </div>`;
+}
+
+function renderMes(){
+  const mesStr=String(_viewMes+1).padStart(2,'0');
+  const prefixo=`${_viewAno}-${mesStr}`;
+  const doMes=followups.filter(f=>(f.data||'').startsWith(prefixo)).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  const pendentes=doMes.filter(f=>!f.feito);
+  const concluidos=doMes.filter(f=>f.feito);
+  const cores=['#6ee7b7','#fcd34d','#93c5fd','#c4b5fd'];
+  const semanas=[{label:'Semana 1',items:[]},{label:'Semana 2',items:[]},{label:'Semana 3',items:[]},{label:'Semana 4+',items:[]}];
+  pendentes.forEach(f=>{
+    const dia=parseInt((f.data||'').split('-')[2]||'1');
+    semanas[dia<=7?0:dia<=14?1:dia<=21?2:3].items.push(f);
+  });
+  const semCom=semanas.filter(s=>s.items.length);
+  const totalCols=semCom.length+(concluidos.length?1:0)||1;
+  const gridCols=Math.min(totalCols,4);
+
+  let html=`<div class="mes-grid" style="grid-template-columns:repeat(${gridCols},1fr)">`;
+  if(!doMes.length){
+    html=`<div class="k-empty" style="padding:60px 0">Nenhum follow-up em ${MESES[_viewMes]} ${_viewAno}</div>`;
+  } else {
+    semCom.forEach((s,i)=>{
+      const cor=cores[semanas.indexOf(s)]||'#6ee7b7';
+      html+=`<div class="k-col">
+        <div class="k-col-head" style="border-left:3px solid ${cor}">
+          <span class="k-col-title" style="color:${cor}">${s.label}</span>
+          <span class="k-col-count">${s.items.length}</span>
+        </div>
+        <div class="k-cards">${s.items.map(f=>cardMesHTML(f,cor)).join('')}</div>
+      </div>`;
+    });
+    if(concluidos.length){
+      html+=`<div class="k-col k-col-concluido">
+        <div class="k-col-head"><span class="k-col-title">Concluídos</span><span class="k-col-count">${concluidos.length}</span></div>
+        <div class="k-cards">${concluidos.map(f=>cardDoneHTML(f)).join('')}</div>
+      </div>`;
+    }
+    html+='</div>';
+  }
+  document.getElementById('kanban-wrap').innerHTML=html;
+}
+
+// ── CARD HTML ──
+const checkSVG='<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+function nomeLead(f){return leads.find(l=>l.id===f.lead_id)?.nome||'—'}
+
+function cardHTML(f,tipo){
+  return`<div class="k-card k-card-${tipo}">
+    <div class="k-card-nome">${nomeLead(f)}</div>
+    <div class="k-card-desc">${f.desc||''}</div>
+    <div class="k-card-foot">
+      <div class="k-card-meta">${TIPO_TAG[f.tipo]||''}<span>${fmtDate(f.data)}</span></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="done-btn" onclick="marcarFeito('${f.id}')">${checkSVG} Feito</button>
+        <button class="del-btn" onclick="deleteFu('${f.id}')" title="Remover">×</button>
+      </div>
+    </div>
+  </div>`;
+}
+function cardMesHTML(f,cor){
+  return`<div class="k-card" style="border-left:3px solid ${cor}">
+    <div class="k-card-nome">${nomeLead(f)}</div>
+    <div class="k-card-desc">${f.desc||''}</div>
+    <div class="k-card-foot">
+      <div class="k-card-meta">${TIPO_TAG[f.tipo]||''}<span>${fmtDate(f.data)}</span></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="done-btn" onclick="marcarFeito('${f.id}')">${checkSVG} Feito</button>
+        <button class="del-btn" onclick="deleteFu('${f.id}')" title="Remover">×</button>
+      </div>
+    </div>
+  </div>`;
+}
+function cardDoneHTML(f){
+  return`<div class="k-card" style="opacity:0.55;display:flex;gap:10px;align-items:flex-start">
+    <div style="flex-shrink:0;color:#6ee7b7;margin-top:1px">${checkSVG}</div>
+    <div style="flex:1;min-width:0">
+      <div class="k-card-nome">${nomeLead(f)}</div>
+      <div class="k-card-desc">${f.desc||''}</div>
+      <div class="k-card-meta">${TIPO_TAG[f.tipo]||''}<span>${fmtDate(f.data)}</span></div>
+    </div>
+    <button class="del-btn" onclick="deleteFu('${f.id}')" title="Remover">×</button>
+  </div>`;
+}
+
+// ── ACTIONS ──
+async function marcarFeito(id){
+  const f=followups.find(x=>x.id===id); if(!f)return;
+  f.feito=true;
+  const{error}=await _sb.from('wealth_followups').upsert({id,lead_id:f.lead_id,data:f});
+  if(error){showToast('Erro ao salvar','err');return;}
+  showToast('Concluído!','ok'); render();
+}
+
+async function deleteFu(id){
+  if(!confirm('Remover este follow-up?'))return;
+  const{error}=await _sb.from('wealth_followups').delete().eq('id',id);
+  if(error){showToast('Erro ao remover','err');return;}
+  followups=followups.filter(f=>f.id!==id);
+  showToast('Removido','ok'); render();
+}
+
+// ── SAVE ──
+function populateLeadSel(){
+  const sel=document.getElementById('fu-lead-id');
+  sel.innerHTML=[...leads].sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR',{sensitivity:'base'}))
+    .map(l=>`<option value="${l.id}">${l.nome}</option>`).join('');
+}
+
+async function saveFu(){
+  const lead_id=document.getElementById('fu-lead-id').value;
+  const data=document.getElementById('fu-data').value;
+  const desc=document.getElementById('fu-desc').value.trim();
+  if(!lead_id||!data||!desc){alert('Preencha todos os campos');return;}
+  const id=uid();
+  const rec={id,lead_id,data,tipo:document.getElementById('fu-tipo').value,desc,feito:false};
+  const{error}=await _sb.from('wealth_followups').upsert({id,lead_id,data:rec});
+  if(error){showToast('Erro ao salvar','err');return;}
+  followups.push(rec);
+  showToast('Follow-up agendado!','ok');
+  closeModal('modal-fu');
+  render();
+}
+
+// ── NAV ──
+function goAtual(){_viewAtual=true;render()}
+function goMes(m){_viewAtual=false;_viewMes=m;render()}
+
+// ── MODAL ──
+function openModal(id){
+  if(id==='modal-fu'){
+    document.getElementById('fu-desc').value='';
+    document.getElementById('fu-data').value=today();
+    document.getElementById('fu-tipo').value='ligacao';
+    populateLeadSel();
+  }
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')}));
+
+// ── INIT ──
+initYearSel();
+loadAll();
+</script>
+</body>
+</html>
