@@ -181,43 +181,6 @@ body{display:flex;flex-direction:column;overflow:hidden}
 .dre-pessoal td{color:rgba(251,191,36,0.7)}
 .dre-aviso td{color:#fcd34d}
 .dre-total-big td{font-size:14px!important;font-weight:900;border-top:2px solid rgba(201,150,60,0.3)!important}
-/* ── Follow-ups ── */
-.fu-month-bar{display:flex;align-items:center;gap:0;width:100%;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.01);margin-bottom:20px;border-radius:10px 10px 0 0;overflow:hidden}
-.fu-year-sel{background:rgba(201,150,60,0.15);border:1px solid rgba(201,150,60,0.35);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:800;color:#c9963c;cursor:pointer;font-family:'Montserrat',sans-serif;margin:8px;outline:none;flex-shrink:0}
-.fu-month-btn{flex:1;background:transparent;border:none;border-bottom:2px solid transparent;padding:10px 4px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.15s;white-space:nowrap}
-.fu-month-btn:hover{color:#fff;background:rgba(255,255,255,0.04)}
-.fu-month-btn.active{color:#fff;border-bottom-color:var(--gold)}
-.fu-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
-.fu-col{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-.fu-col-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.fu-col-title{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
-.fu-col-count{font-size:11px;font-weight:700;color:var(--muted)}
-.fu-col-atrasado .fu-col-title{color:#fca5a5}
-.fu-col-hoje .fu-col-title{color:#fcd34d}
-.fu-col-semana .fu-col-title{color:#6ee7b7}
-.fu-col-concluido .fu-col-title{color:var(--gold)}
-.fu-cards{padding:8px;display:flex;flex-direction:column;gap:6px;flex:1;min-height:80px}
-.fu-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:11px 13px;position:relative}
-.fu-card-atrasado{border-left:3px solid var(--red)}
-.fu-card-hoje{border-left:3px solid var(--orange)}
-.fu-card-semana{border-left:3px solid var(--green)}
-.fu-card-lead{font-size:12px;font-weight:700;margin-bottom:3px;color:#fff}
-.fu-card-desc{font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.4}
-.fu-card-footer{display:flex;align-items:center;justify-content:space-between}
-.fu-card-meta{font-size:10px;color:var(--muted);display:flex;gap:8px;align-items:center}
-.fu-tag{display:inline-flex;align-items:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:2px 7px;border-radius:10px}
-.fu-tag-lig{background:rgba(59,130,246,0.15);color:#93c5fd}
-.fu-tag-reu{background:rgba(139,92,246,0.15);color:#c4b5fd}
-.fu-tag-wpp{background:rgba(16,185,129,0.15);color:#6ee7b7}
-.fu-tag-eml{background:rgba(245,158,11,0.15);color:#fcd34d}
-.fu-tag-out{background:rgba(255,255,255,0.08);color:var(--muted)}
-.fu-done-btn{width:28px;height:28px;border-radius:50%;border:2px solid rgba(16,185,129,0.3);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.18s;color:transparent}
-.fu-done-btn:hover{background:rgba(16,185,129,0.2);border-color:#6ee7b7;color:#6ee7b7}
-.fu-done-btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
-.fu-empty{text-align:center;padding:24px 16px;font-size:11px;color:var(--muted)}
-.fu-check-done{width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,0.2);border:2px solid rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#6ee7b7}
-.fu-check-done svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
-.fu-mes-empty{text-align:center;padding:48px 24px;font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -305,12 +268,6 @@ body{display:flex;flex-direction:column;overflow:hidden}
     <span>Métricas</span>
   </div>
 
-  <div class="sidebar-section">CRM</div>
-  <div class="nav-item" data-sec="crm-followups" onclick="nav('crm-followups',this);fuLazyLoad()">
-    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.92 11.5 19.79 19.79 0 0 1 1.87 2.86 2 2 0 0 1 3.84 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-    <span>Follow-ups</span>
-  </div>
-
   <div class="sidebar-section">Em breve</div>
   <div class="nav-item nav-coming">
     <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -384,10 +341,6 @@ body{display:flex;flex-direction:column;overflow:hidden}
         <option value="manual">Manuais</option>
         <option value="btg">Importados BTG</option>
       </select>
-      <button onclick="abrirModalLimparImport()" style="display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:700;color:#fca5a5;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;transition:all 0.18s" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
-        <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        Limpar Importados
-      </button>
     </div>
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Origem</th><th>Vencimento</th><th>Pagamento</th><th>Valor</th><th>Status</th><th></th></tr></thead>
@@ -680,14 +633,9 @@ body{display:flex;flex-direction:column;overflow:hidden}
           </select>
           <span id="ex-nc-badge" style="font-size:11px;font-weight:700;margin-left:4px"></span>
         </div>
-        <div id="ex-sel-bar" style="display:none;position:sticky;top:56px;z-index:20;margin-bottom:8px;padding:10px 14px;background:rgba(20,10,10,0.95);backdrop-filter:blur(8px);border:1px solid rgba(239,68,68,0.35);border-radius:10px;align-items:center;gap:12px">
-          <span id="ex-sel-count" style="font-size:12px;font-weight:700;color:#fca5a5"></span>
-          <button onclick="exDeleteSelected()" style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);border-radius:7px;padding:5px 14px;font-size:12px;font-weight:700;color:#fca5a5;cursor:pointer">🗑 Apagar selecionados</button>
-          <button onclick="exClearSel()" style="background:none;border:none;font-size:12px;color:rgba(255,255,255,0.35);cursor:pointer;margin-left:auto">✕ Cancelar</button>
-        </div>
         <div class="tbl-wrap">
           <table class="tbl">
-            <thead><tr><th style="width:32px;text-align:center"><input type="checkbox" id="ex-chk-all" onchange="exToggleAll(this.checked)" style="cursor:pointer;accent-color:#c9963c"></th><th>Data</th><th>Descrição</th><th style="text-align:right">Valor</th><th style="min-width:210px">Categoria</th><th>Obs</th></tr></thead>
+            <thead><tr><th>Data</th><th>Descrição</th><th style="text-align:right">Valor</th><th style="min-width:210px">Categoria</th><th>Obs</th></tr></thead>
             <tbody id="ex-tbody"></tbody>
           </table>
         </div>
@@ -1119,91 +1067,6 @@ body{display:flex;flex-direction:column;overflow:hidden}
   </div>
 </div>
 
-<!-- ════ CRM — FOLLOW-UPS ════ -->
-<div class="section" id="section-crm-followups">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-    <div>
-      <div class="sec-title">Follow-ups</div>
-      <div style="font-size:12px;color:var(--muted)">Ações agendadas com leads da Soma Wealth</div>
-    </div>
-    <button class="btn btn-primary" onclick="abrirModalFu()">
-      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Novo Follow-up
-    </button>
-  </div>
-
-  <!-- BARRA DE MESES -->
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden">
-    <div class="fu-month-bar">
-      <select class="fu-year-sel" id="fu-year-sel" onchange="setFuAno(this.value)"></select>
-      <button class="fu-month-btn" data-m="0" onclick="setFuMes(0)">Jan</button>
-      <button class="fu-month-btn" data-m="1" onclick="setFuMes(1)">Fev</button>
-      <button class="fu-month-btn" data-m="2" onclick="setFuMes(2)">Mar</button>
-      <button class="fu-month-btn" data-m="3" onclick="setFuMes(3)">Abr</button>
-      <button class="fu-month-btn" data-m="4" onclick="setFuMes(4)">Mai</button>
-      <button class="fu-month-btn" data-m="5" onclick="setFuMes(5)">Jun</button>
-      <button class="fu-month-btn" data-m="6" onclick="setFuMes(6)">Jul</button>
-      <button class="fu-month-btn" data-m="7" onclick="setFuMes(7)">Ago</button>
-      <button class="fu-month-btn" data-m="8" onclick="setFuMes(8)">Set</button>
-      <button class="fu-month-btn" data-m="9" onclick="setFuMes(9)">Out</button>
-      <button class="fu-month-btn" data-m="10" onclick="setFuMes(10)">Nov</button>
-      <button class="fu-month-btn" data-m="11" onclick="setFuMes(11)">Dez</button>
-    </div>
-  </div>
-
-  <!-- VISÃO MÊS CORRENTE -->
-  <div id="fu-view-current">
-    <div class="fu-grid">
-      <div class="fu-col fu-col-atrasado">
-        <div class="fu-col-head"><span class="fu-col-title">Atrasados</span><span class="fu-col-count" id="fu-count-atrasado">0</span></div>
-        <div class="fu-cards" id="fu-cards-atrasado"></div>
-      </div>
-      <div class="fu-col fu-col-hoje">
-        <div class="fu-col-head"><span class="fu-col-title">Hoje</span><span class="fu-col-count" id="fu-count-hoje">0</span></div>
-        <div class="fu-cards" id="fu-cards-hoje"></div>
-      </div>
-      <div class="fu-col fu-col-semana">
-        <div class="fu-col-head"><span class="fu-col-title">Esta Semana</span><span class="fu-col-count" id="fu-count-semana">0</span></div>
-        <div class="fu-cards" id="fu-cards-semana"></div>
-      </div>
-      <div class="fu-col fu-col-concluido">
-        <div class="fu-col-head"><span class="fu-col-title">Concluídos</span><span class="fu-col-count" id="fu-count-concluido">0</span></div>
-        <div class="fu-cards" id="fu-cards-concluido"></div>
-      </div>
-    </div>
-  </div>
-  <!-- VISÃO MÊS ESPECÍFICO -->
-  <div id="fu-view-mes" style="display:none">
-    <div id="fu-mes-conteudo"></div>
-  </div>
-</div>
-
-<!-- MODAL NOVO FOLLOW-UP -->
-<div class="modal-overlay" id="modal-fu-admin">
-  <div class="modal" style="max-width:440px">
-    <div class="modal-title">📞 Agendar Follow-up
-      <button class="mc" onclick="closeModal('modal-fu-admin')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="field"><label>Lead *</label><select id="fu-admin-lead-id"></select></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="field"><label>Data *</label><input type="date" id="fu-admin-data"></div>
-      <div class="field"><label>Tipo</label>
-        <select id="fu-admin-tipo">
-          <option value="ligacao">Ligação</option>
-          <option value="reuniao">Reunião</option>
-          <option value="whatsapp">WhatsApp</option>
-          <option value="email">E-mail</option>
-        </select>
-      </div>
-    </div>
-    <div class="field"><label>Descrição *</label><textarea id="fu-admin-desc" rows="2" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Montserrat',sans-serif;font-size:13px;color:#fff;outline:none;width:100%;resize:vertical" placeholder="O que será feito?"></textarea></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-fu-admin')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveFuAdmin()">Salvar</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL PESOS 360 -->
 <div class="modal-overlay" id="modal-pesos360">
   <div class="modal" style="max-width:680px;max-height:90vh;overflow-y:auto">
@@ -1226,7 +1089,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
         <tbody id="pesos-tbody"></tbody>
       </table>
     </div>
-    <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.25)">Pesos: 0 = não conta · 0.3 = baixo · 0.5 = padrão · 0.7 = relevante · 0.9 = importante · 1.0 = crítico</div>
+    <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.25)">Pesos sugeridos: 1 = padrão · 1.5 = relevante · 2 = importante · 2.5 = muito importante · 3 = crítico</div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modal-pesos360')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarPesos360()">💾 Salvar Pesos</button>
@@ -1434,6 +1297,19 @@ body{display:flex;flex-direction:column;overflow:hidden}
   </div>
 </div>
 
+<!-- MODAL PROMPT DE IMAGEM -->
+<div class="modal-overlay" id="modal-prompt-img">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title">🎨 Prompt de Imagem — <span id="prompt-img-titulo" style="font-weight:400;font-size:13px;opacity:.8"></span></div>
+    <div style="margin:16px 0 8px;font-size:12px;color:var(--muted)">Cole este prompt no ChatGPT, Gemini ou Gamma para gerar a imagem do post:</div>
+    <textarea id="prompt-img-texto" rows="7" style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12px;line-height:1.6;resize:vertical;font-family:monospace" readonly></textarea>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal('modal-prompt-img')">Fechar</button>
+      <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('prompt-img-texto').value).then(()=>{showToast('Prompt copiado! ✓','ok')})">📋 Copiar Prompt</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL GERAR CALENDÁRIO -->
 <div class="modal-overlay" id="modal-calendario">
   <div class="modal" style="max-width:500px">
@@ -1494,160 +1370,6 @@ let mktConteudo=[],mktCampanhas=[],mktMateriais=[],mktMetricas=[];
 let rodadas360=[],respostas360=[];
 let antecipClientes=[],antecipItens=[];
 
-// ── CRM — FOLLOW-UPS ──────────────────────────────────
-let _wLeads=[], _wFollowups=[];
-let _fuLoaded=false;
-let _fuAno=new Date().getFullYear(), _fuMes=new Date().getMonth();
-const _fuHojeAno=new Date().getFullYear(), _fuHojeMes=new Date().getMonth();
-const FU_TIPO_TAG={ligacao:'<span class="fu-tag fu-tag-lig">Ligação</span>',reuniao:'<span class="fu-tag fu-tag-reu">Reunião</span>',whatsapp:'<span class="fu-tag fu-tag-wpp">WhatsApp</span>',email:'<span class="fu-tag fu-tag-eml">E-mail</span>'};
-const FU_CHECKSVG=`<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
-
-function fuToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function fuIsOverdue(d){return d&&d<fuToday();}
-function fuIsToday(d){return d===fuToday();}
-function fuToDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function fuUid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
-function fuSemanaAtual(){const d=new Date();const dow=d.getDay()||7;const s=new Date(d);s.setDate(d.getDate()-dow+1);const e=new Date(s);e.setDate(s.getDate()+6);return{start:fuToDateStr(s),end:fuToDateStr(e)};}
-
-async function fuLazyLoad(){
-  if(_fuLoaded)return;
-  _fuLoaded=true;
-  try{
-    const[l,f]=await Promise.all([
-      _sb.from('wealth_leads').select('id,data').order('created_at',{ascending:false}),
-      _sb.from('wealth_followups').select('id,lead_id,data').order('created_at'),
-    ]);
-    _wLeads=(l.data||[]).map(r=>({id:r.id,...r.data}));
-    _wFollowups=(f.data||[]).map(r=>({id:r.id,lead_id:r.lead_id,...r.data}));
-  }catch(e){showToast('Erro ao carregar follow-ups','err');return;}
-  initFuMonthBar();
-  renderFollowupsAdmin();
-}
-
-function initFuMonthBar(){
-  const sel=document.getElementById('fu-year-sel');if(!sel)return;
-  sel.innerHTML='';
-  for(let y=_fuHojeAno-1;y<=_fuHojeAno+2;y++){
-    const o=document.createElement('option');o.value=y;o.textContent=y;
-    if(y===_fuAno)o.selected=true;
-    sel.appendChild(o);
-  }
-  updateFuMonthBar();
-}
-function setFuAno(y){_fuAno=parseInt(y);updateFuMonthBar();renderFollowupsAdmin();}
-function setFuMes(m){_fuMes=m;updateFuMonthBar();renderFollowupsAdmin();}
-function updateFuMonthBar(){
-  document.querySelectorAll('.fu-month-btn').forEach(btn=>btn.classList.toggle('active',parseInt(btn.dataset.m)===_fuMes));
-  const sel=document.getElementById('fu-year-sel');if(sel)sel.value=_fuAno;
-}
-function fuIsMesAtual(){return _fuAno===_fuHojeAno&&_fuMes===_fuHojeMes;}
-
-function fuCardAdminHTML(f,tipo){
-  const l=_wLeads.find(x=>x.id===f.lead_id);
-  return`<div class="fu-card fu-card-${tipo}">
-    <div class="fu-card-lead">${l?.nome||'—'}</div>
-    <div class="fu-card-desc">${f.desc||''}</div>
-    <div class="fu-card-footer">
-      <div class="fu-card-meta">${FU_TIPO_TAG[f.tipo]||''}<span>${f.data?f.data.split('-').reverse().join('/'):'—'}</span></div>
-      <button class="fu-done-btn" onclick="marcarFuFeitoAdmin('${f.id}')" title="Marcar como feito"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
-    </div>
-  </div>`;
-}
-
-function renderFollowupsAdmin(){
-  const isCurrent=fuIsMesAtual();
-  const cv=document.getElementById('fu-view-current');
-  const mv=document.getElementById('fu-view-mes');
-  if(!cv||!mv)return;
-  cv.style.display=isCurrent?'':'none';
-  mv.style.display=isCurrent?'none':'';
-  const empty='<div class="fu-empty">Nenhuma ação</div>';
-
-  if(isCurrent){
-    const pending=_wFollowups.filter(f=>!f.feito).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
-    const {start,end}=fuSemanaAtual();
-    const atrasados=pending.filter(f=>fuIsOverdue(f.data));
-    const hoje=pending.filter(f=>fuIsToday(f.data));
-    const semana=pending.filter(f=>!fuIsOverdue(f.data)&&!fuIsToday(f.data)&&f.data>=start&&f.data<=end);
-    const concluidos=_wFollowups.filter(f=>f.feito).sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,20);
-    document.getElementById('fu-count-atrasado').textContent=atrasados.length;
-    document.getElementById('fu-count-hoje').textContent=hoje.length;
-    document.getElementById('fu-count-semana').textContent=semana.length;
-    document.getElementById('fu-count-concluido').textContent=concluidos.length;
-    document.getElementById('fu-cards-atrasado').innerHTML=atrasados.length?atrasados.map(f=>fuCardAdminHTML(f,'atrasado')).join(''):empty;
-    document.getElementById('fu-cards-hoje').innerHTML=hoje.length?hoje.map(f=>fuCardAdminHTML(f,'hoje')).join(''):empty;
-    document.getElementById('fu-cards-semana').innerHTML=semana.length?semana.map(f=>fuCardAdminHTML(f,'semana')).join(''):empty;
-    document.getElementById('fu-cards-concluido').innerHTML=concluidos.length?concluidos.map(f=>{
-      const l=_wLeads.find(x=>x.id===f.lead_id);
-      return`<div class="fu-card" style="opacity:0.55;display:flex;gap:10px;align-items:flex-start">
-        <div class="fu-check-done" style="flex-shrink:0">${FU_CHECKSVG}</div>
-        <div style="flex:1;min-width:0">
-          <div class="fu-card-lead">${l?.nome||'—'}</div>
-          <div class="fu-card-desc">${f.desc||''}</div>
-          <div class="fu-card-meta">${FU_TIPO_TAG[f.tipo]||''} ${f.data?f.data.split('-').reverse().join('/'):'—'}</div>
-        </div>
-      </div>`;}).join(''):empty;
-  } else {
-    const mesStr=String(_fuMes+1).padStart(2,'0');
-    const prefixo=`${_fuAno}-${mesStr}`;
-    const doMes=_wFollowups.filter(f=>(f.data||'').startsWith(prefixo)).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
-    const pendentes=doMes.filter(f=>!f.feito);
-    const concluidos=doMes.filter(f=>f.feito);
-    const MESES_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-    if(!doMes.length){
-      document.getElementById('fu-mes-conteudo').innerHTML=`<div class="fu-mes-empty">Nenhum follow-up em ${MESES_PT[_fuMes]} ${_fuAno}</div>`;
-      return;
-    }
-    const semanas=[{label:'Semana 1',items:[]},{label:'Semana 2',items:[]},{label:'Semana 3',items:[]},{label:'Semana 4+',items:[]}];
-    pendentes.forEach(f=>{const dia=parseInt((f.data||'').split('-')[2]||'1');semanas[dia<=7?0:dia<=14?1:dia<=21?2:3].items.push(f);});
-    const cores=['#6ee7b7','#fcd34d','#93c5fd','#c4b5fd'];
-    const semsComItems=semanas.filter(s=>s.items.length);
-    const totalCols=semsComItems.length+(concluidos.length?1:0)||1;
-    let html=`<div class="fu-grid" style="grid-template-columns:repeat(${Math.min(totalCols,4)},1fr)">`;
-    semsComItems.forEach((s,i)=>{
-      const cor=cores[semanas.indexOf(s)];
-      html+=`<div class="fu-col"><div class="fu-col-head" style="border-left:3px solid ${cor}"><span class="fu-col-title" style="color:${cor}">${s.label}</span><span class="fu-col-count">${s.items.length}</span></div>
-      <div class="fu-cards">${s.items.map(f=>{const l=_wLeads.find(x=>x.id===f.lead_id);return`<div class="fu-card" style="border-left:3px solid ${cor}"><div class="fu-card-lead">${l?.nome||'—'}</div><div class="fu-card-desc">${f.desc||''}</div><div class="fu-card-footer"><div class="fu-card-meta">${FU_TIPO_TAG[f.tipo]||''}<span>${f.data?f.data.split('-').reverse().join('/'):'—'}</span></div><button class="fu-done-btn" onclick="marcarFuFeitoAdmin('${f.id}')">${FU_CHECKSVG}</button></div></div>`;}).join('')}</div></div>`;
-    });
-    if(concluidos.length){
-      html+=`<div class="fu-col fu-col-concluido"><div class="fu-col-head"><span class="fu-col-title">Concluídos</span><span class="fu-col-count">${concluidos.length}</span></div><div class="fu-cards">${concluidos.map(f=>{const l=_wLeads.find(x=>x.id===f.lead_id);return`<div class="fu-card" style="opacity:0.55;display:flex;gap:10px;align-items:flex-start"><div class="fu-check-done" style="flex-shrink:0">${FU_CHECKSVG}</div><div style="flex:1;min-width:0"><div class="fu-card-lead">${l?.nome||'—'}</div><div class="fu-card-desc">${f.desc||''}</div><div class="fu-card-meta">${FU_TIPO_TAG[f.tipo]||''} ${f.data?f.data.split('-').reverse().join('/'):'—'}</div></div></div>`;}).join('')}</div></div>`;
-    }
-    html+='</div>';
-    document.getElementById('fu-mes-conteudo').innerHTML=html;
-  }
-}
-
-async function marcarFuFeitoAdmin(id){
-  const f=_wFollowups.find(x=>x.id===id);if(!f)return;
-  f.feito=true;
-  await _sb.from('wealth_followups').upsert({id,lead_id:f.lead_id,data:f});
-  renderFollowupsAdmin();
-  showToast('Follow-up concluído!','ok');
-}
-
-function abrirModalFu(){
-  const sel=document.getElementById('fu-admin-lead-id');if(!sel)return;
-  sel.innerHTML=[..._wLeads].sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR',{sensitivity:'base'})).map(l=>`<option value="${l.id}">${l.nome||'—'}</option>`).join('');
-  document.getElementById('fu-admin-data').value=fuToday();
-  document.getElementById('fu-admin-desc').value='';
-  openModal('modal-fu-admin');
-}
-
-async function saveFuAdmin(){
-  const lead_id=document.getElementById('fu-admin-lead-id').value;
-  const data=document.getElementById('fu-admin-data').value;
-  const desc=document.getElementById('fu-admin-desc').value.trim();
-  if(!lead_id||!data||!desc){alert('Preencha todos os campos obrigatórios');return;}
-  const id=fuUid();
-  const rec={id,lead_id,data,tipo:document.getElementById('fu-admin-tipo').value,desc,feito:false};
-  const{error}=await _sb.from('wealth_followups').upsert({id,lead_id,data:rec});
-  if(error){showToast('Erro ao salvar','err');return;}
-  _wFollowups.push(rec);
-  showToast('Follow-up agendado!','ok');
-  closeModal('modal-fu-admin');
-  renderFollowupsAdmin();
-}
-
 // ── AVALIAÇÃO 360° — PESOS E ÁREAS ──────────────────
 const AREAS_360=[
   {id:'juridico',      label:'Jurídico'},
@@ -1656,10 +1378,10 @@ const AREAS_360=[
   {id:'comercial',     label:'Comercial'},
 ];
 let _pesos360={
-  juridico:      {com_cliente:0.5,com_interna:0.5,rel_cliente:0.6,tecnico:0.9,captacao:0.3,compliance:1.0,prazos:0.8,organizacao:0.7,problemas:0.7,proatividade:0.5,equipe:0.5,lideranca:0.4},
-  investimentos: {com_cliente:0.8,com_interna:0.4,rel_cliente:0.9,tecnico:1.0,captacao:1.0,compliance:0.8,prazos:0.5,organizacao:0.6,problemas:0.7,proatividade:0.8,equipe:0.5,lideranca:0.6},
-  servicos:      {com_cliente:1.0,com_interna:0.7,rel_cliente:0.8,tecnico:0.5,captacao:0.7,compliance:0.5,prazos:1.0,organizacao:0.8,problemas:0.8,proatividade:0.7,equipe:0.8,lideranca:0.5},
-  comercial:     {com_cliente:1.0,com_interna:0.6,rel_cliente:1.0,tecnico:0.6,captacao:1.0,compliance:0.6,prazos:0.6,organizacao:0.6,problemas:0.7,proatividade:0.9,equipe:0.6,lideranca:0.8},
+  juridico:      {com_cliente:1,  com_interna:1.5,rel_cliente:1.5,tecnico:2,  captacao:1,  compliance:3,  prazos:1,  organizacao:1.5,problemas:1.5,proatividade:1,  equipe:1,  lideranca:1},
+  investimentos: {com_cliente:1.5,com_interna:1,  rel_cliente:2,  tecnico:3,  captacao:2.5,compliance:2,  prazos:1,  organizacao:1,  problemas:1.5,proatividade:1.5,equipe:1,  lideranca:1.5},
+  servicos:      {com_cliente:3,  com_interna:2,  rel_cliente:2.5,tecnico:1,  captacao:2,  compliance:1,  prazos:2.5,organizacao:2,  problemas:2,  proatividade:1.5,equipe:2,  lideranca:1},
+  comercial:     {com_cliente:3,  com_interna:1.5,rel_cliente:3,  tecnico:1.5,captacao:3,  compliance:1.5,prazos:1.5,organizacao:1.5,problemas:2,  proatividade:2.5,equipe:1.5,lideranca:2},
 };
 // Retorna array de áreas da pessoa (busca da rodada mais recente)
 function getAreaPessoa360(funcId){
@@ -1679,7 +1401,7 @@ function calcMediaPonderada360(criteriosComMedia,areas){
   const areasValidas=(areas||[]).filter(a=>_pesos360[a]);
   if(!areasValidas.length) return valid.reduce((a,b)=>a+b.avg,0)/valid.length;
   // Peso efetivo = média dos pesos de cada área selecionada
-  const pesoEfetivo=c=>areasValidas.reduce((s,a)=>s+(_pesos360[a][c.id]||0.5),0)/areasValidas.length;
+  const pesoEfetivo=c=>areasValidas.reduce((s,a)=>s+(_pesos360[a][c.id]||1),0)/areasValidas.length;
   const pesoTotal=valid.reduce((s,c)=>s+pesoEfetivo(c),0);
   const soma=valid.reduce((s,c)=>s+c.avg*pesoEfetivo(c),0);
   return pesoTotal>0?soma/pesoTotal:0;
@@ -1712,12 +1434,7 @@ async function loadAll(){
   try{
     const cfgPesos=await _sb.from('admin_aval360_config').select('*').eq('id','pesos').maybeSingle();
     const pesosData=cfgPesos?.data?.data;
-    if(pesosData&&typeof pesosData==='object'){
-      // Verifica se os dados salvos são da escala antiga (0.1-10) — ignora se algum valor > 1
-      const vals=Object.values(pesosData).flatMap(a=>Object.values(a||{}));
-      const escalaAntiga=vals.some(v=>v>1);
-      if(!escalaAntiga) Object.keys(pesosData).forEach(area=>{if(_pesos360[area])Object.assign(_pesos360[area],pesosData[area]);});
-    }
+    if(pesosData&&typeof pesosData==='object'){Object.keys(pesosData).forEach(area=>{if(_pesos360[area])Object.assign(_pesos360[area],pesosData[area]);});}
   }catch(e){console.warn('admin_aval360_config não carregado:',e);}
   renderRodadas360();
   renderAvaliacoes();
@@ -2915,11 +2632,7 @@ function imprimirRelatorio360(){
   <div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:14px;font-size:10px;color:#9ca3af;text-align:center">Relatório gerado em ${hoje} · Soma Partners · Confidencial</div>
 
   <script>window.onload=()=>{window.print();}<\/script>
-  
-
-
-
-</body></html>`;
+  </body></html>`;
 
   const w=window.open('','_blank','width=960,height=750');
   w.document.write(html);
@@ -3018,11 +2731,12 @@ function renderConteudo(){
     const resp=equipe.find(x=>x.id===c.responsavel_id);
     return`<tr>
       <td><span style="font-size:13px">${MKT_CANAL_ICON[c.canal]||'📌'}</span> <span style="font-size:11px;color:${MKT_CANAL_COR[c.canal]||'#fff'};font-weight:700">${MKT_CANAL_LABEL[c.canal]||c.canal}</span></td>
-      <td style="font-weight:600">${c.titulo||'—'}${c.descricao?`<div style="font-size:10px;color:var(--muted);margin-top:2px">${c.descricao.slice(0,60)}${c.descricao.length>60?'…':''}</div>`:''}</td>
+      <td style="font-weight:600">${c.titulo||'—'}${c.descricao?`<div style="margin-top:3px"><span style="font-size:9px;background:rgba(59,130,246,0.18);color:#60a5fa;padding:2px 6px;border-radius:3px;font-weight:600">🎨 prompt gerado</span></div>`:''}</td>
       <td style="font-size:11px;color:var(--muted)">${c.data_publicacao?fmtDate(c.data_publicacao):'—'}</td>
       <td style="font-size:11px">${resp?.nome||'—'}</td>
       <td><span class="badge ${MKT_STATUS_CLS[c.status]||''}">${MKT_STATUS_LABEL[c.status]||c.status}</span></td>
       <td style="display:flex;gap:6px">
+        ${c.descricao?`<button class="btn btn-outline btn-sm" title="Ver prompt de imagem" onclick="mostrarPromptImagem('${(c.titulo||'').replace(/'/g,"\\'")}','${c.canal||''}')">🎨</button>`:''}
         ${c.link?`<a href="${c.link}" target="_blank" class="btn btn-outline btn-sm" style="font-size:10px">↗</a>`:''}
         <button class="btn btn-outline btn-sm" onclick="editarConteudo('${c.id}')">✎</button>
         <button class="btn btn-danger btn-sm" onclick="deletarConteudo('${c.id}')">×</button>
@@ -3222,6 +2936,55 @@ async function salvarMetrica(){
 }
 async function deletarMetrica(id){if(!confirm('Remover métrica?'))return;await _sb.from('admin_mkt_metricas').delete().eq('id',id);await loadAll();}
 
+// ── PROMPT DE IMAGEM ──
+function gerarPromptImagem(titulo, canal){
+  const t=(titulo||'').toLowerCase();
+  const style='deep navy blue background (#0b1e30), premium Brazilian wealth management photography, electric blue accent lighting, ultra-clean professional composition, high contrast, cinematic quality, no text overlays, no logos, 85mm lens, shallow depth of field';
+
+  let conceito;
+  if(t.includes('copom')||t.includes('selic')||t.includes('juros'))
+    conceito='wide-angle modern trading floor with multiple screens displaying live financial charts and market data, blue and amber color grading, motion blur on background traders';
+  else if(t.includes('sucess')||t.includes('legado')||t.includes('famil')||t.includes('herdei'))
+    conceito='elegant three-generation family in a luxurious modern living room, warm golden light through floor-to-ceiling windows, sophisticated interior design, soft bokeh background';
+  else if(t.includes('dólar')||t.includes('dolar')||t.includes('câmbio')||t.includes('cambio')||t.includes('global')||t.includes('internacion'))
+    conceito='aerial nighttime photograph of São Paulo financial district with glowing skyscrapers, subtle globe wireframe overlay in electric blue tones, premium cinematic atmosphere';
+  else if(t.includes('renda fixa')||t.includes('tesouro')||t.includes('cdb'))
+    conceito='sleek macro photography of a premium gold pen resting on financial documents with data charts, dark navy textured surface, soft spot lighting';
+  else if(t.includes('imposto')||t.includes(' ir ')||t.includes('declara')||t.includes('tribut'))
+    conceito='minimalist flat lay of financial documents, glasses and a sleek laptop showing tax calculations on dark navy surface, top-down angle, sharp dramatic shadows';
+  else if(t.includes('diversif')||t.includes('carteira')||t.includes('portf')||t.includes('aloca'))
+    conceito='abstract visualization of investment portfolio as glowing geometric shapes in blue and gold tones against dark background, data visualization aesthetic, motion trails';
+  else if(t.includes('bastidor')||t.includes('equipe')||t.includes('nossa equipe')||t.includes('time soma'))
+    conceito='modern open-plan financial office with team members collaborating around a glass conference table, natural light from floor-to-ceiling windows, premium corporate environment';
+  else if(t.includes('lifestyle')||t.includes('experiên')||t.includes('experienc')||t.includes('fér')||t.includes('fer')||t.includes('viagem'))
+    conceito='affluent couple enjoying sunrise view from a luxury penthouse terrace overlooking a major city skyline, champagne glasses, relaxed premium lifestyle atmosphere';
+  else if(t.includes('patrimônio')||t.includes('patrimonio')||t.includes('riqueza')||t.includes('milh'))
+    conceito='dramatic low-angle view of a luxury glass skyscraper against deep blue sky at dusk, gold and blue reflections, aspirational wealth management aesthetic';
+  else if(t.includes('previdên')||t.includes('aposentad')||t.includes('longo prazo'))
+    conceito='confident executive standing by panoramic office window at golden sunset cityscape, contemplative posture, warmth and financial security atmosphere';
+  else if(t.includes('mercado')||t.includes('bolsa')||t.includes('ibovespa')||t.includes('ações')||t.includes('acoes')||t.includes('volatil'))
+    conceito='extreme close-up of financial candlestick chart on premium curved display with dramatic blue and gold lighting, selective focus, motion blur effect';
+  else if(t.includes('dica')||t.includes('rápid')||t.includes('rapid'))
+    conceito='minimalist premium smartphone on dark marble surface showing a financial portfolio notification, single accent light source, clean geometric shadows';
+  else if(t.includes('fundo')||t.includes('exclusivo')||t.includes('multimercado'))
+    conceito='abstract flowing golden liquid forming chart wave patterns against deep navy background, luxury financial concept art, smooth studio lighting';
+  else if(t.includes('inflação')||t.includes('inflacao')||t.includes('ipca'))
+    conceito='dramatic macro photography of a Brazilian real banknote with selective focus, dark studio background, electric blue rim lighting, financial erosion concept';
+  else if(t.includes('retrospectiva')||t.includes('retrospect')||t.includes('encerrament'))
+    conceito='cinematic split-screen of São Paulo skyline at the beginning and end of the year, left side rainy/moody vs right side golden hour, symbolic year-end reflection';
+  else
+    conceito='sophisticated financial advisor consulting with premium client across a glass desk in a modern high-rise office, city skyline visible through floor-to-ceiling windows, blue and gold color palette';
+
+  const fmt=canal==='instagram'?', square 1:1 composition optimized for Instagram feed':canal==='whatsapp'?', vertical mobile-first composition, clean and minimal':', horizontal 16:9 composition optimized for LinkedIn feed';
+  return `${conceito}. ${style}${fmt}.`;
+}
+
+function mostrarPromptImagem(titulo, canal){
+  document.getElementById('prompt-img-titulo').textContent=titulo||'Post';
+  document.getElementById('prompt-img-texto').value=gerarPromptImagem(titulo, canal);
+  openModal('modal-prompt-img');
+}
+
 // ── CALENDÁRIO AUTOMÁTICO ──
 function abrirModalCalendario(){
   const hoje=new Date();
@@ -3329,7 +3092,7 @@ async function gerarCalendarioAutomatico(){
     if(d<startDate||d>endDate)return;
     const canalOk=(ev.canal==='linkedin'&&incLinkedin)||(ev.canal==='instagram'&&incInstagram)||(ev.canal==='whatsapp'&&incWhatsapp);
     if(!canalOk)return;
-    recs.push({id:crypto.randomUUID(),canal:ev.canal,titulo:ev.titulo,descricao:ev.desc||'Conteúdo especial do Calendário Financeiro.',data_publicacao:ev.data,status:'rascunho',link:null,responsavel_id:null,_cal_fin:true});
+    recs.push({id:crypto.randomUUID(),canal:ev.canal,titulo:ev.titulo,descricao:gerarPromptImagem(ev.titulo,ev.canal),data_publicacao:ev.data,status:'rascunho',link:null,responsavel_id:null,_cal_fin:true});
   });
 
   // Gera conteúdo semanal rotativo
@@ -3349,7 +3112,7 @@ async function gerarCalendarioAutomatico(){
     if(!counters[dow])counters[dow]=0;
     const titulo=tmpl.temas[counters[dow]%tmpl.temas.length];
     counters[dow]++;
-    recs.push({id:crypto.randomUUID(),canal:tmpl.canal,titulo,descricao:'',data_publicacao:dataStr,status:'rascunho',link:null,responsavel_id:null});
+    recs.push({id:crypto.randomUUID(),canal:tmpl.canal,titulo,descricao:gerarPromptImagem(titulo,tmpl.canal),data_publicacao:dataStr,status:'rascunho',link:null,responsavel_id:null});
   }
 
   // Remove campo auxiliar antes de salvar
@@ -3648,7 +3411,6 @@ function exRender(){
     const rowStyle=nc?'background:rgba(252,211,77,0.02)':isInt?'opacity:0.45':isPassagem?'background:rgba(59,130,246,0.03)':'';
     const dateFmt=r.data.split('-').reverse().join('/');
     return`<tr style="${rowStyle}">
-      <td style="text-align:center;vertical-align:middle"><input type="checkbox" class="ex-row-chk" data-id="${r.id}" onchange="exUpdateSelBar()" style="cursor:pointer;accent-color:#c9963c"></td>
       <td style="font-size:11px;color:var(--muted);white-space:nowrap">${dateFmt}</td>
       <td style="font-size:11px;max-width:300px;${isInt?'color:rgba(255,255,255,0.3)':''}">${r.descricao}</td>
       <td style="color:${vclr};font-weight:700;white-space:nowrap;text-align:right">${exFmtVal(r.valor)}</td>
@@ -3656,7 +3418,6 @@ function exRender(){
       <td style="display:flex;gap:4px;align-items:center">
         <select class="ex-cat-sel" style="width:140px;border-color:${isPassagem?'rgba(147,197,253,0.3)':'rgba(255,255,255,0.06)'};background:${isPassagem?'rgba(59,130,246,0.06)':'rgba(255,255,255,0.02)'};font-size:11px;color:${isPassagem?'#93c5fd':'rgba(255,255,255,0.45)'}" onchange="exChangeCliente('${r.id}',this.value)">${antecipItemOptions(r.cliente_item_id)}</select>
         <input class="ex-obs-inp" style="width:90px" value="${r.obs||''}" onchange="exChangeObs('${r.id}',this.value)" placeholder="obs…">
-        <button onclick="exDeleteRow('${r.id}')" title="Remover" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.2);font-size:16px;line-height:1;padding:0 2px;flex-shrink:0;transition:color 0.15s" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='rgba(255,255,255,0.2)'">×</button>
       </td>
     </tr>`;
   }).join('');
@@ -3665,76 +3426,7 @@ function exRender(){
 function exChangeCateg(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.categoria=val;r.saved=false;}exUpdateNcBadge();exRender();}
 function exChangeObs(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.obs=val;r.saved=false;}}
 function exChangeCliente(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.cliente_item_id=val||null;r.saved=false;}}
-async function exDeleteRow(id){
-  const r=_exRows.find(x=>x.id===id);if(!r)return;
-  if(!confirm('Remover este lançamento do extrato?'))return;
-  // Remove da memória imediatamente
-  _exRows=_exRows.filter(x=>x.id!==id);
-  exRender();exRenderDRE();exUpdateNcBadge();
-  // Remove do banco (sempre, independente de r.saved)
-  const {error:errEx}=await _sb.from('admin_extrato').delete().eq('id',id);
-  if(errEx) console.error('Erro ao deletar extrato:',errEx);
-  // Remove lançamento correspondente (mesmo data/empresa/valor)
-  const {data:lnc}=await _sb.from('admin_lancamentos').select('id,obs,data_vencimento,valor').like('obs','BTG·'+r.empresa+'%');
-  if(lnc&&lnc.length){
-    const match=lnc.filter(l=>l.data_vencimento===r.data&&Math.abs(parseFloat(l.valor||0))===Math.abs(r.valor));
-    if(match.length){
-      await _sb.from('admin_lancamentos').delete().in('id',match.map(l=>l.id));
-      lancamentos=lancamentos.filter(l=>!match.find(m=>m.id===l.id));
-      renderLancamentos();
-    }
-  }
-  // Atualiza badge de status
-  const cnt=_exRows.filter(x=>x.empresa===r.empresa).length;
-  const el=document.getElementById('ex-status-'+r.empresa);
-  if(el) el.innerHTML=cnt>0?`<span style="color:#6ee7b7">✓ ${cnt} lançamentos</span>`:'';
-  if(!_exRows.length) document.getElementById('ex-review').style.display='none';
-  showToast('Lançamento removido do extrato!','ok');
-}
 
-function exToggleAll(checked){
-  document.querySelectorAll('.ex-row-chk').forEach(c=>c.checked=checked);
-  exUpdateSelBar();
-}
-function exUpdateSelBar(){
-  const sel=document.querySelectorAll('.ex-row-chk:checked');
-  const bar=document.getElementById('ex-sel-bar');
-  const cnt=document.getElementById('ex-sel-count');
-  const all=document.getElementById('ex-chk-all');
-  if(sel.length){
-    bar.style.display='flex';
-    cnt.textContent=`${sel.length} lançamento${sel.length!==1?'s':''} selecionado${sel.length!==1?'s':''}`;
-  } else {
-    bar.style.display='none';
-    if(all) all.checked=false;
-  }
-}
-function exClearSel(){
-  document.querySelectorAll('.ex-row-chk').forEach(c=>c.checked=false);
-  const all=document.getElementById('ex-chk-all');
-  if(all) all.checked=false;
-  exUpdateSelBar();
-}
-async function exDeleteSelected(){
-  const sel=[...document.querySelectorAll('.ex-row-chk:checked')];
-  if(!sel.length)return;
-  if(!confirm(`Apagar ${sel.length} lançamento${sel.length!==1?'s':''} do extrato?`))return;
-  const ids=sel.map(c=>c.dataset.id);
-  // Remove da memória
-  _exRows=_exRows.filter(x=>!ids.includes(x.id));
-  exRender();exRenderDRE();exUpdateNcBadge();
-  // Remove do banco em lotes
-  for(let i=0;i<ids.length;i+=50)
-    await _sb.from('admin_extrato').delete().in('id',ids.slice(i,i+50));
-  // Remove lançamentos BTG correspondentes
-  const {data:lnc}=await _sb.from('admin_lancamentos').select('id,obs').like('obs','BTG·%');
-  if(lnc&&lnc.length){
-    await _sb.from('admin_lancamentos').delete().in('id',lnc.map(l=>l.id));
-    lancamentos=lancamentos.filter(l=>!lnc.find(m=>m.id===l.id));
-    renderLancamentos();
-  }
-  showToast(`${ids.length} lançamento${ids.length!==1?'s':''} removido${ids.length!==1?'s':''}!`,'ok');
-}
 async function exSalvar(){
   const btn=document.querySelector('[onclick="exSalvar()"]');
   const st=document.getElementById('ex-save-status');
@@ -4810,8 +4502,8 @@ function abrirPesos360(){
       <td style="padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.8);white-space:nowrap">${c.label}</td>
       ${AREAS_360.map(a=>`
         <td style="padding:8px;text-align:center">
-          <input type="number" id="peso-${a.id}-${c.id}" min="0" max="1" step="0.05"
-            value="${(_pesos360[a.id][c.id]||0.5).toFixed(2)}"
+          <input type="number" id="peso-${a.id}-${c.id}" min="0.1" max="10" step="0.1"
+            value="${_pesos360[a.id][c.id]||1}"
             style="width:60px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:4px 6px;text-align:center;font-size:12px;font-family:Montserrat,sans-serif">
         </td>`).join('')}
     </tr>`).join('');
@@ -5251,161 +4943,6 @@ function hexToRgb(hex){
   return`${r},${g},${b}`;
 }
 
-
-// ════ LIMPAR IMPORTADOS ════
-function abrirModalLimparImport(){
-  const btg = lancamentos.filter(l=>(l.obs||'').startsWith('BTG·'));
-  document.getElementById('limpar-import-info').textContent =
-    `${btg.length} lançamento${btg.length!==1?'s':''} importado${btg.length!==1?'s':''} encontrado${btg.length!==1?'s':''} no total.`;
-  document.getElementById('limpar-modo').value = 'todos';
-  document.getElementById('limpar-extra-mes').style.display = 'none';
-  document.getElementById('limpar-extra-n').style.display = 'none';
-  // Popula meses disponíveis
-  const meses = [...new Set(btg.map(l=>(l.data_vencimento||'').slice(0,7)).filter(Boolean))].sort().reverse();
-  const sel = document.getElementById('limpar-mes-sel');
-  const MESES_PT = {1:'Janeiro',2:'Fevereiro',3:'Março',4:'Abril',5:'Maio',6:'Junho',7:'Julho',8:'Agosto',9:'Setembro',10:'Outubro',11:'Novembro',12:'Dezembro'};
-  sel.innerHTML = meses.map(m=>{
-    const [y,mo] = m.split('-');
-    return `<option value="${m}">${MESES_PT[parseInt(mo)]} ${y}</option>`;
-  }).join('');
-  limparAtualizaInfo();
-  openModal('modal-limpar-import');
-}
-
-function limparModoChange(){
-  const modo = document.getElementById('limpar-modo').value;
-  document.getElementById('limpar-extra-mes').style.display = modo==='mes' ? 'block' : 'none';
-  document.getElementById('limpar-extra-n').style.display = modo==='ultimos' ? 'block' : 'none';
-  limparAtualizaInfo();
-}
-
-function limparAtualizaInfo(){
-  const modo = document.getElementById('limpar-modo').value;
-  const btg = lancamentos.filter(l=>(l.obs||'').startsWith('BTG·'));
-  let alvo = [];
-  if(modo==='todos'){
-    alvo = btg;
-  } else if(modo==='mes'){
-    const mes = document.getElementById('limpar-mes-sel').value;
-    alvo = btg.filter(l=>(l.data_vencimento||'').startsWith(mes));
-  } else {
-    const n = parseInt(document.getElementById('limpar-n-val').value)||0;
-    const sorted = [...btg].sort((a,b)=>((b.data_vencimento||'')>(a.data_vencimento||'')?1:-1));
-    alvo = sorted.slice(0, n);
-  }
-  const preview = document.getElementById('limpar-preview');
-  preview.textContent = alvo.length > 0
-    ? `⚠ Serão apagados ${alvo.length} lançamento${alvo.length!==1?'s':''}.`
-    : 'Nenhum lançamento corresponde à seleção.';
-  preview.style.color = alvo.length > 0 ? '#f59e0b' : 'rgba(7,12,24,0.4)';
-  document.getElementById('limpar-btn-confirm').disabled = alvo.length === 0;
-}
-
-async function confirmarLimparImport(){
-  const modo = document.getElementById('limpar-modo').value;
-  const btg = lancamentos.filter(l=>(l.obs||'').startsWith('BTG·'));
-  let alvoLanc = [];
-  if(modo==='todos'){
-    alvoLanc = btg;
-  } else if(modo==='mes'){
-    const mes = document.getElementById('limpar-mes-sel').value;
-    alvoLanc = btg.filter(l=>(l.data_vencimento||'').startsWith(mes));
-  } else {
-    const n = parseInt(document.getElementById('limpar-n-val').value)||0;
-    const sorted = [...btg].sort((a,b)=>((b.data_vencimento||'')>(a.data_vencimento||'')?1:-1));
-    alvoLanc = sorted.slice(0, n);
-  }
-  if(!alvoLanc.length) return;
-  if(!confirm(`Apagar ${alvoLanc.length} lançamento${alvoLanc.length!==1?'s':''} importado${alvoLanc.length!==1?'s':''}? Isso remove também do Extrato BTG. Esta ação não pode ser desfeita.`)) return;
-  const btn = document.getElementById('limpar-btn-confirm');
-  btn.disabled = true; btn.textContent = 'Apagando…';
-
-  // 1. Apaga de admin_lancamentos em batches
-  const idsLanc = alvoLanc.map(l=>l.id);
-  for(let i=0; i<idsLanc.length; i+=50){
-    await _sb.from('admin_lancamentos').delete().in('id', idsLanc.slice(i,i+50));
-  }
-
-  // 2. Apaga de admin_extrato pelo mesmo critério
-  // admin_extrato tem campo 'mes' (ex: '2025-03') e 'empresa'
-  if(modo==='todos'){
-    // Apaga tudo do admin_extrato
-    for(const emp of Object.keys(EX_EMPRESAS)){
-      await _sb.from('admin_extrato').delete().eq('empresa', emp);
-    }
-  } else if(modo==='mes'){
-    const mes = document.getElementById('limpar-mes-sel').value;
-    await _sb.from('admin_extrato').delete().eq('mes', mes);
-  } else {
-    // Últimos N: pega os IDs correspondentes do _exRows
-    // Os lancamentos apagados têm data_vencimento; o extrato tem campo 'data' igual
-    const datasApagadas = new Set(alvoLanc.map(l=>l.data_vencimento).filter(Boolean));
-    const exIds = _exRows.filter(r=>datasApagadas.has(r.data)).map(r=>r.id);
-    for(let i=0; i<exIds.length; i+=50){
-      await _sb.from('admin_extrato').delete().in('id', exIds.slice(i,i+50));
-    }
-  }
-
-  // 3. Limpa _exRows em memória para refletir imediatamente
-  if(modo==='todos'){
-    _exRows = [];
-  } else if(modo==='mes'){
-    const mes = document.getElementById('limpar-mes-sel').value;
-    _exRows = _exRows.filter(r=>r.mes !== mes);
-  } else {
-    const datasApagadas = new Set(alvoLanc.map(l=>l.data_vencimento).filter(Boolean));
-    _exRows = _exRows.filter(r=>!datasApagadas.has(r.data));
-  }
-
-  closeModal('modal-limpar-import');
-  // Atualiza displays do extrato
-  exRender(); exRenderDRE(); exUpdateNcBadge();
-  Object.keys(EX_EMPRESAS).forEach(emp=>{
-    const cnt=_exRows.filter(r=>r.empresa===emp).length;
-    const el=document.getElementById('ex-status-'+emp);
-    if(el) el.innerHTML = cnt>0 ? `<span style="color:#6ee7b7">✓ ${cnt} lançamentos</span>` : '';
-  });
-  if(!_exRows.length) document.getElementById('ex-review').style.display='none';
-  await loadAll();
-  showToast(`${alvoLanc.length} lançamento${alvoLanc.length!==1?'s':''} apagado${alvoLanc.length!==1?'s':''}!`, 'ok');
-}
-
 </script>
-
-<!-- ════ MODAL LIMPAR IMPORTADOS ════ -->
-<div class="modal-overlay" id="modal-limpar-import">
-  <div class="modal" style="max-width:440px">
-    <div class="modal-title">
-      🗑 Limpar Lançamentos Importados
-      <button class="mc" onclick="closeModal('modal-limpar-import')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div id="limpar-import-info" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#fca5a5;font-weight:600"></div>
-    <div class="field">
-      <label>Modo de exclusão</label>
-      <select id="limpar-modo" onchange="limparModoChange()">
-        <option value="todos">Apagar todos os importados</option>
-        <option value="mes">Apagar por mês específico</option>
-        <option value="ultimos">Apagar os últimos N importados</option>
-      </select>
-    </div>
-    <div id="limpar-extra-mes" style="display:none">
-      <div class="field">
-        <label>Mês</label>
-        <select id="limpar-mes-sel" onchange="limparAtualizaInfo()"></select>
-      </div>
-    </div>
-    <div id="limpar-extra-n" style="display:none">
-      <div class="field">
-        <label>Quantidade</label>
-        <input type="number" id="limpar-n-val" min="1" placeholder="Ex: 50" oninput="limparAtualizaInfo()">
-      </div>
-    </div>
-    <div id="limpar-preview" style="font-size:12px;color:#f59e0b;margin-bottom:4px;min-height:20px"></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-limpar-import')">Cancelar</button>
-      <button class="btn" id="limpar-btn-confirm" onclick="confirmarLimparImport()" style="background:#ef4444;color:#fff;font-weight:700;border:none">Apagar</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
