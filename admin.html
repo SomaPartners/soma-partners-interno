@@ -3374,17 +3374,21 @@ function exChangeObs(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.obs=val;
 function exChangeCliente(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.cliente_item_id=val||null;r.saved=false;}}
 async function exDeleteRow(id){
   const r=_exRows.find(x=>x.id===id);if(!r)return;
-  // Remove da memória
+  if(!confirm('Remover este lançamento do extrato?'))return;
+  // Remove da memória imediatamente
   _exRows=_exRows.filter(x=>x.id!==id);
-  // Remove do banco se já foi salvo
-  if(r.saved) await _sb.from('admin_extrato').delete().eq('id',id);
+  exRender();exRenderDRE();exUpdateNcBadge();
+  // Remove do banco (sempre, independente de r.saved)
+  const {error:errEx}=await _sb.from('admin_extrato').delete().eq('id',id);
+  if(errEx) console.error('Erro ao deletar extrato:',errEx);
   // Remove lançamento correspondente (mesmo data/empresa/valor)
   const {data:lnc}=await _sb.from('admin_lancamentos').select('id,obs,data_vencimento,valor').like('obs','BTG·'+r.empresa+'%');
-  if(lnc){
-    const match=lnc.filter(l=>l.data_vencimento===r.data&&Math.abs(parseFloat(l.valor))===Math.abs(r.valor));
+  if(lnc&&lnc.length){
+    const match=lnc.filter(l=>l.data_vencimento===r.data&&Math.abs(parseFloat(l.valor||0))===Math.abs(r.valor));
     if(match.length){
       await _sb.from('admin_lancamentos').delete().in('id',match.map(l=>l.id));
       lancamentos=lancamentos.filter(l=>!match.find(m=>m.id===l.id));
+      renderLancamentos();
     }
   }
   // Atualiza badge de status
@@ -3392,7 +3396,7 @@ async function exDeleteRow(id){
   const el=document.getElementById('ex-status-'+r.empresa);
   if(el) el.innerHTML=cnt>0?`<span style="color:#6ee7b7">✓ ${cnt} lançamentos</span>`:'';
   if(!_exRows.length) document.getElementById('ex-review').style.display='none';
-  exRender();exRenderDRE();exUpdateNcBadge();
+  showToast('Lançamento removido do extrato!','ok');
 }
 
 async function exSalvar(){
