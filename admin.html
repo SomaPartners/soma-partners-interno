@@ -1430,7 +1430,12 @@ async function loadAll(){
   try{
     const cfgPesos=await _sb.from('admin_aval360_config').select('*').eq('id','pesos').maybeSingle();
     const pesosData=cfgPesos?.data?.data;
-    if(pesosData&&typeof pesosData==='object'){Object.keys(pesosData).forEach(area=>{if(_pesos360[area])Object.assign(_pesos360[area],pesosData[area]);});}
+    if(pesosData&&typeof pesosData==='object'){
+      // Verifica se os dados salvos são da escala antiga (0.1-10) — ignora se algum valor > 1
+      const vals=Object.values(pesosData).flatMap(a=>Object.values(a||{}));
+      const escalaAntiga=vals.some(v=>v>1);
+      if(!escalaAntiga) Object.keys(pesosData).forEach(area=>{if(_pesos360[area])Object.assign(_pesos360[area],pesosData[area]);});
+    }
   }catch(e){console.warn('admin_aval360_config não carregado:',e);}
   renderRodadas360();
   renderAvaliacoes();
