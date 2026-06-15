@@ -95,6 +95,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
 .btn-danger:hover{background:rgba(239,68,68,0.2)}
 .btn-sm{padding:5px 10px;font-size:10px}
 
+@keyframes soma-spin{to{transform:rotate(360deg)}}
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity 0.2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
@@ -1157,9 +1158,13 @@ body{display:flex;flex-direction:column;overflow:hidden}
         <span>Prompt de Imagem <span style="font-size:10px;opacity:.6;font-weight:400">(para ChatGPT / Gemini / Gamma)</span></span>
         <button type="button" class="btn btn-outline btn-sm" style="font-size:10px;padding:2px 10px" onclick="(function(){const t=document.getElementById('conteudo-titulo').value;const c=document.getElementById('conteudo-canal').value;const pe=document.getElementById('conteudo-pessoas').value;if(!t){showToast('Preencha o título primeiro','err');return;}const p=gerarPromptImagem(t,c,pe);document.getElementById('conteudo-prompt').value=p;document.getElementById('conteudo-prompt-wrap').style.display='block';})()">✨ Gerar Prompt</button>
       </label>
-      <div id="conteudo-prompt-wrap" style="display:none;position:relative">
-        <textarea id="conteudo-prompt" rows="5" style="width:100%;background:rgba(59,130,246,0.07);color:var(--text);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:10px 38px 10px 10px;font-size:11px;line-height:1.6;resize:vertical;font-family:monospace" readonly></textarea>
-        <button type="button" title="Copiar prompt" onclick="navigator.clipboard.writeText(document.getElementById('conteudo-prompt').value).then(()=>{showToast('Prompt copiado! ✓','ok')})" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;opacity:.7">📋</button>
+      <div id="conteudo-prompt-wrap" style="display:none">
+        <div style="position:relative">
+          <textarea id="conteudo-prompt" rows="4" style="width:100%;background:rgba(59,130,246,0.07);color:var(--text);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:10px 38px 10px 10px;font-size:11px;line-height:1.6;resize:vertical;font-family:monospace" readonly></textarea>
+          <button type="button" title="Copiar prompt" onclick="navigator.clipboard.writeText(document.getElementById('conteudo-prompt').value).then(()=>{showToast('Prompt copiado! ✓','ok')})" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;opacity:.7">📋</button>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" id="conteudo-img-gerar-btn" style="margin-top:8px;width:100%" onclick="this.disabled=true;gerarImagemPollinations(document.getElementById('conteudo-prompt').value,document.getElementById('conteudo-canal').value||'instagram','conteudo-img-preview','conteudo-img-gerar-btn')">🖼️ Gerar Imagem com Flux</button>
+        <div id="conteudo-img-preview" style="display:none;margin-top:8px"></div>
       </div>
     </div>
     <div class="field"><label>Descrição / Roteiro</label><textarea id="conteudo-desc" placeholder="O que será dito, link, hashtags…"></textarea></div>
@@ -1327,9 +1332,13 @@ body{display:flex;flex-direction:column;overflow:hidden}
       <textarea id="prompt-img-texto" rows="6" style="width:100%;background:rgba(59,130,246,0.07);color:var(--text);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:10px 38px 10px 10px;font-size:11px;line-height:1.6;resize:vertical;font-family:monospace" readonly></textarea>
       <button type="button" title="Copiar" onclick="navigator.clipboard.writeText(document.getElementById('prompt-img-texto').value).then(()=>{showToast('Prompt copiado! ✓','ok')})" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;opacity:.7">📋</button>
     </div>
-    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+    <div id="prompt-img-preview" style="display:none"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:space-between;align-items:center">
       <button class="btn btn-outline" onclick="closeModal('modal-prompt-img')">Fechar</button>
-      <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('prompt-img-texto').value).then(()=>{showToast('Prompt copiado! ✓','ok')})">📋 Copiar Prompt</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('prompt-img-texto').value).then(()=>{showToast('Prompt copiado! ✓','ok')})">📋 Copiar Prompt</button>
+        <button class="btn btn-primary" id="prompt-img-gerar-btn" onclick="this.disabled=true;gerarImagemPollinations(document.getElementById('prompt-img-texto').value,document.getElementById('prompt-img-canal').value||'linkedin','prompt-img-preview','prompt-img-gerar-btn')">🖼️ Gerar Imagem</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2830,6 +2839,8 @@ function abrirModalConteudo(){
   document.getElementById('conteudo-modal-title').textContent='Novo Conteúdo';
   ['conteudo-titulo','conteudo-desc','conteudo-data','conteudo-link','conteudo-prompt','conteudo-pessoas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const pw=document.getElementById('conteudo-prompt-wrap');if(pw)pw.style.display='none';
+  const ip=document.getElementById('conteudo-img-preview');if(ip){ip.style.display='none';ip.innerHTML='';}
+  const gb=document.getElementById('conteudo-img-gerar-btn');if(gb)gb.disabled=false;
   document.getElementById('conteudo-canal').value='instagram';
   document.getElementById('conteudo-status').value='rascunho';
   document.getElementById('conteudo-resp').innerHTML='<option value="">Selecionar…</option>'+equipe.filter(f=>f.status!=='inativo').map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');
@@ -3026,7 +3037,33 @@ function mostrarPromptImagem(titulo, canal){
   document.getElementById('prompt-img-canal').value=canal||'linkedin';
   document.getElementById('prompt-img-pessoas').value='';
   document.getElementById('prompt-img-texto').value=gerarPromptImagem(titulo, canal, '');
+  const prev=document.getElementById('prompt-img-preview');if(prev){prev.style.display='none';prev.innerHTML='';}
   openModal('modal-prompt-img');
+}
+
+function gerarImagemPollinations(promptText, canal, previewId, regenBtn){
+  if(!promptText||!promptText.trim()){showToast('Gere o prompt primeiro','err');return;}
+  const sizes={instagram:{w:1024,h:1024},linkedin:{w:1216,h:832},whatsapp:{w:832,h:1216},email:{w:1216,h:832}};
+  const s=sizes[canal]||sizes.linkedin;
+  const seed=Math.floor(Math.random()*999999);
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}?width=${s.w}&height=${s.h}&model=flux&nologo=true&enhance=true&seed=${seed}`;
+  const wrap=document.getElementById(previewId);if(!wrap)return;
+  wrap.style.display='block';
+  wrap.innerHTML=`<div style="text-align:center;padding:24px 0;color:var(--muted);font-size:12px"><span style="font-size:26px;display:inline-block;animation:soma-spin 1.2s linear infinite">🎨</span><div style="margin-top:10px">Gerando com Flux… pode levar 20–40 segundos</div></div>`;
+  if(regenBtn){const b=document.getElementById(regenBtn);if(b)b.disabled=true;}
+  const img=new Image();
+  img.onload=function(){
+    wrap.innerHTML=`<img src="${url}" style="width:100%;border-radius:8px;display:block;margin-top:8px">
+      <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+        <button class="btn btn-outline btn-sm" id="${regenBtn||'regen-btn'}" onclick="gerarImagemPollinations(document.getElementById('${previewId==='prompt-img-preview'?'prompt-img-texto':'conteudo-prompt'}').value,document.getElementById('${previewId==='prompt-img-preview'?'prompt-img-canal':'conteudo-canal'}').value||'linkedin','${previewId}','${regenBtn||'regen-btn'}')">↺ Nova variação</button>
+        <a href="${url}" target="_blank" class="btn btn-primary btn-sm">⬇️ Abrir imagem</a>
+      </div>`;
+  };
+  img.onerror=function(){
+    wrap.innerHTML=`<div style="color:#ef4444;font-size:12px;padding:10px;background:rgba(239,68,68,.1);border-radius:6px">Erro ao gerar. Verifique sua conexão e tente novamente.</div>`;
+    if(regenBtn){const b=document.getElementById(regenBtn);if(b)b.disabled=false;}
+  };
+  img.src=url;
 }
 
 // ── CALENDÁRIO AUTOMÁTICO ──
