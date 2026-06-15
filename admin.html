@@ -3363,6 +3363,7 @@ function exRender(){
       <td style="display:flex;gap:4px;align-items:center">
         <select class="ex-cat-sel" style="width:140px;border-color:${isPassagem?'rgba(147,197,253,0.3)':'rgba(255,255,255,0.06)'};background:${isPassagem?'rgba(59,130,246,0.06)':'rgba(255,255,255,0.02)'};font-size:11px;color:${isPassagem?'#93c5fd':'rgba(255,255,255,0.45)'}" onchange="exChangeCliente('${r.id}',this.value)">${antecipItemOptions(r.cliente_item_id)}</select>
         <input class="ex-obs-inp" style="width:90px" value="${r.obs||''}" onchange="exChangeObs('${r.id}',this.value)" placeholder="obs…">
+        <button onclick="exDeleteRow('${r.id}')" title="Remover" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.2);font-size:16px;line-height:1;padding:0 2px;flex-shrink:0;transition:color 0.15s" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='rgba(255,255,255,0.2)'">×</button>
       </td>
     </tr>`;
   }).join('');
@@ -3371,6 +3372,28 @@ function exRender(){
 function exChangeCateg(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.categoria=val;r.saved=false;}exUpdateNcBadge();exRender();}
 function exChangeObs(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.obs=val;r.saved=false;}}
 function exChangeCliente(id,val){const r=_exRows.find(x=>x.id===id);if(r){r.cliente_item_id=val||null;r.saved=false;}}
+async function exDeleteRow(id){
+  const r=_exRows.find(x=>x.id===id);if(!r)return;
+  // Remove da memória
+  _exRows=_exRows.filter(x=>x.id!==id);
+  // Remove do banco se já foi salvo
+  if(r.saved) await _sb.from('admin_extrato').delete().eq('id',id);
+  // Remove lançamento correspondente (mesmo data/empresa/valor)
+  const {data:lnc}=await _sb.from('admin_lancamentos').select('id,obs,data_vencimento,valor').like('obs','BTG·'+r.empresa+'%');
+  if(lnc){
+    const match=lnc.filter(l=>l.data_vencimento===r.data&&Math.abs(parseFloat(l.valor))===Math.abs(r.valor));
+    if(match.length){
+      await _sb.from('admin_lancamentos').delete().in('id',match.map(l=>l.id));
+      lancamentos=lancamentos.filter(l=>!match.find(m=>m.id===l.id));
+    }
+  }
+  // Atualiza badge de status
+  const cnt=_exRows.filter(x=>x.empresa===r.empresa).length;
+  const el=document.getElementById('ex-status-'+r.empresa);
+  if(el) el.innerHTML=cnt>0?`<span style="color:#6ee7b7">✓ ${cnt} lançamentos</span>`:'';
+  if(!_exRows.length) document.getElementById('ex-review').style.display='none';
+  exRender();exRenderDRE();exUpdateNcBadge();
+}
 
 async function exSalvar(){
   const btn=document.querySelector('[onclick="exSalvar()"]');
