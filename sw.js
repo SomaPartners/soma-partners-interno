@@ -1,9 +1,10 @@
-const CACHE = 'soma-v6';
+const CACHE = 'soma-v7';
 const ASSETS = [
   '/soma-partners.html',
   '/concierge.html',
   '/wealth.html',
   '/eventos.html',
+  '/followups.html',
   '/relatorios.html',
   '/cliente.html',
   '/manifest.json',
