@@ -129,8 +129,6 @@ html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-
           <span class="cal-year" id="cal-year-label"></span>
         </div>
         <div class="legend" style="margin-top:6px">
-          <div class="leg-item"><div class="leg-dot" style="background:#10b981"></div>Entrada</div>
-          <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Saída</div>
           <div class="leg-item"><div class="leg-dot" style="background:#3b82f6"></div>Tarefa</div>
           <div class="leg-item"><div class="leg-dot" style="background:#8b5cf6"></div>Lembrete</div>
         </div>
@@ -174,11 +172,6 @@ html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-
         <div class="side-card-body" id="proximos-eventos"></div>
       </div>
 
-      <!-- Recorrentes do mês -->
-      <div class="side-card">
-        <div class="side-card-header">Recorrentes deste mês</div>
-        <div class="side-card-body" id="recorrentes-mes"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -196,7 +189,7 @@ function fmtDateLong(d){if(!d)return'—';const dt=new Date(d+'T12:00:00');retur
 
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
-let allData = { clientes:[], pagamentos:[], tarefas:[], lembretes:[] };
+let allData = { clientes:[], tarefas:[], lembretes:[] };
 let selectedDay = null;
 
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -205,14 +198,12 @@ const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','A
 async function loadAll(){
   showLoader(true);
   try{
-    const [cl, pg, tar, lem] = await Promise.all([
+    const [cl, tar, lem] = await Promise.all([
       _sb.from('concierge_clientes').select('id,data'),
-      _sb.from('concierge_pagamentos').select('id,data'),
       _sb.from('concierge_tarefas').select('id,data'),
       _sb.from('concierge_lembretes').select('id,data'),
     ]);
     allData.clientes = (cl.data||[]).map(r=>({id:r.id,...r.data}));
-    allData.pagamentos = (pg.data||[]).map(r=>({id:r.id,...r.data}));
     allData.tarefas = (tar.data||[]).map(r=>({id:r.id,...r.data}));
     allData.lembretes = (lem.data||[]).map(r=>({id:r.id,...r.data}));
   }catch(e){showToast('Erro ao carregar dados')}
@@ -230,42 +221,6 @@ function buildEventsMap(year, month){
   };
 
   const daysInMonth = new Date(year, month+1, 0).getDate();
-
-  // Pagamentos reais com data no mês
-  allData.pagamentos.forEach(p => {
-    const d = p.data||p.dataVencimento||'';
-    if(d.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)){
-      const clientNome = allData.clientes.find(c=>c.id===p.clienteId)?.nome||'';
-      add(d, {type: p.descricao==='ENTRADA'?'entrada':'saida', label:`${p.carac||p.caracteristica||p.descricao} ${clientNome?'('+clientNome+')':''}`, val:p.valor, clienteId:p.clienteId});
-    }
-  });
-
-  // Recorrentes de todos os clientes
-  allData.clientes.forEach(c => {
-    (c.recorrentes||[]).forEach(r => {
-      const dia = parseInt(r.dia)||1;
-      if(dia > daysInMonth) return;
-      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-      // Check dataInicio and dataFim
-      if(r.dataInicio && dateStr < r.dataInicio.substring(0,7)+'-01') return;
-      if(r.dataFim && dateStr > r.dataFim) return;
-      // Frequency check
-      const freqMap = {mensal:1, bimestral:2, trimestral:3, semestral:6, anual:12};
-      const interval = freqMap[r.freq]||1;
-      if(r.dataInicio){
-        const startDate = new Date(r.dataInicio);
-        const diffMonths = (year-startDate.getFullYear())*12+(month-startDate.getMonth());
-        if(diffMonths % interval !== 0) return;
-      }
-      // Don't duplicate if real transaction exists
-      const jaExiste = allData.pagamentos.some(p=>{
-        const pd=p.data||p.dataVencimento||'';return pd===dateStr&&(p.carac||p.caracteristica||'').toLowerCase()===r.nome.toLowerCase()&&p.clienteId===c.id;
-      });
-      if(!jaExiste){
-        add(dateStr, {type:r.tipo==='ENTRADA'?'entrada':'saida', label:`${r.nome} (${c.nome})`, val:r.valor, recorrente:true, clienteId:c.id});
-      }
-    });
-  });
 
   // Tarefas com prazo no mês
   allData.tarefas.forEach(t => {
@@ -312,7 +267,7 @@ function renderCalendar(){
     const events = evMap[dateStr]||[];
     const MAX_SHOW = 3;
 
-    const chipsCss = {entrada:'ev-chip ev-entrada', saida:'ev-chip ev-saida', tarefa:'ev-chip ev-tarefa', lembrete:'ev-chip ev-lembrete'};
+    const chipsCss = {tarefa:'ev-chip ev-tarefa', lembrete:'ev-chip ev-lembrete'};
     const chips = events.slice(0,MAX_SHOW).map(ev=>`<div class="${chipsCss[ev.type]||'ev-chip ev-lembrete'}" title="${ev.label}">${ev.label}</div>`).join('');
     const more = events.length>MAX_SHOW ? `<div class="ev-more">+${events.length-MAX_SHOW} mais</div>` : '';
 
@@ -338,8 +293,8 @@ function selectDay(dateStr){
   if(events.length===0){
     document.getElementById('sdp-body').innerHTML='<div class="empty-side">Nenhum evento neste dia</div>';
   } else {
-    const colors={entrada:'#10b981',saida:'#ef4444',tarefa:'#3b82f6',lembrete:'#8b5cf6'};
-    const labels={entrada:'Entrada',saida:'Saída',tarefa:'Tarefa',lembrete:'Lembrete'};
+    const colors={tarefa:'#3b82f6',lembrete:'#8b5cf6'};
+    const labels={tarefa:'Tarefa',lembrete:'Lembrete'};
     document.getElementById('sdp-body').innerHTML = events.map(ev=>`
       <div class="side-event-item">
         <div class="side-ev-dot" style="background:${colors[ev.type]||'#8b5cf6'}"></div>
@@ -366,41 +321,16 @@ function renderSidebar(){
     const ds=dt.toISOString().split('T')[0];
     (evMap[ds]||[]).forEach(ev=>proximos.push({...ev, dateStr:ds}));
   }
-  const colors={entrada:'#10b981',saida:'#ef4444',tarefa:'#3b82f6',lembrete:'#8b5cf6'};
+  const colors={tarefa:'#3b82f6',lembrete:'#8b5cf6'};
   document.getElementById('proximos-eventos').innerHTML = proximos.length===0?'<div class="empty-side">Nenhum evento próximo</div>':
     proximos.slice(0,8).map(ev=>`
       <div class="side-event-item">
         <div class="side-ev-dot" style="background:${colors[ev.type]||'#8b5cf6'}"></div>
         <div style="flex:1">
           <div class="side-ev-name">${ev.label}</div>
-          <div class="side-ev-meta">${ev.type==='entrada'?'Entrada':ev.type==='saida'?'Saída':ev.type==='tarefa'?'Tarefa':'Lembrete'}</div>
+          <div class="side-ev-meta">${ev.type==='tarefa'?'Tarefa':'Lembrete'}</div>
         </div>
         <div class="side-ev-date">${fmtDate(ev.dateStr)}</div>
-      </div>`).join('');
-
-  // Recorrentes do mês
-  const recMes=[];
-  allData.clientes.forEach(c=>{
-    (c.recorrentes||[]).forEach(r=>{
-      const dia=parseInt(r.dia)||1;
-      const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-      if(dia>daysInMonth) return;
-      const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-      if(r.dataInicio && dateStr<r.dataInicio.substring(0,7)+'-01') return;
-      if(r.dataFim && dateStr>r.dataFim) return;
-      recMes.push({...r, clienteNome:c.nome, dateStr});
-    });
-  });
-  recMes.sort((a,b)=>a.dia-b.dia);
-  document.getElementById('recorrentes-mes').innerHTML = recMes.length===0?'<div class="empty-side">Nenhum recorrente este mês</div>':
-    recMes.map(r=>`
-      <div class="side-event-item">
-        <div class="side-ev-dot" style="background:${r.tipo==='ENTRADA'?'#10b981':'#ef4444'}"></div>
-        <div style="flex:1">
-          <div class="side-ev-name">${r.nome}</div>
-          <div class="side-ev-meta">${r.clienteNome} · ${r.freq}</div>
-        </div>
-        <div class="side-ev-date" style="color:${r.tipo==='ENTRADA'?'#6ee7b7':'#fca5a5'}">${r.tipo==='ENTRADA'?'+':'-'}${r.valor}</div>
       </div>`).join('');
 }
 
