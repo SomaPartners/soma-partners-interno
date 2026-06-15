@@ -22,42 +22,11 @@
     /* ════════════ PAGE WRAPPER ════════════ */
     .page {
       width: 100%; height: 100vh;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      grid-template-columns: 1fr 300px;
-      grid-template-areas: "logo logo" "main panel";
-      padding: 24px 24px 24px 32px;
-      gap: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      padding: 22px 28px 24px;
+      gap: 14px;
     }
-    .logo-bar { grid-area: logo; }
-    .main-content { grid-area: main; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
-    .meu-dia-panel { grid-area: panel; display: flex; flex-direction: column; gap: 0; min-height: 0; overflow: hidden; }
-
-    /* ── Meu Dia ── */
-    .meu-dia-header { flex-shrink: 0; margin-bottom: 10px; }
-    .meu-dia-title { font-size: 10px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.3); }
-    .meu-dia-date  { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.2); margin-top: 2px; }
-    .meu-dia-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 2px; }
-    .meu-dia-scroll::-webkit-scrollbar { width: 3px; }
-    .meu-dia-scroll::-webkit-scrollbar-track { background: transparent; }
-    .meu-dia-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-    .meu-dia-group-label { font-size: 9px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.18); margin-top: 4px; margin-bottom: 4px; padding-left: 2px; }
-    .meu-dia-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 9px 12px; cursor: pointer; transition: background 0.18s; border-left: 3px solid transparent; }
-    .meu-dia-item:hover { background: rgba(255,255,255,0.06); }
-    .meu-dia-item.atrasado { border-left-color: #ef4444; }
-    .meu-dia-item.hoje { border-left-color: #f59e0b; }
-    .meu-dia-item.semana { border-left-color: #10b981; }
-    .meu-dia-item-lead { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .meu-dia-item-desc { font-size: 10px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .meu-dia-item-date { font-size: 9px; font-weight: 700; margin-top: 4px; }
-    .meu-dia-item.atrasado .meu-dia-item-date { color: #fca5a5; }
-    .meu-dia-item.hoje .meu-dia-item-date { color: #fcd34d; }
-    .meu-dia-item.semana .meu-dia-item-date { color: #6ee7b7; }
-    .meu-dia-empty { text-align: center; padding: 32px 16px; font-size: 11px; color: rgba(255,255,255,0.2); line-height: 1.6; }
-    .meu-dia-footer { flex-shrink: 0; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
-    .meu-dia-link { font-size: 10px; font-weight: 700; color: rgba(201,150,60,0.6); letter-spacing: 0.5px; cursor: pointer; background: none; border: none; font-family: 'Montserrat',sans-serif; transition: color 0.18s; }
-    .meu-dia-link:hover { color: #c9963c; }
-    .meu-dia-badge { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; font-size: 9px; font-weight: 800; background: #ef4444; color: #fff; margin-left: 5px; }
 
     /* ════════════ LOGO BAR ════════════ */
     .logo-bar {
@@ -66,47 +35,31 @@
       align-items: center;
       flex-shrink: 0;
     }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      user-select: none;
-    }
+    .logo { display: flex; align-items: center; gap: 16px; user-select: none; }
     .logo-soma    { font-size: 20px; font-weight: 300; letter-spacing: 0.5px; }
     .logo-pipe    { width: 1px; height: 26px; background: rgba(255,255,255,0.4); }
     .logo-partners{ font-size: 12px; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; }
 
     .user-area { display: flex; align-items: center; gap: 10px; }
     .user-name  { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.3); letter-spacing: 0.3px; }
-
     .btn-logout {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 8px;
-      padding: 6px 13px;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 10px; font-weight: 700;
-      color: rgba(255,255,255,0.3);
-      cursor: pointer; letter-spacing: 0.5px;
-      transition: all 0.18s;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px; padding: 6px 13px;
+      font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 700;
+      color: rgba(255,255,255,0.3); cursor: pointer; letter-spacing: 0.5px; transition: all 0.18s;
     }
     .btn-logout:hover { color: #fff; background: rgba(255,255,255,0.1); }
 
     /* ════════════ HERO ════════════ */
-    .hero {
-      text-align: center;
-      flex-shrink: 0;
-      line-height: 1.08;
-    }
-    .hero-thin { font-size: clamp(20px, 2.8vw, 44px); font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
-    .hero-bold { font-size: clamp(24px, 3.4vw, 52px); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+    .hero { text-align: center; flex-shrink: 0; line-height: 1.08; }
+    .hero-thin { font-size: clamp(16px, 2.2vw, 36px); font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+    .hero-bold { font-size: clamp(20px, 2.8vw, 44px); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
 
-    /* ════════════ CARDS GRID ════════════ */
+    /* ════════════ CARDS GRID 4×2 ════════════ */
     .cards-grid {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
       grid-template-rows: 1fr 1fr;
       gap: 5px;
       min-height: 0;
@@ -114,50 +67,47 @@
 
     /* ════════════ CARD ════════════ */
     .card {
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-      border-radius: 2px;
+      position: relative; overflow: hidden;
+      cursor: pointer; border-radius: 2px;
     }
-
     .card-img {
       position: absolute; inset: 0;
       width: 100%; height: 100%;
-      object-fit: cover;
-      display: block; z-index: 1;
+      object-fit: cover; display: block; z-index: 1;
     }
-
     .card-placeholder { position: absolute; inset: 0; }
 
-    /* gradients */
+    /* ── Gradients ── */
     .card-concierge .card-placeholder {
-      background:
-        radial-gradient(ellipse at 60% 30%, rgba(30,55,80,0.9) 0%, rgba(8,18,28,1) 70%),
+      background: radial-gradient(ellipse at 60% 30%, rgba(30,55,80,0.9) 0%, rgba(8,18,28,1) 70%),
         linear-gradient(135deg, #1c3349 0%, #0a1a28 50%, #060f1a 100%);
     }
     .card-wealth .card-placeholder {
-      background:
-        radial-gradient(ellipse at 40% 60%, rgba(0,30,20,0.95) 0%, rgba(5,12,10,1) 70%),
+      background: radial-gradient(ellipse at 40% 60%, rgba(0,30,20,0.95) 0%, rgba(5,12,10,1) 70%),
         linear-gradient(135deg, #0a1f10 0%, #060d08 60%, #040b0a 100%);
     }
     .card-eventos .card-placeholder {
-      background:
-        radial-gradient(ellipse at 50% 40%, rgba(40,38,48,0.95) 0%, rgba(12,15,22,1) 70%),
+      background: radial-gradient(ellipse at 50% 40%, rgba(40,38,48,0.95) 0%, rgba(12,15,22,1) 70%),
         linear-gradient(135deg, #1e1e2a 0%, #0d0f18 60%, #080b14 100%);
     }
+    .card-followups .card-placeholder {
+      background: radial-gradient(ellipse at 45% 35%, rgba(201,100,30,0.35) 0%, rgba(10,10,8,1) 65%),
+        linear-gradient(135deg, #1f1206 0%, #120d06 60%, #0a0804 100%);
+    }
     .card-somaclub .card-placeholder {
-      background:
-        radial-gradient(ellipse at 55% 40%, rgba(201,150,60,0.18) 0%, rgba(10,12,18,1) 65%),
+      background: radial-gradient(ellipse at 55% 40%, rgba(201,150,60,0.18) 0%, rgba(10,12,18,1) 65%),
         linear-gradient(135deg, #1a1206 0%, #0d0c10 60%, #080a10 100%);
     }
     .card-somanews .card-placeholder {
-      background:
-        radial-gradient(ellipse at 50% 35%, rgba(180,40,30,0.22) 0%, rgba(10,8,8,1) 65%),
+      background: radial-gradient(ellipse at 50% 35%, rgba(180,40,30,0.22) 0%, rgba(10,8,8,1) 65%),
         linear-gradient(135deg, #1e0a08 0%, #110707 60%, #0a0505 100%);
     }
+    .card-calendario .card-placeholder {
+      background: radial-gradient(ellipse at 50% 40%, rgba(20,100,120,0.4) 0%, rgba(6,12,18,1) 65%),
+        linear-gradient(135deg, #061820 0%, #040d14 60%, #030a10 100%);
+    }
     .card-admin .card-placeholder {
-      background:
-        radial-gradient(ellipse at 50% 30%, rgba(100,80,180,0.2) 0%, rgba(8,10,18,1) 65%),
+      background: radial-gradient(ellipse at 50% 30%, rgba(100,80,180,0.2) 0%, rgba(8,10,18,1) 65%),
         linear-gradient(135deg, #120f1e 0%, #0a0c16 60%, #080a10 100%);
     }
 
@@ -167,45 +117,55 @@
       pointer-events: none; z-index: 2;
     }
 
-    /* footer label */
+    /* ── Card footer ── */
     .card-footer {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: 40px 20px 18px;
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 40px 18px 16px;
       background: linear-gradient(to top, rgba(6,16,26,0.92) 0%, transparent 100%);
-      opacity: 0;
-      transform: translateY(8px);
+      opacity: 0; transform: translateY(8px);
       transition: opacity 0.32s ease, transform 0.32s ease;
       z-index: 3;
     }
     .card:hover .card-footer { opacity: 1; transform: translateY(0); }
+    .card-title    { font-size: 12px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; }
+    .card-subtitle { font-size: 9px; font-weight: 400; letter-spacing: 1.5px; color: rgba(255,255,255,0.65); margin-top: 3px; }
 
-    .card-title    { font-size: 13px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; }
-    .card-subtitle { font-size: 10px; font-weight: 400; letter-spacing: 1.5px; color: rgba(255,255,255,0.65); margin-top: 4px; }
+    /* ── Follow-ups live badge ── */
+    .fu-live {
+      position: absolute; top: 14px; right: 14px;
+      z-index: 4; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+    }
+    .fu-live-count {
+      background: #ef4444; color: #fff;
+      font-size: 11px; font-weight: 800;
+      border-radius: 20px; padding: 3px 10px;
+      letter-spacing: 0.3px; line-height: 1.4;
+    }
+    .fu-live-label {
+      font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+    }
 
-    /* admin states */
+    /* ── Admin states ── */
     .card-admin-locked { cursor: not-allowed !important; opacity: 0.55; }
     .card-admin-locked .card-footer { opacity: 1 !important; transform: none !important; }
-
     .admin-lock-icon {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -60%);
       z-index: 4; opacity: 0.22;
     }
-    .admin-lock-icon svg { width: 32px; height: 32px; stroke: #fff; stroke-width: 1.5; fill: none; }
+    .admin-lock-icon svg { width: 28px; height: 28px; stroke: #fff; stroke-width: 1.5; fill: none; }
 
     /* ════════════ MOBILE ════════════ */
     @media(max-width: 900px){
       html, body { overflow: auto; height: auto; }
-      .page { height: auto; overflow: visible; padding: 20px 16px 32px; gap: 14px; grid-template-columns: 1fr; grid-template-rows: auto auto auto; grid-template-areas: "logo" "main" "panel"; }
-      .hero-thin { font-size: clamp(20px, 5vw, 32px); }
-      .hero-bold { font-size: clamp(24px, 6vw, 38px); }
-      .cards-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 42vw); gap: 6px; }
+      .page { height: auto; overflow: visible; padding: 18px 14px 28px; gap: 12px; }
+      .hero-thin { font-size: clamp(16px, 4.5vw, 28px); }
+      .hero-bold { font-size: clamp(20px, 5.5vw, 34px); }
+      .cards-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, 42vw); gap: 5px; }
       .card-footer { opacity: 1; transform: none; }
       .card-title { font-size: 11px; letter-spacing: 3px; }
       .card-subtitle { font-size: 9px; }
-      .meu-dia-panel { min-height: 260px; }
-      .meu-dia-scroll { max-height: 220px; }
     }
   </style>
   <!-- PWA -->
@@ -237,15 +197,13 @@
     </div>
   </div>
 
-  <!-- MAIN CONTENT (hero + cards) -->
-  <div class="main-content">
   <!-- HERO -->
   <div class="hero">
     <div class="hero-thin">Cada passo soma.</div>
     <div class="hero-bold">Cada decisão conta.</div>
   </div>
 
-  <!-- CARDS GRID 2×3 -->
+  <!-- CARDS GRID 4×2 -->
   <div class="cards-grid">
 
     <!-- CONCIERGE -->
@@ -281,6 +239,20 @@
       </div>
     </div>
 
+    <!-- FOLLOW-UPS -->
+    <div class="card card-followups" onclick="window.location.href='wealth.html'">
+      <div class="card-placeholder"></div>
+      <div class="card-tint"></div>
+      <div class="fu-live" id="fu-live" style="display:none">
+        <div class="fu-live-count" id="fu-live-count">0</div>
+        <div class="fu-live-label">pendentes</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-title">Follow-ups</div>
+        <div class="card-subtitle">Ações &amp; Tarefas do dia</div>
+      </div>
+    </div>
+
     <!-- SOMA CLUB -->
     <div class="card card-somaclub" onclick="window.open('https://somaclubportal.vercel.app','_blank')">
       <div class="card-placeholder"></div>
@@ -303,6 +275,16 @@
       </div>
     </div>
 
+    <!-- CALENDÁRIO -->
+    <div class="card card-calendario" onclick="window.location.href='calendario.html'">
+      <div class="card-placeholder"></div>
+      <div class="card-tint"></div>
+      <div class="card-footer">
+        <div class="card-title">Calendário</div>
+        <div class="card-subtitle">Agenda &amp; Compromissos</div>
+      </div>
+    </div>
+
     <!-- ADMINISTRADOR -->
     <div class="card card-admin" id="card-admin">
       <div class="card-placeholder"></div>
@@ -318,21 +300,6 @@
     </div>
 
   </div><!-- /cards-grid -->
-  </div><!-- /main-content -->
-
-  <!-- MEU DIA PANEL -->
-  <div class="meu-dia-panel">
-    <div class="meu-dia-header">
-      <div class="meu-dia-title">Meu Dia</div>
-      <div class="meu-dia-date" id="meu-dia-date"></div>
-    </div>
-    <div class="meu-dia-scroll" id="meu-dia-list">
-      <div class="meu-dia-empty">Carregando…</div>
-    </div>
-    <div class="meu-dia-footer">
-      <button class="meu-dia-link" onclick="window.location.href='wealth.html'">Ver todos no Wealth →</button>
-    </div>
-  </div>
 
 </div><!-- /page -->
 
@@ -349,67 +316,25 @@ function logout(){
   window.location.href = 'login.html';
 }
 
-// ── Supabase + Meu Dia ──
-const SUPA_URL='https://mdftseanzfganeiyotlf.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
-const _sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-
-(async function loadMeuDia(){
-  const today = new Date();
-  const pad = n => String(n).padStart(2,'0');
-  const todayStr = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
-  const dow = today.getDay();
-  const startW = new Date(today); startW.setDate(today.getDate()-(dow||7)+1);
-  const endW   = new Date(startW); endW.setDate(startW.getDate()+6);
-  const startWStr = startW.getFullYear()+'-'+pad(startW.getMonth()+1)+'-'+pad(startW.getDate());
-  const endWStr   = endW.getFullYear()+'-'+pad(endW.getMonth()+1)+'-'+pad(endW.getDate());
-
-  // data label
-  const DIAS=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-  const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const el = document.getElementById('meu-dia-date');
-  if(el) el.textContent = DIAS[today.getDay()]+', '+today.getDate()+' de '+MESES[today.getMonth()];
-
+// ── Follow-ups badge ──
+(async function(){
   try{
-    const [lRes, fRes] = await Promise.all([
-      _sb.from('wealth_leads').select('id,data'),
-      _sb.from('wealth_followups').select('id,lead_id,data').eq('data->feito', false),
-    ]);
-    // fallback if eq on json field doesn't work
-    const leads = (lRes.data||[]).map(r=>({id:r.id,...(r.data||{})}));
-    let fus = (fRes.data||[]).map(r=>({id:r.id,lead_id:r.lead_id,...(r.data||{})}))
-                              .filter(f=>!f.feito);
-
-    const atrasados = fus.filter(f=>f.data&&f.data<todayStr).sort((a,b)=>a.data.localeCompare(b.data));
-    const hoje      = fus.filter(f=>f.data===todayStr);
-    const semana    = fus.filter(f=>f.data&&f.data>todayStr&&f.data>=startWStr&&f.data<=endWStr).sort((a,b)=>a.data.localeCompare(b.data));
-
-    const list = document.getElementById('meu-dia-list');
-    if(!list) return;
-
-    const fmtDate = d => { if(!d) return ''; const[y,m,day]=d.split('-'); return `${day}/${m}`; };
-    const getName = f => leads.find(l=>l.id===f.lead_id)?.nome||'—';
-
-    const itemHTML = (f, tipo) => `
-      <div class="meu-dia-item ${tipo}" onclick="window.location.href='wealth.html'">
-        <div class="meu-dia-item-lead">${getName(f)}</div>
-        <div class="meu-dia-item-desc">${f.desc||''}</div>
-        <div class="meu-dia-item-date">${tipo==='atrasado'?'Atrasado — '+fmtDate(f.data):fmtDate(f.data)}</div>
-      </div>`;
-
-    let html='';
-    if(atrasados.length) html += `<div class="meu-dia-group-label">Atrasados <span class="meu-dia-badge">${atrasados.length}</span></div>`+atrasados.map(f=>itemHTML(f,'atrasado')).join('');
-    if(hoje.length)      html += `<div class="meu-dia-group-label">Hoje</div>`+hoje.map(f=>itemHTML(f,'hoje')).join('');
-    if(semana.length)    html += `<div class="meu-dia-group-label">Esta semana</div>`+semana.slice(0,5).map(f=>itemHTML(f,'semana')).join('');
-
-    list.innerHTML = html || `<div class="meu-dia-empty">✓ Sem pendências para hoje<br><span style="font-size:10px">Tudo em dia!</span></div>`;
-  }catch(e){
-    const list = document.getElementById('meu-dia-list');
-    if(list) list.innerHTML='<div class="meu-dia-empty">—</div>';
-  }
+    const SUPA_URL='https://mdftseanzfganeiyotlf.supabase.co';
+    const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
+    const _sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+    const pad = n => String(n).padStart(2,'0');
+    const d = new Date();
+    const todayStr = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    const {data} = await _sb.from('wealth_followups').select('id,data');
+    const pending = (data||[]).map(r=>({...r.data})).filter(f=>!f.feito&&f.data&&f.data<=todayStr);
+    if(pending.length){
+      document.getElementById('fu-live-count').textContent = pending.length;
+      document.getElementById('fu-live').style.display = 'flex';
+    }
+  }catch(e){}
 })();
 
-// Admin card
+// ── Admin card ──
 (function(){
   const isAdmin = sessionStorage.getItem('soma_admin') === '1';
   const card = document.getElementById('card-admin');
