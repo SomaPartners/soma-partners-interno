@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Soma Partners</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -21,11 +22,42 @@
     /* ════════════ PAGE WRAPPER ════════════ */
     .page {
       width: 100%; height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 24px 32px 28px;
-      gap: 18px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      grid-template-columns: 1fr 300px;
+      grid-template-areas: "logo logo" "main panel";
+      padding: 24px 24px 24px 32px;
+      gap: 14px 16px;
     }
+    .logo-bar { grid-area: logo; }
+    .main-content { grid-area: main; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+    .meu-dia-panel { grid-area: panel; display: flex; flex-direction: column; gap: 0; min-height: 0; overflow: hidden; }
+
+    /* ── Meu Dia ── */
+    .meu-dia-header { flex-shrink: 0; margin-bottom: 10px; }
+    .meu-dia-title { font-size: 10px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+    .meu-dia-date  { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.2); margin-top: 2px; }
+    .meu-dia-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 2px; }
+    .meu-dia-scroll::-webkit-scrollbar { width: 3px; }
+    .meu-dia-scroll::-webkit-scrollbar-track { background: transparent; }
+    .meu-dia-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    .meu-dia-group-label { font-size: 9px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.18); margin-top: 4px; margin-bottom: 4px; padding-left: 2px; }
+    .meu-dia-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 9px 12px; cursor: pointer; transition: background 0.18s; border-left: 3px solid transparent; }
+    .meu-dia-item:hover { background: rgba(255,255,255,0.06); }
+    .meu-dia-item.atrasado { border-left-color: #ef4444; }
+    .meu-dia-item.hoje { border-left-color: #f59e0b; }
+    .meu-dia-item.semana { border-left-color: #10b981; }
+    .meu-dia-item-lead { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .meu-dia-item-desc { font-size: 10px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .meu-dia-item-date { font-size: 9px; font-weight: 700; margin-top: 4px; }
+    .meu-dia-item.atrasado .meu-dia-item-date { color: #fca5a5; }
+    .meu-dia-item.hoje .meu-dia-item-date { color: #fcd34d; }
+    .meu-dia-item.semana .meu-dia-item-date { color: #6ee7b7; }
+    .meu-dia-empty { text-align: center; padding: 32px 16px; font-size: 11px; color: rgba(255,255,255,0.2); line-height: 1.6; }
+    .meu-dia-footer { flex-shrink: 0; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .meu-dia-link { font-size: 10px; font-weight: 700; color: rgba(201,150,60,0.6); letter-spacing: 0.5px; cursor: pointer; background: none; border: none; font-family: 'Montserrat',sans-serif; transition: color 0.18s; }
+    .meu-dia-link:hover { color: #c9963c; }
+    .meu-dia-badge { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; font-size: 9px; font-weight: 800; background: #ef4444; color: #fff; margin-left: 5px; }
 
     /* ════════════ LOGO BAR ════════════ */
     .logo-bar {
@@ -163,19 +195,17 @@
     .admin-lock-icon svg { width: 32px; height: 32px; stroke: #fff; stroke-width: 1.5; fill: none; }
 
     /* ════════════ MOBILE ════════════ */
-    @media(max-width: 768px){
+    @media(max-width: 900px){
       html, body { overflow: auto; height: auto; }
-      .page { height: auto; overflow: visible; padding: 20px 16px 32px; gap: 16px; }
+      .page { height: auto; overflow: visible; padding: 20px 16px 32px; gap: 14px; grid-template-columns: 1fr; grid-template-rows: auto auto auto; grid-template-areas: "logo" "main" "panel"; }
       .hero-thin { font-size: clamp(20px, 5vw, 32px); }
       .hero-bold { font-size: clamp(24px, 6vw, 38px); }
-      .cards-grid {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: repeat(3, 42vw);
-        gap: 6px;
-      }
+      .cards-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 42vw); gap: 6px; }
       .card-footer { opacity: 1; transform: none; }
       .card-title { font-size: 11px; letter-spacing: 3px; }
       .card-subtitle { font-size: 9px; }
+      .meu-dia-panel { min-height: 260px; }
+      .meu-dia-scroll { max-height: 220px; }
     }
   </style>
   <!-- PWA -->
@@ -207,6 +237,8 @@
     </div>
   </div>
 
+  <!-- MAIN CONTENT (hero + cards) -->
+  <div class="main-content">
   <!-- HERO -->
   <div class="hero">
     <div class="hero-thin">Cada passo soma.</div>
@@ -286,6 +318,21 @@
     </div>
 
   </div><!-- /cards-grid -->
+  </div><!-- /main-content -->
+
+  <!-- MEU DIA PANEL -->
+  <div class="meu-dia-panel">
+    <div class="meu-dia-header">
+      <div class="meu-dia-title">Meu Dia</div>
+      <div class="meu-dia-date" id="meu-dia-date"></div>
+    </div>
+    <div class="meu-dia-scroll" id="meu-dia-list">
+      <div class="meu-dia-empty">Carregando…</div>
+    </div>
+    <div class="meu-dia-footer">
+      <button class="meu-dia-link" onclick="window.location.href='wealth.html'">Ver todos no Wealth →</button>
+    </div>
+  </div>
 
 </div><!-- /page -->
 
@@ -301,6 +348,66 @@ function logout(){
   sessionStorage.removeItem('soma_nome');
   window.location.href = 'login.html';
 }
+
+// ── Supabase + Meu Dia ──
+const SUPA_URL='https://mdftseanzfganeiyotlf.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
+const _sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+(async function loadMeuDia(){
+  const today = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const todayStr = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+  const dow = today.getDay();
+  const startW = new Date(today); startW.setDate(today.getDate()-(dow||7)+1);
+  const endW   = new Date(startW); endW.setDate(startW.getDate()+6);
+  const startWStr = startW.getFullYear()+'-'+pad(startW.getMonth()+1)+'-'+pad(startW.getDate());
+  const endWStr   = endW.getFullYear()+'-'+pad(endW.getMonth()+1)+'-'+pad(endW.getDate());
+
+  // data label
+  const DIAS=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const el = document.getElementById('meu-dia-date');
+  if(el) el.textContent = DIAS[today.getDay()]+', '+today.getDate()+' de '+MESES[today.getMonth()];
+
+  try{
+    const [lRes, fRes] = await Promise.all([
+      _sb.from('wealth_leads').select('id,data'),
+      _sb.from('wealth_followups').select('id,lead_id,data').eq('data->feito', false),
+    ]);
+    // fallback if eq on json field doesn't work
+    const leads = (lRes.data||[]).map(r=>({id:r.id,...(r.data||{})}));
+    let fus = (fRes.data||[]).map(r=>({id:r.id,lead_id:r.lead_id,...(r.data||{})}))
+                              .filter(f=>!f.feito);
+
+    const atrasados = fus.filter(f=>f.data&&f.data<todayStr).sort((a,b)=>a.data.localeCompare(b.data));
+    const hoje      = fus.filter(f=>f.data===todayStr);
+    const semana    = fus.filter(f=>f.data&&f.data>todayStr&&f.data>=startWStr&&f.data<=endWStr).sort((a,b)=>a.data.localeCompare(b.data));
+
+    const list = document.getElementById('meu-dia-list');
+    if(!list) return;
+
+    const fmtDate = d => { if(!d) return ''; const[y,m,day]=d.split('-'); return `${day}/${m}`; };
+    const getName = f => leads.find(l=>l.id===f.lead_id)?.nome||'—';
+
+    const itemHTML = (f, tipo) => `
+      <div class="meu-dia-item ${tipo}" onclick="window.location.href='wealth.html'">
+        <div class="meu-dia-item-lead">${getName(f)}</div>
+        <div class="meu-dia-item-desc">${f.desc||''}</div>
+        <div class="meu-dia-item-date">${tipo==='atrasado'?'Atrasado — '+fmtDate(f.data):fmtDate(f.data)}</div>
+      </div>`;
+
+    let html='';
+    if(atrasados.length) html += `<div class="meu-dia-group-label">Atrasados <span class="meu-dia-badge">${atrasados.length}</span></div>`+atrasados.map(f=>itemHTML(f,'atrasado')).join('');
+    if(hoje.length)      html += `<div class="meu-dia-group-label">Hoje</div>`+hoje.map(f=>itemHTML(f,'hoje')).join('');
+    if(semana.length)    html += `<div class="meu-dia-group-label">Esta semana</div>`+semana.slice(0,5).map(f=>itemHTML(f,'semana')).join('');
+
+    list.innerHTML = html || `<div class="meu-dia-empty">✓ Sem pendências para hoje<br><span style="font-size:10px">Tudo em dia!</span></div>`;
+  }catch(e){
+    const list = document.getElementById('meu-dia-list');
+    if(list) list.innerHTML='<div class="meu-dia-empty">—</div>';
+  }
+})();
 
 // Admin card
 (function(){
