@@ -639,9 +639,14 @@ body{display:flex;flex-direction:column;overflow:hidden}
         </div>
         <div class="tbl-wrap">
           <table class="tbl">
-            <thead><tr><th>Data</th><th>Descrição</th><th style="text-align:right">Valor</th><th style="min-width:210px">Categoria</th><th>Obs</th></tr></thead>
+            <thead><tr><th style="width:32px;text-align:center"><input type="checkbox" id="ex-chk-all" onchange="exToggleAll(this.checked)" style="cursor:pointer;accent-color:#c9963c"></th><th>Data</th><th>Descrição</th><th style="text-align:right">Valor</th><th style="min-width:210px">Categoria</th><th>Obs</th></tr></thead>
             <tbody id="ex-tbody"></tbody>
           </table>
+        </div>
+        <div id="ex-sel-bar" style="display:none;margin-top:12px;padding:10px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;display:none;align-items:center;gap:12px">
+          <span id="ex-sel-count" style="font-size:12px;font-weight:700;color:#fca5a5"></span>
+          <button onclick="exDeleteSelected()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);border-radius:7px;padding:5px 14px;font-size:12px;font-weight:700;color:#fca5a5;cursor:pointer">🗑 Apagar selecionados</button>
+          <button onclick="exClearSel()" style="background:none;border:none;font-size:12px;color:rgba(255,255,255,0.35);cursor:pointer;margin-left:auto">Cancelar</button>
         </div>
         <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
           <button class="btn btn-primary" onclick="exSalvar()">
@@ -3356,6 +3361,7 @@ function exRender(){
     const rowStyle=nc?'background:rgba(252,211,77,0.02)':isInt?'opacity:0.45':isPassagem?'background:rgba(59,130,246,0.03)':'';
     const dateFmt=r.data.split('-').reverse().join('/');
     return`<tr style="${rowStyle}">
+      <td style="text-align:center;vertical-align:middle"><input type="checkbox" class="ex-row-chk" data-id="${r.id}" onchange="exUpdateSelBar()" style="cursor:pointer;accent-color:#c9963c"></td>
       <td style="font-size:11px;color:var(--muted);white-space:nowrap">${dateFmt}</td>
       <td style="font-size:11px;max-width:300px;${isInt?'color:rgba(255,255,255,0.3)':''}">${r.descricao}</td>
       <td style="color:${vclr};font-weight:700;white-space:nowrap;text-align:right">${exFmtVal(r.valor)}</td>
@@ -3399,6 +3405,49 @@ async function exDeleteRow(id){
   showToast('Lançamento removido do extrato!','ok');
 }
 
+function exToggleAll(checked){
+  document.querySelectorAll('.ex-row-chk').forEach(c=>c.checked=checked);
+  exUpdateSelBar();
+}
+function exUpdateSelBar(){
+  const sel=document.querySelectorAll('.ex-row-chk:checked');
+  const bar=document.getElementById('ex-sel-bar');
+  const cnt=document.getElementById('ex-sel-count');
+  const all=document.getElementById('ex-chk-all');
+  if(sel.length){
+    bar.style.display='flex';
+    cnt.textContent=`${sel.length} lançamento${sel.length!==1?'s':''} selecionado${sel.length!==1?'s':''}`;
+  } else {
+    bar.style.display='none';
+    if(all) all.checked=false;
+  }
+}
+function exClearSel(){
+  document.querySelectorAll('.ex-row-chk').forEach(c=>c.checked=false);
+  const all=document.getElementById('ex-chk-all');
+  if(all) all.checked=false;
+  exUpdateSelBar();
+}
+async function exDeleteSelected(){
+  const sel=[...document.querySelectorAll('.ex-row-chk:checked')];
+  if(!sel.length)return;
+  if(!confirm(`Apagar ${sel.length} lançamento${sel.length!==1?'s':''} do extrato?`))return;
+  const ids=sel.map(c=>c.dataset.id);
+  // Remove da memória
+  _exRows=_exRows.filter(x=>!ids.includes(x.id));
+  exRender();exRenderDRE();exUpdateNcBadge();
+  // Remove do banco em lotes
+  for(let i=0;i<ids.length;i+=50)
+    await _sb.from('admin_extrato').delete().in('id',ids.slice(i,i+50));
+  // Remove lançamentos BTG correspondentes
+  const {data:lnc}=await _sb.from('admin_lancamentos').select('id,obs').like('obs','BTG·%');
+  if(lnc&&lnc.length){
+    await _sb.from('admin_lancamentos').delete().in('id',lnc.map(l=>l.id));
+    lancamentos=lancamentos.filter(l=>!lnc.find(m=>m.id===l.id));
+    renderLancamentos();
+  }
+  showToast(`${ids.length} lançamento${ids.length!==1?'s':''} removido${ids.length!==1?'s':''}!`,'ok');
+}
 async function exSalvar(){
   const btn=document.querySelector('[onclick="exSalvar()"]');
   const st=document.getElementById('ex-save-status');
