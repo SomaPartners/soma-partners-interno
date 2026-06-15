@@ -108,6 +108,17 @@ html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-
 .loader-spin{width:36px;height:36px;border:3px solid rgba(201,150,60,0.2);border-top-color:#c9963c;border-radius:50%;animation:spin 0.7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* TOGGLE */
+.toggle-row{display:flex;align-items:center;gap:10px;padding:10px 0 4px}
+.toggle-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.3px;flex:1}
+.toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:22px;cursor:pointer;transition:all 0.2s}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:rgba(255,255,255,0.4);border-radius:50%;transition:all 0.2s}
+.toggle-switch input:checked + .toggle-slider{background:rgba(201,150,60,0.3);border-color:rgba(201,150,60,0.5)}
+.toggle-switch input:checked + .toggle-slider:before{transform:translateX(18px);background:#c9963c}
+.lead-field{transition:all 0.2s}
+
 /* BADGES HEADER */
 .stat-chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
 .stat-chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700}
@@ -175,11 +186,30 @@ html,body{min-height:100vh;background:var(--navy);font-family:'Montserrat',sans-
 <div class="modal-overlay" id="modal-fu">
   <div class="modal-dark">
     <div class="modal-title">Novo Follow-up</div>
+
     <div class="form-row">
-      <label class="form-label">Contato / Lead</label>
-      <select class="form-select" id="fu-lead-id"></select>
+      <label class="form-label">Responsável</label>
+      <select class="form-select" id="fu-responsavel">
+        <option value="">— Selecione —</option>
+      </select>
     </div>
-    <div class="form-row">
+
+    <div class="toggle-row">
+      <span class="toggle-label">É sobre um lead/contato?</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="fu-tem-lead" onchange="toggleLeadField()"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="lead-field" id="fu-lead-wrap" style="display:none">
+      <div class="form-row" style="margin-top:10px">
+        <label class="form-label">Lead / Contato</label>
+        <select class="form-select" id="fu-lead-id"></select>
+      </div>
+    </div>
+
+    <div class="form-row" style="margin-top:12px">
       <label class="form-label">Descrição</label>
       <textarea class="form-textarea" id="fu-desc" placeholder="O que precisa ser feito?"></textarea>
     </div>
@@ -233,7 +263,7 @@ const TIPO_TAG={
   outro:'<span class="tipo-tag tipo-outro">· Outro</span>',
 };
 
-let leads=[], followups=[];
+let leads=[], followups=[], equipe=[];
 let _viewAtual=true, _viewMes=new Date().getMonth(), _viewAno=new Date().getFullYear();
 
 // ── RELÓGIO ──
@@ -279,15 +309,20 @@ function semanaAtual(){
 async function loadAll(){
   showLoader(true);
   try{
-    const[lRes,fRes]=await Promise.all([
+    const[lRes,fRes,eRes]=await Promise.all([
       _sb.from('wealth_leads').select('id,data').order('created_at',{ascending:false}),
       _sb.from('wealth_followups').select('id,lead_id,data').order('created_at'),
+      _sb.from('wealth_responsaveis').select('id,data').order('created_at'),
     ]);
     leads=(lRes.data||[]).map(r=>({id:r.id,...(r.data||{})}));
     followups=(fRes.data||[]).map(r=>({id:r.id,lead_id:r.lead_id,...(r.data||{})}));
+    equipe=(eRes.data||[]).map(r=>({id:r.id,...(r.data||{})}))
+      .filter(r=>r.status!=='inativo')
+      .sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR'));
   }catch(e){showToast('Erro ao carregar','err')}
   showLoader(false);
   populateLeadSel();
+  populateEquipeSel();
   render();
 }
 
@@ -391,11 +426,23 @@ function renderMes(){
 
 // ── CARD HTML ──
 const checkSVG='<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
-function nomeLead(f){return leads.find(l=>l.id===f.lead_id)?.nome||'—'}
+function nomeLead(f){
+  if(!f.lead_id) return null;
+  return leads.find(l=>l.id===f.lead_id)?.nome||null;
+}
+function cardHeader(f){
+  const lead=nomeLead(f);
+  const resp=f.responsavel||'';
+  return`${lead?`<div class="k-card-nome">${lead}</div>`:''}
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:${lead?'4':'6'}px">
+      ${resp?`<span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(201,150,60,0.12);border:1px solid rgba(201,150,60,0.25);border-radius:20px;padding:2px 8px">${resp}</span>`:''}
+      ${!lead?`<span style="font-size:11px;font-weight:600;color:var(--muted2)">Tarefa interna</span>`:''}
+    </div>`;
+}
 
 function cardHTML(f,tipo){
   return`<div class="k-card k-card-${tipo}">
-    <div class="k-card-nome">${nomeLead(f)}</div>
+    ${cardHeader(f)}
     <div class="k-card-desc">${f.desc||''}</div>
     <div class="k-card-foot">
       <div class="k-card-meta">${TIPO_TAG[f.tipo]||''}<span>${fmtDate(f.data)}</span></div>
@@ -408,7 +455,7 @@ function cardHTML(f,tipo){
 }
 function cardMesHTML(f,cor){
   return`<div class="k-card" style="border-left:3px solid ${cor}">
-    <div class="k-card-nome">${nomeLead(f)}</div>
+    ${cardHeader(f)}
     <div class="k-card-desc">${f.desc||''}</div>
     <div class="k-card-foot">
       <div class="k-card-meta">${TIPO_TAG[f.tipo]||''}<span>${fmtDate(f.data)}</span></div>
@@ -420,10 +467,12 @@ function cardMesHTML(f,cor){
   </div>`;
 }
 function cardDoneHTML(f){
+  const lead=nomeLead(f);
   return`<div class="k-card" style="opacity:0.55;display:flex;gap:10px;align-items:flex-start">
     <div style="flex-shrink:0;color:#6ee7b7;margin-top:1px">${checkSVG}</div>
     <div style="flex:1;min-width:0">
-      <div class="k-card-nome">${nomeLead(f)}</div>
+      ${lead?`<div class="k-card-nome">${lead}</div>`:''}
+      ${f.responsavel?`<div style="font-size:10px;color:var(--gold);font-weight:700;margin-bottom:3px">${f.responsavel}</div>`:''}
       <div class="k-card-desc">${f.desc||''}</div>
       <div class="k-card-meta">${TIPO_TAG[f.tipo]||''}<span>${fmtDate(f.data)}</span></div>
     </div>
@@ -451,18 +500,34 @@ async function deleteFu(id){
 // ── SAVE ──
 function populateLeadSel(){
   const sel=document.getElementById('fu-lead-id');
-  sel.innerHTML=[...leads].sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR',{sensitivity:'base'}))
+  sel.innerHTML='<option value="">— Selecione um lead —</option>'+
+    [...leads].sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR',{sensitivity:'base'}))
     .map(l=>`<option value="${l.id}">${l.nome}</option>`).join('');
 }
 
+function populateEquipeSel(){
+  const sel=document.getElementById('fu-responsavel');
+  sel.innerHTML='<option value="">— Selecione —</option>'+
+    equipe.map(p=>`<option value="${p.nome}">${p.nome}</option>`).join('');
+}
+
+function toggleLeadField(){
+  const on=document.getElementById('fu-tem-lead').checked;
+  document.getElementById('fu-lead-wrap').style.display=on?'block':'none';
+}
+
 async function saveFu(){
-  const lead_id=document.getElementById('fu-lead-id').value;
+  const responsavel=document.getElementById('fu-responsavel').value;
+  const temLead=document.getElementById('fu-tem-lead').checked;
+  const lead_id=temLead?document.getElementById('fu-lead-id').value:'';
   const data=document.getElementById('fu-data').value;
   const desc=document.getElementById('fu-desc').value.trim();
-  if(!lead_id||!data||!desc){alert('Preencha todos os campos');return;}
+  if(!responsavel){alert('Selecione o responsável');return;}
+  if(!data||!desc){alert('Preencha data e descrição');return;}
+  if(temLead&&!lead_id){alert('Selecione o lead ou desative a opção');return;}
   const id=uid();
-  const rec={id,lead_id,data,tipo:document.getElementById('fu-tipo').value,desc,feito:false};
-  const{error}=await _sb.from('wealth_followups').upsert({id,lead_id,data:rec});
+  const rec={id,lead_id:lead_id||null,data,tipo:document.getElementById('fu-tipo').value,desc,feito:false,responsavel};
+  const{error}=await _sb.from('wealth_followups').upsert({id,lead_id:lead_id||null,data:rec});
   if(error){showToast('Erro ao salvar','err');return;}
   followups.push(rec);
   showToast('Follow-up agendado!','ok');
@@ -480,7 +545,11 @@ function openModal(id){
     document.getElementById('fu-desc').value='';
     document.getElementById('fu-data').value=today();
     document.getElementById('fu-tipo').value='ligacao';
+    document.getElementById('fu-responsavel').value='';
+    document.getElementById('fu-tem-lead').checked=false;
+    document.getElementById('fu-lead-wrap').style.display='none';
     populateLeadSel();
+    populateEquipeSel();
   }
   document.getElementById(id).classList.add('open');
 }
