@@ -1149,6 +1149,16 @@ body{display:flex;flex-direction:column;overflow:hidden}
       <div class="field"><label>Data de Publicação</label><input type="date" id="conteudo-data" style="color-scheme:dark"></div>
     </div>
     <div class="field"><label>Título / Assunto</label><input type="text" id="conteudo-titulo" placeholder="Ex: Post sobre planejamento sucessório"></div>
+    <div class="field">
+      <label style="display:flex;align-items:center;justify-content:space-between">
+        <span>Prompt de Imagem <span style="font-size:10px;opacity:.6;font-weight:400">(para ChatGPT / Gemini / Gamma)</span></span>
+        <button type="button" class="btn btn-outline btn-sm" style="font-size:10px;padding:2px 10px" onclick="(function(){const t=document.getElementById('conteudo-titulo').value;const c=document.getElementById('conteudo-canal').value;if(!t){showToast('Preencha o título primeiro','err');return;}const p=gerarPromptImagem(t,c);document.getElementById('conteudo-prompt').value=p;document.getElementById('conteudo-prompt-wrap').style.display='block';})()">✨ Gerar Prompt</button>
+      </label>
+      <div id="conteudo-prompt-wrap" style="display:none;position:relative">
+        <textarea id="conteudo-prompt" rows="4" style="width:100%;background:rgba(59,130,246,0.07);color:var(--text);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:10px 38px 10px 10px;font-size:11px;line-height:1.6;resize:vertical;font-family:monospace" readonly placeholder="Preencha o título e clique em Gerar Prompt"></textarea>
+        <button type="button" title="Copiar prompt" onclick="navigator.clipboard.writeText(document.getElementById('conteudo-prompt').value).then(()=>{showToast('Prompt copiado! ✓','ok')})" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;opacity:.7">📋</button>
+      </div>
+    </div>
     <div class="field"><label>Descrição / Roteiro</label><textarea id="conteudo-desc" placeholder="O que será dito, link, hashtags…"></textarea></div>
     <div class="form-row">
       <div class="field"><label>Responsável</label><select id="conteudo-resp"></select></div>
@@ -2731,12 +2741,12 @@ function renderConteudo(){
     const resp=equipe.find(x=>x.id===c.responsavel_id);
     return`<tr>
       <td><span style="font-size:13px">${MKT_CANAL_ICON[c.canal]||'📌'}</span> <span style="font-size:11px;color:${MKT_CANAL_COR[c.canal]||'#fff'};font-weight:700">${MKT_CANAL_LABEL[c.canal]||c.canal}</span></td>
-      <td style="font-weight:600">${c.titulo||'—'}${c.descricao?`<div style="margin-top:3px"><span style="font-size:9px;background:rgba(59,130,246,0.18);color:#60a5fa;padding:2px 6px;border-radius:3px;font-weight:600">🎨 prompt gerado</span></div>`:''}</td>
+      <td style="font-weight:600">${c.titulo||'—'}${c.descricao?`<div style="font-size:10px;color:var(--muted);margin-top:2px">${c.descricao.slice(0,60)}${c.descricao.length>60?'…':''}</div>`:''}</td>
       <td style="font-size:11px;color:var(--muted)">${c.data_publicacao?fmtDate(c.data_publicacao):'—'}</td>
       <td style="font-size:11px">${resp?.nome||'—'}</td>
       <td><span class="badge ${MKT_STATUS_CLS[c.status]||''}">${MKT_STATUS_LABEL[c.status]||c.status}</span></td>
       <td style="display:flex;gap:6px">
-        ${c.descricao?`<button class="btn btn-outline btn-sm" title="Ver prompt de imagem" onclick="mostrarPromptImagem('${(c.titulo||'').replace(/'/g,"\\'")}','${c.canal||''}')">🎨</button>`:''}
+        <button class="btn btn-outline btn-sm" title="Gerar prompt de imagem" onclick="mostrarPromptImagem('${(c.titulo||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${c.canal||''}')">🎨</button>
         ${c.link?`<a href="${c.link}" target="_blank" class="btn btn-outline btn-sm" style="font-size:10px">↗</a>`:''}
         <button class="btn btn-outline btn-sm" onclick="editarConteudo('${c.id}')">✎</button>
         <button class="btn btn-danger btn-sm" onclick="deletarConteudo('${c.id}')">×</button>
@@ -2804,7 +2814,8 @@ function renderMetricas(){
 function abrirModalConteudo(){
   document.getElementById('conteudo-id').value='';
   document.getElementById('conteudo-modal-title').textContent='Novo Conteúdo';
-  ['conteudo-titulo','conteudo-desc','conteudo-data','conteudo-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['conteudo-titulo','conteudo-desc','conteudo-data','conteudo-link','conteudo-prompt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const pw=document.getElementById('conteudo-prompt-wrap');if(pw)pw.style.display='none';
   document.getElementById('conteudo-canal').value='instagram';
   document.getElementById('conteudo-status').value='rascunho';
   document.getElementById('conteudo-resp').innerHTML='<option value="">Selecionar…</option>'+equipe.filter(f=>f.status!=='inativo').map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');
@@ -2821,6 +2832,11 @@ function editarConteudo(id){
   document.getElementById('conteudo-status').value=c.status||'rascunho';
   document.getElementById('conteudo-link').value=c.link||'';
   document.getElementById('conteudo-resp').innerHTML='<option value="">Selecionar…</option>'+equipe.filter(f=>f.status!=='inativo').map(f=>`<option value="${f.id}"${f.id===c.responsavel_id?' selected':''}>${f.nome}</option>`).join('');
+  // Pré-gerar prompt se tiver título
+  const pw=document.getElementById('conteudo-prompt-wrap');
+  const pt=document.getElementById('conteudo-prompt');
+  if(c.titulo&&pw&&pt){pt.value=gerarPromptImagem(c.titulo,c.canal||'instagram');pw.style.display='block';}
+  else{if(pw)pw.style.display='none';if(pt)pt.value='';}
   openModal('modal-conteudo');
 }
 async function salvarConteudo(){
@@ -3092,7 +3108,7 @@ async function gerarCalendarioAutomatico(){
     if(d<startDate||d>endDate)return;
     const canalOk=(ev.canal==='linkedin'&&incLinkedin)||(ev.canal==='instagram'&&incInstagram)||(ev.canal==='whatsapp'&&incWhatsapp);
     if(!canalOk)return;
-    recs.push({id:crypto.randomUUID(),canal:ev.canal,titulo:ev.titulo,descricao:gerarPromptImagem(ev.titulo,ev.canal),data_publicacao:ev.data,status:'rascunho',link:null,responsavel_id:null,_cal_fin:true});
+    recs.push({id:crypto.randomUUID(),canal:ev.canal,titulo:ev.titulo,descricao:'',data_publicacao:ev.data,status:'rascunho',link:null,responsavel_id:null,_cal_fin:true});
   });
 
   // Gera conteúdo semanal rotativo
@@ -3112,7 +3128,7 @@ async function gerarCalendarioAutomatico(){
     if(!counters[dow])counters[dow]=0;
     const titulo=tmpl.temas[counters[dow]%tmpl.temas.length];
     counters[dow]++;
-    recs.push({id:crypto.randomUUID(),canal:tmpl.canal,titulo,descricao:gerarPromptImagem(titulo,tmpl.canal),data_publicacao:dataStr,status:'rascunho',link:null,responsavel_id:null});
+    recs.push({id:crypto.randomUUID(),canal:tmpl.canal,titulo,descricao:'',data_publicacao:dataStr,status:'rascunho',link:null,responsavel_id:null});
   }
 
   // Remove campo auxiliar antes de salvar
