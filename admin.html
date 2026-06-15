@@ -181,6 +181,43 @@ body{display:flex;flex-direction:column;overflow:hidden}
 .dre-pessoal td{color:rgba(251,191,36,0.7)}
 .dre-aviso td{color:#fcd34d}
 .dre-total-big td{font-size:14px!important;font-weight:900;border-top:2px solid rgba(201,150,60,0.3)!important}
+/* ── Follow-ups ── */
+.fu-month-bar{display:flex;align-items:center;gap:0;width:100%;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.01);margin-bottom:20px;border-radius:10px 10px 0 0;overflow:hidden}
+.fu-year-sel{background:rgba(201,150,60,0.15);border:1px solid rgba(201,150,60,0.35);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:800;color:#c9963c;cursor:pointer;font-family:'Montserrat',sans-serif;margin:8px;outline:none;flex-shrink:0}
+.fu-month-btn{flex:1;background:transparent;border:none;border-bottom:2px solid transparent;padding:10px 4px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.15s;white-space:nowrap}
+.fu-month-btn:hover{color:#fff;background:rgba(255,255,255,0.04)}
+.fu-month-btn.active{color:#fff;border-bottom-color:var(--gold)}
+.fu-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+.fu-col{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.fu-col-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.fu-col-title{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.fu-col-count{font-size:11px;font-weight:700;color:var(--muted)}
+.fu-col-atrasado .fu-col-title{color:#fca5a5}
+.fu-col-hoje .fu-col-title{color:#fcd34d}
+.fu-col-semana .fu-col-title{color:#6ee7b7}
+.fu-col-concluido .fu-col-title{color:var(--gold)}
+.fu-cards{padding:8px;display:flex;flex-direction:column;gap:6px;flex:1;min-height:80px}
+.fu-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:11px 13px;position:relative}
+.fu-card-atrasado{border-left:3px solid var(--red)}
+.fu-card-hoje{border-left:3px solid var(--orange)}
+.fu-card-semana{border-left:3px solid var(--green)}
+.fu-card-lead{font-size:12px;font-weight:700;margin-bottom:3px;color:#fff}
+.fu-card-desc{font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.4}
+.fu-card-footer{display:flex;align-items:center;justify-content:space-between}
+.fu-card-meta{font-size:10px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.fu-tag{display:inline-flex;align-items:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:2px 7px;border-radius:10px}
+.fu-tag-lig{background:rgba(59,130,246,0.15);color:#93c5fd}
+.fu-tag-reu{background:rgba(139,92,246,0.15);color:#c4b5fd}
+.fu-tag-wpp{background:rgba(16,185,129,0.15);color:#6ee7b7}
+.fu-tag-eml{background:rgba(245,158,11,0.15);color:#fcd34d}
+.fu-tag-out{background:rgba(255,255,255,0.08);color:var(--muted)}
+.fu-done-btn{width:28px;height:28px;border-radius:50%;border:2px solid rgba(16,185,129,0.3);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.18s;color:transparent}
+.fu-done-btn:hover{background:rgba(16,185,129,0.2);border-color:#6ee7b7;color:#6ee7b7}
+.fu-done-btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
+.fu-empty{text-align:center;padding:24px 16px;font-size:11px;color:var(--muted)}
+.fu-check-done{width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,0.2);border:2px solid rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#6ee7b7}
+.fu-check-done svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
+.fu-mes-empty{text-align:center;padding:48px 24px;font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -266,6 +303,12 @@ body{display:flex;flex-direction:column;overflow:hidden}
   <div class="nav-item" data-sec="mkt-metricas" onclick="nav('mkt-metricas',this)">
     <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     <span>Métricas</span>
+  </div>
+
+  <div class="sidebar-section">CRM</div>
+  <div class="nav-item" data-sec="crm-followups" onclick="nav('crm-followups',this);fuLazyLoad()">
+    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.92 11.5 19.79 19.79 0 0 1 1.87 2.86 2 2 0 0 1 3.84 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    <span>Follow-ups</span>
   </div>
 
   <div class="sidebar-section">Em breve</div>
@@ -1076,6 +1119,91 @@ body{display:flex;flex-direction:column;overflow:hidden}
   </div>
 </div>
 
+<!-- ════ CRM — FOLLOW-UPS ════ -->
+<div class="section" id="section-crm-followups">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <div class="sec-title">Follow-ups</div>
+      <div style="font-size:12px;color:var(--muted)">Ações agendadas com leads da Soma Wealth</div>
+    </div>
+    <button class="btn btn-primary" onclick="abrirModalFu()">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novo Follow-up
+    </button>
+  </div>
+
+  <!-- BARRA DE MESES -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden">
+    <div class="fu-month-bar">
+      <select class="fu-year-sel" id="fu-year-sel" onchange="setFuAno(this.value)"></select>
+      <button class="fu-month-btn" data-m="0" onclick="setFuMes(0)">Jan</button>
+      <button class="fu-month-btn" data-m="1" onclick="setFuMes(1)">Fev</button>
+      <button class="fu-month-btn" data-m="2" onclick="setFuMes(2)">Mar</button>
+      <button class="fu-month-btn" data-m="3" onclick="setFuMes(3)">Abr</button>
+      <button class="fu-month-btn" data-m="4" onclick="setFuMes(4)">Mai</button>
+      <button class="fu-month-btn" data-m="5" onclick="setFuMes(5)">Jun</button>
+      <button class="fu-month-btn" data-m="6" onclick="setFuMes(6)">Jul</button>
+      <button class="fu-month-btn" data-m="7" onclick="setFuMes(7)">Ago</button>
+      <button class="fu-month-btn" data-m="8" onclick="setFuMes(8)">Set</button>
+      <button class="fu-month-btn" data-m="9" onclick="setFuMes(9)">Out</button>
+      <button class="fu-month-btn" data-m="10" onclick="setFuMes(10)">Nov</button>
+      <button class="fu-month-btn" data-m="11" onclick="setFuMes(11)">Dez</button>
+    </div>
+  </div>
+
+  <!-- VISÃO MÊS CORRENTE -->
+  <div id="fu-view-current">
+    <div class="fu-grid">
+      <div class="fu-col fu-col-atrasado">
+        <div class="fu-col-head"><span class="fu-col-title">Atrasados</span><span class="fu-col-count" id="fu-count-atrasado">0</span></div>
+        <div class="fu-cards" id="fu-cards-atrasado"></div>
+      </div>
+      <div class="fu-col fu-col-hoje">
+        <div class="fu-col-head"><span class="fu-col-title">Hoje</span><span class="fu-col-count" id="fu-count-hoje">0</span></div>
+        <div class="fu-cards" id="fu-cards-hoje"></div>
+      </div>
+      <div class="fu-col fu-col-semana">
+        <div class="fu-col-head"><span class="fu-col-title">Esta Semana</span><span class="fu-col-count" id="fu-count-semana">0</span></div>
+        <div class="fu-cards" id="fu-cards-semana"></div>
+      </div>
+      <div class="fu-col fu-col-concluido">
+        <div class="fu-col-head"><span class="fu-col-title">Concluídos</span><span class="fu-col-count" id="fu-count-concluido">0</span></div>
+        <div class="fu-cards" id="fu-cards-concluido"></div>
+      </div>
+    </div>
+  </div>
+  <!-- VISÃO MÊS ESPECÍFICO -->
+  <div id="fu-view-mes" style="display:none">
+    <div id="fu-mes-conteudo"></div>
+  </div>
+</div>
+
+<!-- MODAL NOVO FOLLOW-UP -->
+<div class="modal-overlay" id="modal-fu-admin">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-title">📞 Agendar Follow-up
+      <button class="mc" onclick="closeModal('modal-fu-admin')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="field"><label>Lead *</label><select id="fu-admin-lead-id"></select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field"><label>Data *</label><input type="date" id="fu-admin-data"></div>
+      <div class="field"><label>Tipo</label>
+        <select id="fu-admin-tipo">
+          <option value="ligacao">Ligação</option>
+          <option value="reuniao">Reunião</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="email">E-mail</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Descrição *</label><textarea id="fu-admin-desc" rows="2" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Montserrat',sans-serif;font-size:13px;color:#fff;outline:none;width:100%;resize:vertical" placeholder="O que será feito?"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-fu-admin')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveFuAdmin()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL PESOS 360 -->
 <div class="modal-overlay" id="modal-pesos360">
   <div class="modal" style="max-width:680px;max-height:90vh;overflow-y:auto">
@@ -1365,6 +1493,160 @@ let lancamentos=[],equipe=[],ausencias=[],avaliacoes=[];
 let mktConteudo=[],mktCampanhas=[],mktMateriais=[],mktMetricas=[];
 let rodadas360=[],respostas360=[];
 let antecipClientes=[],antecipItens=[];
+
+// ── CRM — FOLLOW-UPS ──────────────────────────────────
+let _wLeads=[], _wFollowups=[];
+let _fuLoaded=false;
+let _fuAno=new Date().getFullYear(), _fuMes=new Date().getMonth();
+const _fuHojeAno=new Date().getFullYear(), _fuHojeMes=new Date().getMonth();
+const FU_TIPO_TAG={ligacao:'<span class="fu-tag fu-tag-lig">Ligação</span>',reuniao:'<span class="fu-tag fu-tag-reu">Reunião</span>',whatsapp:'<span class="fu-tag fu-tag-wpp">WhatsApp</span>',email:'<span class="fu-tag fu-tag-eml">E-mail</span>'};
+const FU_CHECKSVG=`<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+function fuToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fuIsOverdue(d){return d&&d<fuToday();}
+function fuIsToday(d){return d===fuToday();}
+function fuToDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fuUid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
+function fuSemanaAtual(){const d=new Date();const dow=d.getDay()||7;const s=new Date(d);s.setDate(d.getDate()-dow+1);const e=new Date(s);e.setDate(s.getDate()+6);return{start:fuToDateStr(s),end:fuToDateStr(e)};}
+
+async function fuLazyLoad(){
+  if(_fuLoaded)return;
+  _fuLoaded=true;
+  try{
+    const[l,f]=await Promise.all([
+      _sb.from('wealth_leads').select('id,data').order('created_at',{ascending:false}),
+      _sb.from('wealth_followups').select('id,lead_id,data').order('created_at'),
+    ]);
+    _wLeads=(l.data||[]).map(r=>({id:r.id,...r.data}));
+    _wFollowups=(f.data||[]).map(r=>({id:r.id,lead_id:r.lead_id,...r.data}));
+  }catch(e){showToast('Erro ao carregar follow-ups','err');return;}
+  initFuMonthBar();
+  renderFollowupsAdmin();
+}
+
+function initFuMonthBar(){
+  const sel=document.getElementById('fu-year-sel');if(!sel)return;
+  sel.innerHTML='';
+  for(let y=_fuHojeAno-1;y<=_fuHojeAno+2;y++){
+    const o=document.createElement('option');o.value=y;o.textContent=y;
+    if(y===_fuAno)o.selected=true;
+    sel.appendChild(o);
+  }
+  updateFuMonthBar();
+}
+function setFuAno(y){_fuAno=parseInt(y);updateFuMonthBar();renderFollowupsAdmin();}
+function setFuMes(m){_fuMes=m;updateFuMonthBar();renderFollowupsAdmin();}
+function updateFuMonthBar(){
+  document.querySelectorAll('.fu-month-btn').forEach(btn=>btn.classList.toggle('active',parseInt(btn.dataset.m)===_fuMes));
+  const sel=document.getElementById('fu-year-sel');if(sel)sel.value=_fuAno;
+}
+function fuIsMesAtual(){return _fuAno===_fuHojeAno&&_fuMes===_fuHojeMes;}
+
+function fuCardAdminHTML(f,tipo){
+  const l=_wLeads.find(x=>x.id===f.lead_id);
+  return`<div class="fu-card fu-card-${tipo}">
+    <div class="fu-card-lead">${l?.nome||'—'}</div>
+    <div class="fu-card-desc">${f.desc||''}</div>
+    <div class="fu-card-footer">
+      <div class="fu-card-meta">${FU_TIPO_TAG[f.tipo]||''}<span>${f.data?f.data.split('-').reverse().join('/'):'—'}</span></div>
+      <button class="fu-done-btn" onclick="marcarFuFeitoAdmin('${f.id}')" title="Marcar como feito"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
+    </div>
+  </div>`;
+}
+
+function renderFollowupsAdmin(){
+  const isCurrent=fuIsMesAtual();
+  const cv=document.getElementById('fu-view-current');
+  const mv=document.getElementById('fu-view-mes');
+  if(!cv||!mv)return;
+  cv.style.display=isCurrent?'':'none';
+  mv.style.display=isCurrent?'none':'';
+  const empty='<div class="fu-empty">Nenhuma ação</div>';
+
+  if(isCurrent){
+    const pending=_wFollowups.filter(f=>!f.feito).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+    const {start,end}=fuSemanaAtual();
+    const atrasados=pending.filter(f=>fuIsOverdue(f.data));
+    const hoje=pending.filter(f=>fuIsToday(f.data));
+    const semana=pending.filter(f=>!fuIsOverdue(f.data)&&!fuIsToday(f.data)&&f.data>=start&&f.data<=end);
+    const concluidos=_wFollowups.filter(f=>f.feito).sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,20);
+    document.getElementById('fu-count-atrasado').textContent=atrasados.length;
+    document.getElementById('fu-count-hoje').textContent=hoje.length;
+    document.getElementById('fu-count-semana').textContent=semana.length;
+    document.getElementById('fu-count-concluido').textContent=concluidos.length;
+    document.getElementById('fu-cards-atrasado').innerHTML=atrasados.length?atrasados.map(f=>fuCardAdminHTML(f,'atrasado')).join(''):empty;
+    document.getElementById('fu-cards-hoje').innerHTML=hoje.length?hoje.map(f=>fuCardAdminHTML(f,'hoje')).join(''):empty;
+    document.getElementById('fu-cards-semana').innerHTML=semana.length?semana.map(f=>fuCardAdminHTML(f,'semana')).join(''):empty;
+    document.getElementById('fu-cards-concluido').innerHTML=concluidos.length?concluidos.map(f=>{
+      const l=_wLeads.find(x=>x.id===f.lead_id);
+      return`<div class="fu-card" style="opacity:0.55;display:flex;gap:10px;align-items:flex-start">
+        <div class="fu-check-done" style="flex-shrink:0">${FU_CHECKSVG}</div>
+        <div style="flex:1;min-width:0">
+          <div class="fu-card-lead">${l?.nome||'—'}</div>
+          <div class="fu-card-desc">${f.desc||''}</div>
+          <div class="fu-card-meta">${FU_TIPO_TAG[f.tipo]||''} ${f.data?f.data.split('-').reverse().join('/'):'—'}</div>
+        </div>
+      </div>`;}).join(''):empty;
+  } else {
+    const mesStr=String(_fuMes+1).padStart(2,'0');
+    const prefixo=`${_fuAno}-${mesStr}`;
+    const doMes=_wFollowups.filter(f=>(f.data||'').startsWith(prefixo)).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+    const pendentes=doMes.filter(f=>!f.feito);
+    const concluidos=doMes.filter(f=>f.feito);
+    const MESES_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    if(!doMes.length){
+      document.getElementById('fu-mes-conteudo').innerHTML=`<div class="fu-mes-empty">Nenhum follow-up em ${MESES_PT[_fuMes]} ${_fuAno}</div>`;
+      return;
+    }
+    const semanas=[{label:'Semana 1',items:[]},{label:'Semana 2',items:[]},{label:'Semana 3',items:[]},{label:'Semana 4+',items:[]}];
+    pendentes.forEach(f=>{const dia=parseInt((f.data||'').split('-')[2]||'1');semanas[dia<=7?0:dia<=14?1:dia<=21?2:3].items.push(f);});
+    const cores=['#6ee7b7','#fcd34d','#93c5fd','#c4b5fd'];
+    const semsComItems=semanas.filter(s=>s.items.length);
+    const totalCols=semsComItems.length+(concluidos.length?1:0)||1;
+    let html=`<div class="fu-grid" style="grid-template-columns:repeat(${Math.min(totalCols,4)},1fr)">`;
+    semsComItems.forEach((s,i)=>{
+      const cor=cores[semanas.indexOf(s)];
+      html+=`<div class="fu-col"><div class="fu-col-head" style="border-left:3px solid ${cor}"><span class="fu-col-title" style="color:${cor}">${s.label}</span><span class="fu-col-count">${s.items.length}</span></div>
+      <div class="fu-cards">${s.items.map(f=>{const l=_wLeads.find(x=>x.id===f.lead_id);return`<div class="fu-card" style="border-left:3px solid ${cor}"><div class="fu-card-lead">${l?.nome||'—'}</div><div class="fu-card-desc">${f.desc||''}</div><div class="fu-card-footer"><div class="fu-card-meta">${FU_TIPO_TAG[f.tipo]||''}<span>${f.data?f.data.split('-').reverse().join('/'):'—'}</span></div><button class="fu-done-btn" onclick="marcarFuFeitoAdmin('${f.id}')">${FU_CHECKSVG}</button></div></div>`;}).join('')}</div></div>`;
+    });
+    if(concluidos.length){
+      html+=`<div class="fu-col fu-col-concluido"><div class="fu-col-head"><span class="fu-col-title">Concluídos</span><span class="fu-col-count">${concluidos.length}</span></div><div class="fu-cards">${concluidos.map(f=>{const l=_wLeads.find(x=>x.id===f.lead_id);return`<div class="fu-card" style="opacity:0.55;display:flex;gap:10px;align-items:flex-start"><div class="fu-check-done" style="flex-shrink:0">${FU_CHECKSVG}</div><div style="flex:1;min-width:0"><div class="fu-card-lead">${l?.nome||'—'}</div><div class="fu-card-desc">${f.desc||''}</div><div class="fu-card-meta">${FU_TIPO_TAG[f.tipo]||''} ${f.data?f.data.split('-').reverse().join('/'):'—'}</div></div></div>`;}).join('')}</div></div>`;
+    }
+    html+='</div>';
+    document.getElementById('fu-mes-conteudo').innerHTML=html;
+  }
+}
+
+async function marcarFuFeitoAdmin(id){
+  const f=_wFollowups.find(x=>x.id===id);if(!f)return;
+  f.feito=true;
+  await _sb.from('wealth_followups').upsert({id,lead_id:f.lead_id,data:f});
+  renderFollowupsAdmin();
+  showToast('Follow-up concluído!','ok');
+}
+
+function abrirModalFu(){
+  const sel=document.getElementById('fu-admin-lead-id');if(!sel)return;
+  sel.innerHTML=[..._wLeads].sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR',{sensitivity:'base'})).map(l=>`<option value="${l.id}">${l.nome||'—'}</option>`).join('');
+  document.getElementById('fu-admin-data').value=fuToday();
+  document.getElementById('fu-admin-desc').value='';
+  openModal('modal-fu-admin');
+}
+
+async function saveFuAdmin(){
+  const lead_id=document.getElementById('fu-admin-lead-id').value;
+  const data=document.getElementById('fu-admin-data').value;
+  const desc=document.getElementById('fu-admin-desc').value.trim();
+  if(!lead_id||!data||!desc){alert('Preencha todos os campos obrigatórios');return;}
+  const id=fuUid();
+  const rec={id,lead_id,data,tipo:document.getElementById('fu-admin-tipo').value,desc,feito:false};
+  const{error}=await _sb.from('wealth_followups').upsert({id,lead_id,data:rec});
+  if(error){showToast('Erro ao salvar','err');return;}
+  _wFollowups.push(rec);
+  showToast('Follow-up agendado!','ok');
+  closeModal('modal-fu-admin');
+  renderFollowupsAdmin();
+}
 
 // ── AVALIAÇÃO 360° — PESOS E ÁREAS ──────────────────
 const AREAS_360=[
