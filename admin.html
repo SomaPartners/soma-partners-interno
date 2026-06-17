@@ -1413,10 +1413,10 @@ const AREAS_360=[
   {id:'comercial',     label:'Comercial'},
 ];
 let _pesos360={
-  juridico:      {com_cliente:1,  com_interna:1.5,rel_cliente:1.5,tecnico:2,  captacao:1,  compliance:3,  prazos:1,  organizacao:1.5,problemas:1.5,proatividade:1,  equipe:1,  lideranca:1},
-  investimentos: {com_cliente:1.5,com_interna:1,  rel_cliente:2,  tecnico:3,  captacao:2.5,compliance:2,  prazos:1,  organizacao:1,  problemas:1.5,proatividade:1.5,equipe:1,  lideranca:1.5},
-  servicos:      {com_cliente:3,  com_interna:2,  rel_cliente:2.5,tecnico:1,  captacao:2,  compliance:1,  prazos:2.5,organizacao:2,  problemas:2,  proatividade:1.5,equipe:2,  lideranca:1},
-  comercial:     {com_cliente:3,  com_interna:1.5,rel_cliente:3,  tecnico:1.5,captacao:3,  compliance:1.5,prazos:1.5,organizacao:1.5,problemas:2,  proatividade:2.5,equipe:1.5,lideranca:2},
+  juridico:      {com_cliente:0.33,com_interna:0.50,rel_cliente:0.50,tecnico:0.67,captacao:0.33,compliance:1.00,prazos:0.33,organizacao:0.50,problemas:0.50,proatividade:0.33,equipe:0.33,lideranca:0.33},
+  investimentos: {com_cliente:0.50,com_interna:0.33,rel_cliente:0.67,tecnico:1.00,captacao:0.83,compliance:0.67,prazos:0.33,organizacao:0.33,problemas:0.50,proatividade:0.50,equipe:0.33,lideranca:0.50},
+  servicos:      {com_cliente:1.00,com_interna:0.67,rel_cliente:0.83,tecnico:0.33,captacao:0.67,compliance:0.33,prazos:0.83,organizacao:0.67,problemas:0.67,proatividade:0.50,equipe:0.67,lideranca:0.33},
+  comercial:     {com_cliente:1.00,com_interna:0.50,rel_cliente:1.00,tecnico:0.50,captacao:1.00,compliance:0.50,prazos:0.50,organizacao:0.50,problemas:0.67,proatividade:0.83,equipe:0.50,lideranca:0.67},
 };
 // Retorna array de áreas da pessoa (busca da rodada mais recente)
 function getAreaPessoa360(funcId){
@@ -1436,7 +1436,7 @@ function calcMediaPonderada360(criteriosComMedia,areas){
   const areasValidas=(areas||[]).filter(a=>_pesos360[a]);
   if(!areasValidas.length) return valid.reduce((a,b)=>a+b.avg,0)/valid.length;
   // Peso efetivo = média dos pesos de cada área selecionada
-  const pesoEfetivo=c=>areasValidas.reduce((s,a)=>s+(_pesos360[a][c.id]||1),0)/areasValidas.length;
+  const pesoEfetivo=c=>areasValidas.reduce((s,a)=>s+(_pesos360[a][c.id]||0.5),0)/areasValidas.length;
   const pesoTotal=valid.reduce((s,c)=>s+pesoEfetivo(c),0);
   const soma=valid.reduce((s,c)=>s+c.avg*pesoEfetivo(c),0);
   return pesoTotal>0?soma/pesoTotal:0;
@@ -4631,8 +4631,8 @@ function abrirPesos360(){
       <td style="padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.8);white-space:nowrap">${c.label}</td>
       ${AREAS_360.map(a=>`
         <td style="padding:8px;text-align:center">
-          <input type="number" id="peso-${a.id}-${c.id}" min="0.1" max="10" step="0.1"
-            value="${_pesos360[a.id][c.id]||1}"
+          <input type="number" id="peso-${a.id}-${c.id}" min="0" max="1" step="0.05"
+            value="${_pesos360[a.id][c.id]||0.5}"
             style="width:60px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:4px 6px;text-align:center;font-size:12px;font-family:Montserrat,sans-serif">
         </td>`).join('')}
     </tr>`).join('');
@@ -4644,7 +4644,7 @@ async function salvarPesos360(){
   AREAS_360.forEach(a=>{
     novos[a.id]={};
     CRITERIOS_360.forEach(c=>{
-      const v=parseFloat(document.getElementById(`peso-${a.id}-${c.id}`)?.value)||1;
+      const v=parseFloat(document.getElementById(`peso-${a.id}-${c.id}`)?.value)||0.5;
       novos[a.id][c.id]=v;
     });
   });
