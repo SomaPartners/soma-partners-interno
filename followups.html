@@ -25,6 +25,7 @@ html,body{height:100%;background:var(--navy);font-family:'Montserrat',sans-serif
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all 0.18s}
 .btn svg{width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none}
 .btn-gold{background:rgba(201,150,60,0.18);border:1px solid rgba(201,150,60,0.4);color:#c9963c}.btn-gold:hover{background:rgba(201,150,60,0.3);color:#fff}
+.btn-outline-nav{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.75)}.btn-outline-nav:hover{background:rgba(255,255,255,0.12);color:#fff}
 
 /* STAT CHIPS */
 .stat-bar{display:flex;gap:8px;align-items:center}
@@ -144,6 +145,10 @@ textarea.fc{resize:vertical;min-height:70px;line-height:1.5}
   </div>
   <div class="nav-right">
     <div class="stat-bar" id="stat-bar"></div>
+    <button class="btn btn-outline-nav" onclick="gerarRelatorio()">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Relatório
+    </button>
     <button class="btn btn-gold" onclick="openModal()">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Novo Follow-up
@@ -370,6 +375,177 @@ async function saveFu(){
   followups.push(rec);
   showToast('Follow-up agendado!','ok');
   closeModal();render();
+}
+
+// ── RELATÓRIO PDF ──
+function gerarRelatorio(){
+  const{start,end}=semana();
+  const sorted=followups.slice().sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  const at=sorted.filter(f=>isOver(f.data));
+  const hj=sorted.filter(f=>isTod(f.data));
+  const sem=sorted.filter(f=>f.data&&f.data>today()&&f.data>=start&&f.data<=end);
+  const total=followups.length;
+  const now=new Date();
+  const dtStr=`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} às ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  // Ranking por responsável
+  const rankMap={};
+  followups.forEach(f=>{
+    const resp=equipe.find(e=>e.id===f.resp_id);
+    const nome=resp?resp.nome:(f.responsavel||'Sem responsável');
+    if(!rankMap[nome])rankMap[nome]={total:0,atrasados:0,hoje:0,semana:0};
+    rankMap[nome].total++;
+    if(isOver(f.data))rankMap[nome].atrasados++;
+    else if(isTod(f.data))rankMap[nome].hoje++;
+    else if(f.data&&f.data>today()&&f.data>=start&&f.data<=end)rankMap[nome].semana++;
+  });
+  const rank=Object.entries(rankMap).sort((a,b)=>b[1].total-a[1].total);
+
+  function fmtD(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
+  function leadNome(id){const l=leads.find(x=>x.id===id);return l?l.nome||l.name||'—':'—'}
+  function respNome(f){const r=equipe.find(e=>e.id===f.resp_id);return r?r.nome:(f.responsavel||'—')}
+  const TIPO_LABEL={ligacao:'Ligação',whatsapp:'WhatsApp',email:'E-mail',reuniao:'Reunião',outro:'Outro'};
+
+  function listaHTML(items, corLabel, cor){
+    if(!items.length) return`<p style="color:#94a3b8;font-size:12px;padding:8px 0">Nenhum item</p>`;
+    return items.map(f=>`
+      <tr>
+        <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#1e293b;font-weight:600">${f.desc||'—'}</td>
+        <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#475569">${leadNome(f.lead_id)}</td>
+        <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#475569">${fmtD(f.data)}</td>
+        <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#475569">${respNome(f)}</td>
+        <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#475569">${TIPO_LABEL[f.tipo]||f.tipo||'—'}</td>
+        <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:11px;font-weight:700;color:${cor}">${corLabel}</td>
+      </tr>`).join('');
+  }
+
+  const html=`<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8"/>
+<title>Relatório de Follow-ups — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Montserrat',sans-serif;background:#f8fafc;color:#1e293b;padding:0}
+@media print{body{background:#fff}@page{margin:18mm 15mm;size:A4}}
+
+.cover{background:#0b1e30;color:#fff;padding:36px 48px 32px;display:flex;justify-content:space-between;align-items:flex-start}
+.cover-logo{display:flex;align-items:center;gap:12px}
+.logo-soma{font-size:20px;font-weight:300;letter-spacing:0.5px}
+.logo-pipe{width:1px;height:22px;background:rgba(255,255,255,0.4);margin:0 2px}
+.logo-partners{font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;opacity:.8}
+.cover-right{text-align:right}
+.cover-title{font-size:22px;font-weight:900;letter-spacing:-0.5px;margin-top:18px}
+.cover-sub{font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px}
+.accent-line{height:3px;background:linear-gradient(90deg,#3b8bff,#c9963c);width:100%}
+
+.section{padding:28px 48px}
+.section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#64748b;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}
+
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.kpi{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.kpi-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-bottom:6px}
+.kpi-value{font-size:28px;font-weight:900;line-height:1}
+.kpi-total .kpi-value{color:#0b1e30}
+.kpi-at .kpi-value{color:#ef4444}
+.kpi-hj .kpi-value{color:#f59e0b}
+.kpi-sem .kpi-value{color:#10b981}
+.kpi-sub{font-size:10px;color:#94a3b8;margin-top:4px}
+
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e2e8f0}
+th{background:#f1f5f9;padding:9px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#475569;text-align:left;border-bottom:2px solid #e2e8f0}
+
+.rank-row td{padding:10px 14px;border-bottom:1px solid #e2e8f0;font-size:12px}
+.rank-num{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+
+.section-at{border-left:3px solid #ef4444;padding-left:12px;margin-bottom:20px}
+.section-hj{border-left:3px solid #f59e0b;padding-left:12px;margin-bottom:20px}
+.section-sem{border-left:3px solid #10b981;padding-left:12px;margin-bottom:20px}
+.sub-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
+.sub-title-at{color:#ef4444}.sub-title-hj{color:#f59e0b}.sub-title-sem{color:#10b981}
+
+.footer{background:#0b1e30;color:rgba(255,255,255,0.35);font-size:10px;padding:16px 48px;display:flex;justify-content:space-between}
+</style>
+</head><body>
+
+<div class="cover">
+  <div>
+    <div class="cover-logo">
+      <span class="logo-soma">Soma</span>
+      <span class="logo-pipe"></span>
+      <span class="logo-partners">Partners</span>
+    </div>
+    <div class="cover-title">Relatório de Follow-ups</div>
+    <div class="cover-sub">Gerado em ${dtStr} · Apenas itens pendentes</div>
+  </div>
+  <div class="cover-right" style="text-align:right;color:rgba(255,255,255,0.6);font-size:12px;margin-top:4px">
+    <div style="font-size:32px;font-weight:900;color:#fff">${total}</div>
+    <div>follow-ups pendentes</div>
+  </div>
+</div>
+<div class="accent-line"></div>
+
+<div class="section">
+  <div class="section-title">Resumo por Status</div>
+  <div class="kpi-row">
+    <div class="kpi kpi-total"><div class="kpi-label">Total Pendente</div><div class="kpi-value">${total}</div><div class="kpi-sub">follow-ups ativos</div></div>
+    <div class="kpi kpi-at"><div class="kpi-label">Atrasados</div><div class="kpi-value">${at.length}</div><div class="kpi-sub">${total?Math.round(at.length/total*100):0}% do total</div></div>
+    <div class="kpi kpi-hj"><div class="kpi-label">Hoje</div><div class="kpi-value">${hj.length}</div><div class="kpi-sub">para fazer hoje</div></div>
+    <div class="kpi kpi-sem"><div class="kpi-label">Esta Semana</div><div class="kpi-value">${sem.length}</div><div class="kpi-sub">restante da semana</div></div>
+  </div>
+</div>
+
+<div class="section" style="padding-top:0">
+  <div class="section-title">Ranking por Responsável</div>
+  <table>
+    <thead><tr>
+      <th style="width:36px">#</th>
+      <th>Responsável</th>
+      <th style="text-align:center">Total</th>
+      <th style="text-align:center;color:#ef4444">Atrasados</th>
+      <th style="text-align:center;color:#f59e0b">Hoje</th>
+      <th style="text-align:center;color:#10b981">Esta Semana</th>
+    </tr></thead>
+    <tbody>
+      ${rank.map(([nome,v],i)=>`<tr class="rank-row">
+        <td><span class="rank-num" style="background:${['#0b1e30','#3b8bff','#c9963c','#475569'][Math.min(i,3)]}">${i+1}</span></td>
+        <td style="font-weight:700">${nome}</td>
+        <td style="text-align:center;font-weight:800;font-size:14px">${v.total}</td>
+        <td style="text-align:center;color:#ef4444;font-weight:700">${v.atrasados||'—'}</td>
+        <td style="text-align:center;color:#f59e0b;font-weight:700">${v.hoje||'—'}</td>
+        <td style="text-align:center;color:#10b981;font-weight:700">${v.semana||'—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+</div>
+
+<div class="section" style="padding-top:0">
+  <div class="section-title">Lista Completa de Follow-ups</div>
+
+  ${at.length?`<div class="section-at"><div class="sub-title sub-title-at">⚠ Atrasados (${at.length})</div>
+  <table><thead><tr><th>Descrição</th><th>Lead / Contato</th><th>Data</th><th>Responsável</th><th>Tipo</th><th>Status</th></tr></thead>
+  <tbody>${listaHTML(at,'Atrasado','#ef4444')}</tbody></table></div>`:''}
+
+  ${hj.length?`<div class="section-hj"><div class="sub-title sub-title-hj">● Hoje (${hj.length})</div>
+  <table><thead><tr><th>Descrição</th><th>Lead / Contato</th><th>Data</th><th>Responsável</th><th>Tipo</th><th>Status</th></tr></thead>
+  <tbody>${listaHTML(hj,'Hoje','#f59e0b')}</tbody></table></div>`:''}
+
+  ${sem.length?`<div class="section-sem"><div class="sub-title sub-title-sem">● Esta Semana (${sem.length})</div>
+  <table><thead><tr><th>Descrição</th><th>Lead / Contato</th><th>Data</th><th>Responsável</th><th>Tipo</th><th>Status</th></tr></thead>
+  <tbody>${listaHTML(sem,'Esta semana','#10b981')}</tbody></table></div>`:''}
+</div>
+
+<div class="footer">
+  <span>Soma Partners · Relatório interno</span>
+  <span>Gerado em ${dtStr}</span>
+</div>
+
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`;
+
+  const w=window.open('','_blank');
+  if(!w){showToast('Permita popups para gerar o relatório','err');return;}
+  w.document.write(html);
+  w.document.close();
 }
 
 loadAll();
