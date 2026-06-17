@@ -1413,10 +1413,10 @@ const AREAS_360=[
   {id:'comercial',     label:'Comercial'},
 ];
 let _pesos360={
-  juridico:      {com_cliente:0.33,com_interna:0.50,rel_cliente:0.50,tecnico:0.67,captacao:0.33,compliance:1.00,prazos:0.33,organizacao:0.50,problemas:0.50,proatividade:0.33,equipe:0.33,lideranca:0.33},
-  investimentos: {com_cliente:0.50,com_interna:0.33,rel_cliente:0.67,tecnico:1.00,captacao:0.83,compliance:0.67,prazos:0.33,organizacao:0.33,problemas:0.50,proatividade:0.50,equipe:0.33,lideranca:0.50},
-  servicos:      {com_cliente:1.00,com_interna:0.67,rel_cliente:0.83,tecnico:0.33,captacao:0.67,compliance:0.33,prazos:0.83,organizacao:0.67,problemas:0.67,proatividade:0.50,equipe:0.67,lideranca:0.33},
-  comercial:     {com_cliente:1.00,com_interna:0.50,rel_cliente:1.00,tecnico:0.50,captacao:1.00,compliance:0.50,prazos:0.50,organizacao:0.50,problemas:0.67,proatividade:0.83,equipe:0.50,lideranca:0.67},
+  juridico:      {comunicacao:0.70,comercial:0.30,coletividade:0.50,conhecimento_tec:1.00,alinhamento:0.80},
+  investimentos: {comunicacao:0.80,comercial:0.70,coletividade:0.50,conhecimento_tec:1.00,alinhamento:0.80},
+  servicos:      {comunicacao:1.00,comercial:0.60,coletividade:0.70,conhecimento_tec:0.70,alinhamento:0.80},
+  comercial:     {comunicacao:0.90,comercial:1.00,coletividade:0.60,conhecimento_tec:0.70,alinhamento:0.80},
 };
 // Retorna array de áreas da pessoa (busca da rodada mais recente)
 function getAreaPessoa360(funcId){
@@ -4443,18 +4443,11 @@ function avalTab(tab, el){
 //  AVALIAÇÃO 360°
 // ════════════════════════════════
 const CRITERIOS_360=[
-  {id:'com_cliente',  grupo:'Relacionamento & Comunicação', label:'Comunicação com Clientes'},
-  {id:'com_interna',  grupo:'Relacionamento & Comunicação', label:'Comunicação Interna'},
-  {id:'rel_cliente',  grupo:'Relacionamento & Comunicação', label:'Gestão de Relacionamento'},
-  {id:'tecnico',      grupo:'Técnico & Comercial',          label:'Conhecimento Técnico / Mercado'},
-  {id:'captacao',     grupo:'Técnico & Comercial',          label:'Captação / Resultados'},
-  {id:'compliance',   grupo:'Técnico & Comercial',          label:'Ética e Compliance'},
-  {id:'prazos',       grupo:'Execução & Entrega',           label:'Entrega e Prazos'},
-  {id:'organizacao',  grupo:'Execução & Entrega',           label:'Organização e Planejamento'},
-  {id:'problemas',    grupo:'Execução & Entrega',           label:'Resolução de Problemas'},
-  {id:'proatividade', grupo:'Comportamento & Cultura',      label:'Proatividade'},
-  {id:'equipe',       grupo:'Comportamento & Cultura',      label:'Trabalho em Equipe'},
-  {id:'lideranca',    grupo:'Comportamento & Cultura',      label:'Liderança / Influência'},
+  {id:'comunicacao',     grupo:'Competências', label:'Comunicação'},
+  {id:'comercial',       grupo:'Competências', label:'Comercial'},
+  {id:'coletividade',    grupo:'Competências', label:'Coletividade'},
+  {id:'conhecimento_tec',grupo:'Competências', label:'Conhecimento Técnico'},
+  {id:'alinhamento',     grupo:'Competências', label:'Alinhamento'},
 ];
 const GRUPOS_360=[...new Set(CRITERIOS_360.map(c=>c.grupo))];
 

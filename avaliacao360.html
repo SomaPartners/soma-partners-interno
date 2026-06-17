@@ -116,22 +116,11 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const _sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
 const CRITERIOS=[
-  // Relacionamento & Comunicação
-  {id:'com_cliente',  grupo:'Relacionamento & Comunicação', label:'Comunicação com Clientes',     desc:'Clareza, escuta ativa e postura com o cliente'},
-  {id:'com_interna',  grupo:'Relacionamento & Comunicação', label:'Comunicação Interna',           desc:'Transparência e qualidade da comunicação com a equipe'},
-  {id:'rel_cliente',  grupo:'Relacionamento & Comunicação', label:'Gestão de Relacionamento',      desc:'Fidelização, acompanhamento e qualidade do atendimento à carteira'},
-  // Técnico & Comercial
-  {id:'tecnico',      grupo:'Técnico & Comercial',          label:'Conhecimento Técnico / Mercado',desc:'Domínio de produtos financeiros, mercado e legislação'},
-  {id:'captacao',     grupo:'Técnico & Comercial',          label:'Captação / Resultados',         desc:'Performance em trazer novos clientes ou aumentar AuM'},
-  {id:'compliance',   grupo:'Técnico & Comercial',          label:'Ética e Compliance',            desc:'Conduta, sigilo e conformidade com normas e regulações'},
-  // Execução & Entrega
-  {id:'prazos',       grupo:'Execução & Entrega',           label:'Entrega e Prazos',              desc:'Cumprir compromissos dentro do prazo combinado'},
-  {id:'organizacao',  grupo:'Execução & Entrega',           label:'Organização e Planejamento',    desc:'Gestão do próprio tempo e ordem nos processos'},
-  {id:'problemas',    grupo:'Execução & Entrega',           label:'Resolução de Problemas',        desc:'Lidar com situações difíceis, imprevistos e conflitos'},
-  // Comportamento & Cultura
-  {id:'proatividade', grupo:'Comportamento & Cultura',      label:'Proatividade',                  desc:'Antecipa problemas e propõe soluções sem ser solicitado'},
-  {id:'equipe',       grupo:'Comportamento & Cultura',      label:'Trabalho em Equipe',            desc:'Colaboração, suporte e espírito de time'},
-  {id:'lideranca',    grupo:'Comportamento & Cultura',      label:'Liderança / Influência',        desc:'Inspira, engaja e puxa o time para frente'},
+  {id:'comunicacao',     grupo:'Competências', label:'Comunicação',          desc:'Clareza, escuta ativa e qualidade da comunicação com clientes e equipe'},
+  {id:'comercial',       grupo:'Competências', label:'Comercial',            desc:'Performance em captação, resultados e geração de valor para o negócio'},
+  {id:'coletividade',    grupo:'Competências', label:'Coletividade',         desc:'Colaboração, espírito de time e contribuição para o ambiente de trabalho'},
+  {id:'conhecimento_tec',grupo:'Competências', label:'Conhecimento Técnico', desc:'Domínio de produtos financeiros, mercado e processos da área'},
+  {id:'alinhamento',     grupo:'Competências', label:'Alinhamento',          desc:'Aderência à cultura, valores e direcionamentos estratégicos da Soma'},
 ];
 
 const GRUPOS=[...new Set(CRITERIOS.map(c=>c.grupo))];
