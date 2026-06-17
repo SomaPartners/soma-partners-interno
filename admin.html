@@ -1090,7 +1090,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
         <tbody id="pesos-tbody"></tbody>
       </table>
     </div>
-    <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.25)">Pesos sugeridos: 1 = padrão · 1.5 = relevante · 2 = importante · 2.5 = muito importante · 3 = crítico</div>
+    <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.25)">Pesos sugeridos: 0 = ignorar · 0.25 = baixo · 0.5 = padrão · 0.75 = importante · 1 = crítico</div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modal-pesos360')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarPesos360()">💾 Salvar Pesos</button>
@@ -1469,7 +1469,16 @@ async function loadAll(){
   try{
     const cfgPesos=await _sb.from('admin_aval360_config').select('*').eq('id','pesos').maybeSingle();
     const pesosData=cfgPesos?.data?.data;
-    if(pesosData&&typeof pesosData==='object'){Object.keys(pesosData).forEach(area=>{if(_pesos360[area])Object.assign(_pesos360[area],pesosData[area]);});}
+    if(pesosData&&typeof pesosData==='object'){
+      // Normaliza pesos legados (escala 1-3) para 0-1 se detectar valores > 1
+      const normalize=(obj)=>{
+        const vals=Object.values(obj).filter(v=>typeof v==='number');
+        const maxVal=Math.max(...vals);
+        if(maxVal>1){const r={};Object.keys(obj).forEach(k=>r[k]=Math.round((obj[k]/maxVal)*100)/100);return r;}
+        return obj;
+      };
+      Object.keys(pesosData).forEach(area=>{if(_pesos360[area])Object.assign(_pesos360[area],normalize(pesosData[area]));});
+    }
   }catch(e){console.warn('admin_aval360_config não carregado:',e);}
   renderRodadas360();
   renderAvaliacoes();
