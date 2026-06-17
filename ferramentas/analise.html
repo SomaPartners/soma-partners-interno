@@ -2,255 +2,722 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Análise de Investimentos — Ferramentas Soma Partners</title>
+<title>Análise de Investimentos — Soma Partners</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--green:#10b981;--red:#ef4444;--border:rgba(255,255,255,0.09);--muted:rgba(255,255,255,0.45);--surface:rgba(255,255,255,0.04)}
-html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff}
-.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+:root{--navy:#0b1e30;--gold:#c9963c;--blue:#3b8bff;--green:#10b981;--red:#ef4444;--purple:#8b5cf6;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.4);--surface:rgba(255,255,255,0.04)}
+html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff;font-size:13px}
+.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .nav-left{display:flex;align-items:center;gap:12px}
-.logo-soma{font-size:15px;font-weight:300;letter-spacing:.5px}
-.logo-pipe{width:1px;height:18px;background:rgba(255,255,255,0.3)}
-.logo-partners{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.75}
-.nav-sep{width:1px;height:22px;background:rgba(255,255,255,0.1)}
-.nav-title{font-size:12px;font-weight:800}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all .18s}
-.btn svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none}
-.btn-ghost{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7)}.btn-ghost:hover{color:#fff;background:rgba(255,255,255,0.1)}
-
-.main{max-width:1100px;margin:0 auto;padding:32px 28px}
-.page-title{font-size:22px;font-weight:900;letter-spacing:-.3px;margin-bottom:4px}
-.page-sub{font-size:12px;color:var(--muted);margin-bottom:28px}
-
-.tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:0}
-.tab{padding:9px 18px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
-.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
-.tab-content{display:none}.tab-content.active{display:block}
-
-/* CARDS */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
-.card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:20px}
-.card-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:14px}
-
-.field{margin-bottom:12px}
-.field label{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-.field input,.field select{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:8px 11px;font-size:12px;font-family:'Montserrat',sans-serif;color:#fff;outline:none;transition:border-color .15s;color-scheme:dark}
-.field input:focus,.field select:focus{border-color:rgba(59,139,255,0.5)}
-
-.calc-btn{width:100%;padding:11px;border-radius:8px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;background:var(--blue);color:#fff;transition:filter .15s;margin-top:4px}
-.calc-btn:hover{filter:brightness(1.1)}
-
-/* RESULT CHIPS */
-.result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:16px}
-.result-chip{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
-.chip-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
-.chip-value{font-size:22px;font-weight:900;line-height:1}
-.chip-sub{font-size:10px;color:var(--muted);margin-top:3px}
-.pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--blue)}
-
-.chart-wrap{position:relative;height:280px;margin-top:16px}
-table.comp{width:100%;border-collapse:collapse;margin-top:12px}
-table.comp th{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
-table.comp td{font-size:12px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.04)}
-table.comp tr:last-child td{border-bottom:none}
+.logo-soma{font-size:15px;font-weight:300}.logo-pipe{width:1px;height:18px;background:rgba(255,255,255,0.3)}.logo-partners{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.7}
+.nav-sep{width:1px;height:22px;background:var(--border)}.nav-title{font-size:12px;font-weight:800}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all .15s}
+.btn-ghost{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)}.btn-ghost:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{filter:brightness(1.1)}
+.tabs-bar{background:rgba(8,18,28,0.6);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:2px;overflow-x:auto}
+.tab{padding:13px 18px;font-size:11px;font-weight:700;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all .15s}
+.tab:hover{color:rgba(255,255,255,0.7)}.tab.active{color:#fff;border-bottom-color:var(--gold)}
+.tab-pane{display:none;padding:24px}.tab-pane.active{display:block}
+.two-col{display:grid;grid-template-columns:310px 1fr;gap:20px;align-items:start}
+.two-equal{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card-title{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.card-title.gold{color:rgba(201,150,60,0.7)}.card-title.blue{color:rgba(59,139,255,0.7)}.card-title.green{color:rgba(16,185,129,0.7)}
+.mg{display:grid;gap:10px}.mg2{grid-template-columns:1fr 1fr}.mg3{grid-template-columns:1fr 1fr 1fr}.mg4{grid-template-columns:1fr 1fr 1fr 1fr}
+.metric{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:11px 13px}
+.metric-label{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.metric-value{font-size:19px;font-weight:800;line-height:1}
+.metric-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.pos .metric-value{color:#34d399}.neg .metric-value{color:#f87171}.gold .metric-value{color:var(--gold)}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,0.55);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:7px;padding:7px 10px;font-size:12px;font-family:'Montserrat',sans-serif;color:#fff;outline:none;transition:border-color .15s;color-scheme:dark}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(59,139,255,0.5)}
+.field textarea{resize:vertical;min-height:120px;line-height:1.5;font-size:11px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chart-box{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:16px}
+.chart-box canvas{max-height:320px}
+.chart-lbl{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.sec-title{font-size:18px;font-weight:900;margin-bottom:4px}
+.sec-sub{font-size:12px;color:var(--muted);margin-bottom:22px;font-weight:400}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--gold);border-radius:50%;cursor:pointer}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
 </style>
 </head>
 <body>
-
 <nav class="topnav">
   <div class="nav-left">
-    <span class="logo-soma">Soma</span>
-    <span class="logo-pipe"></span>
-    <span class="logo-partners">Partners</span>
-    <div class="nav-sep"></div>
-    <span class="nav-title">Análise de Investimentos</span>
+    <span class="logo-soma">Soma</span><span class="logo-pipe"></span><span class="logo-partners">Partners</span>
+    <div class="nav-sep"></div><span class="nav-title">Análise de Investimentos</span>
   </div>
-  <button class="btn btn-ghost" onclick="window.location.href='../ferramentas.html'">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    Ferramentas
-  </button>
+  <button class="btn btn-ghost" onclick="history.back()">← Ferramentas</button>
 </nav>
 
-<div class="main">
-  <div class="page-title">Análise de Investimentos</div>
-  <div class="page-sub">Calcule retorno real, compare com benchmarks e projete o crescimento do patrimônio.</div>
+<div class="tabs-bar">
+  <div class="tab active" onclick="switchTab('risco',this)">📉 Risco & Performance</div>
+  <div class="tab" onclick="switchTab('fronteira',this)">🎯 Fronteira Eficiente</div>
+  <div class="tab" onclick="switchTab('rendafixa',this)">🏦 Renda Fixa</div>
+  <div class="tab" onclick="switchTab('montecarlo',this)">🎲 Monte Carlo</div>
+</div>
 
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('rentabilidade',this)">Rentabilidade Real</div>
-    <div class="tab" onclick="switchTab('projecao',this)">Projeção de Patrimônio</div>
-    <div class="tab" onclick="switchTab('comparativo',this)">Comparativo de Ativos</div>
-  </div>
-
-  <!-- TAB 1: RENTABILIDADE -->
-  <div class="tab-content active" id="tab-rentabilidade">
-    <div class="grid2">
+<!-- TAB 1: RISCO -->
+<div class="tab-pane active" id="tab-risco">
+  <div class="sec-title">Risco & Performance</div>
+  <div class="sec-sub">VaR, CVaR, Drawdown, Sharpe, Sortino, Beta — cole retornos diários ou mensais (% por período)</div>
+  <div class="two-col">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Série de Retornos</div>
+        <div class="field"><label>Portfólio (um retorno % por linha)</label>
+          <textarea id="r-portfolio">2.3
+-1.1
+0.8
+3.2
+-2.4
+1.5
+0.3
+-0.9
+2.1
+1.8
+-1.7
+0.6
+3.1
+-0.5
+1.2
+-2.2
+0.9
+1.4
+-1.3
+2.7
+0.4
+-0.8
+1.9
+-1.6
+0.7
+2.5
+-0.3
+1.1
+-2.0
+0.5
+1.6
+-1.1
+2.9
+0.2
+-0.7
+1.3
+-1.8
+0.6
+2.2
+-0.4
+1.0
+-1.5
+0.8
+2.6
+-0.6
+1.7
+-1.2
+0.3
+3.0
+-1.9
+1.4
+0.1
+-0.5
+2.4
+-1.0
+0.7
+1.8
+-2.1
+0.9
+2.8</textarea>
+        </div>
+        <div class="field"><label>Benchmark (opcional, mesmo formato)</label>
+          <textarea id="r-bench" style="min-height:60px">1.1
+-0.4
+0.6
+1.8
+-1.2
+0.9
+0.2
+-0.5
+1.3
+1.0
+-0.8
+0.4
+1.7
+-0.3
+0.7
+-1.1
+0.5
+0.8
+-0.6
+1.4
+0.3
+-0.4
+1.0
+-0.8
+0.4
+1.3
+-0.2
+0.6
+-1.0
+0.3
+0.9
+-0.5
+1.5
+0.1
+-0.4
+0.7
+-0.9
+0.3
+1.1
+-0.2
+0.6
+-0.7
+0.4
+1.3
+-0.3
+0.9
+-0.6
+0.2
+1.5
+-0.9
+0.7
+0.1
+-0.3
+1.2
+-0.5
+0.4
+0.9
+-1.0
+0.5
+1.4</textarea>
+        </div>
+        <div class="fr">
+          <div class="field" style="margin:0"><label>Periodicidade</label>
+            <select id="r-freq"><option value="252">Diária</option><option value="12" selected>Mensal</option><option value="4">Trimestral</option></select>
+          </div>
+          <div class="field" style="margin:0"><label>RF (% a.a.)</label><input type="number" id="r-rf" value="13.75" step="0.25"/></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-blue" onclick="calcRisco()" style="flex:1">Calcular</button>
+          <label class="btn btn-ghost" style="cursor:pointer">📂 CSV<input type="file" accept=".csv" style="display:none" onchange="importCSVRisco(this)"></label>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title gold">Retorno & Volatilidade</div>
+        <div class="mg mg3">
+          <div class="metric" id="rm-retorno"><div class="metric-label">Retorno Médio</div><div class="metric-value">—</div><div class="metric-sub">por período</div></div>
+          <div class="metric" id="rm-retornoan"><div class="metric-label">Retorno a.a.</div><div class="metric-value">—</div><div class="metric-sub">% anualizado</div></div>
+          <div class="metric" id="rm-vol"><div class="metric-label">Volatilidade</div><div class="metric-value">—</div><div class="metric-sub">% a.a.</div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title blue">Métricas de Risco</div>
+        <div class="mg mg4">
+          <div class="metric neg" id="rm-var95"><div class="metric-label">VaR 95%</div><div class="metric-value">—</div><div class="metric-sub">paramétrico</div></div>
+          <div class="metric neg" id="rm-var99"><div class="metric-label">VaR 99%</div><div class="metric-value">—</div><div class="metric-sub">paramétrico</div></div>
+          <div class="metric neg" id="rm-cvar95"><div class="metric-label">CVaR 95%</div><div class="metric-value">—</div><div class="metric-sub">exp. shortfall</div></div>
+          <div class="metric neg" id="rm-mdd"><div class="metric-label">Max Drawdown</div><div class="metric-value">—</div><div class="metric-sub">pior queda</div></div>
+        </div>
+      </div>
       <div class="card">
+        <div class="card-title green">Performance</div>
+        <div class="mg mg4">
+          <div class="metric" id="rm-sharpe"><div class="metric-label">Sharpe</div><div class="metric-value">—</div><div class="metric-sub">retorno/risco</div></div>
+          <div class="metric" id="rm-sortino"><div class="metric-label">Sortino</div><div class="metric-value">—</div><div class="metric-sub">downside risk</div></div>
+          <div class="metric" id="rm-beta"><div class="metric-label">Beta</div><div class="metric-value">—</div><div class="metric-sub">vs benchmark</div></div>
+          <div class="metric" id="rm-alpha"><div class="metric-label">Alpha</div><div class="metric-value">—</div><div class="metric-sub">Jensen % a.a.</div></div>
+        </div>
+        <div id="rm-ir-wrap" style="display:none;margin-top:10px">
+          <div class="mg mg2">
+            <div class="metric" id="rm-ir"><div class="metric-label">Info Ratio</div><div class="metric-value">—</div><div class="metric-sub">alpha/TE</div></div>
+            <div class="metric" id="rm-te"><div class="metric-label">Tracking Error</div><div class="metric-value">—</div><div class="metric-sub">% a.a.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="two-equal" style="margin-top:18px">
+    <div class="chart-box"><div class="chart-lbl">Distribuição de Retornos</div><canvas id="chart-dist"></canvas></div>
+    <div class="chart-box"><div class="chart-lbl">Curva de Drawdown</div><canvas id="chart-dd"></canvas></div>
+  </div>
+</div>
+
+<!-- TAB 2: FRONTEIRA EFICIENTE -->
+<div class="tab-pane" id="tab-fronteira">
+  <div class="sec-title">Fronteira Eficiente</div>
+  <div class="sec-sub">Modern Portfolio Theory (Markowitz) — 8.000 portfólios simulados, máximo Sharpe e mínima variância</div>
+  <div class="two-col">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Ativos</div>
+        <div style="display:grid;grid-template-columns:1fr 72px 72px 28px;gap:5px;margin-bottom:6px">
+          <span style="font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase">Ativo</span>
+          <span style="font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase">Ret %</span>
+          <span style="font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase">Vol %</span>
+          <span></span>
+        </div>
+        <div id="fe-assets-list"></div>
+        <button class="btn btn-ghost" onclick="addAssetFE()" style="width:100%;justify-content:center;margin-top:6px;font-size:10px">+ Ativo</button>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Correlações</div>
+        <div id="fe-corr-matrix"></div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Carteira Atual (% por ativo)</div>
+        <div id="fe-weights-list"></div>
+      </div>
+      <div class="field"><label>Taxa Livre de Risco (% a.a.)</label><input type="number" id="fe-rf" value="13.75" step="0.25"/></div>
+      <button class="btn btn-blue" onclick="calcFronteira()" style="width:100%;justify-content:center">Otimizar</button>
+    </div>
+    <div>
+      <div class="chart-box" style="margin-bottom:14px"><canvas id="chart-fe" style="max-height:380px"></canvas></div>
+      <div class="card" id="fe-results" style="display:none">
+        <div class="card-title gold">Portfólios Ótimos</div>
+        <div class="two-equal" style="margin-bottom:14px">
+          <div>
+            <div style="font-size:9px;font-weight:800;color:rgba(201,150,60,0.7);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">★ Máximo Sharpe</div>
+            <div id="fe-max-sharpe-alloc"></div>
+          </div>
+          <div>
+            <div style="font-size:9px;font-weight:800;color:rgba(59,139,255,0.7);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">◆ Mínima Variância</div>
+            <div id="fe-min-var-alloc"></div>
+          </div>
+        </div>
+        <div class="mg mg4">
+          <div class="metric gold" id="fe-ms-ret"><div class="metric-label">Retorno (S)</div><div class="metric-value">—</div></div>
+          <div class="metric gold" id="fe-ms-vol"><div class="metric-label">Vol (S)</div><div class="metric-value">—</div></div>
+          <div class="metric" id="fe-mv-ret"><div class="metric-label">Retorno (MV)</div><div class="metric-value">—</div></div>
+          <div class="metric" id="fe-mv-vol"><div class="metric-label">Vol (MV)</div><div class="metric-value">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: RENDA FIXA -->
+<div class="tab-pane" id="tab-rendafixa">
+  <div class="sec-title">Análise de Renda Fixa</div>
+  <div class="sec-sub">Precificação, Duration (Macaulay & Modificada), Convexidade, DV01 — NTN-B, LTN, CDB, Debêntures</div>
+  <div class="two-col">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Parâmetros do Título</div>
+        <div class="field"><label>Tipo</label>
+          <select id="rf-tipo" onchange="updateRFTipo()">
+            <option value="bullet">Zero Cupom / LTN</option>
+            <option value="cupom" selected>Com Cupom (NTN-B, CDB, Debênture)</option>
+            <option value="ipca">IPCA+ (NTN-B Principal)</option>
+          </select>
+        </div>
+        <div class="fr">
+          <div class="field" style="margin:0"><label>Valor Nominal (R$)</label><input type="number" id="rf-nominal" value="1000" step="100"/></div>
+          <div class="field" id="rf-cupom-field" style="margin:0"><label>Taxa de Cupom (% a.a.)</label><input type="number" id="rf-cupom" value="6.00" step="0.25"/></div>
+        </div>
+        <div class="fr">
+          <div class="field" style="margin:0"><label>Freq. do Cupom</label>
+            <select id="rf-freq-cupom"><option value="2" selected>Semestral</option><option value="4">Trimestral</option><option value="12">Mensal</option><option value="1">Anual</option></select>
+          </div>
+          <div class="field" style="margin:0"><label>Prazo (anos)</label><input type="number" id="rf-prazo" value="5" step="0.5" min="0.25"/></div>
+        </div>
+        <div class="fr">
+          <div class="field" style="margin:0"><label>YTM / Taxa de Desconto (% a.a.)</label><input type="number" id="rf-ytm" value="13.50" step="0.25"/></div>
+          <div class="field" id="rf-ipca-field" style="margin:0;display:none"><label>IPCA Esperado (% a.a.)</label><input type="number" id="rf-ipca" value="4.50" step="0.25"/></div>
+        </div>
+        <button class="btn btn-blue" onclick="calcRendaFixa()" style="width:100%;justify-content:center;margin-top:4px">Calcular</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Sensibilidade a Choques</div>
+        <div class="field"><label>Magnitude: <span id="rf-shock-lbl">±100</span> bps</label>
+          <input type="range" id="rf-shock" min="25" max="500" step="25" value="100" oninput="document.getElementById('rf-shock-lbl').textContent='±'+this.value;calcRendaFixa()"/>
+        </div>
+        <div class="mg mg2" style="margin-top:4px">
+          <div class="metric neg" id="rf-sens-up"><div class="metric-label">Choque +<span class="shock-v">100</span>bps</div><div class="metric-value">—</div><div class="metric-sub">Δ% no PU</div></div>
+          <div class="metric pos" id="rf-sens-dn"><div class="metric-label">Choque -<span class="shock-v">100</span>bps</div><div class="metric-value">—</div><div class="metric-sub">Δ% no PU</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title gold">Resultados</div>
+        <div class="mg mg3" style="margin-bottom:10px">
+          <div class="metric gold" id="rf-pu"><div class="metric-label">Preço (PU)</div><div class="metric-value">—</div><div class="metric-sub">R$</div></div>
+          <div class="metric" id="rf-dur-mac"><div class="metric-label">Duration Mac.</div><div class="metric-value">—</div><div class="metric-sub">anos</div></div>
+          <div class="metric" id="rf-dur-mod"><div class="metric-label">Duration Mod.</div><div class="metric-value">—</div><div class="metric-sub">anos</div></div>
+        </div>
+        <div class="mg mg3">
+          <div class="metric" id="rf-conv"><div class="metric-label">Convexidade</div><div class="metric-value">—</div><div class="metric-sub">anos²</div></div>
+          <div class="metric neg" id="rf-dv01"><div class="metric-label">DV01</div><div class="metric-value">—</div><div class="metric-sub">R$ / bps</div></div>
+          <div class="metric" id="rf-ytm-out"><div class="metric-label">YTM Efetiva</div><div class="metric-value">—</div><div class="metric-sub">% a.a.</div></div>
+        </div>
+      </div>
+      <div class="chart-box" style="margin-bottom:14px"><div class="chart-lbl">Curva Preço × Taxa</div><canvas id="chart-rf-py" style="max-height:200px"></canvas></div>
+      <div class="chart-box"><div class="chart-lbl">Fluxo de Caixa</div><canvas id="chart-rf-cf" style="max-height:160px"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: MONTE CARLO -->
+<div class="tab-pane" id="tab-montecarlo">
+  <div class="sec-title">Simulação Monte Carlo</div>
+  <div class="sec-sub">Projeção patrimonial com até 5.000 cenários — Geometric Brownian Motion, fan chart com percentis, probabilidade de meta</div>
+  <div class="two-col">
+    <div>
+      <div class="card" style="margin-bottom:14px">
         <div class="card-title">Parâmetros</div>
-        <div class="field"><label>Valor Inicial (R$)</label><input id="r-inicial" type="number" value="100000" min="0"/></div>
-        <div class="field"><label>Valor Final (R$)</label><input id="r-final" type="number" value="138000" min="0"/></div>
-        <div class="field"><label>Período (meses)</label><input id="r-meses" type="number" value="24" min="1"/></div>
-        <div class="field"><label>IPCA no período (%)</label><input id="r-ipca" type="number" value="8.5" step="0.01"/></div>
-        <div class="field"><label>CDI no período (%)</label><input id="r-cdi" type="number" value="24.0" step="0.01"/></div>
-        <button class="calc-btn" onclick="calcRentabilidade()">Calcular</button>
+        <div class="fr">
+          <div class="field" style="margin:0"><label>Patrimônio Inicial (R$)</label><input type="number" id="mc-inicial" value="500000" step="10000"/></div>
+          <div class="field" style="margin:0"><label>Aporte Mensal (R$)</label><input type="number" id="mc-aporte" value="5000" step="500"/></div>
+        </div>
+        <div class="fr">
+          <div class="field" style="margin:0"><label>Retorno Esperado (% a.a.)</label><input type="number" id="mc-retorno" value="12.5" step="0.5"/></div>
+          <div class="field" style="margin:0"><label>Volatilidade (% a.a.)</label><input type="number" id="mc-vol" value="8.0" step="0.5"/></div>
+        </div>
+        <div class="fr">
+          <div class="field" style="margin:0"><label>Horizonte (anos)</label><input type="number" id="mc-horizonte" value="10" step="1" min="1" max="40"/></div>
+          <div class="field" style="margin:0"><label>Simulações</label>
+            <select id="mc-sims"><option value="500">500 (rápido)</option><option value="2000" selected>2.000</option><option value="5000">5.000 (preciso)</option></select>
+          </div>
+        </div>
+        <div class="fr">
+          <div class="field" style="margin:0"><label>Meta Patrimonial (R$)</label><input type="number" id="mc-meta" value="2000000" step="100000"/></div>
+          <div class="field" style="margin:0"><label>IPCA esperado (% a.a.)</label><input type="number" id="mc-ipca" value="4.5" step="0.25"/></div>
+        </div>
+        <button class="btn btn-blue" onclick="calcMonteCarlo()" style="width:100%;justify-content:center;margin-top:4px">🎲 Simular</button>
       </div>
-      <div class="card">
-        <div class="card-title">Resultado</div>
-        <div id="r-result"><p style="color:var(--muted);font-size:12px">Preencha os dados e clique em Calcular.</p></div>
+      <div class="card" id="mc-results" style="display:none">
+        <div class="card-title green">Resultados no Horizonte</div>
+        <div class="mg mg2" style="margin-bottom:10px">
+          <div class="metric pos" id="mc-p50"><div class="metric-label">P50 — Mediana</div><div class="metric-value">—</div></div>
+          <div class="metric pos" id="mc-p75"><div class="metric-label">P75 — Otimista</div><div class="metric-value">—</div></div>
+        </div>
+        <div class="mg mg2" style="margin-bottom:10px">
+          <div class="metric neg" id="mc-p25"><div class="metric-label">P25 — Conservador</div><div class="metric-value">—</div></div>
+          <div class="metric neg" id="mc-p05"><div class="metric-label">P5 — Pior 5%</div><div class="metric-value">—</div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="mg mg2">
+          <div class="metric gold" id="mc-prob"><div class="metric-label">Prob. de atingir meta</div><div class="metric-value">—</div></div>
+          <div class="metric" id="mc-real"><div class="metric-label">Poder de compra P50</div><div class="metric-value">—</div><div class="metric-sub">R$ de hoje</div></div>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- TAB 2: PROJEÇÃO -->
-  <div class="tab-content" id="tab-projecao">
-    <div class="grid2">
-      <div class="card">
-        <div class="card-title">Parâmetros</div>
-        <div class="field"><label>Patrimônio Inicial (R$)</label><input id="p-inicial" type="number" value="200000" min="0"/></div>
-        <div class="field"><label>Aporte Mensal (R$)</label><input id="p-aporte" type="number" value="5000" min="0"/></div>
-        <div class="field"><label>Rentabilidade Anual (%)</label><input id="p-rent" type="number" value="13.5" step="0.01"/></div>
-        <div class="field"><label>Prazo (anos)</label><input id="p-anos" type="number" value="10" min="1" max="40"/></div>
-        <div class="field"><label>Meta de Patrimônio (R$ — opcional)</label><input id="p-meta" type="number" value="1000000" min="0"/></div>
-        <button class="calc-btn" onclick="calcProjecao()">Projetar</button>
-      </div>
-      <div class="card" style="display:flex;flex-direction:column">
-        <div class="card-title">Resultado</div>
-        <div id="p-kpis"></div>
-        <div class="chart-wrap"><canvas id="p-chart"></canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB 3: COMPARATIVO -->
-  <div class="tab-content" id="tab-comparativo">
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Configuração</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-        <div class="field"><label>Valor Investido (R$)</label><input id="c-valor" type="number" value="100000" min="0"/></div>
-        <div class="field"><label>Período (meses)</label><input id="c-meses" type="number" value="12" min="1"/></div>
-        <div class="field"><label>CDI anual (%)</label><input id="c-cdi" type="number" value="13.75" step="0.01"/></div>
-        <div class="field"><label>IPCA anual (%)</label><input id="c-ipca" type="number" value="4.5" step="0.01"/></div>
-      </div>
-      <button class="calc-btn" style="max-width:200px" onclick="calcComparativo()">Comparar</button>
-    </div>
-    <div class="card">
-      <div class="card-title">Comparativo de Rentabilidade</div>
-      <div id="c-result"><p style="color:var(--muted);font-size:12px">Preencha os parâmetros e clique em Comparar.</p></div>
+    <div>
+      <div class="chart-box" style="margin-bottom:14px"><div class="chart-lbl">Fan Chart — Percentis (P5 · P25 · P50 · P75 · P95)</div><canvas id="chart-mc-fan" style="max-height:320px"></canvas></div>
+      <div class="chart-box"><div class="chart-lbl">Distribuição do Patrimônio Final</div><canvas id="chart-mc-dist" style="max-height:160px"></canvas></div>
     </div>
   </div>
 </div>
 
 <script>
-if(sessionStorage.getItem('soma_auth')!=='1'||sessionStorage.getItem('soma_admin')!=='1') window.location.href='../login.html';
+if(sessionStorage.getItem('soma_auth')!=='1') window.location.href='../login.html';
 
-function switchTab(id, el){
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+// ── UTILS ──────────────────────────────────────────────────────
+function parseReturns(txt){return txt.split('\n').map(l=>l.trim().replace(',','.')).filter(l=>l!=='').map(Number).filter(v=>!isNaN(v));}
+function mean(a){return a.reduce((s,v)=>s+v,0)/a.length;}
+function std(a){const m=mean(a);return Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/a.length);}
+function pct(a,p){const s=[...a].sort((x,y)=>x-y);const i=(p/100)*(s.length-1);const lo=Math.floor(i),hi=Math.ceil(i);return s[lo]+(s[hi]-s[lo])*(i-lo);}
+function normalPPF(p){if(p<=0)p=1e-9;if(p>=1)p=1-1e-9;
+  if(p<0.5){const t=Math.sqrt(-2*Math.log(p));return -(2.515517+t*(0.802853+t*0.010328))/(1+t*(1.432788+t*(0.189269+t*0.001308)));}
+  const t=Math.sqrt(-2*Math.log(1-p));return (2.515517+t*(0.802853+t*0.010328))/(1+t*(1.432788+t*(0.189269+t*0.001308)));}
+function fmtP(v,d=2){return isNaN(v)||v===null?'—':(v>=0?'+':'')+v.toFixed(d)+'%';}
+function fmtN(v,d=2){return isNaN(v)||v===null?'—':v.toFixed(d);}
+function fmtM(v){if(isNaN(v)||v===null)return'—';if(v>=1e9)return'R$ '+(v/1e9).toFixed(2)+'B';if(v>=1e6)return'R$ '+(v/1e6).toFixed(2)+'M';if(v>=1e3)return'R$ '+(v/1e3).toFixed(1)+'K';return'R$ '+v.toFixed(0);}
+function sm(id,val){const el=document.getElementById(id);if(el)el.querySelector('.metric-value').textContent=val;}
+const CD={tick:{color:'rgba(255,255,255,0.4)',font:{family:'Montserrat',size:10}},grid:{color:'rgba(255,255,255,0.04)'}};
+let _ch={};
+function dc(id){if(_ch[id]){_ch[id].destroy();delete _ch[id];}}
+
+function switchTab(id,el){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   el.classList.add('active');
 }
 
-function fmtBRL(v){return'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function fmtPct(v){return(v>=0?'+':'')+v.toFixed(2)+'%'}
-function cls(v){return v>=0?'pos':'neg'}
-
-// ── RENTABILIDADE ──
-function calcRentabilidade(){
-  const ini=+document.getElementById('r-inicial').value;
-  const fin=+document.getElementById('r-final').value;
-  const meses=+document.getElementById('r-meses').value;
-  const ipca=+document.getElementById('r-ipca').value;
-  const cdi=+document.getElementById('r-cdi').value;
-  if(!ini||!fin||!meses){alert('Preencha todos os campos.');return;}
-  const bruto=((fin-ini)/ini)*100;
-  const real=(((1+bruto/100)/(1+ipca/100))-1)*100;
-  const vsCDI=(bruto/cdi)*100;
-  const lucro=fin-ini;
-  const anos=(meses/12).toFixed(1);
-  const aaAnual=(Math.pow(1+bruto/100,12/meses)-1)*100;
-
-  document.getElementById('r-result').innerHTML=`
-    <div class="result-grid">
-      <div class="result-chip"><div class="chip-label">Retorno Bruto</div><div class="chip-value ${cls(bruto)}">${fmtPct(bruto)}</div><div class="chip-sub">em ${meses} meses (${anos} anos)</div></div>
-      <div class="result-chip"><div class="chip-label">Retorno Real</div><div class="chip-value ${cls(real)}">${fmtPct(real)}</div><div class="chip-sub">descontado IPCA de ${ipca}%</div></div>
-      <div class="result-chip"><div class="chip-label">% do CDI</div><div class="chip-value neu">${vsCDI.toFixed(0)}%</div><div class="chip-sub">CDI no período: ${cdi}%</div></div>
-      <div class="result-chip"><div class="chip-label">Lucro Nominal</div><div class="chip-value ${cls(lucro)}">${fmtBRL(lucro)}</div><div class="chip-sub">sobre ${fmtBRL(ini)}</div></div>
-      <div class="result-chip"><div class="chip-label">Rentab. Anualizada</div><div class="chip-value ${cls(aaAnual)}">${fmtPct(aaAnual)}</div><div class="chip-sub">equivalente ao ano</div></div>
-    </div>`;
-}
-
-// ── PROJEÇÃO ──
-let pChart=null;
-function calcProjecao(){
-  const ini=+document.getElementById('p-inicial').value;
-  const aporte=+document.getElementById('p-aporte').value;
-  const rentAnual=+document.getElementById('p-rent').value;
-  const anos=+document.getElementById('p-anos').value;
-  const meta=+document.getElementById('p-meta').value||0;
-  const rentMensal=Math.pow(1+rentAnual/100,1/12)-1;
-  const meses=anos*12;
-  let saldo=ini, totalAportes=ini, totalJuros=0;
-  const labels=[],vals=[],aportesCum=[],jurosCum=[];
-  for(let m=0;m<=meses;m++){
-    if(m>0){const j=saldo*rentMensal;saldo=saldo+j+aporte;totalAportes+=aporte;totalJuros+=j;}
-    if(m%12===0){labels.push('Ano '+(m/12));vals.push(+saldo.toFixed(2));aportesCum.push(+totalAportes.toFixed(2));jurosCum.push(+totalJuros.toFixed(2));}
+// ── TAB 1: RISCO ──────────────────────────────────────────────
+function calcRisco(){
+  const ret=parseReturns(document.getElementById('r-portfolio').value);
+  const bTxt=document.getElementById('r-bench').value.trim();
+  const bench=bTxt?parseReturns(bTxt):[];
+  const freq=+document.getElementById('r-freq').value;
+  const rf=+document.getElementById('r-rf').value/100;
+  if(ret.length<5){alert('Insira ao menos 5 retornos.');return;}
+  const m=mean(ret),s=std(ret);
+  const retAn=((1+m/100)**freq-1)*100;
+  const volAn=s/100*Math.sqrt(freq)*100;
+  const var95=-(m+normalPPF(0.05)*s);
+  const var99=-(m+normalPPF(0.01)*s);
+  const sorted=[...ret].sort((a,b)=>a-b);
+  const tail=sorted.slice(0,Math.max(1,Math.floor(ret.length*0.05)));
+  const cvar95=-mean(tail);
+  let cum=0,peak=0,mdd=0;
+  ret.forEach(r=>{cum+=r;if(cum>peak)peak=cum;if(peak-cum>mdd)mdd=peak-cum;});
+  const rfPer=(Math.pow(1+rf,1/freq)-1)*100;
+  const exc=ret.map(r=>r-rfPer);
+  const sharpe=mean(exc)/(std(exc)||1)*Math.sqrt(freq);
+  const dn=ret.filter(r=>r<rfPer);
+  const sortino=mean(exc)/((dn.length>1?std(dn):std(ret))||1)*Math.sqrt(freq);
+  let beta=NaN,alpha=NaN,ir=NaN,te=NaN;
+  const hasBench=bench.length>=ret.length*0.7;
+  if(hasBench){
+    const n=Math.min(ret.length,bench.length);
+    const rS=ret.slice(0,n),bS=bench.slice(0,n);
+    const mR=mean(rS),mB=mean(bS);
+    const cov=rS.reduce((s,r,i)=>s+(r-mR)*(bS[i]-mB),0)/n;
+    const vB=std(bS)**2;
+    beta=vB>0?cov/vB:NaN;
+    const bRetAn=((1+mB/100)**freq-1)*100;
+    alpha=(retAn-rf*100)-beta*(bRetAn-rf*100);
+    te=std(rS.map((r,i)=>r-bS[i]))/100*Math.sqrt(freq)*100;
+    ir=te>0?alpha/te:NaN;
   }
-  const metaAtingida=meta>0&&saldo>=meta;
-  let mesesMeta=-1;
-  if(meta>0&&saldo<meta){/* não atingiu */}else if(meta>0){let s2=ini;for(let m=1;m<=meses*3;m++){const j=s2*rentMensal;s2+=j+aporte;if(s2>=meta){mesesMeta=m;break;}}}
-
-  document.getElementById('p-kpis').innerHTML=`
-    <div class="result-grid" style="grid-template-columns:1fr 1fr">
-      <div class="result-chip"><div class="chip-label">Patrimônio Final</div><div class="chip-value pos" style="font-size:18px">${fmtBRL(saldo)}</div></div>
-      <div class="result-chip"><div class="chip-label">Total Aportado</div><div class="chip-value neu" style="font-size:18px">${fmtBRL(totalAportes)}</div></div>
-      <div class="result-chip"><div class="chip-label">Juros Acumulados</div><div class="chip-value pos" style="font-size:18px">${fmtBRL(totalJuros)}</div></div>
-      <div class="result-chip"><div class="chip-label">Retorno sobre Aportes</div><div class="chip-value pos" style="font-size:18px">${((totalJuros/totalAportes)*100).toFixed(1)}%</div></div>
-    </div>
-    ${meta>0?`<div style="margin-top:10px;padding:10px 14px;border-radius:8px;background:${metaAtingida?'rgba(16,185,129,.1)':'rgba(245,158,11,.1)'};border:1px solid ${metaAtingida?'rgba(16,185,129,.3)':'rgba(245,158,11,.3)'}">
-      <span style="font-size:12px;font-weight:700;color:${metaAtingida?'#6ee7b7':'#fcd34d'}">${metaAtingida?'✓ Meta de '+fmtBRL(meta)+' atingida no prazo!':'⚠ Meta de '+fmtBRL(meta)+' não atingida no prazo. '+((mesesMeta>0)?'Seria atingida em ~'+Math.ceil(mesesMeta/12)+' anos.':'Muito distante.')}</span>
-    </div>`:''}`;
-
-  if(pChart)pChart.destroy();
-  pChart=new Chart(document.getElementById('p-chart'),{type:'line',data:{labels,datasets:[
-    {label:'Patrimônio Total',data:vals,borderColor:'#3b8bff',backgroundColor:'rgba(59,139,255,0.08)',fill:true,tension:.4,pointRadius:3},
-    {label:'Total Aportado',data:aportesCum,borderColor:'rgba(201,150,60,0.7)',borderDash:[4,4],fill:false,tension:.4,pointRadius:0}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'rgba(255,255,255,0.6)',font:{family:'Montserrat',size:10}}}},scales:{x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10},callback:v=>'R$'+v.toLocaleString('pt-BR',{maximumFractionDigits:0})},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+  sm('rm-retorno',fmtP(m));sm('rm-retornoan',fmtP(retAn));sm('rm-vol',fmtP(volAn));
+  sm('rm-var95',fmtP(-var95));sm('rm-var99',fmtP(-var99));sm('rm-cvar95',fmtP(-cvar95));sm('rm-mdd',fmtP(-mdd));
+  sm('rm-sharpe',fmtN(sharpe));sm('rm-sortino',fmtN(sortino));
+  sm('rm-beta',isNaN(beta)?'N/A':fmtN(beta));sm('rm-alpha',isNaN(alpha)?'N/A':fmtP(alpha));
+  document.getElementById('rm-sharpe').className='metric '+(sharpe>1?'pos':sharpe>0?'':'neg');
+  document.getElementById('rm-sortino').className='metric '+(sortino>1?'pos':sortino>0?'':'neg');
+  const irW=document.getElementById('rm-ir-wrap');
+  if(hasBench&&!isNaN(ir)){irW.style.display='block';sm('rm-ir',fmtN(ir));sm('rm-te',fmtP(te));}else{irW.style.display='none';}
+  drawDist(ret,m,s,var95,var99);
+  drawDD(ret);
 }
 
-// ── COMPARATIVO ──
-function calcComparativo(){
-  const val=+document.getElementById('c-valor').value;
-  const meses=+document.getElementById('c-meses').value;
-  const cdiAnual=+document.getElementById('c-cdi').value;
-  const ipcaAnual=+document.getElementById('c-ipca').value;
-  const cdiM=Math.pow(1+cdiAnual/100,1/12)-1;
-  const anos=meses/12;
+function drawDist(ret,m,s,var95,var99){
+  dc('dist');const ctx=document.getElementById('chart-dist').getContext('2d');
+  const mn=Math.min(...ret),mx=Math.max(...ret),bins=20,bw=(mx-mn)/bins;
+  const counts=Array(bins).fill(0);
+  ret.forEach(r=>{const i=Math.min(Math.floor((r-mn)/bw),bins-1);counts[i]++;});
+  _ch['dist']=new Chart(ctx,{type:'bar',data:{labels:counts.map((_,i)=>(mn+i*bw+bw/2).toFixed(1)+'%'),datasets:[{data:counts,backgroundColor:counts.map((_,i)=>{const v=mn+i*bw+bw/2;return v<-var99?'rgba(239,68,68,0.75)':v<-var95?'rgba(251,146,60,0.6)':'rgba(59,139,255,0.5)';}),borderWidth:0}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{...CD.tick,maxRotation:45},grid:CD.grid},y:{ticks:CD.tick,grid:CD.grid}}}});}
 
-  const ativos=[
-    {nome:'CDI (100%)',rent:Math.pow(1+cdiAnual/100,anos)-1,cor:'#3b8bff'},
-    {nome:'Poupança (~70% CDI)',rent:Math.pow(1+cdiAnual*0.7/100,anos)-1,cor:'#94a3b8'},
-    {nome:'CDB 110% CDI',rent:Math.pow(1+cdiAnual*1.1/100,anos)-1,cor:'#10b981'},
-    {nome:'CDB 120% CDI',rent:Math.pow(1+cdiAnual*1.2/100,anos)-1,cor:'#22d3ee'},
-    {nome:'IPCA + 6% a.a.',rent:Math.pow(1+(ipcaAnual+6)/100,anos)-1,cor:'#f59e0b'},
-    {nome:'IPCA + 8% a.a.',rent:Math.pow(1+(ipcaAnual+8)/100,anos)-1,cor:'#c9963c'},
-  ].map(a=>({...a,valor:val*(1+a.rent),lucro:val*a.rent}))
-   .sort((a,b)=>b.rent-a.rent);
+function drawDD(ret){
+  dc('dd');const ctx=document.getElementById('chart-dd').getContext('2d');
+  let cum=0,peak=0;
+  const dds=ret.map(r=>{cum+=r;if(cum>peak)peak=cum;return cum-peak;});
+  _ch['dd']=new Chart(ctx,{type:'line',data:{labels:dds.map((_,i)=>i+1),datasets:[{data:dds,fill:true,borderColor:'rgba(239,68,68,0.8)',backgroundColor:'rgba(239,68,68,0.1)',borderWidth:1.5,pointRadius:0,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false},y:{ticks:CD.tick,grid:CD.grid}}}});}
 
-  const melhor=ativos[0];
-  document.getElementById('c-result').innerHTML=`
-    <table class="comp">
-      <thead><tr><th>Ativo</th><th>Rentab. no Período</th><th>Valor Final</th><th>Lucro</th><th>vs. CDI</th></tr></thead>
-      <tbody>${ativos.map(a=>`<tr>
-        <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${a.cor};margin-right:6px"></span><strong>${a.nome}</strong></td>
-        <td class="${cls(a.rent*100)}">${fmtPct(a.rent*100)}</td>
-        <td style="font-weight:700">${fmtBRL(a.valor)}</td>
-        <td class="${cls(a.lucro)}">${fmtBRL(a.lucro)}</td>
-        <td style="color:var(--muted)">${a.nome==='CDI (100%)'?'—':fmtPct((a.rent/ativos.find(x=>x.nome==='CDI (100%)').rent-1)*100)+' p.p.'}</td>
-      </tr>`).join('')}</tbody>
-    </table>`;
+function importCSVRisco(input){
+  const f=input.files[0];if(!f)return;
+  Papa.parse(f,{complete:r=>{
+    const col=r.data.map(row=>row[0]).filter(v=>v&&!isNaN(parseFloat(v.toString().replace(',','.'))));
+    document.getElementById('r-portfolio').value=col.join('\n');
+    calcRisco();
+  }});
 }
+
+// ── TAB 2: FRONTEIRA EFICIENTE ────────────────────────────────
+let feA=[
+  {name:'Ações BR',ret:14,vol:22},
+  {name:'Renda Fixa',ret:13.5,vol:3},
+  {name:'FIIs',ret:12,vol:15},
+  {name:'Intl Equity',ret:10,vol:18},
+  {name:'Crédito Priv.',ret:14.5,vol:6},
+];
+let feC=null;
+
+function renderFEA(){
+  const s='background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:6px 8px;font-size:11px;font-family:Montserrat,sans-serif;color:#fff;outline:none;width:100%';
+  document.getElementById('fe-assets-list').innerHTML=feA.map((a,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 72px 72px 28px;gap:5px;margin-bottom:6px;align-items:center">
+      <input value="${a.name}" oninput="feA[${i}].name=this.value;renderFEC()" style="${s}"/>
+      <input type="number" value="${a.ret}" step="0.5" oninput="feA[${i}].ret=+this.value" style="${s};text-align:center"/>
+      <input type="number" value="${a.vol}" step="0.5" oninput="feA[${i}].vol=+this.value" style="${s};text-align:center"/>
+      <button onclick="rmFEA(${i})" style="background:none;border:none;color:rgba(239,68,68,0.5);cursor:pointer;font-size:16px">×</button>
+    </div>`).join('');
+  renderFEC();renderFEW();
+}
+function addAssetFE(){feA.push({name:'Ativo',ret:10,vol:15});feC=null;renderFEA();}
+function rmFEA(i){feA.splice(i,1);feC=null;renderFEA();}
+
+function renderFEC(){
+  const n=feA.length;
+  if(!feC||feC.length!==n){
+    const def=[[1,.15,.45,.55,.2],[.15,1,.1,.05,.35],[.45,.1,1,.3,.15],[.55,.05,.3,1,.1],[.2,.35,.15,.1,1]];
+    feC=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?1:(feC&&feC[i]&&feC[i][j]!==undefined?feC[i][j]:(def[i]&&def[i][j]!==undefined?def[i][j]:0.1))));
+  }
+  const is='width:48px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:3px 4px;font-size:10px;font-family:Montserrat,sans-serif;color:#fff;outline:none;text-align:center';
+  let h='<div style="overflow-x:auto"><table style="width:100%;font-size:10px"><tr><th></th>'+feA.map(a=>`<th style="font-size:9px;color:var(--muted);padding:3px 4px">${a.name.slice(0,6)}</th>`).join('')+'</tr>';
+  for(let i=0;i<n;i++){
+    h+=`<tr><td style="font-size:9px;color:var(--muted);padding:3px 4px">${feA[i].name.slice(0,6)}</td>`;
+    for(let j=0;j<n;j++){
+      if(i===j)h+=`<td style="background:rgba(201,150,60,0.1);text-align:center;padding:2px">1.00</td>`;
+      else if(j<i)h+=`<td style="text-align:center;padding:2px;color:rgba(255,255,255,0.3)">${feC[i][j].toFixed(2)}</td>`;
+      else h+=`<td style="padding:2px"><input type="number" value="${feC[i][j].toFixed(2)}" min="-1" max="1" step="0.05" oninput="feC[${i}][${j}]=+this.value;feC[${j}][${i}]=+this.value" style="${is}"/></td>`;
+    }
+    h+='</tr>';
+  }
+  document.getElementById('fe-corr-matrix').innerHTML=h+'</table></div>';
+}
+
+function renderFEW(){
+  document.getElementById('fe-weights-list').innerHTML=feA.map((a,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+      <span style="font-size:11px;color:rgba(255,255,255,0.7)">${a.name}</span>
+      <input type="number" id="fe-w-${i}" placeholder="%" min="0" max="100" step="5" style="width:70px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:5px 7px;font-size:11px;font-family:Montserrat,sans-serif;color:#fff;outline:none;text-align:center"/>
+    </div>`).join('');
+}
+
+function calcFronteira(){
+  const n=feA.length;if(n<2){alert('Adicione ao menos 2 ativos.');return;}
+  renderFEC();
+  const rf=+document.getElementById('fe-rf').value;
+  const sigma=feA.map((a,i)=>feA.map((b,j)=>a.vol/100*b.vol/100*feC[i][j]));
+  const N=8000;const ports=[];
+  for(let s=0;s<N;s++){
+    let w=feA.map(()=>Math.random());const sum=w.reduce((a,b)=>a+b,0);w=w.map(v=>v/sum);
+    const r=w.reduce((r,wi,i)=>r+wi*feA[i].ret,0);
+    let vr=0;for(let i=0;i<n;i++)for(let j=0;j<n;j++)vr+=w[i]*w[j]*sigma[i][j];
+    const v=Math.sqrt(vr)*100;
+    ports.push({w,ret:r,vol:v,sharpe:(r-rf)/v});
+  }
+  const maxS=ports.reduce((a,b)=>b.sharpe>a.sharpe?b:a);
+  const minV=ports.reduce((a,b)=>b.vol<a.vol?b:a);
+  let cR=null,cV=null;
+  const wC=feA.map((_,i)=>{const v=parseFloat(document.getElementById('fe-w-'+i)?.value||'');return isNaN(v)?null:v/100;});
+  if(wC.every(v=>v!==null)){const sw=wC.reduce((a,b)=>a+b,0);if(Math.abs(sw-1)<0.05){const wN=wC.map(v=>v/(sw||1));cR=wN.reduce((r,wi,i)=>r+wi*feA[i].ret,0);let cv=0;for(let i=0;i<n;i++)for(let j=0;j<n;j++)cv+=wN[i]*wN[j]*sigma[i][j];cV=Math.sqrt(cv)*100;}}
+  drawFE(ports,maxS,minV,cR,cV);
+  renderFER(maxS,minV);
+}
+
+function drawFE(ports,maxS,minV,cR,cV){
+  dc('fe');const ctx=document.getElementById('chart-fe').getContext('2d');
+  const front=ports.filter(p=>!ports.some(q=>q.vol<=p.vol&&q.ret>p.ret+0.01)).sort((a,b)=>a.vol-b.vol);
+  const ds=[
+    {label:'Portfólios',data:ports.slice(0,3000).map(p=>({x:p.vol,y:p.ret})),backgroundColor:ports.slice(0,3000).map(p=>{const t=Math.max(0,Math.min(1,(p.sharpe+1)/4));return `rgba(${Math.round(59+142*t)},${Math.round(139+11*t)},${Math.round(255-195*t)},0.2)`;}),pointRadius:2,type:'scatter'},
+    {label:'Fronteira',data:front.map(p=>({x:p.vol,y:p.ret})),borderColor:'rgba(255,255,255,0.45)',backgroundColor:'transparent',showLine:true,pointRadius:0,borderWidth:1.8,type:'scatter',tension:0.3},
+    {label:'★ Máx. Sharpe',data:[{x:maxS.vol,y:maxS.ret}],backgroundColor:'rgba(201,150,60,0.95)',borderColor:'#c9963c',pointRadius:11,pointStyle:'star',type:'scatter'},
+    {label:'◆ Mín. Var.',data:[{x:minV.vol,y:minV.ret}],backgroundColor:'rgba(59,139,255,0.9)',borderColor:'#3b8bff',pointRadius:9,type:'scatter'},
+  ];
+  if(cR!==null)ds.push({label:'● Atual',data:[{x:cV,y:cR}],backgroundColor:'rgba(239,68,68,0.9)',borderColor:'#ef4444',pointRadius:9,type:'scatter'});
+  _ch['fe']=new Chart(ctx,{type:'scatter',data:{datasets:ds},options:{responsive:true,plugins:{legend:{labels:{color:'rgba(255,255,255,0.6)',font:{size:10,family:'Montserrat'},boxWidth:8}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw.y?.toFixed(1)}% ret | ${c.raw.x?.toFixed(1)}% vol`}}},scales:{x:{title:{display:true,text:'Volatilidade (% a.a.)',color:'rgba(255,255,255,0.35)',font:{size:10}},ticks:CD.tick,grid:CD.grid},y:{title:{display:true,text:'Retorno Esperado (% a.a.)',color:'rgba(255,255,255,0.35)',font:{size:10}},ticks:CD.tick,grid:CD.grid}}}});}
+
+function renderFER(maxS,minV){
+  document.getElementById('fe-results').style.display='block';
+  const fa=p=>feA.map((a,i)=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px"><span style="color:rgba(255,255,255,0.65)">${a.name}</span><span style="font-weight:700">${(p.w[i]*100).toFixed(1)}%</span></div>`).join('');
+  document.getElementById('fe-max-sharpe-alloc').innerHTML=fa(maxS);
+  document.getElementById('fe-min-var-alloc').innerHTML=fa(minV);
+  sm('fe-ms-ret',fmtP(maxS.ret));sm('fe-ms-vol',fmtP(maxS.vol));
+  sm('fe-mv-ret',fmtP(minV.ret));sm('fe-mv-vol',fmtP(minV.vol));
+}
+
+// ── TAB 3: RENDA FIXA ─────────────────────────────────────────
+function updateRFTipo(){
+  const t=document.getElementById('rf-tipo').value;
+  document.getElementById('rf-ipca-field').style.display=t==='ipca'?'block':'none';
+  document.getElementById('rf-cupom-field').style.display=t==='bullet'?'none':'block';
+}
+
+function priceFn(ytm,N,c,freqC,periods){
+  const yp=Math.pow(1+ytm,1/freqC)-1;
+  let p=0;
+  for(let t=1;t<=periods;t++)p+=(c/freqC*N)/Math.pow(1+yp,t);
+  p+=N/Math.pow(1+yp,periods);
+  return p;
+}
+
+function calcRendaFixa(){
+  const tipo=document.getElementById('rf-tipo').value;
+  const N=+document.getElementById('rf-nominal').value;
+  const c=+document.getElementById('rf-cupom').value/100;
+  const freqC=+document.getElementById('rf-freq-cupom').value;
+  const T=+document.getElementById('rf-prazo').value;
+  let ytm=+document.getElementById('rf-ytm').value/100;
+  const shock=+document.getElementById('rf-shock').value/10000;
+  document.querySelectorAll('.shock-v').forEach(el=>el.textContent=document.getElementById('rf-shock').value);
+  if(tipo==='ipca'){const ipca=+document.getElementById('rf-ipca').value/100;ytm=(1+ytm)*(1+ipca)-1;}
+  const periods=Math.round(T*freqC);
+  const coupon=tipo==='bullet'?0:c;
+  const PU=priceFn(ytm,N,coupon,freqC,periods);
+  const yp=Math.pow(1+ytm,1/freqC)-1;
+  let wT=0;
+  for(let t=1;t<=periods;t++){const cf=(t===periods?N:0)+(coupon/freqC*N);const pv=cf/Math.pow(1+yp,t);wT+=pv*(t/freqC);}
+  const durMac=wT/PU;
+  const durMod=durMac/(1+yp);
+  let convSum=0;
+  for(let t=1;t<=periods;t++){const cf=(t===periods?N:0)+(coupon/freqC*N);const pv=cf/Math.pow(1+yp,t);convSum+=pv*(t/freqC)*((t+1)/freqC);}
+  const conv=convSum/(PU*(1+yp)**2);
+  const dv01=durMod*PU*0.0001;
+  const PUup=priceFn(ytm+shock,N,coupon,freqC,periods);
+  const PUdn=priceFn(ytm-shock,N,coupon,freqC,periods);
+  sm('rf-pu','R$ '+PU.toFixed(2));sm('rf-dur-mac',durMac.toFixed(3));sm('rf-dur-mod',durMod.toFixed(3));
+  sm('rf-conv',conv.toFixed(3));sm('rf-dv01','R$ '+dv01.toFixed(4));sm('rf-ytm-out',fmtP(ytm*100));
+  sm('rf-sens-up',fmtP((PUup-PU)/PU*100));sm('rf-sens-dn',fmtP((PUdn-PU)/PU*100));
+  drawRFPY(ytm,N,coupon,freqC,periods,PU);
+  drawRFCF(coupon,N,freqC,periods);
+}
+
+function drawRFPY(ytm,N,c,fC,p,PU){
+  dc('rf-py');const ctx=document.getElementById('chart-rf-py').getContext('2d');
+  const rates=Array.from({length:60},(_,i)=>ytm*100-15+i*0.5);
+  const prices=rates.map(r=>priceFn(r/100,N,c,fC,p));
+  _ch['rf-py']=new Chart(ctx,{type:'line',data:{labels:rates.map(r=>r.toFixed(1)+'%'),datasets:[
+    {data:prices,borderColor:'rgba(59,139,255,0.8)',backgroundColor:'rgba(59,139,255,0.05)',borderWidth:2,pointRadius:0,fill:true,tension:0.4},
+    {data:rates.map(()=>PU),borderColor:'rgba(201,150,60,0.5)',borderDash:[4,4],borderWidth:1,pointRadius:0,fill:false},
+  ]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{...CD.tick,maxTicksLimit:8},grid:CD.grid},y:{ticks:{...CD.tick,callback:v=>'R$'+v.toFixed(0)},grid:CD.grid}}}});}
+
+function drawRFCF(c,N,fC,p){
+  dc('rf-cf');const ctx=document.getElementById('chart-rf-cf').getContext('2d');
+  const data=Array.from({length:p},(_,i)=>(i===p-1?N:0)+(c/fC*N));
+  _ch['rf-cf']=new Chart(ctx,{type:'bar',data:{labels:Array.from({length:p},(_,i)=>((i+1)/fC).toFixed(1)+'a'),datasets:[{data,backgroundColor:data.map((_,i)=>i===p-1?'rgba(201,150,60,0.7)':'rgba(59,139,255,0.5)'),borderWidth:0}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{...CD.tick,maxTicksLimit:14},grid:{display:false}},y:{ticks:{...CD.tick,callback:v=>'R$'+v.toFixed(0)},grid:CD.grid}}}});}
+
+// ── TAB 4: MONTE CARLO ────────────────────────────────────────
+function calcMonteCarlo(){
+  const P0=+document.getElementById('mc-inicial').value;
+  const ap=+document.getElementById('mc-aporte').value;
+  const mu=+document.getElementById('mc-retorno').value/100;
+  const sg=+document.getElementById('mc-vol').value/100;
+  const anos=+document.getElementById('mc-horizonte').value;
+  const NSIM=+document.getElementById('mc-sims').value;
+  const meta=+document.getElementById('mc-meta').value;
+  const ipca=+document.getElementById('mc-ipca').value/100;
+  const steps=anos*12;const dt=1/12;
+  const paths=[];
+  for(let s=0;s<NSIM;s++){
+    let P=P0;const path=[P];
+    for(let t=0;t<steps;t++){P=P*Math.exp((mu-0.5*sg**2)*dt+sg*Math.sqrt(dt)*normalPPF(Math.random()*0.9998+0.0001))+ap;path.push(P);}
+    paths.push(path);
+  }
+  const finals=paths.map(p=>p[p.length-1]);
+  const bands=[5,25,50,75,95].map(p=>Array.from({length:steps+1},(_,t)=>pct(paths.map(path=>path[t]),p)));
+  const probMeta=meta?finals.filter(v=>v>=meta).length/NSIM*100:null;
+  sm('mc-p50',fmtM(pct(finals,50)));sm('mc-p75',fmtM(pct(finals,75)));
+  sm('mc-p25',fmtM(pct(finals,25)));sm('mc-p05',fmtM(pct(finals,5)));
+  sm('mc-prob',probMeta!==null?probMeta.toFixed(1)+'%':'N/A');
+  sm('mc-real',fmtM(pct(finals,50)/Math.pow(1+ipca,anos)));
+  document.getElementById('mc-results').style.display='block';
+  drawMCFan(anos,steps,bands,meta);
+  drawMCDist(finals,meta);
+}
+
+function drawMCFan(anos,steps,bands,meta){
+  dc('mc-fan');const ctx=document.getElementById('chart-mc-fan').getContext('2d');
+  const sk=Math.max(1,Math.floor(steps/40));
+  const lbs=Array.from({length:steps+1},(_,i)=>i%12===0?`${i/12}a`:'').filter((_,i)=>i%sk===0);
+  const bC=['rgba(239,68,68,0.15)','rgba(245,158,11,0.2)','rgba(59,139,255,0.3)','rgba(16,185,129,0.2)','rgba(16,185,129,0.1)'];
+  const lC=['rgba(239,68,68,0.4)','rgba(245,158,11,0.5)','rgba(59,139,255,1)','rgba(16,185,129,0.5)','rgba(16,185,129,0.35)'];
+  const lbs2=['P5','P25','P50','P75','P95'];
+  const ds=bands.map((band,i)=>({label:lbs2[i],data:band.filter((_,j)=>j%sk===0).map(v=>Math.round(v)),borderColor:lC[i],backgroundColor:i===2?'transparent':bC[i],borderWidth:i===2?2.5:1,fill:i===1?'+1':i===3?'+1':false,pointRadius:0,tension:0.3}));
+  if(meta&&!isNaN(meta)){const n=Math.ceil((steps+1)/sk);ds.push({label:'Meta',data:Array(n).fill(meta),borderColor:'rgba(201,150,60,0.6)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false});}
+  _ch['mc-fan']=new Chart(ctx,{type:'line',data:{labels:lbs,datasets:ds},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'rgba(255,255,255,0.55)',font:{size:10,family:'Montserrat'},boxWidth:8,filter:i=>i.text!=='P5'&&i.text!=='P95'}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtM(c.raw)}}},scales:{x:{ticks:{...CD.tick,maxTicksLimit:14},grid:CD.grid},y:{ticks:{...CD.tick,callback:v=>fmtM(v)},grid:CD.grid}}}});}
+
+function drawMCDist(finals,meta){
+  dc('mc-dist');const ctx=document.getElementById('chart-mc-dist').getContext('2d');
+  const mn=Math.min(...finals),mx=Math.max(...finals),bins=30,bw=(mx-mn)/bins;
+  const counts=Array(bins).fill(0);
+  finals.forEach(v=>{const i=Math.min(Math.floor((v-mn)/bw),bins-1);counts[i]++;});
+  _ch['mc-dist']=new Chart(ctx,{type:'bar',data:{labels:counts.map((_,i)=>fmtM(mn+(i+0.5)*bw)),datasets:[{data:counts,backgroundColor:counts.map((_,i)=>mn+(i+0.5)*bw>=meta?'rgba(16,185,129,0.55)':'rgba(59,139,255,0.5)'),borderWidth:0}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{...CD.tick,maxTicksLimit:8,maxRotation:30},grid:{display:false}},y:{ticks:CD.tick,grid:CD.grid}}}});}
+
+// ── INIT ──────────────────────────────────────────────────────
+renderFEA();updateRFTipo();calcRisco();calcRendaFixa();
 </script>
 </body>
 </html>
