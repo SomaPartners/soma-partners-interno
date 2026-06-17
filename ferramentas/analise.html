@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Análise de Investimentos — Ferramentas Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--green:#10b981;--red:#ef4444;--border:rgba(255,255,255,0.09);--muted:rgba(255,255,255,0.45);--surface:rgba(255,255,255,0.04)}
+html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff}
+.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.nav-left{display:flex;align-items:center;gap:12px}
+.logo-soma{font-size:15px;font-weight:300;letter-spacing:.5px}
+.logo-pipe{width:1px;height:18px;background:rgba(255,255,255,0.3)}
+.logo-partners{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.75}
+.nav-sep{width:1px;height:22px;background:rgba(255,255,255,0.1)}
+.nav-title{font-size:12px;font-weight:800}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all .18s}
+.btn svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none}
+.btn-ghost{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7)}.btn-ghost:hover{color:#fff;background:rgba(255,255,255,0.1)}
+
+.main{max-width:1100px;margin:0 auto;padding:32px 28px}
+.page-title{font-size:22px;font-weight:900;letter-spacing:-.3px;margin-bottom:4px}
+.page-sub{font-size:12px;color:var(--muted);margin-bottom:28px}
+
+.tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{padding:9px 18px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* CARDS */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:14px}
+
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:8px 11px;font-size:12px;font-family:'Montserrat',sans-serif;color:#fff;outline:none;transition:border-color .15s;color-scheme:dark}
+.field input:focus,.field select:focus{border-color:rgba(59,139,255,0.5)}
+
+.calc-btn{width:100%;padding:11px;border-radius:8px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;background:var(--blue);color:#fff;transition:filter .15s;margin-top:4px}
+.calc-btn:hover{filter:brightness(1.1)}
+
+/* RESULT CHIPS */
+.result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:16px}
+.result-chip{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.chip-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
+.chip-value{font-size:22px;font-weight:900;line-height:1}
+.chip-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--blue)}
+
+.chart-wrap{position:relative;height:280px;margin-top:16px}
+table.comp{width:100%;border-collapse:collapse;margin-top:12px}
+table.comp th{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+table.comp td{font-size:12px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.04)}
+table.comp tr:last-child td{border-bottom:none}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <span class="logo-soma">Soma</span>
+    <span class="logo-pipe"></span>
+    <span class="logo-partners">Partners</span>
+    <div class="nav-sep"></div>
+    <span class="nav-title">Análise de Investimentos</span>
+  </div>
+  <button class="btn btn-ghost" onclick="window.location.href='../ferramentas.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Ferramentas
+  </button>
+</nav>
+
+<div class="main">
+  <div class="page-title">Análise de Investimentos</div>
+  <div class="page-sub">Calcule retorno real, compare com benchmarks e projete o crescimento do patrimônio.</div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('rentabilidade',this)">Rentabilidade Real</div>
+    <div class="tab" onclick="switchTab('projecao',this)">Projeção de Patrimônio</div>
+    <div class="tab" onclick="switchTab('comparativo',this)">Comparativo de Ativos</div>
+  </div>
+
+  <!-- TAB 1: RENTABILIDADE -->
+  <div class="tab-content active" id="tab-rentabilidade">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Parâmetros</div>
+        <div class="field"><label>Valor Inicial (R$)</label><input id="r-inicial" type="number" value="100000" min="0"/></div>
+        <div class="field"><label>Valor Final (R$)</label><input id="r-final" type="number" value="138000" min="0"/></div>
+        <div class="field"><label>Período (meses)</label><input id="r-meses" type="number" value="24" min="1"/></div>
+        <div class="field"><label>IPCA no período (%)</label><input id="r-ipca" type="number" value="8.5" step="0.01"/></div>
+        <div class="field"><label>CDI no período (%)</label><input id="r-cdi" type="number" value="24.0" step="0.01"/></div>
+        <button class="calc-btn" onclick="calcRentabilidade()">Calcular</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Resultado</div>
+        <div id="r-result"><p style="color:var(--muted);font-size:12px">Preencha os dados e clique em Calcular.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: PROJEÇÃO -->
+  <div class="tab-content" id="tab-projecao">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Parâmetros</div>
+        <div class="field"><label>Patrimônio Inicial (R$)</label><input id="p-inicial" type="number" value="200000" min="0"/></div>
+        <div class="field"><label>Aporte Mensal (R$)</label><input id="p-aporte" type="number" value="5000" min="0"/></div>
+        <div class="field"><label>Rentabilidade Anual (%)</label><input id="p-rent" type="number" value="13.5" step="0.01"/></div>
+        <div class="field"><label>Prazo (anos)</label><input id="p-anos" type="number" value="10" min="1" max="40"/></div>
+        <div class="field"><label>Meta de Patrimônio (R$ — opcional)</label><input id="p-meta" type="number" value="1000000" min="0"/></div>
+        <button class="calc-btn" onclick="calcProjecao()">Projetar</button>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column">
+        <div class="card-title">Resultado</div>
+        <div id="p-kpis"></div>
+        <div class="chart-wrap"><canvas id="p-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: COMPARATIVO -->
+  <div class="tab-content" id="tab-comparativo">
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Configuração</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div class="field"><label>Valor Investido (R$)</label><input id="c-valor" type="number" value="100000" min="0"/></div>
+        <div class="field"><label>Período (meses)</label><input id="c-meses" type="number" value="12" min="1"/></div>
+        <div class="field"><label>CDI anual (%)</label><input id="c-cdi" type="number" value="13.75" step="0.01"/></div>
+        <div class="field"><label>IPCA anual (%)</label><input id="c-ipca" type="number" value="4.5" step="0.01"/></div>
+      </div>
+      <button class="calc-btn" style="max-width:200px" onclick="calcComparativo()">Comparar</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Comparativo de Rentabilidade</div>
+      <div id="c-result"><p style="color:var(--muted);font-size:12px">Preencha os parâmetros e clique em Comparar.</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+if(sessionStorage.getItem('soma_auth')!=='1'||sessionStorage.getItem('soma_admin')!=='1') window.location.href='../login.html';
+
+function switchTab(id, el){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+function fmtBRL(v){return'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtPct(v){return(v>=0?'+':'')+v.toFixed(2)+'%'}
+function cls(v){return v>=0?'pos':'neg'}
+
+// ── RENTABILIDADE ──
+function calcRentabilidade(){
+  const ini=+document.getElementById('r-inicial').value;
+  const fin=+document.getElementById('r-final').value;
+  const meses=+document.getElementById('r-meses').value;
+  const ipca=+document.getElementById('r-ipca').value;
+  const cdi=+document.getElementById('r-cdi').value;
+  if(!ini||!fin||!meses){alert('Preencha todos os campos.');return;}
+  const bruto=((fin-ini)/ini)*100;
+  const real=(((1+bruto/100)/(1+ipca/100))-1)*100;
+  const vsCDI=(bruto/cdi)*100;
+  const lucro=fin-ini;
+  const anos=(meses/12).toFixed(1);
+  const aaAnual=(Math.pow(1+bruto/100,12/meses)-1)*100;
+
+  document.getElementById('r-result').innerHTML=`
+    <div class="result-grid">
+      <div class="result-chip"><div class="chip-label">Retorno Bruto</div><div class="chip-value ${cls(bruto)}">${fmtPct(bruto)}</div><div class="chip-sub">em ${meses} meses (${anos} anos)</div></div>
+      <div class="result-chip"><div class="chip-label">Retorno Real</div><div class="chip-value ${cls(real)}">${fmtPct(real)}</div><div class="chip-sub">descontado IPCA de ${ipca}%</div></div>
+      <div class="result-chip"><div class="chip-label">% do CDI</div><div class="chip-value neu">${vsCDI.toFixed(0)}%</div><div class="chip-sub">CDI no período: ${cdi}%</div></div>
+      <div class="result-chip"><div class="chip-label">Lucro Nominal</div><div class="chip-value ${cls(lucro)}">${fmtBRL(lucro)}</div><div class="chip-sub">sobre ${fmtBRL(ini)}</div></div>
+      <div class="result-chip"><div class="chip-label">Rentab. Anualizada</div><div class="chip-value ${cls(aaAnual)}">${fmtPct(aaAnual)}</div><div class="chip-sub">equivalente ao ano</div></div>
+    </div>`;
+}
+
+// ── PROJEÇÃO ──
+let pChart=null;
+function calcProjecao(){
+  const ini=+document.getElementById('p-inicial').value;
+  const aporte=+document.getElementById('p-aporte').value;
+  const rentAnual=+document.getElementById('p-rent').value;
+  const anos=+document.getElementById('p-anos').value;
+  const meta=+document.getElementById('p-meta').value||0;
+  const rentMensal=Math.pow(1+rentAnual/100,1/12)-1;
+  const meses=anos*12;
+  let saldo=ini, totalAportes=ini, totalJuros=0;
+  const labels=[],vals=[],aportesCum=[],jurosCum=[];
+  for(let m=0;m<=meses;m++){
+    if(m>0){const j=saldo*rentMensal;saldo=saldo+j+aporte;totalAportes+=aporte;totalJuros+=j;}
+    if(m%12===0){labels.push('Ano '+(m/12));vals.push(+saldo.toFixed(2));aportesCum.push(+totalAportes.toFixed(2));jurosCum.push(+totalJuros.toFixed(2));}
+  }
+  const metaAtingida=meta>0&&saldo>=meta;
+  let mesesMeta=-1;
+  if(meta>0&&saldo<meta){/* não atingiu */}else if(meta>0){let s2=ini;for(let m=1;m<=meses*3;m++){const j=s2*rentMensal;s2+=j+aporte;if(s2>=meta){mesesMeta=m;break;}}}
+
+  document.getElementById('p-kpis').innerHTML=`
+    <div class="result-grid" style="grid-template-columns:1fr 1fr">
+      <div class="result-chip"><div class="chip-label">Patrimônio Final</div><div class="chip-value pos" style="font-size:18px">${fmtBRL(saldo)}</div></div>
+      <div class="result-chip"><div class="chip-label">Total Aportado</div><div class="chip-value neu" style="font-size:18px">${fmtBRL(totalAportes)}</div></div>
+      <div class="result-chip"><div class="chip-label">Juros Acumulados</div><div class="chip-value pos" style="font-size:18px">${fmtBRL(totalJuros)}</div></div>
+      <div class="result-chip"><div class="chip-label">Retorno sobre Aportes</div><div class="chip-value pos" style="font-size:18px">${((totalJuros/totalAportes)*100).toFixed(1)}%</div></div>
+    </div>
+    ${meta>0?`<div style="margin-top:10px;padding:10px 14px;border-radius:8px;background:${metaAtingida?'rgba(16,185,129,.1)':'rgba(245,158,11,.1)'};border:1px solid ${metaAtingida?'rgba(16,185,129,.3)':'rgba(245,158,11,.3)'}">
+      <span style="font-size:12px;font-weight:700;color:${metaAtingida?'#6ee7b7':'#fcd34d'}">${metaAtingida?'✓ Meta de '+fmtBRL(meta)+' atingida no prazo!':'⚠ Meta de '+fmtBRL(meta)+' não atingida no prazo. '+((mesesMeta>0)?'Seria atingida em ~'+Math.ceil(mesesMeta/12)+' anos.':'Muito distante.')}</span>
+    </div>`:''}`;
+
+  if(pChart)pChart.destroy();
+  pChart=new Chart(document.getElementById('p-chart'),{type:'line',data:{labels,datasets:[
+    {label:'Patrimônio Total',data:vals,borderColor:'#3b8bff',backgroundColor:'rgba(59,139,255,0.08)',fill:true,tension:.4,pointRadius:3},
+    {label:'Total Aportado',data:aportesCum,borderColor:'rgba(201,150,60,0.7)',borderDash:[4,4],fill:false,tension:.4,pointRadius:0}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'rgba(255,255,255,0.6)',font:{family:'Montserrat',size:10}}}},scales:{x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10},callback:v=>'R$'+v.toLocaleString('pt-BR',{maximumFractionDigits:0})},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+}
+
+// ── COMPARATIVO ──
+function calcComparativo(){
+  const val=+document.getElementById('c-valor').value;
+  const meses=+document.getElementById('c-meses').value;
+  const cdiAnual=+document.getElementById('c-cdi').value;
+  const ipcaAnual=+document.getElementById('c-ipca').value;
+  const cdiM=Math.pow(1+cdiAnual/100,1/12)-1;
+  const anos=meses/12;
+
+  const ativos=[
+    {nome:'CDI (100%)',rent:Math.pow(1+cdiAnual/100,anos)-1,cor:'#3b8bff'},
+    {nome:'Poupança (~70% CDI)',rent:Math.pow(1+cdiAnual*0.7/100,anos)-1,cor:'#94a3b8'},
+    {nome:'CDB 110% CDI',rent:Math.pow(1+cdiAnual*1.1/100,anos)-1,cor:'#10b981'},
+    {nome:'CDB 120% CDI',rent:Math.pow(1+cdiAnual*1.2/100,anos)-1,cor:'#22d3ee'},
+    {nome:'IPCA + 6% a.a.',rent:Math.pow(1+(ipcaAnual+6)/100,anos)-1,cor:'#f59e0b'},
+    {nome:'IPCA + 8% a.a.',rent:Math.pow(1+(ipcaAnual+8)/100,anos)-1,cor:'#c9963c'},
+  ].map(a=>({...a,valor:val*(1+a.rent),lucro:val*a.rent}))
+   .sort((a,b)=>b.rent-a.rent);
+
+  const melhor=ativos[0];
+  document.getElementById('c-result').innerHTML=`
+    <table class="comp">
+      <thead><tr><th>Ativo</th><th>Rentab. no Período</th><th>Valor Final</th><th>Lucro</th><th>vs. CDI</th></tr></thead>
+      <tbody>${ativos.map(a=>`<tr>
+        <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${a.cor};margin-right:6px"></span><strong>${a.nome}</strong></td>
+        <td class="${cls(a.rent*100)}">${fmtPct(a.rent*100)}</td>
+        <td style="font-weight:700">${fmtBRL(a.valor)}</td>
+        <td class="${cls(a.lucro)}">${fmtBRL(a.lucro)}</td>
+        <td style="color:var(--muted)">${a.nome==='CDI (100%)'?'—':fmtPct((a.rent/ativos.find(x=>x.nome==='CDI (100%)').rent-1)*100)+' p.p.'}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+}
+</script>
+</body>
+</html>

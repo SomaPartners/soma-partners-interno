@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Ferramentas — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--border:rgba(255,255,255,0.09);--text:#fff;--muted:rgba(255,255,255,0.45)}
+html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:var(--text)}
+
+/* NAV */
+.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.nav-left{display:flex;align-items:center;gap:14px}
+.nav-logo{display:flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none}
+.logo-soma{font-size:17px;font-weight:300;color:#fff;letter-spacing:.5px}
+.logo-pipe{width:1px;height:20px;background:rgba(255,255,255,0.35)}
+.logo-partners{font-size:10px;font-weight:700;letter-spacing:5px;color:#fff;text-transform:uppercase}
+.nav-sep{width:1px;height:24px;background:rgba(255,255,255,0.1)}
+.nav-title{font-size:13px;font-weight:800;color:#fff;letter-spacing:.3px}
+.btn-back{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);transition:all .18s}
+.btn-back:hover{background:rgba(255,255,255,0.12);color:#fff}
+.btn-back svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.5;fill:none}
+
+/* HERO */
+.hero{padding:48px 48px 32px;border-bottom:1px solid var(--border)}
+.hero-label{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+.hero-title{font-size:28px;font-weight:900;letter-spacing:-.5px;line-height:1.1}
+.hero-title span{color:var(--blue)}
+.hero-sub{font-size:13px;color:var(--muted);margin-top:8px;font-weight:400;max-width:500px;line-height:1.6}
+
+/* GRID */
+.tools-grid{padding:32px 48px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+
+.tool-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:24px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;text-decoration:none;display:block}
+.tool-card:hover{background:rgba(255,255,255,0.06);border-color:rgba(59,139,255,0.35);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.tool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--blue));opacity:.7}
+.tool-card.coming-soon{cursor:default;opacity:.5}
+.tool-card.coming-soon:hover{transform:none;box-shadow:none;border-color:var(--border)}
+
+.tool-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;background:rgba(59,139,255,0.1)}
+.tool-title{font-size:14px;font-weight:800;margin-bottom:6px;color:#fff}
+.tool-desc{font-size:11px;color:var(--muted);line-height:1.6}
+.tool-badge{display:inline-flex;align-items:center;margin-top:12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:4px}
+.badge-live{background:rgba(16,185,129,0.15);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25)}
+.badge-soon{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.1)}
+
+/* SECTION LABEL */
+.section-label{padding:24px 48px 0;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <a class="nav-logo" href="soma-partners.html">
+      <span class="logo-soma">Soma</span>
+      <span class="logo-pipe"></span>
+      <span class="logo-partners">Partners</span>
+    </a>
+    <div class="nav-sep"></div>
+    <span class="nav-title">Ferramentas</span>
+  </div>
+  <button class="btn-back" onclick="window.location.href='soma-partners.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Voltar
+  </button>
+</nav>
+
+<div class="hero">
+  <div class="hero-label">Acesso Administrativo</div>
+  <div class="hero-title">Ferramentas <span>Soma Partners</span></div>
+  <div class="hero-sub">Utilitários internos para análise, criação de conteúdo e operações da equipe.</div>
+</div>
+
+<div class="section-label">Disponíveis</div>
+<div class="tools-grid">
+
+  <a class="tool-card" href="ferramentas/newsletter.html" style="--accent:#3b8bff">
+    <div class="tool-icon" style="background:rgba(59,139,255,0.12)">✉️</div>
+    <div class="tool-title">Criador de Newsletter HTML</div>
+    <div class="tool-desc">Monte o HTML completo de uma newsletter com blocos visuais, logo, botões e identidade Soma. Pronto para colar no disparador de e-mail.</div>
+    <span class="tool-badge badge-live">● Disponível</span>
+  </a>
+
+  <a class="tool-card" href="ferramentas/analise.html" style="--accent:#10b981">
+    <div class="tool-icon" style="background:rgba(16,185,129,0.12)">📊</div>
+    <div class="tool-title">Análise de Investimentos</div>
+    <div class="tool-desc">Calcule retorno real, rentabilidade vs CDI, projeções de patrimônio e compare estratégias de alocação.</div>
+    <span class="tool-badge badge-live">● Disponível</span>
+  </a>
+
+</div>
+
+<div class="section-label" style="margin-top:8px">Em Breve</div>
+<div class="tools-grid">
+
+  <div class="tool-card coming-soon" style="--accent:#c9963c">
+    <div class="tool-icon" style="background:rgba(201,150,60,0.1)">📋</div>
+    <div class="tool-title">Gerador de Proposta</div>
+    <div class="tool-desc">Crie propostas comerciais personalizadas em PDF com dados do cliente, estratégia recomendada e taxa.</div>
+    <span class="tool-badge badge-soon">Em breve</span>
+  </div>
+
+  <div class="tool-card coming-soon" style="--accent:#8b5cf6">
+    <div class="tool-icon" style="background:rgba(139,92,246,0.1)">📈</div>
+    <div class="tool-title">Relatório de Carteira</div>
+    <div class="tool-desc">Gere relatórios mensais de performance por cliente com gráficos, comparativos e comentários.</div>
+    <span class="tool-badge badge-soon">Em breve</span>
+  </div>
+
+  <div class="tool-card coming-soon" style="--accent:#ef4444">
+    <div class="tool-icon" style="background:rgba(239,68,68,0.1)">🎯</div>
+    <div class="tool-title">Simulador de Metas</div>
+    <div class="tool-desc">Defina uma meta financeira e simule os aportes mensais necessários com diferentes cenários de rentabilidade.</div>
+    <span class="tool-badge badge-soon">Em breve</span>
+  </div>
+
+</div>
+
+<script>
+if(sessionStorage.getItem('soma_auth')!=='1'||sessionStorage.getItem('soma_admin')!=='1'){
+  window.location.href='login.html';
+}
+</script>
+</body>
+</html>

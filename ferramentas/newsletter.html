@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Newsletter HTML — Ferramentas Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--border:rgba(255,255,255,0.09);--muted:rgba(255,255,255,0.45);--surface:rgba(255,255,255,0.04)}
+html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff}
+
+.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.nav-left{display:flex;align-items:center;gap:12px}
+.logo-soma{font-size:15px;font-weight:300;letter-spacing:.5px}
+.logo-pipe{width:1px;height:18px;background:rgba(255,255,255,0.3)}
+.logo-partners{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.75}
+.nav-sep{width:1px;height:22px;background:rgba(255,255,255,0.1)}
+.nav-title{font-size:12px;font-weight:800;letter-spacing:.3px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all .18s}
+.btn svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none}
+.btn-ghost{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7)}.btn-ghost:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{filter:brightness(1.1)}
+.btn-gold{background:rgba(201,150,60,0.18);border:1px solid rgba(201,150,60,0.4);color:#c9963c}.btn-gold:hover{background:rgba(201,150,60,0.3)}
+
+.layout{display:grid;grid-template-columns:360px 1fr;height:calc(100vh - 52px);overflow:hidden}
+
+/* PAINEL ESQUERDO */
+.panel{background:rgba(255,255,255,0.025);border-right:1px solid var(--border);overflow-y:auto;padding:20px}
+.panel-section{margin-bottom:20px}
+.panel-title{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field textarea,.field select{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:8px 11px;font-size:12px;font-family:'Montserrat',sans-serif;color:#fff;outline:none;transition:border-color .15s;color-scheme:dark}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:rgba(59,139,255,0.5)}
+.field textarea{resize:vertical;min-height:72px;line-height:1.5}
+
+.blocks-list{display:flex;flex-direction:column;gap:8px}
+.block-item{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;cursor:grab}
+.block-item:active{cursor:grabbing}
+.block-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.85)}
+.block-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.block-remove{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.25);font-size:14px;padding:2px 4px;border-radius:4px;transition:color .15s}
+.block-remove:hover{color:#ef4444}
+
+.add-block-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.add-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:8px;text-align:center;cursor:pointer;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);transition:all .15s}
+.add-btn:hover{background:rgba(59,139,255,0.12);border-color:rgba(59,139,255,0.3);color:#fff}
+.add-btn .icon{font-size:16px;display:block;margin-bottom:3px}
+
+/* PREVIEW */
+.preview-wrap{overflow-y:auto;background:#e8eaed;display:flex;flex-direction:column;align-items:center;padding:24px}
+.preview-header{width:100%;max-width:600px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.preview-label{font-size:11px;font-weight:700;color:#475569}
+.preview-frame{background:#fff;width:100%;max-width:600px;box-shadow:0 4px 24px rgba(0,0,0,0.15);border-radius:4px;overflow:hidden}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:#0f1e2e;border:1px solid rgba(201,150,60,0.2);border-radius:12px;padding:24px;width:90%;max-width:700px;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:14px;font-weight:800;margin-bottom:16px}
+.modal-code{background:#060d14;border:1px solid var(--border);border-radius:8px;padding:16px;font-family:monospace;font-size:11px;color:#a5f3fc;line-height:1.6;white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto;user-select:all}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <span class="logo-soma">Soma</span>
+    <span class="logo-pipe"></span>
+    <span class="logo-partners">Partners</span>
+    <div class="nav-sep"></div>
+    <span class="nav-title">Criador de Newsletter</span>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-ghost" onclick="window.location.href='../ferramentas.html'">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Ferramentas
+    </button>
+    <button class="btn btn-gold" onclick="gerarHTML()">
+      <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Gerar HTML
+    </button>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- PAINEL -->
+  <div class="panel">
+
+    <div class="panel-section">
+      <div class="panel-title">Configurações Gerais</div>
+      <div class="field"><label>Assunto do E-mail</label><input id="cfg-assunto" placeholder="Ex: Cenário de Mercado — Junho 2026"/></div>
+      <div class="field"><label>Título Principal</label><input id="cfg-titulo" placeholder="Ex: Relatório Mensal de Mercado"/></div>
+      <div class="field"><label>Subtítulo / Edição</label><input id="cfg-subtitulo" placeholder="Ex: Edição #12 · Junho 2026"/></div>
+      <div class="field"><label>Cor de Destaque</label>
+        <select id="cfg-cor">
+          <option value="#3b8bff">Azul Elétrico (padrão)</option>
+          <option value="#c9963c">Dourado Soma</option>
+          <option value="#10b981">Verde</option>
+          <option value="#8b5cf6">Roxo</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Blocos de Conteúdo</div>
+      <div class="blocks-list" id="blocks-list"></div>
+      <div style="margin-top:12px">
+        <div class="add-block-grid">
+          <div class="add-btn" onclick="addBlock('texto')"><span class="icon">📝</span>Texto</div>
+          <div class="add-btn" onclick="addBlock('destaque')"><span class="icon">💡</span>Destaque</div>
+          <div class="add-btn" onclick="addBlock('dados')"><span class="icon">📊</span>Dados / KPIs</div>
+          <div class="add-btn" onclick="addBlock('cta')"><span class="icon">🔗</span>Botão CTA</div>
+          <div class="add-btn" onclick="addBlock('separador')"><span class="icon">─</span>Separador</div>
+          <div class="add-btn" onclick="addBlock('citacao')"><span class="icon">💬</span>Citação</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Rodapé</div>
+      <div class="field"><label>Nome do Remetente</label><input id="cfg-remetente" value="Equipe Soma Partners"/></div>
+      <div class="field"><label>Texto do Rodapé</label><textarea id="cfg-rodape">© 2026 Soma Partners · Gestão de Patrimônio
+Para cancelar o recebimento, clique aqui.</textarea></div>
+    </div>
+
+    <button class="btn btn-blue" style="width:100%;justify-content:center;padding:10px" onclick="atualizarPreview()">
+      ↺ Atualizar Preview
+    </button>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-wrap">
+    <div class="preview-header">
+      <span class="preview-label">Preview — 600px (desktop)</span>
+      <button class="btn btn-ghost" style="font-size:10px" onclick="gerarHTML()">📋 Copiar HTML</button>
+    </div>
+    <div class="preview-frame" id="preview-frame"></div>
+  </div>
+</div>
+
+<!-- MODAL HTML -->
+<div class="modal-overlay" id="modal-html">
+  <div class="modal-box">
+    <div class="modal-title">HTML Gerado — Pronto para copiar</div>
+    <div class="modal-code" id="modal-code"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-html').classList.remove('open')">Fechar</button>
+      <button class="btn btn-blue" onclick="copiarHTML()">📋 Copiar HTML completo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+if(sessionStorage.getItem('soma_auth')!=='1'||sessionStorage.getItem('soma_admin')!=='1') window.location.href='../login.html';
+
+let blocks = [
+  {id:uid(),type:'texto',titulo:'Cenário Macroeconômico',texto:'O mercado encerrou o mês com volatilidade moderada. O IBOVESPA recuou 1,2% enquanto o CDI rendeu 0,89% no período. Os olhos do mercado seguem voltados para as decisões do Copom e o comportamento do dólar frente ao real.'},
+  {id:uid(),type:'dados',kpis:[{label:'IBOVESPA',valor:'-1,2%',cor:'#ef4444'},{label:'CDI',valor:'+0,89%',cor:'#10b981'},{label:'USD/BRL',valor:'R$ 5,62',cor:'#f59e0b'},{label:'IPCA 12m',valor:'+4,1%',cor:'#94a3b8'}]},
+  {id:uid(),type:'destaque',texto:'A Selic permanece em 13,75% a.a. O próximo Copom acontece em julho, com mercado precificando manutenção da taxa.'},
+  {id:uid(),type:'cta',texto:'Fale com seu assessor',url:'https://somapartners.co'}
+];
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+function renderBlocksList(){
+  const list=document.getElementById('blocks-list');
+  list.innerHTML=blocks.map((b,i)=>`
+    <div class="block-item" draggable="true" data-id="${b.id}">
+      <div>
+        <div class="block-label">${{texto:'📝 Texto',destaque:'💡 Destaque',dados:'📊 Dados / KPIs',cta:'🔗 Botão CTA',separador:'─ Separador',citacao:'💬 Citação'}[b.type]||b.type}</div>
+        <div class="block-sub">${b.titulo||b.texto?.slice(0,40)||''}</div>
+      </div>
+      <button class="block-remove" onclick="removeBlock('${b.id}')">×</button>
+    </div>`).join('');
+}
+
+function addBlock(type){
+  const defaults={
+    texto:{titulo:'Novo Bloco de Texto',texto:'Escreva o conteúdo aqui...'},
+    destaque:{texto:'Fato ou insight de destaque aqui.'},
+    dados:{kpis:[{label:'Métrica',valor:'0%',cor:'#3b8bff'},{label:'Métrica',valor:'0%',cor:'#10b981'}]},
+    cta:{texto:'Saiba mais',url:'https://somapartners.co'},
+    separador:{},
+    citacao:{texto:'Citação ou frase de impacto aqui.',autor:'Fonte'}
+  };
+  blocks.push({id:uid(),type,...defaults[type]});
+  renderBlocksList();
+  atualizarPreview();
+}
+
+function removeBlock(id){
+  blocks=blocks.filter(b=>b.id!==id);
+  renderBlocksList();
+  atualizarPreview();
+}
+
+function buildHTML(){
+  const titulo=document.getElementById('cfg-titulo').value||'Newsletter Soma Partners';
+  const subtitulo=document.getElementById('cfg-subtitulo').value||'';
+  const cor=document.getElementById('cfg-cor').value||'#3b8bff';
+  const remetente=document.getElementById('cfg-remetente').value||'Equipe Soma Partners';
+  const rodape=document.getElementById('cfg-rodape').value||'';
+
+  function bloco(b){
+    if(b.type==='texto') return `
+      <tr><td style="padding:24px 40px 8px">
+        ${b.titulo?`<p style="margin:0 0 10px;font-size:13px;font-weight:800;color:#0b1e30;text-transform:uppercase;letter-spacing:1px">${b.titulo}</p>`:''}
+        <p style="margin:0;font-size:14px;color:#334155;line-height:1.75">${(b.texto||'').replace(/\n/g,'<br>')}</p>
+      </td></tr>`;
+    if(b.type==='destaque') return `
+      <tr><td style="padding:8px 32px">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="background:#f0f6ff;border-left:3px solid ${cor};border-radius:4px;padding:14px 18px">
+          <p style="margin:0;font-size:13px;color:#1e3a5f;line-height:1.65;font-weight:600">${b.texto||''}</p>
+        </td></tr></table>
+      </td></tr>`;
+    if(b.type==='dados'){
+      const cols=(b.kpis||[]).map(k=>`<td style="text-align:center;padding:12px 8px">
+        <p style="margin:0 0 4px;font-size:22px;font-weight:900;color:${k.cor||cor}">${k.valor}</p>
+        <p style="margin:0;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">${k.label}</p>
+      </td>`).join('<td style="width:1px;background:#e2e8f0"></td>');
+      return `<tr><td style="padding:8px 32px">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+          <tr>${cols}</tr>
+        </table></td></tr>`;
+    }
+    if(b.type==='cta') return `
+      <tr><td style="padding:16px 40px;text-align:center">
+        <a href="${b.url||'#'}" style="display:inline-block;background:${cor};color:#fff;text-decoration:none;font-size:13px;font-weight:800;padding:12px 32px;border-radius:8px;letter-spacing:.3px">${b.texto||'Saiba mais'}</a>
+      </td></tr>`;
+    if(b.type==='separador') return `
+      <tr><td style="padding:8px 40px"><hr style="border:none;border-top:1px solid #e2e8f0"/></td></tr>`;
+    if(b.type==='citacao') return `
+      <tr><td style="padding:8px 40px">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:16px 20px;text-align:center">
+          <p style="margin:0 0 8px;font-size:15px;font-style:italic;color:#334155;line-height:1.6">"${b.texto||''}"</p>
+          ${b.autor?`<p style="margin:0;font-size:11px;color:#94a3b8;font-weight:700">— ${b.autor}</p>`:''}
+        </td></tr></table>
+      </td></tr>`;
+    return '';
+  }
+
+  return`<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>${titulo}</title></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Helvetica Neue',Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:24px 0">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08)">
+
+  <!-- HEADER -->
+  <tr><td style="background:#0b1e30;padding:28px 40px">
+    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td><span style="font-size:20px;font-weight:300;color:#fff;letter-spacing:.5px">Soma</span> <span style="display:inline-block;width:1px;height:18px;background:rgba(255,255,255,0.35);vertical-align:middle;margin:0 8px"></span> <span style="font-size:9px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.7);text-transform:uppercase">Partners</span></td>
+      ${subtitulo?`<td style="text-align:right"><span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500">${subtitulo}</span></td>`:''}
+    </tr></table>
+    <p style="margin:16px 0 0;font-size:22px;font-weight:900;color:#ffffff;letter-spacing:-.3px;line-height:1.2">${titulo}</p>
+    <div style="margin-top:12px;height:2px;background:linear-gradient(90deg,${cor},rgba(255,255,255,0.1))"></div>
+  </td></tr>
+
+  <!-- BLOCOS -->
+  ${blocks.map(bloco).join('\n  ')}
+
+  <!-- SPACER -->
+  <tr><td style="height:16px"></td></tr>
+
+  <!-- FOOTER -->
+  <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:20px 40px">
+    <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#475569">${remetente}</p>
+    <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.6">${rodape.replace(/\n/g,'<br>')}</p>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body></html>`;
+}
+
+function atualizarPreview(){
+  document.getElementById('preview-frame').innerHTML=buildHTML();
+}
+
+function gerarHTML(){
+  const html=buildHTML();
+  document.getElementById('modal-code').textContent=html;
+  document.getElementById('modal-html').classList.add('open');
+}
+
+function copiarHTML(){
+  const html=buildHTML();
+  navigator.clipboard.writeText(html).then(()=>{
+    const btn=event.target;btn.textContent='✓ Copiado!';setTimeout(()=>btn.textContent='📋 Copiar HTML completo',2000);
+  });
+}
+
+// Init
+renderBlocksList();
+atualizarPreview();
+</script>
+</body>
+</html>
