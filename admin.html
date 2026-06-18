@@ -2367,12 +2367,13 @@ function renderAvaliacoes(){
 
   const n360cor=n=>n>=4?'#6ee7b7':n>=3?'#fcd34d':'#fca5a5';
 
-  // Losango individual em cada card
+  // Radar por critério em cada card
   cardsDiv.innerHTML=comDados.map(({f,mediaGeral,fortes,melhorar,fracos,comentarios,totalAvaliadores,totalRodadas})=>{
-    const scores360=calcScoresAreas360((() => {
-      const resps=respostas360.filter(r=>r.avaliado_id===f.id);
-      return CRITERIOS_360.map(c=>{const ns=resps.flatMap(r=>(r.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!=null));return{...c,avg:ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null};}).filter(c=>c.avg!==null);
-    })());
+    const respsF=respostas360.filter(r=>r.avaliado_id===f.id);
+    const criteriosData=CRITERIOS_360.map(c=>{
+      const ns=respsF.flatMap(r=>(r.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!=null));
+      return{key:c.id,label:c.label,value:ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:0};
+    });
     const cor=n360cor(mediaGeral);
 
     const pill=(label,cor,bg)=>`<span style="background:${bg};color:${cor};font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap">${label}</span>`;
@@ -2405,7 +2406,7 @@ function renderAvaliacoes(){
           ${badgesHtml}
         </div>
         <div style="display:flex;align-items:center;gap:16px;flex-shrink:0;margin-left:16px">
-          ${svgDiamond(scores360,{size:110})}
+          ${svgRadarN(criteriosData,{size:110})}
           <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
             <div style="text-align:center">
               <div style="font-size:40px;font-weight:800;color:${cor};line-height:1">${mediaGeral.toFixed(1)}</div>
@@ -2509,9 +2510,9 @@ function gerarRelatorio360(funcId){
 
   const comsHtml=comentarios.length?comentarios.map(c=>`<div style="background:rgba(255,255,255,0.04);border-left:3px solid rgba(201,150,60,0.4);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px"><div style="font-size:12px;color:#ccc;line-height:1.6;font-style:italic">"${c.texto}"</div><div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px">— ${c.avaliador}</div></div>`).join(''):`<div style="font-size:12px;color:rgba(255,255,255,0.25)">Nenhum comentário registrado.</div>`;
 
-  // Losango de área
-  const areaScores=calcScoresAreas360(medias);
-  const diamondSvg=svgDiamond(areaScores,{size:180});
+  // Radar por critério no relatório
+  const critDataRel=CRITERIOS_360.map(c=>{const m=medias.find(x=>x.id===c.id);return{key:c.id,label:c.label,value:m?.avg||0};});
+  const diamondSvg=svgRadarN(critDataRel,{size:180});
 
   // Perguntas gerais
   const pgData=PERGUNTAS_PADRAO_360.map(p=>{
