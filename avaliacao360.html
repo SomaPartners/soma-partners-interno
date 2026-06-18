@@ -189,8 +189,16 @@ async function init(){
 
 function getAvaliados(){
   const esp=_rodada.data?.avaliado_especifico||null;
+  const avalMap=_rodada.data?.avaliadores_map||null;
   const desig=_rodada.data?.avaliados_ids||null;
   if(esp) return _equipe.filter(f=>f.id===esp);
+  if(avalMap){
+    // Mapa granular: mostrar só os avaliados onde este avaliador está na lista
+    const minhosAvaliados=Object.entries(avalMap)
+      .filter(([avdId,avrs])=>avrs.includes(_avaliadorId)&&avdId!==_avaliadorId)
+      .map(([avdId])=>avdId);
+    return _equipe.filter(f=>minhosAvaliados.includes(f.id));
+  }
   if(desig) return _equipe.filter(f=>desig.includes(f.id)&&f.id!==_avaliadorId);
   return _equipe.filter(f=>f.id!==_avaliadorId);
 }
@@ -310,18 +318,25 @@ async function enviarAvaliacao(){
   const{error}=await _sb.from('admin_aval360_respostas').insert(inserts);
   if(error){alert('Erro ao enviar: '+error.message);btn.disabled=false;btn.textContent='✓ Enviar Avaliações';return;}
 
-  // Auto-fechar se todos os avaliadores designados responderam (para todos os avaliados)
+  // Auto-fechar se todos os avaliadores designados responderam
   const avalIds=_rodada.data?.avaliadores_ids||null;
+  const avalMap=_rodada.data?.avaliadores_map||null;
   const avaliadosDesig=_rodada.data?.avaliados_ids||null;
-  if(avalIds?.length){
+  if(avalIds?.length||avalMap){
     const{data:todasResps}=await _sb.from('admin_aval360_respostas').select('data').eq('rodada_id',_rodada.id);
     const respsArr=todasResps||[];
     let todosOk;
-    if(avaliadosDesig?.length){
-      // Modo equipe: cada avaliador deve ter respondido para cada avaliado
+    if(avalMap&&avaliadosDesig){
+      // Mapa granular: para cada avaliado, verificar se todos os seus avaliadores responderam
+      todosOk=avaliadosDesig.every(avdId=>{
+        const avrsParaEste=avalMap[avdId]||[];
+        return avrsParaEste.every(avId=>respsArr.some(r=>r.data?.avaliador_id===avId&&r.data?.avaliado_id===avdId));
+      });
+    } else if(avaliadosDesig?.length&&avalIds?.length){
+      // Equipe sem mapa: cada avaliador deve ter respondido para cada avaliado
       todosOk=avalIds.every(avId=>avaliadosDesig.every(avdId=>respsArr.some(r=>r.data?.avaliador_id===avId&&r.data?.avaliado_id===avdId)));
-    } else {
-      // Modo pessoa: basta cada avaliador ter respondido ao menos 1
+    } else if(avalIds?.length){
+      // Pessoa específica: basta cada avaliador ter respondido ao menos 1
       const responderam=new Set(respsArr.map(r=>r.data?.avaliador_id).filter(Boolean));
       todosOk=avalIds.every(id=>responderam.has(id));
     }
