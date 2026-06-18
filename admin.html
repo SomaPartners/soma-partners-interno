@@ -4487,7 +4487,7 @@ function calcScoresAreas360(medias){
 function svgRadarN(data,{size=220,dark=true}={}){
   const n=data.length;
   // Padding generoso para os rótulos externos
-  const pad=size<130?58:62;
+  const pad=size<130?68:88;
   const total=size+pad*2,cx=total/2,cy=total/2,R=size/2*0.76;
   const d=dark;
   // Eixos distribuídos uniformemente começando do topo (−90°)
@@ -4533,7 +4533,7 @@ function svgRadarN(data,{size=220,dark=true}={}){
     return`<text font-family="Montserrat,sans-serif" fill="${tc}">${lblLines}</text>
            <text x="${lx}" y="${ly+dy2}" text-anchor="${anch}" font-size="${fsv}" font-weight="900" font-family="Montserrat,sans-serif" fill="${nc}">${a.value!=null&&a.value>0?a.value.toFixed(1):'—'}</text>`;
   }).join('');
-  return`<svg viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" xmlns="http://www.w3.org/2000/svg">
+  return`<svg viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
     ${grid}${axLines}${scalePts}<polygon points="${dpts}" fill="${fc}" stroke="${sc}" stroke-width="2"/>${dots}${lbls}
   </svg>`;
 }
@@ -5070,7 +5070,7 @@ function gerarRelatorioEquipe360(rodadaId){
   // SVG pentágono por CRITÉRIOS (fundo branco) — usado nos cards individuais
   function svgPentPrint(medias,size=160){
     const data=CRITERIOS_360.map(c=>{const m=medias.find(x=>x.id===c.id);return{key:c.id,label:c.label,value:m?.avg||0};});
-    const n=data.length,pad=size<130?52:58,total=size+pad*2,cx=total/2,cy=total/2,R=size/2*0.76;
+    const n=data.length,pad=size<130?65:82,total=size+pad*2,cx=total/2,cy=total/2,R=size/2*0.76;
     const axes=data.map((item,i)=>{const ang=(2*Math.PI*i/n)-(Math.PI/2);return{...item,ax:Math.cos(ang),ay:Math.sin(ang)};});
     const grid=[1,.8,.6,.4,.2].map(f=>{const pts=axes.map(a=>`${cx+a.ax*R*f},${cy+a.ay*R*f}`).join(' ');return`<polygon points="${pts}" fill="none" stroke="rgba(0,0,0,0.07)" stroke-width="0.7"/>`;}).join('');
     const axLines=axes.map(a=>`<line x1="${cx}" y1="${cy}" x2="${cx+a.ax*R}" y2="${cy+a.ay*R}" stroke="rgba(0,0,0,0.1)" stroke-width="0.7"/>`).join('');
@@ -5087,7 +5087,7 @@ function gerarRelatorioEquipe360(rodadaId){
       const dy2=a.ay>0.3?(13+linhas.length*dyStep):a.ay<-0.3?5:(3+linhas.length*dyStep+2);
       return`<text font-family="Montserrat,sans-serif" fill="#555">${lblLines}</text><text x="${lx}" y="${ly+dy2}" text-anchor="${anch}" font-size="${fsv}" font-weight="900" font-family="Montserrat,sans-serif" fill="rgba(160,100,20,1)">${a.value>0?a.value.toFixed(1):'—'}</text>`;
     }).join('');
-    return`<svg viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" xmlns="http://www.w3.org/2000/svg">${grid}${axLines}<polygon points="${dpts}" fill="rgba(201,150,60,0.22)" stroke="rgba(180,120,30,0.9)" stroke-width="1.5"/>${dots}${lbls}</svg>`;
+    return`<svg viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">${grid}${axLines}<polygon points="${dpts}" fill="rgba(201,150,60,0.22)" stroke="rgba(180,120,30,0.9)" stroke-width="1.5"/>${dots}${lbls}</svg>`;
   }
 
   const pessoasHtml=membros.map(({f,mediaGeral,scores,fortes,fracos,areaLabel,totalAv,medias,pg})=>{
