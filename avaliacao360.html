@@ -171,7 +171,19 @@ async function init(){
   _rodada=rodada;
   _equipe=(resp||[]).map(r=>({id:r.id,nome:r.data?.nome||'',cargo:r.data?.cargo||'',status:r.data?.status||'ativo'})).filter(r=>r.status==='ativo'&&r.nome).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
   const sel=document.getElementById('sel-avaliador');
-  _equipe.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nome;sel.appendChild(o);});
+  // Se rodada tem avaliadores designados, filtrar dropdown apenas para eles
+  const avalIds=_rodada.data?.avaliadores_ids||null;
+  const listaAvaliadores=avalIds?_equipe.filter(f=>avalIds.includes(f.id)):_equipe;
+  listaAvaliadores.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nome;sel.appendChild(o);});
+  if(avalIds){
+    // Hint de quantos já responderam
+    const{data:resps}=await _sb.from('admin_aval360_respostas').select('data').eq('rodada_id',_rodada.id);
+    const jaresp=new Set((resps||[]).map(r=>r.data?.avaliador_id).filter(Boolean));
+    const faltam=avalIds.filter(id=>!jaresp.has(id));
+    if(faltam.length===0){showStep('step-erro');return;} // todos já responderam, rodada deveria estar encerrada
+    document.querySelector('#step-quem .select-box')?.insertAdjacentHTML('beforeend',
+      `<div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;text-align:center">${jaresp.size} de ${avalIds.length} avaliadores já responderam</div>`);
+  }
   showStep('step-quem');
 }
 
@@ -290,6 +302,19 @@ async function enviarAvaliacao(){
   }));
   const{error}=await _sb.from('admin_aval360_respostas').insert(inserts);
   if(error){alert('Erro ao enviar: '+error.message);btn.disabled=false;btn.textContent='✓ Enviar Avaliações';return;}
+
+  // Auto-fechar se todos os avaliadores designados responderam
+  const avalIds=_rodada.data?.avaliadores_ids||null;
+  if(avalIds?.length){
+    const{data:todasResps}=await _sb.from('admin_aval360_respostas').select('data').eq('rodada_id',_rodada.id);
+    const responderam=new Set((todasResps||[]).map(r=>r.data?.avaliador_id).filter(Boolean));
+    const todosOk=avalIds.every(id=>responderam.has(id));
+    if(todosOk){
+      await _sb.from('admin_aval360_rodadas').update({data:{..._rodada.data,status:'encerrada'}}).eq('id',_rodada.id);
+      const msgEl=document.querySelector('#step-sucesso p, #step-sucesso div');
+      if(msgEl) msgEl.innerHTML='🎉 Você foi o último avaliador! A rodada foi encerrada automaticamente.';
+    }
+  }
   showStep('step-sucesso');
 }
 
