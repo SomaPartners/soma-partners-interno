@@ -4514,24 +4514,25 @@ function svgRadarN(data,{size=220,dark=true}={}){
   const fc=d?'rgba(201,150,60,0.18)':'rgba(201,150,60,0.28)';
   const sc=d?'rgba(201,150,60,0.9)':'rgba(180,120,30,1)';
   const dots=axes.map(a=>{const s=Math.min(5,Math.max(0,a.value||0));return`<circle cx="${cx+a.ax*R*(s/5)}" cy="${cy+a.ay*R*(s/5)}" r="${size<130?2.8:4}" fill="${sc}" stroke="${d?'#0b1e30':'#fff'}" stroke-width="1"/>`;}).join('');
-  // Rótulos externos — nomes completos, duas linhas para "Conhecimento Técnico"
+  // Rótulos externos: coordenadas absolutas ancoradas no vértice de cada eixo
   const fs=size<130?8:9.5;
   const fsv=size<130?10.5:13;
+  const LOFF=size<130?16:24; // distância do anel externo ao ponto âncora do label
   const lbls=axes.map(a=>{
-    const lx=cx+a.ax*(R+pad*0.72),ly=cy+a.ay*(R+pad*0.72);
-    const anch=a.ax>0.35?'start':a.ax<-0.35?'end':'middle';
+    const lx=cx+a.ax*(R+LOFF),ly=cy+a.ay*(R+LOFF);
+    const anch=a.ax>0.25?'start':a.ax<-0.25?'end':'middle';
     const tc=d?'rgba(255,255,255,0.55)':'#555';
     const nc=d?'rgba(201,150,60,0.95)':'rgba(160,100,20,1)';
-    // Nome completo — "Conhecimento Técnico" quebra em duas linhas
     const NOMES={comunicacao:'Comunic.',comercial:'Comercial',coletividade:'Coletiv.',conhecimento_tec:'C. Técnico',alinhamento:'Alinhm.'};
-    const nome=(NOMES[a.key]||a.label);
-    const linhas=nome.split('\n');
-    const dy1=a.ay>0.3?13:a.ay<-0.3?(linhas.length>1?-17:-6):3;
-    const dyStep=fs+2.5;
-    const lblLines=linhas.map((ln,li)=>`<tspan x="${lx}" dy="${li===0?dy1:dyStep}" text-anchor="${anch}" font-size="${fs}" font-weight="800" letter-spacing="0.3">${ln.toUpperCase()}</tspan>`).join('');
-    const dy2=a.ay>0.3?(13+linhas.length*dyStep):a.ay<-0.3?5:(3+linhas.length*dyStep+2);
-    return`<text font-family="Montserrat,sans-serif" fill="${tc}">${lblLines}</text>
-           <text x="${lx}" y="${ly+dy2}" text-anchor="${anch}" font-size="${fsv}" font-weight="900" font-family="Montserrat,sans-serif" fill="${nc}">${a.value!=null&&a.value>0?a.value.toFixed(1):'—'}</text>`;
+    const nome=(NOMES[a.key]||a.label).toUpperCase();
+    const score=a.value!=null&&a.value>0?a.value.toFixed(1):'—';
+    // Eixos apontando pra cima (ay<0): bloco ACIMA do ponto âncora — score acima, nome logo abaixo
+    // Eixos apontando pra baixo (ay>0): bloco ABAIXO — score primeiro, nome abaixo
+    const isUp=a.ay<-0.1;
+    const scoreY=isUp?ly-fs-4:ly+fsv;
+    const nameY=isUp?ly-2:ly+fsv+fs+3;
+    return`<text x="${lx}" y="${nameY}" text-anchor="${anch}" font-size="${fs}" font-weight="800" letter-spacing="0.3" font-family="Montserrat,sans-serif" fill="${tc}">${nome}</text>
+      <text x="${lx}" y="${scoreY}" text-anchor="${anch}" font-size="${fsv}" font-weight="900" font-family="Montserrat,sans-serif" fill="${nc}">${score}</text>`;
   }).join('');
   return`<svg viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
     ${grid}${axLines}${scalePts}<polygon points="${dpts}" fill="${fc}" stroke="${sc}" stroke-width="2"/>${dots}${lbls}
@@ -5077,15 +5078,18 @@ function gerarRelatorioEquipe360(rodadaId){
     const dpts=axes.map(a=>{const s=Math.min(5,Math.max(0,a.value||0));return`${cx+a.ax*R*(s/5)},${cy+a.ay*R*(s/5)}`;}).join(' ');
     const dots=axes.map(a=>{const s=Math.min(5,Math.max(0,a.value||0));return`<circle cx="${cx+a.ax*R*(s/5)}" cy="${cy+a.ay*R*(s/5)}" r="${size<130?2.5:3}" fill="rgba(180,120,30,1)" stroke="#fff" stroke-width="0.8"/>`;}).join('');
     const fs=size<130?7.5:9,fsv=size<130?9.5:11;
+    const LOFF=size<130?14:20;
     const NOMES={comunicacao:'Comunic.',comercial:'Comercial',coletividade:'Coletiv.',conhecimento_tec:'C. Técnico',alinhamento:'Alinhm.'};
     const lbls=axes.map(a=>{
-      const lx=cx+a.ax*(R+pad*0.72),ly=cy+a.ay*(R+pad*0.72);
-      const anch=a.ax>0.35?'start':a.ax<-0.35?'end':'middle';
-      const nome=NOMES[a.key]||a.label,linhas=nome.split('\n');
-      const dy1=a.ay>0.3?13:a.ay<-0.3?(linhas.length>1?-15:-5):3,dyStep=fs+2.5;
-      const lblLines=linhas.map((ln,li)=>`<tspan x="${lx}" dy="${li===0?dy1:dyStep}" text-anchor="${anch}" font-size="${fs}" font-weight="800" letter-spacing="0.3">${ln.toUpperCase()}</tspan>`).join('');
-      const dy2=a.ay>0.3?(13+linhas.length*dyStep):a.ay<-0.3?5:(3+linhas.length*dyStep+2);
-      return`<text font-family="Montserrat,sans-serif" fill="#555">${lblLines}</text><text x="${lx}" y="${ly+dy2}" text-anchor="${anch}" font-size="${fsv}" font-weight="900" font-family="Montserrat,sans-serif" fill="rgba(160,100,20,1)">${a.value>0?a.value.toFixed(1):'—'}</text>`;
+      const lx=cx+a.ax*(R+LOFF),ly=cy+a.ay*(R+LOFF);
+      const anch=a.ax>0.25?'start':a.ax<-0.25?'end':'middle';
+      const nome=(NOMES[a.key]||a.label).toUpperCase();
+      const score=a.value>0?a.value.toFixed(1):'—';
+      const isUp=a.ay<-0.1;
+      const scoreY=isUp?ly-fs-3:ly+fsv;
+      const nameY=isUp?ly-2:ly+fsv+fs+2;
+      return`<text x="${lx}" y="${nameY}" text-anchor="${anch}" font-size="${fs}" font-weight="800" letter-spacing="0.3" font-family="Montserrat,sans-serif" fill="#555">${nome}</text>
+        <text x="${lx}" y="${scoreY}" text-anchor="${anch}" font-size="${fsv}" font-weight="900" font-family="Montserrat,sans-serif" fill="rgba(160,100,20,1)">${score}</text>`;
     }).join('');
     return`<svg viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">${grid}${axLines}<polygon points="${dpts}" fill="rgba(201,150,60,0.22)" stroke="rgba(180,120,30,0.9)" stroke-width="1.5"/>${dots}${lbls}</svg>`;
   }
