@@ -6,6 +6,7 @@
 <title>Avaliação 360° — Soma Partners</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--navy:#0b1e30;--navy2:#0f2438;--gold:#c9963c;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.45);--muted2:rgba(255,255,255,0.25)}
@@ -293,66 +294,66 @@ async function enviarAvaliacao(){
 }
 
 async function mostrarResultado(funcId){
-  // Buscar dados da pessoa e respostas
-  const[{data:funcData},{data:respostasData}]=await Promise.all([
+  const[{data:funcData},{data:respostasData},{data:configData}]=await Promise.all([
     _sb.from('wealth_responsaveis').select('id,data').eq('id',funcId).single(),
     _sb.from('admin_aval360_respostas').select('*').eq('data->>avaliado_id',funcId),
+    _sb.from('admin_aval360_config').select('data').order('created_at',{ascending:false}).limit(1).maybeSingle(),
   ]);
 
   if(!funcData){
     document.getElementById('resultado-conteudo').innerHTML='<div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.3)">Resultado não encontrado.</div>';
-    showStep('step-resultado');
-    return;
+    showStep('step-resultado');return;
   }
 
   const f={id:funcData.id,...(funcData.data||{})};
   const resps=(respostasData||[]).map(r=>({id:r.id,rodada_id:r.rodada_id,created_at:r.created_at,...(r.data||{})}));
 
+  // Médias por critério
   const medias=CRITERIOS.map(c=>{
-    const ns=resps.flatMap(r=>(r.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!==null&&x!==undefined));
-    return{...c,avg:ns.length?(ns.reduce((a,b)=>a+b,0)/ns.length):null};
-  }).filter(c=>c.avg!==null);
+    const ns=resps.flatMap(r=>(r.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!=null));
+    return{...c,avg:ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null,n:ns.length};
+  });
 
-  const mediaGeral=medias.length?medias.reduce((a,b)=>a+b.avg,0)/medias.length:0;
+  const mediasValidas=medias.filter(c=>c.avg!==null);
+  const mediaGeral=mediasValidas.length?mediasValidas.reduce((a,b)=>a+b.avg,0)/mediasValidas.length:0;
   const cor=mediaGeral>=4?'#6ee7b7':mediaGeral>=3?'#fcd34d':'#fca5a5';
-  const ordenado=[...medias].sort((a,b)=>b.avg-a.avg);
-  const fortes=ordenado.filter(c=>c.avg>=4);
-  const melhorar=ordenado.filter(c=>c.avg>=3&&c.avg<4);
-  const fracos=ordenado.filter(c=>c.avg<3);
   const totalAv=[...new Set(resps.map(r=>r.avaliador_id))].length;
   const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
 
-  const grupoRows=GRUPOS.map(g=>{
-    const cg=medias.filter(c=>c.grupo===g);
-    if(!cg.length) return '';
-    const mgAvg=cg.reduce((a,b)=>a+b.avg,0)/cg.length;
-    const mgCor=mgAvg>=4?'#6ee7b7':mgAvg>=3?'#fcd34d':'#fca5a5';
-    return`<div style="margin-bottom:20px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35)">${g}</div>
-        <div style="font-size:13px;font-weight:800;color:${mgCor}">${mgAvg.toFixed(1)}</div>
-      </div>
-      ${cg.sort((a,b)=>b.avg-a.avg).map(c=>{
-        const cc=c.avg>=4?'#6ee7b7':c.avg>=3?'#fcd34d':'#fca5a5';
-        const pct=Math.round((c.avg/5)*100);
-        return`<div style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
-          <div style="flex:1;font-size:12px;color:rgba(255,255,255,0.7)">${c.label}</div>
-          <div style="width:120px;background:rgba(255,255,255,0.06);border-radius:4px;height:5px"><div style="background:${cc};height:5px;border-radius:4px;width:${pct}%"></div></div>
-          <div style="font-size:13px;font-weight:800;color:${cc};min-width:28px;text-align:right">${c.avg.toFixed(1)}</div>
-        </div>`;
-      }).join('')}
-    </div>`;
-  }).join('');
+  // Pesos das áreas (do config ou defaults)
+  const rawPesos=(configData?.data?.pesos)||{};
+  const normalize=obj=>{const vals=Object.values(obj).filter(v=>typeof v==='number');const mx=Math.max(...vals);if(mx>1){const r={};Object.keys(obj).forEach(k=>r[k]=Math.round(obj[k]/mx*100)/100);return r;}return obj;};
+  const PESOS_DEFAULT={
+    juridico:     {comunicacao:0.70,comercial:0.30,coletividade:0.50,conhecimento_tec:1.00,alinhamento:0.80},
+    investimentos:{comunicacao:0.80,comercial:0.70,coletividade:0.50,conhecimento_tec:1.00,alinhamento:0.80},
+    servicos:     {comunicacao:1.00,comercial:0.60,coletividade:0.70,conhecimento_tec:0.70,alinhamento:0.80},
+    comercial:    {comunicacao:0.90,comercial:1.00,coletividade:0.60,conhecimento_tec:0.70,alinhamento:0.80},
+  };
+  const AREA_META={
+    juridico:{label:'Jurídico',cor:'#818cf8',bg:'rgba(129,140,248,0.12)'},
+    investimentos:{label:'Investimentos',cor:'#34d399',bg:'rgba(52,211,153,0.12)'},
+    servicos:{label:'Serviços',cor:'#60a5fa',bg:'rgba(96,165,250,0.12)'},
+    comercial:{label:'Comercial',cor:'#fb923c',bg:'rgba(251,146,60,0.12)'},
+  };
 
-  const col=(label,items,c)=>items.length?`<div style="flex:1;min-width:160px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px">
-    <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${c};margin-bottom:10px">${label}</div>
-    ${items.map(x=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="font-size:11px;color:#bbb">${x.label}</span><span style="font-size:12px;font-weight:800;color:${c}">${x.avg.toFixed(1)}</span></div>`).join('')}
-  </div>`:'';
+  // Score ponderado por área
+  const areaScores=Object.entries(AREA_META).map(([aId,aMeta])=>{
+    const pw=normalize(rawPesos[aId]||PESOS_DEFAULT[aId]);
+    let wSum=0,wTotal=0;
+    mediasValidas.forEach(c=>{const w=pw[c.id]??0.5;wSum+=c.avg*w;wTotal+=5*w;});
+    const score=wTotal>0?Math.round(wSum/wTotal*100):0;
+    // Score bruto (0–5) ponderado
+    const scoreBruto=wTotal>0?(wSum/wTotal)*5:0;
+    return{...aMeta,id:aId,score,scoreBruto,pw};
+  });
 
-  const comsHtml=resps.filter(r=>r.comentario&&r.comentario.trim()).map(r=>`<div style="background:rgba(255,255,255,0.03);border-left:3px solid rgba(201,150,60,0.35);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px"><div style="font-size:12px;color:#ccc;line-height:1.6;font-style:italic">"${r.comentario}"</div></div>`).join('');
+  // Comentários
+  const comsHtml=resps.filter(r=>r.comentario?.trim()).map(r=>`<div style="background:rgba(255,255,255,0.03);border-left:3px solid rgba(201,150,60,0.35);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px"><div style="font-size:12px;color:#ccc;line-height:1.6;font-style:italic">"${r.comentario}"</div></div>`).join('');
 
+  // Renderizar HTML base
   document.getElementById('resultado-conteudo').innerHTML=`
-    <div style="background:linear-gradient(135deg,rgba(201,150,60,0.15),rgba(201,150,60,0.04));border:1px solid rgba(201,150,60,0.2);border-radius:14px;padding:24px 22px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+    <!-- HEADER -->
+    <div style="background:linear-gradient(135deg,rgba(201,150,60,0.15),rgba(201,150,60,0.04));border:1px solid rgba(201,150,60,0.2);border-radius:14px;padding:22px 20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
       <div>
         <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(201,150,60,0.6);margin-bottom:4px">Avaliação 360° · Soma Partners</div>
         <div style="font-size:22px;font-weight:900">${f.nome||'Colaborador'}</div>
@@ -364,23 +365,109 @@ async function mostrarResultado(funcId){
       </div>
     </div>
 
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px">
-      ${col('✦ Pontos Fortes',fortes,'#6ee7b7')}
-      ${col('↑ A Melhorar',melhorar,'#fcd34d')}
-      ${col('▼ Pontos Fracos',fracos,'#fca5a5')}
+    <!-- RADAR + ÁREAS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+      <!-- Radar -->
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px">
+        <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:14px">Perfil de Competências</div>
+        <canvas id="radar-chart" style="max-height:260px"></canvas>
+      </div>
+      <!-- Áreas -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${areaScores.map(a=>`
+          <div style="background:${a.bg};border:1px solid ${a.cor}33;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${a.cor}">${a.label}</div>
+            <div style="font-size:28px;font-weight:900;color:${a.cor};line-height:1">${a.scoreBruto.toFixed(1)}</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.3);font-weight:500">score ponderado / 5</div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:4px;height:4px;margin-top:2px">
+              <div style="background:${a.cor};height:4px;border-radius:4px;width:${a.score}%;transition:width .5s"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px">
+              ${CRITERIOS.map(c=>{
+                const w=a.pw[c.id]??0.5;
+                const m=mediasValidas.find(x=>x.id===c.id);
+                const v=m?m.avg:0;
+                const cc=v>=4?'#6ee7b7':v>=3?'#fcd34d':'#fca5a5';
+                return`<div style="font-size:9px;color:rgba(255,255,255,0.35);display:flex;justify-content:space-between"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65px">${c.label}</span><span style="color:${cc};font-weight:700">${m?v.toFixed(1):'—'}</span></div>`;
+              }).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
     </div>
 
-    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin-bottom:${comsHtml?'20px':'0'}">
-      <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:18px">Detalhamento por Critério</div>
-      ${grupoRows}
+    <!-- BARRAS DETALHADAS -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin-bottom:${comsHtml?'16px':'0'}">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:18px">Detalhamento por Critério</div>
+      ${medias.map(c=>{
+        if(c.avg===null)return'';
+        const cc=c.avg>=4?'#6ee7b7':c.avg>=3?'#fcd34d':'#fca5a5';
+        // Escala visual: começa em 1 (não 0) para ampliar diferenças
+        const pct=Math.round(((c.avg-1)/4)*100);
+        const stars='●'.repeat(Math.round(c.avg))+'○'.repeat(5-Math.round(c.avg));
+        return`<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div>
+              <span style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:700">${c.label}</span>
+              <span style="font-size:9px;color:rgba(255,255,255,0.25);margin-left:8px">${c.n} voto${c.n!==1?'s':''}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:10px;color:${cc};letter-spacing:1px">${stars}</span>
+              <span style="font-size:16px;font-weight:900;color:${cc};min-width:32px;text-align:right">${c.avg.toFixed(1)}</span>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:6px;position:relative">
+            <div style="background:${cc};height:6px;border-radius:4px;width:${pct}%;transition:width .5s"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:3px">
+            <span style="font-size:9px;color:rgba(255,255,255,0.15)">1</span>
+            <span style="font-size:9px;color:rgba(255,255,255,0.15)">3</span>
+            <span style="font-size:9px;color:rgba(255,255,255,0.15)">5</span>
+          </div>
+        </div>`;
+      }).join('')}
     </div>
 
     ${comsHtml?`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px">
-      <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:14px">💬 Comentários</div>
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:14px">💬 Comentários</div>
       ${comsHtml}
     </div>`:''}
   `;
+
   showStep('step-resultado');
+
+  // Radar chart
+  const ctx=document.getElementById('radar-chart')?.getContext('2d');
+  if(ctx&&mediasValidas.length){
+    new Chart(ctx,{
+      type:'radar',
+      data:{
+        labels:CRITERIOS.map(c=>c.label),
+        datasets:[{
+          label:'Avaliação',
+          data:CRITERIOS.map(c=>{const m=mediasValidas.find(x=>x.id===c.id);return m?+m.avg.toFixed(2):0;}),
+          backgroundColor:'rgba(201,150,60,0.15)',
+          borderColor:'rgba(201,150,60,0.8)',
+          borderWidth:2.5,
+          pointBackgroundColor:'rgba(201,150,60,1)',
+          pointBorderColor:'#0b1e30',
+          pointBorderWidth:2,
+          pointRadius:5,
+          pointHoverRadius:7,
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw.toFixed(1)} / 5`}}},
+        scales:{r:{
+          min:0,max:5,
+          ticks:{stepSize:1,color:'rgba(255,255,255,0.2)',font:{size:9,family:'Montserrat'},backdropColor:'transparent'},
+          grid:{color:'rgba(255,255,255,0.07)'},
+          angleLines:{color:'rgba(255,255,255,0.07)'},
+          pointLabels:{color:'rgba(255,255,255,0.65)',font:{size:10,family:'Montserrat',weight:'700'}},
+        }}
+      }
+    });
+  }
 }
 
 init();
