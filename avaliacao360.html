@@ -73,9 +73,9 @@ select.fc option{background:#0f2438;color:#fff}
   <div id="step-loading" class="step active loading">Carregando...</div>
 
   <div id="step-erro" class="step error-box">
-    <div style="font-size:40px;margin-bottom:16px">⚠️</div>
-    <div style="font-size:18px;font-weight:800;margin-bottom:8px">Link inválido</div>
-    <div style="font-size:13px;color:var(--muted)">Esta rodada não existe ou foi encerrada.</div>
+    <div style="font-size:40px;margin-bottom:16px" id="erro-icon">⚠️</div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:8px" id="erro-titulo">Link inválido</div>
+    <div style="font-size:13px;color:var(--muted)" id="erro-msg">Esta rodada não existe ou foi encerrada.</div>
   </div>
 
   <div id="step-quem" class="step">
@@ -134,7 +134,7 @@ const PERGUNTAS_PADRAO=[
   {id:'pp_engajamento',  label:'Engajamento',             desc:'Motivação e comprometimento com a empresa'},
 ];
 
-let _rodada=null,_equipe=[],_avaliadorId=null;
+let _rodada=null,_equipe=[],_avaliadorId=null,_avaliadosPendentes=[];
 const _notas={},_notasGerais={},_comentarios={};
 
 function notaCor(n){
@@ -203,13 +203,37 @@ function getAvaliados(){
   return _equipe.filter(f=>f.id!==_avaliadorId);
 }
 
-function iniciarAvaliacao(){
+async function iniciarAvaliacao(){
   const sel=document.getElementById('sel-avaliador');
   if(!sel.value){sel.focus();return;}
   _avaliadorId=sel.value;
+
+  // Buscar respostas já enviadas por este avaliador nesta rodada
+  const{data:jaRespondeu}=await _sb.from('admin_aval360_respostas').select('data').eq('rodada_id',_rodada.id).eq('data->>avaliador_id',_avaliadorId);
+  const jaAvaliadosIds=new Set((jaRespondeu||[]).map(r=>r.data?.avaliado_id).filter(Boolean));
+
   const esp=_rodada.data?.avaliado_especifico||null;
   const desig=_rodada.data?.avaliados_ids||null;
-  const avaliados=getAvaliados();
+  // Filtrar avaliados ainda pendentes (excluir os que já avaliou)
+  _avaliadosPendentes=getAvaliados().filter(f=>!jaAvaliadosIds.has(f.id));
+  const avaliados=_avaliadosPendentes;
+
+  if(!avaliados.length){
+    // Já avaliou todo mundo
+    document.getElementById('erro-icon').textContent='✅';
+    document.getElementById('erro-titulo').textContent='Tudo pronto!';
+    document.getElementById('erro-msg').textContent='Você já avaliou todas as pessoas desta rodada. Obrigado pela participação!';
+    showStep('step-erro');
+    return;
+  }
+
+  if(jaAvaliadosIds.size>0){
+    // Mostrar aviso de que algumas já foram feitas
+    const total=getAvaliados().length;
+    document.querySelector('#step-quem .select-box')?.insertAdjacentHTML('beforeend',
+      `<div style="font-size:11px;color:rgba(201,150,60,0.7);margin-top:8px;text-align:center">✓ ${jaAvaliadosIds.size} de ${total} já avaliadas — restam ${avaliados.length}</div>`);
+  }
+
   document.getElementById('rodada-nome-display').textContent=esp
     ? `${_rodada.data?.nome||''} · Avaliando ${_rodada.data?.avaliado_nome||''}`
     : desig
@@ -285,7 +309,7 @@ function setNota(avaliadoId,criterioId,nota){
 }
 
 function atualizarProgresso(){
-  const avaliados=getAvaliados();
+  const avaliados=_avaliadosPendentes.length?_avaliadosPendentes:getAvaliados();
   if(!avaliados.length)return;
   let total=avaliados.length*CRITERIOS.length,preenchidos=0;
   avaliados.forEach(f=>CRITERIOS.forEach(c=>{if(_notas[f.id]?.[c.id]!==undefined)preenchidos++;}));
