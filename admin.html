@@ -1048,6 +1048,25 @@ body{display:flex;flex-direction:column;overflow:hidden}
           <button id="r360-btn-pessoa" onclick="setEscopo360('pessoa')" style="flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.18s">👤 Pessoa específica</button>
         </div>
       </div>
+      <!-- Modo: equipe com seleção -->
+      <div id="r360-equipe-wrap" style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <label class="fl" style="margin-bottom:0">Quem será avaliado?</label>
+            <button type="button" onclick="toggleCheckboxGroup('r360-avaliados-eq-list')" style="background:none;border:none;color:rgba(201,150,60,0.8);font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif">Todos / Nenhum</button>
+          </div>
+          <div id="r360-avaliados-eq-list" style="max-height:160px;overflow-y:auto;border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:4px 0"></div>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <label class="fl" style="margin-bottom:0">Quem vai avaliar?</label>
+            <button type="button" onclick="toggleCheckboxGroup('r360-avaliadores-eq-list')" style="background:none;border:none;color:rgba(201,150,60,0.8);font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif">Todos / Nenhum</button>
+          </div>
+          <div id="r360-avaliadores-eq-list" style="max-height:160px;overflow-y:auto;border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:4px 0"></div>
+          <div style="font-size:10px;color:rgba(16,185,129,0.6);margin-top:6px">✓ A rodada fecha automaticamente quando todos responderem.</div>
+        </div>
+      </div>
+      <!-- Modo: pessoa específica -->
       <div id="r360-pessoa-wrap" style="display:none">
         <label class="fl">Quem será avaliado?</label>
         <select id="r360-avaliado" onchange="updateAvaliadores360()" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:10px 14px;border-radius:9px;font-size:13px;font-family:'Montserrat',sans-serif;outline:none;margin-top:6px;appearance:none;cursor:pointer">
@@ -1059,7 +1078,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
           <label class="fl" style="margin-bottom:0">Quem vai avaliar?</label>
           <button type="button" onclick="toggleTodosAvaliadores360()" style="background:none;border:none;color:rgba(201,150,60,0.8);font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif">Selecionar todos</button>
         </div>
-        <div id="r360-avaliadores-list" style="max-height:180px;overflow-y:auto;border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:4px 0"></div>
+        <div id="r360-avaliadores-list" style="max-height:160px;overflow-y:auto;border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:4px 0"></div>
         <div style="font-size:10px;color:rgba(16,185,129,0.6);margin-top:6px">✓ A rodada fecha automaticamente quando todos responderem.</div>
       </div>
       <!-- Área por colaborador -->
@@ -4620,20 +4639,42 @@ function criarRodada360(){
 function setEscopo360(tipo){
   const btnEq=document.getElementById('r360-btn-equipe');
   const btnPe=document.getElementById('r360-btn-pessoa');
-  const wrap=document.getElementById('r360-pessoa-wrap');
-  const avalWrap=document.getElementById('r360-avaliadores-wrap');
+  const estiloAtivo='flex:1;padding:10px;border-radius:9px;border:1px solid rgba(201,150,60,0.5);background:rgba(201,150,60,0.12);color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif';
+  const estiloInativo='flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif';
   if(tipo==='equipe'){
-    btnEq.style.cssText='flex:1;padding:10px;border-radius:9px;border:1px solid rgba(201,150,60,0.5);background:rgba(201,150,60,0.12);color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif';
-    btnPe.style.cssText='flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif';
-    wrap.style.display='none';
-    avalWrap.style.display='none';
+    btnEq.style.cssText=estiloAtivo;btnPe.style.cssText=estiloInativo;
+    document.getElementById('r360-equipe-wrap').style.display='flex';
+    document.getElementById('r360-pessoa-wrap').style.display='none';
+    document.getElementById('r360-avaliadores-wrap').style.display='none';
+    populateEquipeCheckboxes360();
   } else {
-    btnPe.style.cssText='flex:1;padding:10px;border-radius:9px;border:1px solid rgba(201,150,60,0.5);background:rgba(201,150,60,0.12);color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif';
-    btnEq.style.cssText='flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif';
-    wrap.style.display='block';
+    btnPe.style.cssText=estiloAtivo;btnEq.style.cssText=estiloInativo;
+    document.getElementById('r360-equipe-wrap').style.display='none';
+    document.getElementById('r360-pessoa-wrap').style.display='block';
+    document.getElementById('r360-avaliadores-wrap').style.display='none';
     updateAvaliadores360();
   }
   btnEq.dataset.tipo=tipo;
+}
+
+function populateEquipeCheckboxes360(){
+  const ativos=equipe.filter(x=>x.status==='ativo');
+  const row=f=>`<div style="padding:7px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+    <input type="checkbox" id="r360-eq-avaliado-${f.id}" value="${f.id}" checked style="accent-color:#c9963c;cursor:pointer;width:14px;height:14px">
+    <label for="r360-eq-avaliado-${f.id}" style="font-size:12px;font-weight:600;cursor:pointer;flex:1">${f.nome}<span style="font-size:10px;color:rgba(255,255,255,0.3);margin-left:5px">${f.cargo||''}</span></label>
+  </div>`;
+  const row2=f=>`<div style="padding:7px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+    <input type="checkbox" id="r360-eq-avaliador-${f.id}" value="${f.id}" checked style="accent-color:#c9963c;cursor:pointer;width:14px;height:14px">
+    <label for="r360-eq-avaliador-${f.id}" style="font-size:12px;font-weight:600;cursor:pointer;flex:1">${f.nome}<span style="font-size:10px;color:rgba(255,255,255,0.3);margin-left:5px">${f.cargo||''}</span></label>
+  </div>`;
+  document.getElementById('r360-avaliados-eq-list').innerHTML=ativos.map(row).join('');
+  document.getElementById('r360-avaliadores-eq-list').innerHTML=ativos.map(row2).join('');
+}
+
+function toggleCheckboxGroup(listId){
+  const cbs=document.querySelectorAll(`#${listId} input[type=checkbox]`);
+  const todos=[...cbs].every(c=>c.checked);
+  cbs.forEach(c=>c.checked=!todos);
 }
 
 function updateAvaliadores360(){
@@ -4668,12 +4709,25 @@ async function salvarRodada360(){
     const checked=AREAS_360.map(a=>document.getElementById(`r360-area-${x.id}-${a.id}`)).filter(el=>el&&el.checked).map(el=>el.value);
     if(checked.length) areas[x.id]=checked;
   });
-  // Avaliadores selecionados (só quando escopo=pessoa)
-  const avaliadoresIds=escopo==='pessoa'
-    ?equipe.filter(x=>x.status==='ativo'&&x.id!==avaliadoId).map(x=>document.getElementById(`r360-aval-${x.id}`)).filter(el=>el&&el.checked).map(el=>el.value)
-    :null;
+  // Avaliadores selecionados
+  let avaliadoresIds=null;
+  let avaliadosIds=null;
+  if(escopo==='pessoa'){
+    // modo pessoa: quem vai avaliar (excluindo o avaliado)
+    avaliadoresIds=equipe.filter(x=>x.status==='ativo'&&x.id!==avaliadoId)
+      .map(x=>document.getElementById(`r360-aval-${x.id}`)).filter(el=>el&&el.checked).map(el=>el.value);
+    if(!avaliadoresIds.length) avaliadoresIds=null;
+  } else {
+    // modo equipe: quem será avaliado e quem vai avaliar
+    avaliadosIds=equipe.filter(x=>x.status==='ativo')
+      .map(x=>document.getElementById(`r360-eq-avaliado-${x.id}`)).filter(el=>el&&el.checked).map(el=>el.value);
+    avaliadoresIds=equipe.filter(x=>x.status==='ativo')
+      .map(x=>document.getElementById(`r360-eq-avaliador-${x.id}`)).filter(el=>el&&el.checked).map(el=>el.value);
+    if(!avaliadosIds.length){alert('Selecione ao menos um avaliado.');return;}
+    if(!avaliadoresIds.length){alert('Selecione ao menos um avaliador.');return;}
+  }
   const id=crypto.randomUUID();
-  const data={nome,status:'ativa',criado_em:new Date().toISOString(),escopo,avaliado_especifico:avaliadoId||null,avaliado_nome:f?.nome||null,areas,avaliadores_ids:avaliadoresIds?.length?avaliadoresIds:null};
+  const data={nome,status:'ativa',criado_em:new Date().toISOString(),escopo,avaliado_especifico:avaliadoId||null,avaliado_nome:f?.nome||null,areas,avaliados_ids:avaliadosIds?.length?avaliadosIds:null,avaliadores_ids:avaliadoresIds?.length?avaliadoresIds:null};
   const{error}=await _sb.from('admin_aval360_rodadas').insert({id,data});
   if(error){alert('Erro: '+error.message);return;}
   closeModal('modal-rodada360');
@@ -4752,18 +4806,23 @@ function renderRodadas360(){
     const isPessoa=r.escopo==='pessoa'&&r.avaliado_especifico;
     // Progresso de avaliadores designados
     const avalIds=r.avaliadores_ids||null;
+    const avaliadosDesig=r.avaliados_ids||null; // equipe mode: pessoas designadas para ser avaliadas
     const responderam=avalIds?avalIds.filter(id=>respsR.some(x=>x.avaliador_id===id)):null;
-    const progressoHtml=avalIds?`<div style="margin-top:10px">
+    // Para modo equipe: total esperado = avaliadores × avaliados
+    const totalEsperado=avalIds&&avaliadosDesig?avalIds.length*avaliadosDesig.length:null;
+    const totalRecebido=avalIds&&avaliadosDesig?avalIds.filter(avId=>avaliadosDesig.every(avdId=>respsR.some(x=>x.avaliador_id===avId&&x.avaliado_id===avdId))).length:null;
+    const progressoHtml=avalIds?`<div style="margin-top:10px;border-top:1px solid rgba(255,255,255,0.06);padding-top:10px">
+      ${avaliadosDesig?`<div style="margin-bottom:8px"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4)">SERÃO AVALIADOS</span><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px">${avaliadosDesig.map(id=>{const f=equipe.find(x=>x.id===id);const avaliouTodos=avalIds.every(avId=>respsR.some(x=>x.avaliador_id===avId&&x.avaliado_id===id));return`<span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:14px;background:${avaliouTodos?'rgba(16,185,129,0.15)':'rgba(255,255,255,0.06)'};color:${avaliouTodos?'#6ee7b7':'rgba(255,255,255,0.35)'};">${avaliouTodos?'✓ ':''}${f?.nome?.split(' ')[0]||'?'}</span>`;}).join('')}</div></div>`:''}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
         <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4)">AVALIADORES</span>
-        <span style="font-size:11px;font-weight:800;color:${responderam.length===avalIds.length?'#6ee7b7':'#fcd34d'}">${responderam.length}/${avalIds.length} responderam</span>
+        <span style="font-size:11px;font-weight:800;color:${responderam.length===avalIds.length?'#6ee7b7':'#fcd34d'}">${responderam.length}/${avalIds.length} responderam${totalEsperado?` (${respsR.filter(x=>avalIds.includes(x.avaliador_id)).length}/${totalEsperado} respostas)`:''}</span>
       </div>
       <div style="background:rgba(255,255,255,0.07);border-radius:4px;height:4px;margin-bottom:8px"><div style="background:${responderam.length===avalIds.length?'#6ee7b7':'#c9963c'};height:4px;border-radius:4px;width:${Math.round(responderam.length/avalIds.length*100)}%;transition:width 0.4s"></div></div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px">${avalIds.map(id=>{const f=equipe.find(x=>x.id===id);const ok=responderam.includes(id);return`<span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:14px;background:${ok?'rgba(16,185,129,0.15)':'rgba(255,255,255,0.06)'};color:${ok?'#6ee7b7':'rgba(255,255,255,0.35)'};">${ok?'✓ ':''} ${f?.nome?.split(' ')[0]||'?'}</span>`;}).join('')}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${avalIds.map(id=>{const f=equipe.find(x=>x.id===id);const respsAv=respsR.filter(x=>x.avaliador_id===id);const ok=avaliadosDesig?avaliadosDesig.every(avdId=>respsAv.some(x=>x.avaliado_id===avdId)):respsR.some(x=>x.avaliador_id===id);const parcial=avaliadosDesig&&!ok&&respsAv.length>0;return`<span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:14px;background:${ok?'rgba(16,185,129,0.15)':parcial?'rgba(245,158,11,0.15)':'rgba(255,255,255,0.06)'};color:${ok?'#6ee7b7':parcial?'#fcd34d':'rgba(255,255,255,0.35)'};" title="${parcial?`${respsAv.length}/${avaliadosDesig.length} avaliados`:''}">${ok?'✓ ':parcial?`${respsAv.length}/${avaliadosDesig.length} `:''}${f?.nome?.split(' ')[0]||'?'}</span>`;}).join('')}</div>
     </div>`:'';
 
     // Pessoas avaliadas nesta rodada com média
-    const avaliadosIds=[...new Set(respsR.map(x=>x.avaliado_id))];
+    const avaliadosIds=avaliadosDesig||[...new Set(respsR.map(x=>x.avaliado_id))];
     const pessoasHtml=avaliadosIds.map(avaliadoId=>{
       const f=equipe.find(x=>x.id===avaliadoId);
       const nome=f?.nome||'?';

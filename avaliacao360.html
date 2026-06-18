@@ -187,16 +187,25 @@ async function init(){
   showStep('step-quem');
 }
 
+function getAvaliados(){
+  const esp=_rodada.data?.avaliado_especifico||null;
+  const desig=_rodada.data?.avaliados_ids||null;
+  if(esp) return _equipe.filter(f=>f.id===esp);
+  if(desig) return _equipe.filter(f=>desig.includes(f.id)&&f.id!==_avaliadorId);
+  return _equipe.filter(f=>f.id!==_avaliadorId);
+}
+
 function iniciarAvaliacao(){
   const sel=document.getElementById('sel-avaliador');
   if(!sel.value){sel.focus();return;}
   _avaliadorId=sel.value;
-  const _avaliadoEsp=_rodada.data?.avaliado_especifico||null;
-  const avaliados=_avaliadoEsp
-    ? _equipe.filter(f=>f.id===_avaliadoEsp)
-    : _equipe.filter(f=>f.id!==_avaliadorId);
-  document.getElementById('rodada-nome-display').textContent=_avaliadoEsp
+  const esp=_rodada.data?.avaliado_especifico||null;
+  const desig=_rodada.data?.avaliados_ids||null;
+  const avaliados=getAvaliados();
+  document.getElementById('rodada-nome-display').textContent=esp
     ? `${_rodada.data?.nome||''} · Avaliando ${_rodada.data?.avaliado_nome||''}`
+    : desig
+    ? `${_rodada.data?.nome||''} · ${avaliados.length} pessoa${avaliados.length!==1?'s':''} a avaliar`
     : (_rodada.data?.nome||'');
 
   const cards=avaliados.map(f=>{
@@ -268,8 +277,7 @@ function setNota(avaliadoId,criterioId,nota){
 }
 
 function atualizarProgresso(){
-  const _avaliadoEsp=_rodada?.data?.avaliado_especifico||null;
-  const avaliados=_avaliadoEsp?_equipe.filter(f=>f.id===_avaliadoEsp):_equipe.filter(f=>f.id!==_avaliadorId);
+  const avaliados=getAvaliados();
   if(!avaliados.length)return;
   let total=avaliados.length*CRITERIOS.length,preenchidos=0;
   avaliados.forEach(f=>CRITERIOS.forEach(c=>{if(_notas[f.id]?.[c.id]!==undefined)preenchidos++;}));
@@ -285,8 +293,7 @@ function atualizarProgresso(){
 async function enviarAvaliacao(){
   const btn=document.getElementById('btn-enviar');
   btn.disabled=true;btn.textContent='Enviando...';
-  const _avaliadoEsp=_rodada?.data?.avaliado_especifico||null;
-  const avaliados=_avaliadoEsp?_equipe.filter(f=>f.id===_avaliadoEsp):_equipe.filter(f=>f.id!==_avaliadorId);
+  const avaliados=getAvaliados();
   const inserts=avaliados.map(f=>({
     id:crypto.randomUUID(),
     rodada_id:_rodada.id,
@@ -303,12 +310,21 @@ async function enviarAvaliacao(){
   const{error}=await _sb.from('admin_aval360_respostas').insert(inserts);
   if(error){alert('Erro ao enviar: '+error.message);btn.disabled=false;btn.textContent='✓ Enviar Avaliações';return;}
 
-  // Auto-fechar se todos os avaliadores designados responderam
+  // Auto-fechar se todos os avaliadores designados responderam (para todos os avaliados)
   const avalIds=_rodada.data?.avaliadores_ids||null;
+  const avaliadosDesig=_rodada.data?.avaliados_ids||null;
   if(avalIds?.length){
     const{data:todasResps}=await _sb.from('admin_aval360_respostas').select('data').eq('rodada_id',_rodada.id);
-    const responderam=new Set((todasResps||[]).map(r=>r.data?.avaliador_id).filter(Boolean));
-    const todosOk=avalIds.every(id=>responderam.has(id));
+    const respsArr=todasResps||[];
+    let todosOk;
+    if(avaliadosDesig?.length){
+      // Modo equipe: cada avaliador deve ter respondido para cada avaliado
+      todosOk=avalIds.every(avId=>avaliadosDesig.every(avdId=>respsArr.some(r=>r.data?.avaliador_id===avId&&r.data?.avaliado_id===avdId)));
+    } else {
+      // Modo pessoa: basta cada avaliador ter respondido ao menos 1
+      const responderam=new Set(respsArr.map(r=>r.data?.avaliador_id).filter(Boolean));
+      todosOk=avalIds.every(id=>responderam.has(id));
+    }
     if(todosOk){
       await _sb.from('admin_aval360_rodadas').update({data:{..._rodada.data,status:'encerrada'}}).eq('id',_rodada.id);
       const msgEl=document.querySelector('#step-sucesso p, #step-sucesso div');
