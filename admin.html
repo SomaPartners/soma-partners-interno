@@ -4950,8 +4950,13 @@ function gerarRelatorioEquipe360(rodadaId){
     </div>`;
   }).join('');
 
-  const teamDiamond=svgPrint(avgScores,200);
-  const topArea=AREAS_360.find(a=>a.id===Object.entries(avgScores).sort((a,b)=>b[1]-a[1])[0][0])?.label||'';
+  // Médias da equipe por CRITÉRIO
+  const avgCriterios=CRITERIOS_360.map(c=>{
+    const vals=membros.map(m=>{const found=m.medias.find(x=>x.id===c.id);return found?.avg??null;}).filter(v=>v!==null);
+    return{...c,avg:vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0};
+  });
+  const teamPenta=svgPentPrint(avgCriterios,200);
+  const topCrit=avgCriterios.slice().sort((a,b)=>b.avg-a.avg)[0]?.label||'';
 
   const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório 360° Equipe — Soma Partners</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -4976,17 +4981,17 @@ function gerarRelatorioEquipe360(rodadaId){
   </div>
   <!-- Pessoas -->
   ${pessoasHtml}
-  <!-- Mapa da equipe -->
+  <!-- Perfil da equipe por critério -->
   <div style="page-break-before:always;padding-top:24px">
-    <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:16px">Mapa de Áreas — Média da Equipe</div>
+    <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:16px">Perfil da Equipe — Média por Critério</div>
     <div style="display:flex;align-items:center;gap:32px;flex-wrap:wrap">
-      ${teamDiamond}
-      <div style="flex:1;min-width:180px">
-        ${AREAS_360.map(a=>{const s=avgScores[a.id];const cor=n360cor(s);const pct=Math.round((s/5)*100);return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:#374151;font-weight:600">${a.label}</span><span style="font-size:14px;font-weight:900;color:${cor}">${s.toFixed(1)}</span></div><div style="background:#f3f4f6;border-radius:3px;height:6px"><div style="background:${cor};height:6px;border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')}
-        <div style="margin-top:12px;font-size:11px;color:#6b7280">Área mais forte da equipe: <strong style="color:#c9963c">${topArea}</strong></div>
+      ${teamPenta}
+      <div style="flex:1;min-width:200px">
+        ${avgCriterios.map(c=>{const cor=n360cor(c.avg);const pct=Math.round((c.avg/5)*100);return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:#374151;font-weight:600">${c.label}</span><span style="font-size:14px;font-weight:900;color:${cor}">${c.avg.toFixed(1)}</span></div><div style="background:#f3f4f6;border-radius:3px;height:6px"><div style="background:${cor};height:6px;border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')}
+        <div style="margin-top:12px;font-size:11px;color:#6b7280">Critério mais forte da equipe: <strong style="color:#c9963c">${topCrit}</strong></div>
       </div>
     </div>
-    <!-- Mini losangos individuais -->
+    <!-- Mini pentágonos individuais -->
     <div style="margin-top:24px;display:flex;flex-wrap:wrap;gap:16px;align-items:center">
       ${membros.map(({f,medias})=>`<div style="text-align:center">${svgPentPrint(medias,90)}<div style="font-size:9px;font-weight:700;color:#6b7280;margin-top:2px">${f.nome.split(' ')[0]}</div></div>`).join('')}
     </div>
