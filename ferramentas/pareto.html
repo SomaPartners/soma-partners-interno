@@ -8,87 +8,142 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--navy:#0b1e30;--gold:#c9963c;--gold-dim:rgba(201,150,60,0.18);--blue:#3b8bff;--green:#10b981;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.4);--surface:rgba(255,255,255,0.04)}
+:root{--navy:#0b1e30;--gold:#c9963c;--blue:#3b8bff;--green:#10b981;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.4);--surface:rgba(255,255,255,0.04)}
 html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff;font-size:13px}
 
+/* NAV */
 .topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .nav-left{display:flex;align-items:center;gap:12px}
 .logo-soma{font-size:15px;font-weight:300}.logo-pipe{width:1px;height:18px;background:rgba(255,255,255,0.3)}.logo-partners{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.7}
 .nav-sep{width:1px;height:22px;background:var(--border)}.nav-title{font-size:12px;font-weight:800}
 .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all .15s}
 .btn-ghost{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)}.btn-ghost:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.btn-gold{background:var(--gold);color:#0b1e30;font-size:12px;font-weight:800}.btn-gold:hover{filter:brightness(1.1)}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);font-size:11px}.btn-outline:hover{color:#fff;border-color:rgba(255,255,255,0.35)}
+.btn-danger{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);color:rgba(239,68,68,0.7)}.btn-danger:hover{background:rgba(239,68,68,0.18);color:#f87171}
 
-/* UPLOAD */
-#upload-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px);padding:40px 24px}
-.upload-box{border:2px dashed rgba(201,150,60,0.35);border-radius:20px;padding:60px 80px;text-align:center;cursor:pointer;transition:all .2s;max-width:520px;width:100%;background:rgba(201,150,60,0.04)}
-.upload-box:hover,.upload-box.drag{border-color:var(--gold);background:rgba(201,150,60,0.08)}
-.upload-icon{font-size:48px;margin-bottom:16px;opacity:.7}
-.upload-title{font-size:18px;font-weight:800;margin-bottom:8px}
-.upload-sub{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:24px}
-.upload-btn{background:var(--gold);color:#0b1e30;padding:11px 28px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;border:none;font-family:'Montserrat',sans-serif;transition:filter .15s}
-.upload-btn:hover{filter:brightness(1.1)}
+/* INPUT SCREEN */
+#input-screen{max-width:820px;margin:0 auto;padding:36px 24px}
+.input-hero{margin-bottom:28px}
+.input-hero-title{font-size:22px;font-weight:900;letter-spacing:-.3px;margin-bottom:6px}
+.input-hero-sub{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* MODE TABS */
+.mode-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:24px}
+.mode-tab{flex:1;padding:8px 12px;border-radius:9px;border:none;background:transparent;color:var(--muted);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .18s;text-align:center}
+.mode-tab:hover{color:#fff}
+.mode-tab.active{background:rgba(201,150,60,0.15);border:1px solid rgba(201,150,60,0.35);color:var(--gold)}
+
+/* TITLE FIELD */
+.field-group{margin-bottom:18px}
+.field-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 13px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;color:#fff;outline:none;transition:border-color .15s}
+.field-input:focus{border-color:rgba(201,150,60,0.5)}
+.field-input::placeholder{color:rgba(255,255,255,0.2)}
+
+/* MANUAL TABLE */
+.data-table-wrap{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{padding:9px 12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,0.15);text-align:left}
+.data-table td{padding:3px 4px;border-top:1px solid rgba(255,255,255,0.04)}
+.data-table .row-num{padding:6px 10px;font-size:10px;color:rgba(255,255,255,0.2);font-weight:600;text-align:center;width:36px}
+.cell-input{width:100%;background:transparent;border:none;padding:7px 9px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:500;color:#fff;outline:none;border-radius:6px;transition:background .12s}
+.cell-input:focus{background:rgba(255,255,255,0.06)}
+.cell-input::placeholder{color:rgba(255,255,255,0.15)}
+.cell-input.val-input{text-align:right}
+.btn-del{background:none;border:none;color:rgba(255,255,255,0.2);font-size:14px;cursor:pointer;padding:4px 8px;border-radius:5px;line-height:1;transition:all .12s}
+.btn-del:hover{background:rgba(239,68,68,0.12);color:#f87171}
+.add-row-row{padding:6px 10px;border-top:1px solid rgba(255,255,255,0.04);background:rgba(0,0,0,0.1)}
+.btn-add-row{background:none;border:1px dashed rgba(255,255,255,0.12);border-radius:7px;padding:5px 14px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);cursor:pointer;transition:all .15s;width:100%}
+.btn-add-row:hover{border-color:rgba(201,150,60,0.4);color:var(--gold)}
+
+/* UPLOAD SIMPLE */
+#mode-upload{display:none}
+.drop-zone{border:2px dashed rgba(201,150,60,0.3);border-radius:14px;padding:36px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(201,150,60,0.03)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--gold);background:rgba(201,150,60,0.07)}
+.drop-zone-icon{font-size:36px;margin-bottom:10px;opacity:.6}
+.drop-zone-title{font-size:14px;font-weight:800;margin-bottom:6px}
+.drop-zone-sub{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:18px}
 #file-input{display:none}
-.upload-hint{font-size:10px;color:rgba(255,255,255,0.25);margin-top:14px}
+
+/* COLUMN PICKER */
+#col-picker{display:none;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:18px;margin-top:16px}
+.col-picker-title{font-size:11px;font-weight:800;margin-bottom:14px;color:rgba(255,255,255,0.7)}
+.col-picker-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col-picker-select{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;color:#fff;outline:none;cursor:pointer;width:100%}
+.col-picker-select option{background:#0b1e30}
+.preview-table-wrap{margin-top:14px;overflow-x:auto;max-height:180px;overflow-y:auto;border-radius:8px;border:1px solid var(--border)}
+.preview-table{width:100%;border-collapse:collapse;font-size:10px}
+.preview-table th{padding:6px 10px;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,0.2);text-align:left;position:sticky;top:0}
+.preview-table td{padding:5px 10px;border-top:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.7)}
+.preview-table .col-hl{color:#fff;font-weight:700}
+
+/* EXCEL COMPLETO */
+#mode-excel{display:none}
+.excel-drop-zone{border:2px dashed rgba(59,139,255,0.3);border-radius:14px;padding:36px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(59,139,255,0.03)}
+.excel-drop-zone:hover,.excel-drop-zone.drag{border-color:var(--blue);background:rgba(59,139,255,0.07)}
+#file-input-excel{display:none}
+
+/* ACTION BAR */
+.action-bar{display:flex;align-items:center;gap:10px;justify-content:flex-end;padding-top:4px}
+.row-count{font-size:10px;color:var(--muted);margin-right:auto}
+.row-count span{color:rgba(255,255,255,0.7);font-weight:700}
 
 /* DASHBOARD */
 #dashboard{display:none}
-.filter-bar{background:rgba(8,18,28,0.6);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.filter-file{font-size:10px;color:rgba(255,255,255,0.4);display:flex;align-items:center;gap:6px}
-.filter-file strong{color:rgba(255,255,255,0.7)}
+.filter-bar{background:rgba(8,18,28,0.6);border-bottom:1px solid var(--border);padding:11px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.dataset-name{font-size:13px;font-weight:800;color:#fff;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dataset-meta{font-size:10px;color:var(--muted)}
 .filter-sep{width:1px;height:20px;background:var(--border)}
 .pill-group{display:flex;gap:4px}
-.pill{padding:5px 13px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);transition:all .15s;letter-spacing:.3px}
+.pill{padding:5px 13px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);transition:all .15s}
 .pill:hover{color:#fff;border-color:rgba(255,255,255,0.2)}
 .pill.active{background:rgba(201,150,60,0.15);border-color:rgba(201,150,60,0.5);color:var(--gold)}
-.pill-dim.active{background:rgba(59,139,255,0.12);border-color:rgba(59,139,255,0.4);color:#7db8ff}
-.pill-view.active{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.35);color:#5eead4}
 .filter-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25)}
-.reset-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:5px}
-.reset-btn:hover{color:rgba(255,255,255,0.6)}
+.edit-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:5px}
+.edit-btn:hover{color:rgba(255,255,255,0.6)}
 
 /* KPIS */
-.kpi-row{padding:16px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;border-bottom:1px solid var(--border)}
+.kpi-row{padding:16px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;border-bottom:1px solid var(--border)}
 .kpi{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:13px 16px}
 .kpi-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 .kpi-val{font-size:20px;font-weight:900;line-height:1;color:#fff}
-.kpi-val.gold{color:var(--gold)}
 .kpi-sub{font-size:10px;color:var(--muted);margin-top:3px}
 .kpi-highlight{border-color:rgba(201,150,60,0.3);background:rgba(201,150,60,0.06)}
+.kpi-val.gold{color:var(--gold)}
 
-/* CHART AREA */
+/* CHART */
 .chart-section{padding:20px 24px;border-bottom:1px solid var(--border)}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .section-title{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,0.55)}
-.chart-legend{display:flex;gap:14px;align-items:center}
+.chart-legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:600;color:var(--muted)}
-.leg-dot{width:10px;height:10px;border-radius:2px}
-.chart-wrap{position:relative;height:340px;width:100%}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.chart-wrap{position:relative;height:320px;width:100%}
 
 /* TABLE */
 .table-section{padding:16px 24px 32px}
 .pareto-table{width:100%;border-collapse:collapse;font-size:11px}
 .pareto-table th{text-align:left;padding:7px 10px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
 .pareto-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04)}
-.pareto-table tr:hover td{background:rgba(255,255,255,0.03)}
-.pareto-table .vital td:first-child{border-left:2px solid var(--gold)}
-.pareto-table .not-vital td:first-child{border-left:2px solid transparent}
-.vital .nome{font-weight:700;color:#fff}
-.not-vital .nome{color:rgba(255,255,255,0.5)}
-.bar-cell{width:140px}
-.bar-bg{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
-.bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.pareto-table tr:hover td{background:rgba(255,255,255,0.025)}
+.vital td:first-child{border-left:2px solid var(--gold)}
+.not-vital td:first-child{border-left:2px solid transparent}
+.vital .nome-cell{font-weight:700;color:#fff}
+.not-vital .nome-cell{color:rgba(255,255,255,0.45)}
+.bar-bg{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;width:120px}
+.bar-fill{height:100%;border-radius:3px}
 .pct-cum{font-weight:700}
 .vital .pct-cum{color:var(--gold)}
-.not-vital .pct-cum{color:rgba(255,255,255,0.35)}
-.badge-vital{display:inline-block;padding:2px 7px;border-radius:10px;font-size:8px;font-weight:800;background:rgba(201,150,60,0.15);color:var(--gold);letter-spacing:.5px}
-.badge-not{display:inline-block;padding:2px 7px;border-radius:10px;font-size:8px;font-weight:800;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.25);letter-spacing:.5px}
+.not-vital .pct-cum{color:rgba(255,255,255,0.3)}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:8px;font-weight:800;letter-spacing:.5px}
+.badge-vital{background:rgba(201,150,60,0.15);color:var(--gold)}
+.badge-not{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.22)}
+.empty-msg{padding:40px;text-align:center;color:var(--muted);font-size:12px}
 
-/* EMPTY */
-.empty{padding:48px;text-align:center;color:var(--muted);font-size:12px}
-
-@media(max-width:700px){
-  .filter-bar{gap:10px}.kpi-row{grid-template-columns:1fr 1fr}.chart-wrap{height:260px}
-  .upload-box{padding:40px 24px}.bar-cell{display:none}
+@media(max-width:640px){
+  .col-picker-row{grid-template-columns:1fr}.chart-wrap{height:240px}.kpi-row{grid-template-columns:1fr 1fr}
+  .bar-bg{display:none}.mode-tab{font-size:9px}
 }
 </style>
 </head>
@@ -108,43 +163,121 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
   </button>
 </nav>
 
-<!-- UPLOAD SCREEN -->
-<div id="upload-screen">
-  <div class="upload-box" id="drop-zone" onclick="document.getElementById('file-input').click()">
-    <div class="upload-icon">📊</div>
-    <div class="upload-title">Análise de Pareto Comercial</div>
-    <div class="upload-sub">Faça upload do seu Excel de análise comercial para gerar automaticamente os gráficos de Pareto por Patrimônio, Receita e Quantidade de Clientes.</div>
-    <button class="upload-btn" onclick="event.stopPropagation();document.getElementById('file-input').click()">Selecionar arquivo .xlsx</button>
-    <div class="upload-hint">Arraste e solte ou clique para selecionar · Suporta o formato Pareto - Analise Comercial.xlsx</div>
+<!-- ═══════════════ INPUT SCREEN ═══════════════ -->
+<div id="input-screen">
+  <div class="input-hero">
+    <div class="input-hero-title">Nova Análise de Pareto</div>
+    <div class="input-hero-sub">Digite os dados direto aqui, importe uma planilha simples ou use seu Excel completo.</div>
   </div>
-  <input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(this.files[0])"/>
+
+  <!-- Mode Tabs -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setMode('manual',this)">✏️ Digitar dados</button>
+    <button class="mode-tab" onclick="setMode('upload',this)">📎 Planilha simples</button>
+    <button class="mode-tab" onclick="setMode('excel',this)">📊 Excel completo</button>
+  </div>
+
+  <!-- Título da análise (sempre visível) -->
+  <div class="field-group">
+    <div class="field-label">Nome da análise</div>
+    <input type="text" id="analysis-title" class="field-input" placeholder="Ex: Patrimônio por Profissão · Julho 2025" maxlength="80"/>
+  </div>
+
+  <!-- ── Modo 1: Digitar manualmente ── -->
+  <div id="mode-manual">
+    <div class="field-group" style="margin-bottom:10px">
+      <div class="field-label">Dados</div>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead><tr>
+          <th style="width:36px">#</th>
+          <th>Nome / Categoria</th>
+          <th style="text-align:right;padding-right:16px">Valor</th>
+          <th style="width:36px"></th>
+        </tr></thead>
+        <tbody id="manual-tbody"></tbody>
+      </table>
+      <div class="add-row-row">
+        <button class="btn-add-row" onclick="addRow()">+ Adicionar linha</button>
+      </div>
+    </div>
+    <div class="action-bar">
+      <span class="row-count" id="row-count">0 linhas</span>
+      <button class="btn btn-outline" onclick="clearRows()">Limpar tudo</button>
+      <button class="btn btn-gold" onclick="gerarPareto()">Gerar Pareto →</button>
+    </div>
+  </div>
+
+  <!-- ── Modo 2: Upload simples ── -->
+  <div id="mode-upload" style="display:none">
+    <div class="drop-zone" id="drop-simple" onclick="document.getElementById('file-input').click()">
+      <div class="drop-zone-icon">📎</div>
+      <div class="drop-zone-title">Arraste seu arquivo aqui</div>
+      <div class="drop-zone-sub">CSV, Excel (.xlsx) ou qualquer planilha com pelo menos duas colunas.<br>Uma para o nome e outra para o valor — sem formato rígido.</div>
+      <button class="btn btn-gold" onclick="event.stopPropagation();document.getElementById('file-input').click()">Selecionar arquivo</button>
+    </div>
+    <input type="file" id="file-input" accept=".xlsx,.xls,.csv" onchange="handleSimpleFile(this.files[0])"/>
+
+    <div id="col-picker">
+      <div class="col-picker-title">Selecione quais colunas usar</div>
+      <div class="col-picker-row">
+        <div>
+          <div class="field-label" style="margin-bottom:6px">Coluna de nome / categoria</div>
+          <select id="col-nome" class="col-picker-select" onchange="updatePreview()"></select>
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:6px">Coluna de valor</div>
+          <select id="col-valor" class="col-picker-select" onchange="updatePreview()"></select>
+        </div>
+      </div>
+      <div class="preview-table-wrap" id="preview-wrap" style="margin-top:12px"></div>
+      <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:10px">
+        <button class="btn btn-outline" onclick="resetUpload()">Trocar arquivo</button>
+        <button class="btn btn-gold" onclick="importSimple()">Importar e Gerar Pareto →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modo 3: Excel Completo ── -->
+  <div id="mode-excel" style="display:none">
+    <div class="excel-drop-zone" id="drop-excel" onclick="document.getElementById('file-input-excel').click()">
+      <div class="drop-zone-icon">📊</div>
+      <div class="drop-zone-title">Excel no formato Pareto - Analise Comercial</div>
+      <div class="drop-zone-sub">Arquivo com múltiplas abas (Patrimônio, Receita, Quantidade) separadas por Consolidado, Consultoria e Assessoria.</div>
+      <button class="btn btn-gold" onclick="event.stopPropagation();document.getElementById('file-input-excel').click()">Selecionar Excel</button>
+    </div>
+    <input type="file" id="file-input-excel" accept=".xlsx,.xls" onchange="handleExcelCompleto(this.files[0])"/>
+  </div>
 </div>
 
-<!-- DASHBOARD -->
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
 <div id="dashboard">
   <div class="filter-bar">
-    <span class="filter-label">Segmento</span>
-    <div class="pill-group" id="seg-pills">
-      <span class="pill active" onclick="setSeg('consolidado',this)">Consolidado</span>
-      <span class="pill" onclick="setSeg('consultoria',this)">Consultoria</span>
-      <span class="pill" onclick="setSeg('assessoria',this)">Assessoria</span>
+    <div>
+      <div class="dataset-name" id="dash-title">Análise</div>
+      <div class="dataset-meta" id="dash-meta"></div>
     </div>
     <div class="filter-sep"></div>
-    <span class="filter-label">Dimensão</span>
-    <div class="pill-group" id="dim-pills">
-      <span class="pill pill-dim active" onclick="setDim('patrimonio',this)">Patrimônio</span>
-      <span class="pill pill-dim" onclick="setDim('receita',this)">Receita</span>
-      <span class="pill pill-dim" onclick="setDim('quantidade',this)">Quantidade</span>
+    <div id="seg-pills-wrap" style="display:none">
+      <span class="filter-label" style="margin-right:6px">Segmento</span>
+      <div class="pill-group" id="seg-pills">
+        <span class="pill active" onclick="setSeg('consolidado',this)">Consolidado</span>
+        <span class="pill" onclick="setSeg('consultoria',this)">Consultoria</span>
+        <span class="pill" onclick="setSeg('assessoria',this)">Assessoria</span>
+      </div>
     </div>
-    <div class="filter-sep"></div>
-    <span class="filter-label">Visão</span>
-    <div class="pill-group" id="view-pills">
-      <span class="pill pill-view active" onclick="setView('profissoes',this)" id="view-prof">Por Profissão</span>
-      <span class="pill pill-view" onclick="setView('clientes',this)" id="view-cli">Por Cliente</span>
+    <div id="dim-pills-wrap" style="display:none">
+      <span class="filter-label" style="margin-right:6px">Dimensão</span>
+      <div class="pill-group" id="dim-pills">
+        <span class="pill active" onclick="setDim('patrimonio',this)">Patrimônio</span>
+        <span class="pill" onclick="setDim('receita',this)">Receita</span>
+        <span class="pill" onclick="setDim('quantidade',this)">Quantidade</span>
+      </div>
     </div>
-    <button class="reset-btn" onclick="resetUpload()">
-      <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Trocar arquivo
+    <button class="edit-btn" onclick="voltarInput()">
+      <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Editar dados
     </button>
   </div>
 
@@ -152,12 +285,12 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 
   <div class="chart-section">
     <div class="section-header">
-      <span class="section-title" id="chart-title">Pareto por Profissão</span>
+      <span class="section-title" id="chart-title">Análise de Pareto</span>
       <div class="chart-legend">
         <div class="leg-item"><div class="leg-dot" style="background:rgba(201,150,60,0.85)"></div>Top 80%</div>
         <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,0.15)"></div>Cauda</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,0.7);border-radius:50%"></div>% Acumulado</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,80,80,0.7);height:2px;border-radius:1px;width:18px"></div>Meta 80%</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,0.65);border-radius:50%"></div>% Acumulado</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,80,80,0.7);height:2px;border-radius:1px;width:18px"></div>80%</div>
       </div>
     </div>
     <div class="chart-wrap"><canvas id="pareto-chart"></canvas></div>
@@ -165,17 +298,17 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 
   <div class="table-section">
     <div class="section-header" style="margin-bottom:10px">
-      <span class="section-title" id="table-title">Ranking Detalhado</span>
+      <span class="section-title">Ranking Detalhado</span>
       <span style="font-size:10px;color:var(--muted)" id="table-info"></span>
     </div>
     <table class="pareto-table">
       <thead><tr>
-        <th>#</th>
-        <th>Nome</th>
+        <th style="width:32px">#</th>
+        <th>Nome / Categoria</th>
         <th>Valor</th>
         <th>% do Total</th>
         <th>% Acumulado</th>
-        <th class="bar-cell">Distribuição</th>
+        <th>Distribuição</th>
         <th>Grupo</th>
       </tr></thead>
       <tbody id="pareto-tbody"></tbody>
@@ -186,265 +319,365 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 <script>
 if(sessionStorage.getItem('soma_auth')!=='1'||sessionStorage.getItem('soma_admin')!=='1'){window.location.href='../login.html';}
 
-let _data=null,_seg='consolidado',_dim='patrimonio',_view='profissoes',_chart=null,_fileName='';
+/* ─── STATE ──────────────────────────────────────────── */
+let _mode='manual';          // 'manual' | 'upload' | 'excel'
+let _chart=null;
+let _seg='consolidado';
+let _dim='patrimonio';
+let _simpleRaw=[];           // [{nome,valor}] from simple upload
+let _simpleHeaders=[];
+let _simpleAllRows=[];
+let _excelData=null;
+let _manualRows=0;
 
-// ── Drag & Drop ──────────────────────────────────────────────
-const dz=document.getElementById('drop-zone');
+/* ─── MODES ─────────────────────────────────────────── */
+function setMode(m,el){
+  _mode=m;
+  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('mode-manual').style.display=m==='manual'?'block':'none';
+  document.getElementById('mode-upload').style.display=m==='upload'?'block':'none';
+  document.getElementById('mode-excel').style.display=m==='excel'?'block':'none';
+}
+
+/* ─── MANUAL INPUT ──────────────────────────────────── */
+function addRow(nome='',valor=''){
+  _manualRows++;
+  const tbody=document.getElementById('manual-tbody');
+  const tr=document.createElement('tr');
+  tr.dataset.id=_manualRows;
+  tr.innerHTML=`
+    <td class="row-num">${tbody.children.length+1}</td>
+    <td><input class="cell-input nome-input" type="text" placeholder="Nome ou categoria" value="${escHtml(nome)}" oninput="updateRowCount()"/></td>
+    <td><input class="cell-input val-input" type="text" inputmode="decimal" placeholder="0" value="${escHtml(valor)}" oninput="updateRowCount()"/></td>
+    <td><button class="btn-del" onclick="delRow(this)" title="Remover">×</button></td>`;
+  tbody.appendChild(tr);
+  updateRowNums();
+  updateRowCount();
+}
+
+function delRow(btn){
+  btn.closest('tr').remove();
+  updateRowNums();
+  updateRowCount();
+}
+
+function updateRowNums(){
+  document.querySelectorAll('#manual-tbody tr').forEach((tr,i)=>{
+    tr.querySelector('.row-num').textContent=i+1;
+  });
+}
+
+function updateRowCount(){
+  const rows=document.querySelectorAll('#manual-tbody tr');
+  const filled=[...rows].filter(r=>r.querySelector('.nome-input').value.trim()&&parseNum(r.querySelector('.val-input').value)>0);
+  document.getElementById('row-count').innerHTML=`<span>${filled.length}</span> linhas com dados`;
+}
+
+function clearRows(){
+  if(!confirm('Apagar todas as linhas?'))return;
+  document.getElementById('manual-tbody').innerHTML='';
+  updateRowCount();
+}
+
+// Seed with a few empty rows on load
+for(let i=0;i<6;i++) addRow();
+
+/* ─── SIMPLE UPLOAD ─────────────────────────────────── */
+const dz=document.getElementById('drop-simple');
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
 dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
-dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleFile(f);});
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleSimpleFile(f);});
 
-// ── File Handling ────────────────────────────────────────────
-async function handleFile(file){
+async function handleSimpleFile(file){
   if(!file)return;
-  _fileName=file.name;
-  const buf=await file.arrayBuffer();
-  const wb=XLSX.read(buf,{type:'array'});
-  _data=parseWorkbook(wb);
-  document.getElementById('upload-screen').style.display='none';
-  document.getElementById('dashboard').style.display='block';
-  renderAll();
+  const ext=file.name.split('.').pop().toLowerCase();
+  let rows=[];
+  if(ext==='csv'){
+    const txt=await file.text();
+    rows=parseCSV(txt);
+  } else {
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  }
+  // Filter empty rows
+  rows=rows.filter(r=>r.some(c=>c!==''&&c!==null&&c!==undefined));
+  if(rows.length<2){alert('Arquivo muito pequeno ou sem dados.');return;}
+  _simpleAllRows=rows;
+  _simpleHeaders=rows[0].map((h,i)=>h?String(h):`Coluna ${i+1}`);
+  // Fill selects
+  const nSel=document.getElementById('col-nome');
+  const vSel=document.getElementById('col-valor');
+  nSel.innerHTML=_simpleHeaders.map((h,i)=>`<option value="${i}">${h}</option>`).join('');
+  vSel.innerHTML=_simpleHeaders.map((h,i)=>`<option value="${i}">${h}</option>`).join('');
+  // Auto-guess: val = last numeric column
+  let bestVal=1;
+  for(let ci=_simpleHeaders.length-1;ci>=0;ci--){
+    const nums=rows.slice(1,6).filter(r=>parseNum(r[ci])>0);
+    if(nums.length>=1){bestVal=ci;break;}
+  }
+  vSel.value=bestVal;
+  nSel.value=bestVal===0?1:0;
+  // Auto-fill title if empty
+  const titleEl=document.getElementById('analysis-title');
+  if(!titleEl.value) titleEl.value=file.name.replace(/\.[^.]+$/,'');
+  document.getElementById('col-picker').style.display='block';
+  document.getElementById('drop-simple').style.display='none';
+  updatePreview();
+}
+
+function updatePreview(){
+  const nIdx=+document.getElementById('col-nome').value;
+  const vIdx=+document.getElementById('col-valor').value;
+  const rows=_simpleAllRows.slice(1,12);
+  const html=`<table class="preview-table">
+    <thead><tr>${_simpleHeaders.map((h,i)=>`<th class="${i===nIdx||i===vIdx?'col-hl':''}">${h}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r=>`<tr>${_simpleHeaders.map((_,i)=>`<td class="${i===nIdx||i===vIdx?'col-hl':''}">${r[i]??''}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table>`;
+  document.getElementById('preview-wrap').innerHTML=html;
+}
+
+function importSimple(){
+  const nIdx=+document.getElementById('col-nome').value;
+  const vIdx=+document.getElementById('col-valor').value;
+  _simpleRaw=_simpleAllRows.slice(1)
+    .map(r=>({nome:String(r[nIdx]??'').trim(),valor:parseNum(r[vIdx])}))
+    .filter(i=>i.nome&&i.valor>0);
+  if(!_simpleRaw.length){alert('Nenhum dado válido encontrado com as colunas selecionadas.');return;}
+  mostrarDashboard(_simpleRaw,getTitle());
 }
 
 function resetUpload(){
-  document.getElementById('upload-screen').style.display='flex';
-  document.getElementById('dashboard').style.display='none';
+  document.getElementById('col-picker').style.display='none';
+  document.getElementById('drop-simple').style.display='block';
   document.getElementById('file-input').value='';
-  _data=null;
 }
 
-// ── Workbook Parser ──────────────────────────────────────────
-function parseWorkbook(wb){
+/* ─── CSV PARSER ─────────────────────────────────────── */
+function parseCSV(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  return lines.map(line=>{
+    const cells=[];let cur='',inQ=false;
+    for(let c of line){if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){cells.push(cur.trim());cur='';}else cur+=c;}
+    cells.push(cur.trim());
+    return cells;
+  });
+}
+
+/* ─── EXCEL COMPLETO ─────────────────────────────────── */
+const dzEx=document.getElementById('drop-excel');
+dzEx.addEventListener('dragover',e=>{e.preventDefault();dzEx.classList.add('drag');});
+dzEx.addEventListener('dragleave',()=>dzEx.classList.remove('drag'));
+dzEx.addEventListener('drop',e=>{e.preventDefault();dzEx.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleExcelCompleto(f);});
+
+async function handleExcelCompleto(file){
+  if(!file)return;
+  const buf=await file.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array'});
+  _excelData=parseExcelCompleto(wb);
+  const titleEl=document.getElementById('analysis-title');
+  if(!titleEl.value) titleEl.value=file.name.replace(/\.[^.]+$/,'');
+  showDashboardExcel();
+}
+
+function parseExcelCompleto(wb){
   const find=terms=>wb.SheetNames.find(n=>terms.every(t=>n.trim().toUpperCase().includes(t.toUpperCase())));
   const rows=name=>{if(!name)return[];const ws=wb.Sheets[name];return XLSX.utils.sheet_to_json(ws,{header:1,defval:null});};
-
   const result={patrimonio:{},quantidade:{},receita:{}};
-
-  // ── PATRIMÔNIO ──
   for(const[seg,terms]of[['consolidado',['CONSOLIDADO','PATRIMONIO']],['consultoria',['CONSULTORIA','PATRIMONIO']],['assessoria',['ASSESSORIA','PATRIMONIO']]]){
-    const r=rows(find(terms));
-    const profs=[],clientes=[];
-    for(let i=2;i<r.length;i++){
-      const row=r[i];
-      if(row[6]&&row[6]!=='NaN'&&typeof row[7]==='number'&&row[7]>0) profs.push({nome:String(row[6]).trim(),valor:row[7]});
-      if(row[0]&&row[0]!=='NaN'&&typeof row[3]==='number'&&row[3]>0) clientes.push({nome:String(row[0]).trim(),profissao:String(row[2]||'').trim(),valor:row[3]});
-    }
-    result.patrimonio[seg]={profissoes:profs,clientes};
+    const r=rows(find(terms));const profs=[];
+    for(let i=2;i<r.length;i++){const row=r[i];if(row[6]&&typeof row[7]==='number'&&row[7]>0)profs.push({nome:String(row[6]).trim(),valor:row[7]});}
+    result.patrimonio[seg]={profissoes:profs};
   }
-
-  // ── QUANTIDADE ──
   for(const[seg,terms]of[['consolidado',['CONSOLIDADO','QUANTIDADE']],['consultoria',['CONSULTORIA','QUANTIDADE']],['assessoria',['ASSESSORIA','QUANTIDADE']]]){
-    const r=rows(find(terms));
-    const profs=[];
-    for(let i=2;i<r.length;i++){
-      const row=r[i];
-      if(row[4]&&row[4]!=='NaN'&&typeof row[5]==='number'&&row[5]>0) profs.push({nome:String(row[4]).trim(),valor:row[5]});
-    }
-    result.quantidade[seg]={profissoes:profs,clientes:[]};
+    const r=rows(find(terms));const profs=[];
+    for(let i=2;i<r.length;i++){const row=r[i];if(row[4]&&typeof row[5]==='number'&&row[5]>0)profs.push({nome:String(row[4]).trim(),valor:row[5]});}
+    result.quantidade[seg]={profissoes:profs};
   }
-
-  // ── RECEITA ──
-  const recRows=rows(find(['CONSOLIDADO','RECEITA']));
-  const consProfs=[];
-  const clientesRec=[];
-  for(let i=2;i<recRows.length;i++){
-    const row=recRows[i];
-    if(row[10]&&row[10]!=='NaN'&&typeof row[11]==='number'&&row[11]>0) consProfs.push({nome:String(row[10]).trim(),valor:row[11]});
-    if(row[0]&&row[0]!=='NaN'){
-      const consultoria=Number(row[2])||0,assessoria=Number(row[3])||0,total=Number(row[7])||0;
-      if(total>0) clientesRec.push({nome:String(row[0]).trim(),profissao:String(row[1]||'').trim(),consultoria,assessoria,total});
-    }
-  }
-  // Agrega por profissão para Consultoria/Assessoria
-  const aggProf=(field)=>{
-    const map={};
-    clientesRec.filter(c=>c[field]>0).forEach(c=>{map[c.profissao]=(map[c.profissao]||0)+c[field];});
-    return Object.entries(map).filter(([,v])=>v>0).map(([nome,valor])=>({nome,valor}));
-  };
-  result.receita={
-    consolidado:{profissoes:consProfs,clientes:clientesRec.map(c=>({nome:c.nome,profissao:c.profissao,valor:c.total}))},
-    consultoria:{profissoes:aggProf('consultoria'),clientes:clientesRec.filter(c=>c.consultoria>0).map(c=>({nome:c.nome,profissao:c.profissao,valor:c.consultoria}))},
-    assessoria:{profissoes:aggProf('assessoria'),clientes:clientesRec.filter(c=>c.assessoria>0).map(c=>({nome:c.nome,profissao:c.profissao,valor:c.assessoria}))},
-  };
-
+  const recRows=rows(find(['CONSOLIDADO','RECEITA']));const consProfs=[];
+  for(let i=2;i<recRows.length;i++){const row=recRows[i];if(row[10]&&typeof row[11]==='number'&&row[11]>0)consProfs.push({nome:String(row[10]).trim(),valor:row[11]});}
+  const clientesRec=recRows.slice(2).filter(r=>r[0]).map(r=>({nome:String(r[0]).trim(),consultoria:Number(r[2])||0,assessoria:Number(r[3])||0,total:Number(r[7])||0}));
+  const aggProf=(field)=>{const map={};clientesRec.filter(c=>c[field]>0).forEach(c=>{});return[];};
+  result.receita={consolidado:{profissoes:consProfs},consultoria:{profissoes:aggProf('consultoria')},assessoria:{profissoes:aggProf('assessoria')}};
   return result;
 }
 
-// ── Pareto Computation ───────────────────────────────────────
-function computePareto(items,limit=50){
+function showDashboardExcel(){
+  document.getElementById('seg-pills-wrap').style.display='flex';
+  document.getElementById('dim-pills-wrap').style.display='flex';
+  document.getElementById('input-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('dash-title').textContent=getTitle()||'Análise Completa';
+  renderExcelDashboard();
+}
+
+function renderExcelDashboard(){
+  if(!_excelData)return;
+  const dataset=_excelData[_dim]?.[_seg];
+  const items=dataset?.profissoes||[];
+  document.getElementById('dash-meta').textContent=`${_seg.charAt(0).toUpperCase()+_seg.slice(1)} · ${_dim.charAt(0).toUpperCase()+_dim.slice(1)}`;
+  document.getElementById('chart-title').textContent=`Pareto · ${_seg} · ${_dim}`;
+  if(!items.length){renderEmpty();return;}
+  const{items:pi,total,vitalCount}=computePareto(items);
+  renderKPIs(pi,total,vitalCount,items.length,_dim);
+  renderChart(pi,total,_dim);
+  renderTable(pi,total,_dim);
+}
+
+function setSeg(s,el){_seg=s;document.querySelectorAll('#seg-pills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderExcelDashboard();}
+function setDim(d,el){_dim=d;document.querySelectorAll('#dim-pills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderExcelDashboard();}
+
+/* ─── GERAR PARETO (manual) ──────────────────────────── */
+function gerarPareto(){
+  const rows=[...document.querySelectorAll('#manual-tbody tr')];
+  const items=rows.map(r=>({
+    nome:r.querySelector('.nome-input').value.trim(),
+    valor:parseNum(r.querySelector('.val-input').value)
+  })).filter(i=>i.nome&&i.valor>0);
+  if(items.length<2){alert('Adicione ao menos 2 linhas com nome e valor.');return;}
+  mostrarDashboard(items,getTitle());
+}
+
+function mostrarDashboard(items,titulo){
+  document.getElementById('seg-pills-wrap').style.display='none';
+  document.getElementById('dim-pills-wrap').style.display='none';
+  document.getElementById('input-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('dash-title').textContent=titulo||'Análise de Pareto';
+  document.getElementById('dash-meta').textContent=`${items.length} itens`;
+  document.getElementById('chart-title').textContent=titulo||'Análise de Pareto';
+  const{items:pi,total,vitalCount}=computePareto(items);
+  renderKPIs(pi,total,vitalCount,items.length,'auto');
+  renderChart(pi,total,'auto');
+  renderTable(pi,total,'auto');
+}
+
+function voltarInput(){
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('input-screen').style.display='block';
+}
+
+/* ─── PARETO CORE ────────────────────────────────────── */
+function computePareto(items,limit=60){
   const sorted=[...items].sort((a,b)=>b.valor-a.valor);
   const total=sorted.reduce((s,i)=>s+i.valor,0);
   let cumSum=0;
   const all=sorted.map(item=>{
     const prevPct=(cumSum/total)*100;
     cumSum+=item.valor;
-    const cumPct=(cumSum/total)*100;
-    return{...item,pct:(item.valor/total)*100,cumPct,isVital:prevPct<80};
+    return{...item,pct:(item.valor/total)*100,cumPct:(cumSum/total)*100,isVital:prevPct<80};
   });
-  // Limit: keep all vital items + up to limit total
   const vitalCount=all.filter(i=>i.isVital).length;
   const maxShow=Math.max(vitalCount+1,Math.min(limit,all.length));
   const shown=all.slice(0,maxShow);
   if(all.length>maxShow){
     const rest=all.slice(maxShow);
-    const restVal=rest.reduce((s,i)=>s+i.valor,0);
-    const restCumPct=all[maxShow-1]?.cumPct;
-    shown.push({nome:`Outros (${rest.length})`,valor:restVal,pct:(restVal/total)*100,cumPct:100,isVital:false,isOthers:true});
+    const rv=rest.reduce((s,i)=>s+i.valor,0);
+    shown.push({nome:`Outros (${rest.length})`,valor:rv,pct:(rv/total)*100,cumPct:100,isVital:false,isOthers:true});
   }
   return{items:shown,total,vitalCount};
 }
 
-// ── Formatters ───────────────────────────────────────────────
-const fmtBRL=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const fmtK=v=>v>=1e6?'R$ '+(v/1e6).toFixed(1).replace('.',',')+' M':v>=1e3?'R$ '+(v/1e3).toFixed(0).replace('.',',')+' K':fmtBRL(v);
-const fmtPct=v=>v.toFixed(1).replace('.',',')+' %';
-const fmtNum=v=>v.toLocaleString('pt-BR');
+/* ─── FORMATTERS ─────────────────────────────────────── */
+function parseNum(v){const n=parseFloat(String(v).replace(/[^\d.,\-]/g,'').replace(',','.'));return isNaN(n)?0:n;}
+function fmtBRL(v){return'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtK(v){return v>=1e9?'R$ '+(v/1e9).toFixed(1).replace('.',',')+' B':v>=1e6?'R$ '+(v/1e6).toFixed(1).replace('.',',')+' M':v>=1e3?'R$ '+(v/1e3).toFixed(0).replace('.',',')+' K':fmtBRL(v);}
+function fmtAuto(v,dim){return dim==='quantidade'?v.toLocaleString('pt-BR'):dim==='auto'?v.toLocaleString('pt-BR',{maximumFractionDigits:2}):fmtBRL(v);}
+function fmtAutoK(v,dim){return dim==='quantidade'?v.toLocaleString('pt-BR'):dim==='auto'?v.toLocaleString('pt-BR',{maximumFractionDigits:1}):fmtK(v);}
+function fmtPct(v){return v.toFixed(1).replace('.',',')+' %';}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getTitle(){return document.getElementById('analysis-title').value.trim();}
 
-// ── Filters ──────────────────────────────────────────────────
-function setSeg(s,el){_seg=s;document.querySelectorAll('#seg-pills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderAll();}
-function setDim(d,el){_dim=d;document.querySelectorAll('#dim-pills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');
-  // Quantidade não tem visão por cliente
-  document.getElementById('view-cli').style.display=d==='quantidade'?'none':'';
-  if(d==='quantidade'&&_view==='clientes'){_view='profissoes';document.querySelectorAll('#view-pills .pill').forEach(p=>p.classList.remove('active'));document.getElementById('view-prof').classList.add('active');}
-  renderAll();
-}
-function setView(v,el){_view=v;document.querySelectorAll('#view-pills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderAll();}
-
-// ── Get Current Items ────────────────────────────────────────
-function getCurrentItems(){
-  if(!_data||!_data[_dim]||!_data[_dim][_seg])return[];
-  const dataset=_data[_dim][_seg];
-  return _view==='clientes'?(dataset.clientes||[]):(dataset.profissoes||[]);
-}
-
-const dimLabel={patrimonio:'Patrimônio (PL)',receita:'Receita',quantidade:'Qtd. Clientes'};
-const dimUnit={patrimonio:'BRL',receita:'BRL',quantidade:'num'};
-const segLabel={consolidado:'Consolidado',consultoria:'Consultoria',assessoria:'Assessoria'};
-
-// ── Render All ───────────────────────────────────────────────
-function renderAll(){
-  if(!_data)return;
-  const raw=getCurrentItems();
-  if(!raw.length){
-    document.getElementById('kpi-row').innerHTML='<div class="empty">Sem dados para esta combinação de filtros.</div>';
-    document.getElementById('pareto-tbody').innerHTML='<tr><td colspan="7" class="empty">Sem dados</td></tr>';
-    if(_chart){_chart.destroy();_chart=null;}
-    return;
-  }
-  const{items,total,vitalCount}=computePareto(raw,_view==='clientes'?40:60);
-  renderKPIs(items,total,vitalCount,raw.length);
-  renderChart(items,total);
-  renderTable(items,total);
-}
-
-// ── KPIs ─────────────────────────────────────────────────────
-function renderKPIs(items,total,vitalCount,totalCount){
-  const isNum=dimUnit[_dim]==='num';
-  const vitalPct=(vitalCount/totalCount)*100;
+/* ─── KPIS ───────────────────────────────────────────── */
+function renderKPIs(items,total,vitalCount,totalCount,dim){
   const vitalTotal=items.filter(i=>i.isVital).reduce((s,i)=>s+i.valor,0);
-  const vitalShare=(vitalTotal/total)*100;
   document.getElementById('kpi-row').innerHTML=`
     <div class="kpi kpi-highlight">
-      <div class="kpi-label">Total ${dimLabel[_dim]}</div>
-      <div class="kpi-val gold">${isNum?fmtNum(Math.round(total)):fmtK(total)}</div>
-      <div class="kpi-sub">${totalCount} ${_view==='clientes'?'clientes':'profissões'} · ${segLabel[_seg]}</div>
+      <div class="kpi-label">Total Analisado</div>
+      <div class="kpi-val gold">${fmtAutoK(total,dim)}</div>
+      <div class="kpi-sub">${totalCount} itens no dataset</div>
     </div>
     <div class="kpi">
-      <div class="kpi-label">Grupo Vital (≥80%)</div>
+      <div class="kpi-label">Grupo Vital (80%)</div>
       <div class="kpi-val">${vitalCount} <span style="font-size:13px;font-weight:600;color:var(--muted)">de ${totalCount}</span></div>
-      <div class="kpi-sub">${fmtPct(vitalPct)} do total de ${_view==='clientes'?'clientes':'profissões'}</div>
+      <div class="kpi-sub">${fmtPct(vitalCount/totalCount*100)} do total de itens</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Concentração Real</div>
-      <div class="kpi-val gold">${fmtPct(vitalShare)}</div>
-      <div class="kpi-sub">do ${dimLabel[_dim]} nos top ${vitalCount}</div>
+      <div class="kpi-val gold">${fmtPct(vitalTotal/total*100)}</div>
+      <div class="kpi-sub">do total nos top ${vitalCount} itens</div>
     </div>
     <div class="kpi">
-      <div class="kpi-label">Maior ${_view==='clientes'?'cliente':'profissão'}</div>
-      <div class="kpi-val" style="font-size:14px;font-weight:800">${items[0]?.nome?.split(' ').slice(0,2).join(' ')||'—'}</div>
-      <div class="kpi-sub">${isNum?fmtNum(items[0]?.valor||0):fmtK(items[0]?.valor||0)} · ${fmtPct(items[0]?.pct||0)} do total</div>
-    </div>
-  `;
+      <div class="kpi-label">Maior Item</div>
+      <div class="kpi-val" style="font-size:14px">${items[0]?.nome?.split(' ').slice(0,3).join(' ')||'—'}</div>
+      <div class="kpi-sub">${fmtAutoK(items[0]?.valor||0,dim)} · ${fmtPct(items[0]?.pct||0)}</div>
+    </div>`;
 }
 
-// ── Chart ────────────────────────────────────────────────────
-const pluginLine80={
-  id:'line80',
-  afterDraw(chart){
-    const y1=chart.scales?.y1;if(!y1)return;
-    const y80=y1.getPixelForValue(80);
-    const{ctx,chartArea:{left,right}}=chart;
-    ctx.save();
-    ctx.beginPath();ctx.moveTo(left,y80);ctx.lineTo(right,y80);
-    ctx.strokeStyle='rgba(255,80,80,0.65)';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.stroke();
-    ctx.fillStyle='rgba(255,80,80,0.65)';ctx.font='700 9px Montserrat';ctx.textBaseline='bottom';
-    ctx.fillText('80%',right+4,y80+1);ctx.restore();
-  }
-};
+/* ─── CHART ──────────────────────────────────────────── */
+const line80Plugin={id:'l80',afterDraw(ch){
+  const y1=ch.scales?.y1;if(!y1)return;
+  const y=y1.getPixelForValue(80);
+  const{ctx,chartArea:{left,right}}=ch;
+  ctx.save();ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);
+  ctx.strokeStyle='rgba(255,80,80,0.6)';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.stroke();
+  ctx.fillStyle='rgba(255,80,80,0.6)';ctx.font='700 9px Montserrat';ctx.textBaseline='bottom';
+  ctx.fillText('80%',right+4,y+1);ctx.restore();
+}};
 
-function renderChart(items,total){
-  document.getElementById('chart-title').textContent=`Pareto ${_view==='clientes'?'por Cliente':'por Profissão'} — ${dimLabel[_dim]} · ${segLabel[_seg]}`;
-  const isNum=dimUnit[_dim]==='num';
-  const labels=items.map(i=>i.nome.length>18?i.nome.substring(0,16)+'…':i.nome);
+function renderChart(items,total,dim){
+  const labels=items.map(i=>i.nome.length>20?i.nome.slice(0,18)+'…':i.nome);
   const values=items.map(i=>i.valor);
-  const cumPcts=items.map(i=>i.cumPct);
   const bgs=items.map(i=>i.isVital?'rgba(201,150,60,0.85)':'rgba(255,255,255,0.1)');
-
-  if(_chart){_chart.destroy();}
+  const borders=items.map(i=>i.isVital?'rgba(201,150,60,0.9)':'transparent');
+  if(_chart)_chart.destroy();
   const ctx=document.getElementById('pareto-chart').getContext('2d');
   _chart=new Chart(ctx,{
-    data:{
-      labels,
-      datasets:[
-        {type:'bar',label:dimLabel[_dim],data:values,backgroundColor:bgs,borderColor:'transparent',borderRadius:3,yAxisID:'y',order:2},
-        {type:'line',label:'% Acumulado',data:cumPcts,borderColor:'rgba(255,255,255,0.75)',backgroundColor:'transparent',pointBackgroundColor:items.map(i=>i.isVital?'rgba(201,150,60,0.9)':'rgba(255,255,255,0.5)'),pointRadius:3,pointBorderWidth:0,tension:0.3,yAxisID:'y1',order:1}
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
+    data:{labels,datasets:[
+      {type:'bar',label:'Valor',data:values,backgroundColor:bgs,borderColor:borders,borderRadius:3,yAxisID:'y',order:2},
+      {type:'line',label:'% Acumulado',data:items.map(i=>i.cumPct),borderColor:'rgba(255,255,255,0.7)',backgroundColor:'transparent',
+       pointBackgroundColor:items.map(i=>i.isVital?'var(--gold)':'rgba(255,255,255,0.4)'),
+       pointRadius:3,pointBorderWidth:0,tension:0.35,yAxisID:'y1',order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
       scales:{
-        x:{ticks:{color:'rgba(255,255,255,0.45)',font:{family:'Montserrat',size:9,weight:'600'},maxRotation:40,minRotation:30},grid:{color:'rgba(255,255,255,0.04)'}},
-        y:{beginAtZero:true,ticks:{color:'rgba(255,255,255,0.4)',font:{family:'Montserrat',size:9},callback:v=>isNum?fmtNum(v):fmtK(v)},grid:{color:'rgba(255,255,255,0.05)'}},
-        y1:{position:'right',min:0,max:100,ticks:{color:'rgba(255,255,255,0.35)',font:{family:'Montserrat',size:9},callback:v=>v+'%'},grid:{drawOnChartArea:false}}
+        x:{ticks:{color:'rgba(255,255,255,0.4)',font:{family:'Montserrat',size:9,weight:'600'},maxRotation:42,minRotation:30},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{beginAtZero:true,ticks:{color:'rgba(255,255,255,0.35)',font:{family:'Montserrat',size:9},callback:v=>fmtAutoK(v,dim)},grid:{color:'rgba(255,255,255,0.05)'}},
+        y1:{position:'right',min:0,max:100,ticks:{color:'rgba(255,255,255,0.3)',font:{family:'Montserrat',size:9},callback:v=>v+'%'},grid:{drawOnChartArea:false}}
       },
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'rgba(11,30,48,0.95)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
-          titleFont:{family:'Montserrat',size:11,weight:'800'},bodyFont:{family:'Montserrat',size:10},
-          callbacks:{
-            label:ctx=>{
-              if(ctx.datasetIndex===0)return ` ${dimLabel[_dim]}: ${isNum?fmtNum(ctx.raw):fmtBRL(ctx.raw)}`;
-              return ` Acumulado: ${ctx.raw.toFixed(1)}%`;
-            }
-          }
-        }
-      }
-    },
-    plugins:[pluginLine80]
+      plugins:{legend:{display:false},tooltip:{
+        backgroundColor:'rgba(8,20,34,0.95)',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,
+        titleFont:{family:'Montserrat',size:11,weight:'800'},bodyFont:{family:'Montserrat',size:10},
+        callbacks:{label:c=>c.datasetIndex===0?` Valor: ${fmtAuto(c.raw,dim)}`:` Acumulado: ${c.raw.toFixed(1)}%`}
+      }}
+    },plugins:[line80Plugin]
   });
 }
 
-// ── Table ────────────────────────────────────────────────────
-function renderTable(items,total){
-  const isNum=dimUnit[_dim]==='num';
-  const vitalItems=items.filter(i=>i.isVital);
+/* ─── TABLE ──────────────────────────────────────────── */
+function renderTable(items,total,dim){
   const maxVal=items[0]?.valor||1;
-  document.getElementById('table-title').textContent=`Ranking — ${dimLabel[_dim]} · ${segLabel[_seg]}`;
-  document.getElementById('table-info').textContent=`${vitalItems.length} no grupo vital (Top 80%) de ${items.length} itens exibidos`;
+  const vitalCount=items.filter(i=>i.isVital).length;
+  document.getElementById('table-info').textContent=`${vitalCount} no grupo vital de ${items.length} exibidos`;
   document.getElementById('pareto-tbody').innerHTML=items.map((item,i)=>`
     <tr class="${item.isVital?'vital':'not-vital'}">
-      <td style="color:var(--muted);font-size:10px;font-weight:700;width:30px">${i+1}</td>
-      <td class="nome" style="max-width:220px">${item.nome}${item.profissao?`<br><span style="font-size:9px;color:var(--muted);font-weight:400">${item.profissao}</span>`:''}</td>
-      <td style="font-weight:700;white-space:nowrap">${isNum?fmtNum(Math.round(item.valor)):fmtBRL(item.valor)}</td>
-      <td style="font-weight:600;color:rgba(255,255,255,0.6)">${fmtPct(item.pct)}</td>
+      <td style="color:var(--muted);font-size:10px;font-weight:700">${i+1}</td>
+      <td class="nome-cell">${escHtml(item.nome)}</td>
+      <td style="font-weight:700;white-space:nowrap">${fmtAuto(item.valor,dim)}</td>
+      <td style="color:rgba(255,255,255,0.55);font-weight:600">${fmtPct(item.pct)}</td>
       <td class="pct-cum">${fmtPct(item.cumPct)}</td>
-      <td class="bar-cell">
-        <div class="bar-bg"><div class="bar-fill" style="width:${(item.valor/maxVal*100).toFixed(1)}%;background:${item.isVital?'rgba(201,150,60,0.7)':'rgba(255,255,255,0.15)'}"></div></div>
-      </td>
-      <td><span class="${item.isVital?'badge-vital':'badge-not'}">${item.isVital?'VITAL FEW':'TRIVIAL'}</span></td>
+      <td><div class="bar-bg"><div class="bar-fill" style="width:${(item.valor/maxVal*100).toFixed(1)}%;background:${item.isVital?'rgba(201,150,60,0.7)':'rgba(255,255,255,0.13)'}"></div></div></td>
+      <td><span class="${item.isVital?'badge badge-vital':'badge badge-not'}">${item.isVital?'VITAL FEW':'TRIVIAL'}</span></td>
     </tr>`).join('');
+}
+
+function renderEmpty(){
+  document.getElementById('kpi-row').innerHTML='<div class="empty-msg">Sem dados para esta seleção.</div>';
+  document.getElementById('pareto-tbody').innerHTML='<tr><td colspan="7" class="empty-msg">Sem dados</td></tr>';
+  if(_chart){_chart.destroy();_chart=null;}
 }
 </script>
 </body>
