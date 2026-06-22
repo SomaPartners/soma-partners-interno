@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Análise de Pareto — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--gold:#c9963c;--gold-dim:rgba(201,150,60,0.18);--blue:#3b8bff;--green:#10b981;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.4);--surface:rgba(255,255,255,0.04)}
+html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff;font-size:13px}
+
+.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-left{display:flex;align-items:center;gap:12px}
+.logo-soma{font-size:15px;font-weight:300}.logo-pipe{width:1px;height:18px;background:rgba(255,255,255,0.3)}.logo-partners{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.7}
+.nav-sep{width:1px;height:22px;background:var(--border)}.nav-title{font-size:12px;font-weight:800}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all .15s}
+.btn-ghost{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)}.btn-ghost:hover{color:#fff;background:rgba(255,255,255,0.1)}
+
+/* UPLOAD */
+#upload-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px);padding:40px 24px}
+.upload-box{border:2px dashed rgba(201,150,60,0.35);border-radius:20px;padding:60px 80px;text-align:center;cursor:pointer;transition:all .2s;max-width:520px;width:100%;background:rgba(201,150,60,0.04)}
+.upload-box:hover,.upload-box.drag{border-color:var(--gold);background:rgba(201,150,60,0.08)}
+.upload-icon{font-size:48px;margin-bottom:16px;opacity:.7}
+.upload-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.upload-sub{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:24px}
+.upload-btn{background:var(--gold);color:#0b1e30;padding:11px 28px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;border:none;font-family:'Montserrat',sans-serif;transition:filter .15s}
+.upload-btn:hover{filter:brightness(1.1)}
+#file-input{display:none}
+.upload-hint{font-size:10px;color:rgba(255,255,255,0.25);margin-top:14px}
+
+/* DASHBOARD */
+#dashboard{display:none}
+.filter-bar{background:rgba(8,18,28,0.6);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.filter-file{font-size:10px;color:rgba(255,255,255,0.4);display:flex;align-items:center;gap:6px}
+.filter-file strong{color:rgba(255,255,255,0.7)}
+.filter-sep{width:1px;height:20px;background:var(--border)}
+.pill-group{display:flex;gap:4px}
+.pill{padding:5px 13px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);transition:all .15s;letter-spacing:.3px}
+.pill:hover{color:#fff;border-color:rgba(255,255,255,0.2)}
+.pill.active{background:rgba(201,150,60,0.15);border-color:rgba(201,150,60,0.5);color:var(--gold)}
+.pill-dim.active{background:rgba(59,139,255,0.12);border-color:rgba(59,139,255,0.4);color:#7db8ff}
+.pill-view.active{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.35);color:#5eead4}
+.filter-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25)}
+.reset-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:5px}
+.reset-btn:hover{color:rgba(255,255,255,0.6)}
+
+/* KPIS */
+.kpi-row{padding:16px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;border-bottom:1px solid var(--border)}
+.kpi{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:13px 16px}
+.kpi-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.kpi-val{font-size:20px;font-weight:900;line-height:1;color:#fff}
+.kpi-val.gold{color:var(--gold)}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.kpi-highlight{border-color:rgba(201,150,60,0.3);background:rgba(201,150,60,0.06)}
+
+/* CHART AREA */
+.chart-section{padding:20px 24px;border-bottom:1px solid var(--border)}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,0.55)}
+.chart-legend{display:flex;gap:14px;align-items:center}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:600;color:var(--muted)}
+.leg-dot{width:10px;height:10px;border-radius:2px}
+.chart-wrap{position:relative;height:340px;width:100%}
+
+/* TABLE */
+.table-section{padding:16px 24px 32px}
+.pareto-table{width:100%;border-collapse:collapse;font-size:11px}
+.pareto-table th{text-align:left;padding:7px 10px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+.pareto-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.pareto-table tr:hover td{background:rgba(255,255,255,0.03)}
+.pareto-table .vital td:first-child{border-left:2px solid var(--gold)}
+.pareto-table .not-vital td:first-child{border-left:2px solid transparent}
+.vital .nome{font-weight:700;color:#fff}
+.not-vital .nome{color:rgba(255,255,255,0.5)}
+.bar-cell{width:140px}
+.bar-bg{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.pct-cum{font-weight:700}
+.vital .pct-cum{color:var(--gold)}
+.not-vital .pct-cum{color:rgba(255,255,255,0.35)}
+.badge-vital{display:inline-block;padding:2px 7px;border-radius:10px;font-size:8px;font-weight:800;background:rgba(201,150,60,0.15);color:var(--gold);letter-spacing:.5px}
+.badge-not{display:inline-block;padding:2px 7px;border-radius:10px;font-size:8px;font-weight:800;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.25);letter-spacing:.5px}
+
+/* EMPTY */
+.empty{padding:48px;text-align:center;color:var(--muted);font-size:12px}
+
+@media(max-width:700px){
+  .filter-bar{gap:10px}.kpi-row{grid-template-columns:1fr 1fr}.chart-wrap{height:260px}
+  .upload-box{padding:40px 24px}.bar-cell{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <a href="../ferramentas.html" style="text-decoration:none;display:flex;align-items:center;gap:12px">
+      <span class="logo-soma">Soma</span><span class="logo-pipe"></span><span class="logo-partners">Partners</span>
+    </a>
+    <div class="nav-sep"></div>
+    <span class="nav-title">Análise de Pareto</span>
+  </div>
+  <button class="btn btn-ghost" onclick="window.location.href='../ferramentas.html'">
+    <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="15 18 9 12 15 6"/></svg>
+    Ferramentas
+  </button>
+</nav>
+
+<!-- UPLOAD SCREEN -->
+<div id="upload-screen">
+  <div class="upload-box" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="upload-icon">📊</div>
+    <div class="upload-title">Análise de Pareto Comercial</div>
+    <div class="upload-sub">Faça upload do seu Excel de análise comercial para gerar automaticamente os gráficos de Pareto por Patrimônio, Receita e Quantidade de Clientes.</div>
+    <button class="upload-btn" onclick="event.stopPropagation();document.getElementById('file-input').click()">Selecionar arquivo .xlsx</button>
+    <div class="upload-hint">Arraste e solte ou clique para selecionar · Suporta o formato Pareto - Analise Comercial.xlsx</div>
+  </div>
+  <input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(this.files[0])"/>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="filter-bar">
+    <span class="filter-label">Segmento</span>
+    <div class="pill-group" id="seg-pills">
+      <span class="pill active" onclick="setSeg('consolidado',this)">Consolidado</span>
+      <span class="pill" onclick="setSeg('consultoria',this)">Consultoria</span>
+      <span class="pill" onclick="setSeg('assessoria',this)">Assessoria</span>
+    </div>
+    <div class="filter-sep"></div>
+    <span class="filter-label">Dimensão</span>
+    <div class="pill-group" id="dim-pills">
+      <span class="pill pill-dim active" onclick="setDim('patrimonio',this)">Patrimônio</span>
+      <span class="pill pill-dim" onclick="setDim('receita',this)">Receita</span>
+      <span class="pill pill-dim" onclick="setDim('quantidade',this)">Quantidade</span>
+    </div>
+    <div class="filter-sep"></div>
+    <span class="filter-label">Visão</span>
+    <div class="pill-group" id="view-pills">
+      <span class="pill pill-view active" onclick="setView('profissoes',this)" id="view-prof">Por Profissão</span>
+      <span class="pill pill-view" onclick="setView('clientes',this)" id="view-cli">Por Cliente</span>
+    </div>
+    <button class="reset-btn" onclick="resetUpload()">
+      <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Trocar arquivo
+    </button>
+  </div>
+
+  <div class="kpi-row" id="kpi-row"></div>
+
+  <div class="chart-section">
+    <div class="section-header">
+      <span class="section-title" id="chart-title">Pareto por Profissão</span>
+      <div class="chart-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(201,150,60,0.85)"></div>Top 80%</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,0.15)"></div>Cauda</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,0.7);border-radius:50%"></div>% Acumulado</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,80,80,0.7);height:2px;border-radius:1px;width:18px"></div>Meta 80%</div>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="pareto-chart"></canvas></div>
+  </div>
+
+  <div class="table-section">
+    <div class="section-header" style="margin-bottom:10px">
+      <span class="section-title" id="table-title">Ranking Detalhado</span>
+      <span style="font-size:10px;color:var(--muted)" id="table-info"></span>
+    </div>
+    <table class="pareto-table">
+      <thead><tr>
+        <th>#</th>
+        <th>Nome</th>
+        <th>Valor</th>
+        <th>% do Total</th>
+        <th>% Acumulado</th>
+        <th class="bar-cell">Distribuição</th>
+        <th>Grupo</th>
+      </tr></thead>
+      <tbody id="pareto-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+if(sessionStorage.getItem('soma_auth')!=='1'||sessionStorage.getItem('soma_admin')!=='1'){window.location.href='../login.html';}
+
+let _data=null,_seg='consolidado',_dim='patrimonio',_view='profissoes',_chart=null,_fileName='';
+
+// ── Drag & Drop ──────────────────────────────────────────────
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleFile(f);});
+
+// ── File Handling ────────────────────────────────────────────
+async function handleFile(file){
+  if(!file)return;
+  _fileName=file.name;
+  const buf=await file.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array'});
+  _data=parseWorkbook(wb);
+  document.getElementById('upload-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  renderAll();
+}
+
+function resetUpload(){
+  document.getElementById('upload-screen').style.display='flex';
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('file-input').value='';
+  _data=null;
+}
+
+// ── Workbook Parser ──────────────────────────────────────────
+function parseWorkbook(wb){
+  const find=terms=>wb.SheetNames.find(n=>terms.every(t=>n.trim().toUpperCase().includes(t.toUpperCase())));
+  const rows=name=>{if(!name)return[];const ws=wb.Sheets[name];return XLSX.utils.sheet_to_json(ws,{header:1,defval:null});};
+
+  const result={patrimonio:{},quantidade:{},receita:{}};
+
+  // ── PATRIMÔNIO ──
+  for(const[seg,terms]of[['consolidado',['CONSOLIDADO','PATRIMONIO']],['consultoria',['CONSULTORIA','PATRIMONIO']],['assessoria',['ASSESSORIA','PATRIMONIO']]]){
+    const r=rows(find(terms));
+    const profs=[],clientes=[];
+    for(let i=2;i<r.length;i++){
+      const row=r[i];
+      if(row[6]&&row[6]!=='NaN'&&typeof row[7]==='number'&&row[7]>0) profs.push({nome:String(row[6]).trim(),valor:row[7]});
+      if(row[0]&&row[0]!=='NaN'&&typeof row[3]==='number'&&row[3]>0) clientes.push({nome:String(row[0]).trim(),profissao:String(row[2]||'').trim(),valor:row[3]});
+    }
+    result.patrimonio[seg]={profissoes:profs,clientes};
+  }
+
+  // ── QUANTIDADE ──
+  for(const[seg,terms]of[['consolidado',['CONSOLIDADO','QUANTIDADE']],['consultoria',['CONSULTORIA','QUANTIDADE']],['assessoria',['ASSESSORIA','QUANTIDADE']]]){
+    const r=rows(find(terms));
+    const profs=[];
+    for(let i=2;i<r.length;i++){
+      const row=r[i];
+      if(row[4]&&row[4]!=='NaN'&&typeof row[5]==='number'&&row[5]>0) profs.push({nome:String(row[4]).trim(),valor:row[5]});
+    }
+    result.quantidade[seg]={profissoes:profs,clientes:[]};
+  }
+
+  // ── RECEITA ──
+  const recRows=rows(find(['CONSOLIDADO','RECEITA']));
+  const consProfs=[];
+  const clientesRec=[];
+  for(let i=2;i<recRows.length;i++){
+    const row=recRows[i];
+    if(row[10]&&row[10]!=='NaN'&&typeof row[11]==='number'&&row[11]>0) consProfs.push({nome:String(row[10]).trim(),valor:row[11]});
+    if(row[0]&&row[0]!=='NaN'){
+      const consultoria=Number(row[2])||0,assessoria=Number(row[3])||0,total=Number(row[7])||0;
+      if(total>0) clientesRec.push({nome:String(row[0]).trim(),profissao:String(row[1]||'').trim(),consultoria,assessoria,total});
+    }
+  }
+  // Agrega por profissão para Consultoria/Assessoria
+  const aggProf=(field)=>{
+    const map={};
+    clientesRec.filter(c=>c[field]>0).forEach(c=>{map[c.profissao]=(map[c.profissao]||0)+c[field];});
+    return Object.entries(map).filter(([,v])=>v>0).map(([nome,valor])=>({nome,valor}));
+  };
+  result.receita={
+    consolidado:{profissoes:consProfs,clientes:clientesRec.map(c=>({nome:c.nome,profissao:c.profissao,valor:c.total}))},
+    consultoria:{profissoes:aggProf('consultoria'),clientes:clientesRec.filter(c=>c.consultoria>0).map(c=>({nome:c.nome,profissao:c.profissao,valor:c.consultoria}))},
+    assessoria:{profissoes:aggProf('assessoria'),clientes:clientesRec.filter(c=>c.assessoria>0).map(c=>({nome:c.nome,profissao:c.profissao,valor:c.assessoria}))},
+  };
+
+  return result;
+}
+
+// ── Pareto Computation ───────────────────────────────────────
+function computePareto(items,limit=50){
+  const sorted=[...items].sort((a,b)=>b.valor-a.valor);
+  const total=sorted.reduce((s,i)=>s+i.valor,0);
+  let cumSum=0;
+  const all=sorted.map(item=>{
+    const prevPct=(cumSum/total)*100;
+    cumSum+=item.valor;
+    const cumPct=(cumSum/total)*100;
+    return{...item,pct:(item.valor/total)*100,cumPct,isVital:prevPct<80};
+  });
+  // Limit: keep all vital items + up to limit total
+  const vitalCount=all.filter(i=>i.isVital).length;
+  const maxShow=Math.max(vitalCount+1,Math.min(limit,all.length));
+  const shown=all.slice(0,maxShow);
+  if(all.length>maxShow){
+    const rest=all.slice(maxShow);
+    const restVal=rest.reduce((s,i)=>s+i.valor,0);
+    const restCumPct=all[maxShow-1]?.cumPct;
+    shown.push({nome:`Outros (${rest.length})`,valor:restVal,pct:(restVal/total)*100,cumPct:100,isVital:false,isOthers:true});
+  }
+  return{items:shown,total,vitalCount};
+}
+
+// ── Formatters ───────────────────────────────────────────────
+const fmtBRL=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtK=v=>v>=1e6?'R$ '+(v/1e6).toFixed(1).replace('.',',')+' M':v>=1e3?'R$ '+(v/1e3).toFixed(0).replace('.',',')+' K':fmtBRL(v);
+const fmtPct=v=>v.toFixed(1).replace('.',',')+' %';
+const fmtNum=v=>v.toLocaleString('pt-BR');
+
+// ── Filters ──────────────────────────────────────────────────
+function setSeg(s,el){_seg=s;document.querySelectorAll('#seg-pills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderAll();}
+function setDim(d,el){_dim=d;document.querySelectorAll('#dim-pills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');
+  // Quantidade não tem visão por cliente
+  document.getElementById('view-cli').style.display=d==='quantidade'?'none':'';
+  if(d==='quantidade'&&_view==='clientes'){_view='profissoes';document.querySelectorAll('#view-pills .pill').forEach(p=>p.classList.remove('active'));document.getElementById('view-prof').classList.add('active');}
+  renderAll();
+}
+function setView(v,el){_view=v;document.querySelectorAll('#view-pills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderAll();}
+
+// ── Get Current Items ────────────────────────────────────────
+function getCurrentItems(){
+  if(!_data||!_data[_dim]||!_data[_dim][_seg])return[];
+  const dataset=_data[_dim][_seg];
+  return _view==='clientes'?(dataset.clientes||[]):(dataset.profissoes||[]);
+}
+
+const dimLabel={patrimonio:'Patrimônio (PL)',receita:'Receita',quantidade:'Qtd. Clientes'};
+const dimUnit={patrimonio:'BRL',receita:'BRL',quantidade:'num'};
+const segLabel={consolidado:'Consolidado',consultoria:'Consultoria',assessoria:'Assessoria'};
+
+// ── Render All ───────────────────────────────────────────────
+function renderAll(){
+  if(!_data)return;
+  const raw=getCurrentItems();
+  if(!raw.length){
+    document.getElementById('kpi-row').innerHTML='<div class="empty">Sem dados para esta combinação de filtros.</div>';
+    document.getElementById('pareto-tbody').innerHTML='<tr><td colspan="7" class="empty">Sem dados</td></tr>';
+    if(_chart){_chart.destroy();_chart=null;}
+    return;
+  }
+  const{items,total,vitalCount}=computePareto(raw,_view==='clientes'?40:60);
+  renderKPIs(items,total,vitalCount,raw.length);
+  renderChart(items,total);
+  renderTable(items,total);
+}
+
+// ── KPIs ─────────────────────────────────────────────────────
+function renderKPIs(items,total,vitalCount,totalCount){
+  const isNum=dimUnit[_dim]==='num';
+  const vitalPct=(vitalCount/totalCount)*100;
+  const vitalTotal=items.filter(i=>i.isVital).reduce((s,i)=>s+i.valor,0);
+  const vitalShare=(vitalTotal/total)*100;
+  document.getElementById('kpi-row').innerHTML=`
+    <div class="kpi kpi-highlight">
+      <div class="kpi-label">Total ${dimLabel[_dim]}</div>
+      <div class="kpi-val gold">${isNum?fmtNum(Math.round(total)):fmtK(total)}</div>
+      <div class="kpi-sub">${totalCount} ${_view==='clientes'?'clientes':'profissões'} · ${segLabel[_seg]}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Grupo Vital (≥80%)</div>
+      <div class="kpi-val">${vitalCount} <span style="font-size:13px;font-weight:600;color:var(--muted)">de ${totalCount}</span></div>
+      <div class="kpi-sub">${fmtPct(vitalPct)} do total de ${_view==='clientes'?'clientes':'profissões'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Concentração Real</div>
+      <div class="kpi-val gold">${fmtPct(vitalShare)}</div>
+      <div class="kpi-sub">do ${dimLabel[_dim]} nos top ${vitalCount}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Maior ${_view==='clientes'?'cliente':'profissão'}</div>
+      <div class="kpi-val" style="font-size:14px;font-weight:800">${items[0]?.nome?.split(' ').slice(0,2).join(' ')||'—'}</div>
+      <div class="kpi-sub">${isNum?fmtNum(items[0]?.valor||0):fmtK(items[0]?.valor||0)} · ${fmtPct(items[0]?.pct||0)} do total</div>
+    </div>
+  `;
+}
+
+// ── Chart ────────────────────────────────────────────────────
+const pluginLine80={
+  id:'line80',
+  afterDraw(chart){
+    const y1=chart.scales?.y1;if(!y1)return;
+    const y80=y1.getPixelForValue(80);
+    const{ctx,chartArea:{left,right}}=chart;
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(left,y80);ctx.lineTo(right,y80);
+    ctx.strokeStyle='rgba(255,80,80,0.65)';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.stroke();
+    ctx.fillStyle='rgba(255,80,80,0.65)';ctx.font='700 9px Montserrat';ctx.textBaseline='bottom';
+    ctx.fillText('80%',right+4,y80+1);ctx.restore();
+  }
+};
+
+function renderChart(items,total){
+  document.getElementById('chart-title').textContent=`Pareto ${_view==='clientes'?'por Cliente':'por Profissão'} — ${dimLabel[_dim]} · ${segLabel[_seg]}`;
+  const isNum=dimUnit[_dim]==='num';
+  const labels=items.map(i=>i.nome.length>18?i.nome.substring(0,16)+'…':i.nome);
+  const values=items.map(i=>i.valor);
+  const cumPcts=items.map(i=>i.cumPct);
+  const bgs=items.map(i=>i.isVital?'rgba(201,150,60,0.85)':'rgba(255,255,255,0.1)');
+
+  if(_chart){_chart.destroy();}
+  const ctx=document.getElementById('pareto-chart').getContext('2d');
+  _chart=new Chart(ctx,{
+    data:{
+      labels,
+      datasets:[
+        {type:'bar',label:dimLabel[_dim],data:values,backgroundColor:bgs,borderColor:'transparent',borderRadius:3,yAxisID:'y',order:2},
+        {type:'line',label:'% Acumulado',data:cumPcts,borderColor:'rgba(255,255,255,0.75)',backgroundColor:'transparent',pointBackgroundColor:items.map(i=>i.isVital?'rgba(201,150,60,0.9)':'rgba(255,255,255,0.5)'),pointRadius:3,pointBorderWidth:0,tension:0.3,yAxisID:'y1',order:1}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{ticks:{color:'rgba(255,255,255,0.45)',font:{family:'Montserrat',size:9,weight:'600'},maxRotation:40,minRotation:30},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{beginAtZero:true,ticks:{color:'rgba(255,255,255,0.4)',font:{family:'Montserrat',size:9},callback:v=>isNum?fmtNum(v):fmtK(v)},grid:{color:'rgba(255,255,255,0.05)'}},
+        y1:{position:'right',min:0,max:100,ticks:{color:'rgba(255,255,255,0.35)',font:{family:'Montserrat',size:9},callback:v=>v+'%'},grid:{drawOnChartArea:false}}
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(11,30,48,0.95)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
+          titleFont:{family:'Montserrat',size:11,weight:'800'},bodyFont:{family:'Montserrat',size:10},
+          callbacks:{
+            label:ctx=>{
+              if(ctx.datasetIndex===0)return ` ${dimLabel[_dim]}: ${isNum?fmtNum(ctx.raw):fmtBRL(ctx.raw)}`;
+              return ` Acumulado: ${ctx.raw.toFixed(1)}%`;
+            }
+          }
+        }
+      }
+    },
+    plugins:[pluginLine80]
+  });
+}
+
+// ── Table ────────────────────────────────────────────────────
+function renderTable(items,total){
+  const isNum=dimUnit[_dim]==='num';
+  const vitalItems=items.filter(i=>i.isVital);
+  const maxVal=items[0]?.valor||1;
+  document.getElementById('table-title').textContent=`Ranking — ${dimLabel[_dim]} · ${segLabel[_seg]}`;
+  document.getElementById('table-info').textContent=`${vitalItems.length} no grupo vital (Top 80%) de ${items.length} itens exibidos`;
+  document.getElementById('pareto-tbody').innerHTML=items.map((item,i)=>`
+    <tr class="${item.isVital?'vital':'not-vital'}">
+      <td style="color:var(--muted);font-size:10px;font-weight:700;width:30px">${i+1}</td>
+      <td class="nome" style="max-width:220px">${item.nome}${item.profissao?`<br><span style="font-size:9px;color:var(--muted);font-weight:400">${item.profissao}</span>`:''}</td>
+      <td style="font-weight:700;white-space:nowrap">${isNum?fmtNum(Math.round(item.valor)):fmtBRL(item.valor)}</td>
+      <td style="font-weight:600;color:rgba(255,255,255,0.6)">${fmtPct(item.pct)}</td>
+      <td class="pct-cum">${fmtPct(item.cumPct)}</td>
+      <td class="bar-cell">
+        <div class="bar-bg"><div class="bar-fill" style="width:${(item.valor/maxVal*100).toFixed(1)}%;background:${item.isVital?'rgba(201,150,60,0.7)':'rgba(255,255,255,0.15)'}"></div></div>
+      </td>
+      <td><span class="${item.isVital?'badge-vital':'badge-not'}">${item.isVital?'VITAL FEW':'TRIVIAL'}</span></td>
+    </tr>`).join('');
+}
+</script>
+</body>
+</html>
