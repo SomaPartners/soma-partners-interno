@@ -1,4 +1,4 @@
-const CACHE = 'soma-v12';
+const CACHE = 'soma-v13';
 const STATIC = [
   '/manifest.json',
   '/icons/icon-192.png',

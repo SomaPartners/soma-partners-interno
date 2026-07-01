@@ -105,6 +105,26 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .tipo-tag{font-size:9px;color:var(--muted)}
 .empty-table{padding:32px;text-align:center;color:var(--muted);font-size:11px}
 
+/* PERIOD BAR */
+.period-bar{padding:0 24px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.period-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+.period-pills{display:flex;gap:4px;flex-wrap:wrap}
+.btn-periodo{padding:4px 12px;border-radius:16px;font-size:9px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);transition:all .12s;font-family:'Montserrat',sans-serif}
+.btn-periodo:hover{color:#fff;border-color:rgba(255,255,255,0.2)}
+.btn-periodo.active{background:rgba(59,139,255,0.1);border-color:rgba(59,139,255,0.4);color:#93c5fd}
+.range-bar{padding:0 24px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.range-bar label{font-size:10px;font-weight:600;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:6px}
+.range-bar input[type=date]{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:6px;padding:4px 8px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;cursor:pointer;outline:none;color-scheme:dark}
+.range-bar input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.5;cursor:pointer}
+.btn-range-clear{padding:4px 10px;border-radius:6px;font-size:9px;font-weight:700;cursor:pointer;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.06);color:#fca5a5;font-family:'Montserrat',sans-serif;transition:all .15s}
+.btn-range-clear:hover{background:rgba(239,68,68,0.12)}
+/* PENDÊNCIA BANNER */
+.pendencia-banner{margin:0 24px 14px;border-radius:9px;padding:12px 16px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pendencia-title{font-size:11px;font-weight:800;color:#fca5a5}
+.pendencia-val{font-size:17px;font-weight:900;color:#ef4444}
+.pendencia-sub{font-size:9px;color:rgba(255,255,255,0.4);margin-top:1px}
+.agendado-banner{margin:0 24px 14px;border-radius:9px;padding:10px 16px;background:rgba(59,139,255,0.07);border:1px solid rgba(59,139,255,0.2);display:flex;align-items:center;justify-content:space-between}
+
 @media(max-width:800px){
   .dash-layout{flex-direction:column}
   .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border)}
@@ -167,7 +187,7 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 <script>
 if(sessionStorage.getItem('soma_auth')!=='1'||sessionStorage.getItem('soma_admin')!=='1'){window.location.href='../login.html';}
 
-let _clientes=[], _sel=0, _filtro='todos', _mesFiltro='todos', _chartBar=null, _chartPie=null, _fileName='';
+let _clientes=[], _sel=0, _filtro='todos', _mesFiltro='todos', _dataInicio=null, _dataFim=null, _periodoCustom=false, _chartBar=null, _chartPie=null, _fileName='';
 
 /* ── DRAG & DROP ──────────────────────────────── */
 const dz=document.getElementById('drop-zone');
@@ -311,7 +331,7 @@ function renderSidebar(){
 }
 
 function selCliente(i){
-  _sel=i;_filtro='todos';_mesFiltro='todos';
+  _sel=i;_filtro='todos';_mesFiltro='todos';_dataInicio=null;_dataFim=null;_periodoCustom=false;
   renderSidebar();renderCliente();
 }
 
@@ -321,11 +341,22 @@ function getMeses(transacoes){
   return [...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
 }
 
+function transPorPeriodo(transacoes){
+  if(_periodoCustom&&_dataInicio&&_dataFim)
+    return transacoes.filter(t=>t.dateObj&&t.dateObj>=_dataInicio&&t.dateObj<=_dataFim);
+  return _mesFiltro==='todos'?transacoes:transacoes.filter(t=>t.mesKey===_mesFiltro);
+}
+
 function transFiltradas(transacoes){
   return transacoes.filter(t=>{
-    const okMes=_mesFiltro==='todos'||t.mesKey===_mesFiltro;
+    let okPeriodo;
+    if(_periodoCustom&&_dataInicio&&_dataFim){
+      okPeriodo=t.dateObj&&t.dateObj>=_dataInicio&&t.dateObj<=_dataFim;
+    } else {
+      okPeriodo=_mesFiltro==='todos'||t.mesKey===_mesFiltro;
+    }
     const okTipo=_filtro==='todos'||t.descricao===_filtro||(_filtro==='SAÍDA'&&t.descricao==='SAIDA');
-    return okMes&&okTipo;
+    return okPeriodo&&okTipo;
   });
 }
 
@@ -334,30 +365,81 @@ function renderCliente(){
   const c=_clientes[_sel];
   const meses=getMeses(c.transacoes);
   const filtered=transFiltradas(c.transacoes);
-  const{totalEntrada,totalSaida,totalAgendado,saldo,porTipo,periodo,nEntrada,nSaida}=calcular(filtered);
-  const{periodo:periodoTotal}=calcular(c.transacoes);
+  const{totalEntrada,totalSaida,totalAgendado,saldo,porTipo,periodo:periodoTodos,nEntrada,nSaida}=calcular(filtered);
   const saldoCls=saldo>=0?'kpi-saldo-pos':'kpi-saldo-neg';
-  const mesPillsHtml=meses.length>1?`
-    <div style="padding:0 24px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <span style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Mês</span>
-      <span class="fpill${_mesFiltro==='todos'?' active':''}" onclick="setMes('todos')">Todos</span>
-      ${meses.map(([k,l])=>`<span class="fpill${_mesFiltro===k?' active':''}" onclick="setMes('${k}')">${l}</span>`).join('')}
-    </div>`:'';
-  const periodoLabel=_mesFiltro==='todos'?periodoTotal:(meses.find(([k])=>k===_mesFiltro)?.[1]||_mesFiltro);
+  const nAgendados=filtered.filter(t=>t.descricao==='AGENDADO').length;
+
+  // Label do período exibido no cabeçalho
+  let periodoLabel;
+  if(_periodoCustom&&_dataInicio&&_dataFim){
+    periodoLabel=`${_dataInicio.toLocaleDateString('pt-BR')} — ${_dataFim.toLocaleDateString('pt-BR')}`;
+  } else if(_mesFiltro!=='todos'){
+    periodoLabel=meses.find(([k])=>k===_mesFiltro)?.[1]||_mesFiltro;
+  } else {
+    periodoLabel=periodoTodos;
+  }
+
+  // Barra de período
+  const diInStr=_dataInicio?_dataInicio.toISOString().split('T')[0]:'';
+  const diFimStr=_dataFim?_dataFim.toISOString().split('T')[0]:'';
+  const periodoFiltroHtml=`
+    <div class="period-bar">
+      <span class="period-label">Período</span>
+      <div class="period-pills">
+        <span class="fpill${!_periodoCustom&&_mesFiltro==='todos'?' active':''}" onclick="setMes('todos')">Todos</span>
+        ${meses.map(([k,l])=>`<span class="fpill${!_periodoCustom&&_mesFiltro===k?' active':''}" onclick="setMes('${k}')">${l}</span>`).join('')}
+      </div>
+      <button class="btn-periodo${_periodoCustom?' active':''}" onclick="togglePeriodoCustom()">📅 Intervalo livre</button>
+    </div>
+    ${_periodoCustom?`
+    <div class="range-bar">
+      <label>De <input type="date" id="dt-inicio" value="${diInStr}" onchange="aplicarPeriodo()"/></label>
+      <label>Até <input type="date" id="dt-fim" value="${diFimStr}" onchange="aplicarPeriodo()"/></label>
+      <button class="btn-range-clear" onclick="limparPeriodo()">✕ Limpar intervalo</button>
+    </div>`:''}`;
+
+  // Banner de pendência / saldo devedor / agendamentos
+  let alertHtml='';
+  if(saldo<0){
+    alertHtml=`<div class="pendencia-banner">
+      <div>
+        <div class="pendencia-title">⚠️ Saldo devedor neste período</div>
+        <div class="pendencia-sub">${nAgendados?nAgendados+' agendamento(s) pendente(s) incluídos':''}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="pendencia-val">${fmtBRL(Math.abs(saldo))}</div>
+      </div>
+    </div>`;
+  } else if(nAgendados>0){
+    alertHtml=`<div class="agendado-banner">
+      <div style="font-size:10px;font-weight:700;color:#93c5fd">⏱ ${nAgendados} agendamento(s) pendente(s)</div>
+      <div style="font-size:13px;font-weight:900;color:#3b8bff">${fmtBRL(Math.abs(totalAgendado))}</div>
+    </div>`;
+  }
+
+  const saldoLabel=_periodoCustom&&_dataInicio&&_dataFim?'Saldo do Período':_mesFiltro!=='todos'?'Saldo do Mês':'Saldo Total';
+
   const mc=document.getElementById('main-content');
   mc.innerHTML=`
     <div class="client-header">
       <div>
         <div class="client-name">${escHtml(c.nome)}</div>
-        <div class="client-period">${_mesFiltro==='todos'?periodoTotal:`Período: ${periodoLabel}`}</div>
+        <div class="client-period">${periodoLabel}</div>
       </div>
-      <button class="btn btn-gold" onclick="gerarRelatorio()">
-        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Gerar Relatório
-      </button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-outline" onclick="gerarRelatorioPendencias()" title="Relatório de pendências e agendamentos">
+          <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Pendências
+        </button>
+        <button class="btn btn-gold" onclick="gerarRelatorio()">
+          <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Relatório
+        </button>
+      </div>
     </div>
 
-    ${mesPillsHtml}
+    ${periodoFiltroHtml}
+    ${alertHtml}
 
     <div class="kpi-row">
       <div class="kpi kpi-entrada">
@@ -373,10 +455,10 @@ function renderCliente(){
       <div class="kpi kpi-agendado">
         <div class="kpi-label">Agendado</div>
         <div class="kpi-val">${fmtBRL(totalAgendado)}</div>
-        <div class="kpi-sub">${filtered.filter(t=>t.descricao==='AGENDADO').length} lançamento(s)</div>
+        <div class="kpi-sub">${nAgendados} lançamento(s)</div>
       </div>
       <div class="kpi ${saldoCls}">
-        <div class="kpi-label">${_mesFiltro==='todos'?'Saldo Total':'Saldo do Mês'}</div>
+        <div class="kpi-label">${saldoLabel}</div>
         <div class="kpi-val">${fmtBRLsign(saldo)}</div>
         <div class="kpi-sub">${saldo>=0?'Saldo positivo':'Saldo devedor'}</div>
       </div>
@@ -411,8 +493,7 @@ function renderCliente(){
       </table>
     </div>`;
 
-  // Gráficos e tabela usam as transações filtradas por mês (sem filtro de tipo)
-  const transParaGrafico=_mesFiltro==='todos'?c.transacoes:c.transacoes.filter(t=>t.mesKey===_mesFiltro);
+  const transParaGrafico=transPorPeriodo(c.transacoes);
   const{porTipo:porTipoGrafico}=calcular(transParaGrafico);
   renderCharts(transParaGrafico,porTipoGrafico);
   renderTable(filtered);
@@ -469,7 +550,21 @@ function renderCharts(transacoes,porTipo){
 
 /* ── TABLE ────────────────────────────────────── */
 function setFiltro(f){_filtro=f;renderCliente();}
-function setMes(m){_mesFiltro=m;renderCliente();}
+function setMes(m){_mesFiltro=m;_periodoCustom=false;_dataInicio=null;_dataFim=null;renderCliente();}
+function togglePeriodoCustom(){
+  _periodoCustom=!_periodoCustom;
+  if(!_periodoCustom){_dataInicio=null;_dataFim=null;}
+  else{_mesFiltro='todos';}
+  renderCliente();
+}
+function aplicarPeriodo(){
+  const s=document.getElementById('dt-inicio')?.value;
+  const e=document.getElementById('dt-fim')?.value;
+  if(s){const d=new Date(s+'T00:00:00');if(!isNaN(d))_dataInicio=d;}
+  if(e){const d=new Date(e+'T23:59:59');if(!isNaN(d))_dataFim=d;}
+  renderCliente();
+}
+function limparPeriodo(){_dataInicio=null;_dataFim=null;_periodoCustom=false;renderCliente();}
 
 function renderTable(transacoes){
   const filtered=transacoes; // já filtrado em renderCliente via transFiltradas()
@@ -509,14 +604,24 @@ function renderChartOffscreen(transacoes,porTipo,w=900,h=280){
 
 function gerarRelatorio(){
   const c=_clientes[_sel];
-  const{totalEntrada,totalSaida,totalAgendado,saldo,porTipo,periodo}=calcular(c.transacoes);
+  const transRpt=transPorPeriodo(c.transacoes);
+  const{totalEntrada,totalSaida,totalAgendado,saldo,porTipo,periodo}=calcular(transRpt);
   const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-  const chartImg=renderChartOffscreen(c.transacoes,porTipo);
+  const chartImg=renderChartOffscreen(transRpt,porTipo);
   const saldoColor=saldo>=0?'#10b981':'#ef4444';
   const pieEntries=Object.entries(porTipo).sort((a,b)=>b[1]-a[1]);
   const pieColors=CHART_COLORS;
+  let periodoRpt;
+  if(_periodoCustom&&_dataInicio&&_dataFim){
+    periodoRpt=`${_dataInicio.toLocaleDateString('pt-BR')} — ${_dataFim.toLocaleDateString('pt-BR')}`;
+  } else if(_mesFiltro!=='todos'){
+    const meses=getMeses(c.transacoes);
+    periodoRpt=meses.find(([k])=>k===_mesFiltro)?.[1]||periodo;
+  } else {
+    periodoRpt=periodo;
+  }
 
-  const tableRows=c.transacoes.map((t,i)=>{
+  const tableRows=transRpt.map((t)=>{
     const isE=t.descricao==='ENTRADA',isA=t.descricao==='AGENDADO';
     return`<tr class="${isE?'r-entrada':isA?'r-age':'r-saida'}">
       <td class="r-data">${escHtml(t.data)}</td>
@@ -584,12 +689,12 @@ body{font-family:'Montserrat',sans-serif;background:#fff;color:#1a2740;font-size
 <div class="title-block">
   <div class="title-label">Relatório de Saldo</div>
   <div class="title-name">${escHtml(c.nome)}</div>
-  <div class="title-period">Período: ${periodo}</div>
+  <div class="title-period">Período: ${periodoRpt}</div>
 </div>
 <div class="kpis">
-  <div class="kc green"><div class="kl">Total Entradas</div><div class="kv">${fmtBRL(totalEntrada)}</div><div class="ks">${c.transacoes.filter(t=>t.descricao==='ENTRADA').length} transações</div></div>
-  <div class="kc red"><div class="kl">Total Saídas</div><div class="kv">${fmtBRL(totalSaida)}</div><div class="ks">${c.transacoes.filter(t=>t.descricao==='SAÍDA'||t.descricao==='SAIDA').length} transações</div></div>
-  <div class="kc blue"><div class="kl">Agendado</div><div class="kv">${fmtBRL(totalAgendado)}</div><div class="ks">${c.transacoes.filter(t=>t.descricao==='AGENDADO').length} lançamento(s)</div></div>
+  <div class="kc green"><div class="kl">Total Entradas</div><div class="kv">${fmtBRL(totalEntrada)}</div><div class="ks">${transRpt.filter(t=>t.descricao==='ENTRADA').length} transações</div></div>
+  <div class="kc red"><div class="kl">Total Saídas</div><div class="kv">${fmtBRL(totalSaida)}</div><div class="ks">${transRpt.filter(t=>t.descricao==='SAÍDA'||t.descricao==='SAIDA').length} transações</div></div>
+  <div class="kc blue"><div class="kl">Agendado</div><div class="kv">${fmtBRL(totalAgendado)}</div><div class="ks">${transRpt.filter(t=>t.descricao==='AGENDADO').length} lançamento(s)</div></div>
   <div class="kc gold"><div class="kl">Saldo Final</div><div class="kv" style="color:${saldoColor}">${fmtBRLsign(saldo)}</div><div class="ks">${saldo>=0?'Saldo positivo':'Saldo devedor'}</div></div>
 </div>
 <div class="two-col">
@@ -602,12 +707,144 @@ body{font-family:'Montserrat',sans-serif;background:#fff;color:#1a2740;font-size
     ${pieRows||'<div style="color:#94a3b8;font-size:10px">Sem saídas</div>'}
   </div>
 </div>
-<div class="sec-t" style="margin-bottom:8px">Lançamentos (${c.transacoes.length})</div>
+<div class="sec-t" style="margin-bottom:8px">Lançamentos (${transRpt.length})</div>
 <table class="tbl">
   <thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Movimento</th><th style="text-align:right">Valor</th></tr></thead>
   <tbody>${tableRows}</tbody>
 </table>
 <div class="foot"><span>Soma Partners — Extrato de Saldo · ${escHtml(c.nome)}</span><span>Gerado em ${hoje} · Uso interno</span></div>
+<script>window.onload=()=>setTimeout(()=>window.print(),500);<\/script>
+</body></html>`;
+
+  const win=window.open('','_blank');
+  if(!win){alert('Permita pop-ups para gerar o relatório.');return;}
+  win.document.write(html);win.document.close();
+}
+
+/* ── RELATÓRIO DE PENDÊNCIAS ──────────────────── */
+function gerarRelatorioPendencias(){
+  const c=_clientes[_sel];
+  const transRpt=transPorPeriodo(c.transacoes);
+  const agendados=transRpt.filter(t=>t.descricao==='AGENDADO');
+  const confirmados=transRpt.filter(t=>t.descricao!=='AGENDADO');
+  const totalEntrada=confirmados.filter(t=>t.descricao==='ENTRADA').reduce((s,t)=>s+t.valor,0);
+  const totalSaida=confirmados.filter(t=>t.descricao==='SAÍDA'||t.descricao==='SAIDA').reduce((s,t)=>s+t.valor,0);
+  const saldoConfirmado=totalEntrada+totalSaida;
+  const totalAgendado=agendados.reduce((s,t)=>s+t.valor,0);
+  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+
+  let periodoRpt;
+  if(_periodoCustom&&_dataInicio&&_dataFim){
+    periodoRpt=`${_dataInicio.toLocaleDateString('pt-BR')} — ${_dataFim.toLocaleDateString('pt-BR')}`;
+  } else if(_mesFiltro!=='todos'){
+    const meses=getMeses(c.transacoes);
+    periodoRpt=meses.find(([k])=>k===_mesFiltro)?.[1]||'—';
+  } else {
+    const{periodo}=calcular(transRpt);periodoRpt=periodo||'—';
+  }
+
+  const agendadosRows=agendados.length?agendados.map(t=>{
+    const isE=t.descricao==='ENTRADA';
+    const valCls=isE?'color:#059669':'color:#2563eb';
+    const sinal=isE?'+ ':t.valor<0?'- ':'';
+    return`<tr>
+      <td style="white-space:nowrap;color:#64748b;font-size:9px">${escHtml(t.data)}</td>
+      <td style="font-weight:600">${escHtml(t.caracteristicas)}</td>
+      <td style="color:#64748b">${escHtml(t.tipo||'—')}</td>
+      <td style="text-align:right;font-weight:800;${valCls}">${sinal}${fmtBRL(t.valor)}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:20px;font-size:10px">✓ Nenhum agendamento pendente</td></tr>`;
+
+  const saldoColor=saldoConfirmado<0?'#dc2626':saldoConfirmado>0?'#059669':'#64748b';
+  const saldoStatus=saldoConfirmado<0?'Cliente possui saldo devedor':saldoConfirmado>0?'Soma Partners deve ao cliente':'Conta zerada';
+  const boxCls=saldoConfirmado<0?'devedor':saldoConfirmado>0?'credor':'zerado';
+
+  const totalSaidaAbs=Math.abs(totalSaida);
+  const totalAgendadoAbs=Math.abs(totalAgendado);
+
+  const html=`<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8"/>
+<title>Pendências — ${escHtml(c.nome)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Montserrat',sans-serif;background:#fff;color:#1a2740;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@page{size:A4 portrait;margin:11mm 13mm 13mm}
+.hd{background:#0b1e30;color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;border-radius:8px;margin-bottom:16px}
+.hd-logo{display:flex;align-items:center;gap:9px}
+.hd-soma{font-size:16px;font-weight:300}.hd-pipe{width:1px;height:16px;background:rgba(255,255,255,0.3)}.hd-p{font-size:8px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.6}
+.hd-r{text-align:right}.hd-rl{font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.4;margin-bottom:2px}.hd-rd{font-size:10px;font-weight:600;opacity:.8}
+.title-block{border-bottom:2px solid #ef4444;padding-bottom:10px;margin-bottom:14px}
+.title-label{font-size:7.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#ef4444;margin-bottom:4px}
+.title-name{font-size:21px;font-weight:900;color:#0b1e30;line-height:1.1}
+.title-period{font-size:10px;color:#64748b;margin-top:3px}
+.summary-box{border-radius:9px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.summary-box.devedor{background:#fff5f5;border:1.5px solid #fecaca}
+.summary-box.credor{background:#f0fdf4;border:1.5px solid #bbf7d0}
+.summary-box.zerado{background:#f8fafc;border:1.5px solid #e2e8f0}
+.summary-label{font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:3px}
+.summary-val{font-size:22px;font-weight:900;line-height:1}
+.summary-status{font-size:9px;font-weight:700;margin-top:3px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.kc{border-radius:7px;padding:10px 12px;border:1px solid #e2e8f0}
+.kc.green{border-color:#bbf7d0;background:#f0fdf4}
+.kc.red{border-color:#fecaca;background:#fff5f5}
+.kc.blue{border-color:#bfdbfe;background:#eff6ff}
+.kl{font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:3px}
+.kv{font-size:15px;font-weight:900;line-height:1}
+.kc.green .kv{color:#059669}.kc.red .kv{color:#dc2626}.kc.blue .kv{color:#2563eb}
+.ks{font-size:8px;color:#94a3b8;margin-top:2px}
+.sec{background:#f8fafc;border-radius:8px;padding:13px;margin-bottom:14px}
+.sec-t{font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{padding:5px 8px;text-align:left;font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;border-bottom:2px solid #e2e8f0;background:#f8fafc}
+.tbl td{padding:6px 8px;border-bottom:1px solid #f1f5f9;font-size:9.5px}
+.tbl tr td{background:#eff6ff}
+.foot{margin-top:14px;padding-top:8px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:7.5px;color:#94a3b8}
+.note-box{margin-top:12px;padding:10px 14px;background:#fffbf4;border:1px solid #fde68a;border-radius:7px;font-size:9px;color:#92400e;line-height:1.6}
+.divider{width:1px;background:#e2e8f0;margin:0 4px;align-self:stretch}
+</style></head><body>
+<div class="hd">
+  <div class="hd-logo"><span class="hd-soma">Soma</span><span class="hd-pipe"></span><span class="hd-p">Partners</span></div>
+  <div class="hd-r"><div class="hd-rl">Relatório de Pendências</div><div class="hd-rd">${hoje}</div></div>
+</div>
+<div class="title-block">
+  <div class="title-label">Relatório de Pendências</div>
+  <div class="title-name">${escHtml(c.nome)}</div>
+  <div class="title-period">Período: ${periodoRpt}</div>
+</div>
+<div class="summary-box ${boxCls}">
+  <div>
+    <div class="summary-label">Saldo Confirmado (Entradas − Saídas)</div>
+    <div class="summary-val" style="color:${saldoColor}">${fmtBRLsign(saldoConfirmado)}</div>
+    <div class="summary-status" style="color:${saldoColor}">${saldoStatus}</div>
+  </div>
+  ${agendados.length?`<div class="divider"></div>
+  <div>
+    <div class="summary-label">Total Agendado Pendente</div>
+    <div class="summary-val" style="color:#2563eb;font-size:18px">${fmtBRL(totalAgendadoAbs)}</div>
+    <div class="summary-status" style="color:#64748b">${agendados.length} lançamento(s)</div>
+  </div>`:''}
+</div>
+<div class="kpis">
+  <div class="kc green"><div class="kl">Entradas Confirmadas</div><div class="kv">${fmtBRL(totalEntrada)}</div><div class="ks">${confirmados.filter(t=>t.descricao==='ENTRADA').length} transação(ões)</div></div>
+  <div class="kc red"><div class="kl">Saídas Confirmadas</div><div class="kv">${fmtBRL(totalSaidaAbs)}</div><div class="ks">${confirmados.filter(t=>t.descricao==='SAÍDA'||t.descricao==='SAIDA').length} transação(ões)</div></div>
+  <div class="kc blue"><div class="kl">Agendamentos Pendentes</div><div class="kv">${fmtBRL(totalAgendadoAbs)}</div><div class="ks">${agendados.length} lançamento(s)</div></div>
+</div>
+<div class="sec">
+  <div class="sec-t">Agendamentos Pendentes</div>
+  <table class="tbl">
+    <thead><tr><th>Data</th><th>Descrição / Características</th><th>Tipo</th><th style="text-align:right">Valor</th></tr></thead>
+    <tbody>${agendadosRows}</tbody>
+  </table>
+</div>
+${saldoConfirmado<0?`<div class="note-box">
+  ⚠️ <strong>Saldo devedor de ${fmtBRL(Math.abs(saldoConfirmado))}.</strong>
+  As entradas confirmadas (${fmtBRL(totalEntrada)}) não cobrem as saídas realizadas (${fmtBRL(totalSaidaAbs)}).${agendados.length?` Há ainda ${agendados.length} agendamento(s) pendente(s) totalizando ${fmtBRL(totalAgendadoAbs)}.`:''}
+</div>`:saldoConfirmado>0?`<div style="margin-top:12px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;font-size:9px;color:#166534;line-height:1.6">
+  ✓ <strong>Saldo positivo de ${fmtBRL(saldoConfirmado)}.</strong> Soma Partners deve ao cliente neste período.${agendados.length?` Há ${agendados.length} agendamento(s) pendente(s) de ${fmtBRL(totalAgendadoAbs)}.`:''}
+</div>`:''}
+<div class="foot"><span>Soma Partners — Relatório de Pendências · ${escHtml(c.nome)}</span><span>Gerado em ${hoje} · Uso interno</span></div>
 <script>window.onload=()=>setTimeout(()=>window.print(),500);<\/script>
 </body></html>`;
 
