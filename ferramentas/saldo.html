@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Extrato de Saldo — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--gold:#c9963c;--blue:#3b8bff;--green:#10b981;--red:#ef4444;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.4);--surface:rgba(255,255,255,0.04)}
+html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff;font-size:13px}
+
+/* NAV */
+.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-left{display:flex;align-items:center;gap:12px}
+.logo-soma{font-size:15px;font-weight:300}.logo-pipe{width:1px;height:18px;background:rgba(255,255,255,0.3)}.logo-partners{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.7}
+.nav-sep{width:1px;height:22px;background:var(--border)}.nav-title{font-size:12px;font-weight:800}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all .15s}
+.btn-ghost{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)}.btn-ghost:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.btn-gold{background:var(--gold);color:#0b1e30;font-weight:800}.btn-gold:hover{filter:brightness(1.1)}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6)}.btn-outline:hover{color:#fff;border-color:rgba(255,255,255,0.3)}
+
+/* UPLOAD */
+#upload-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px);padding:40px 24px}
+.upload-box{border:2px dashed rgba(201,150,60,0.3);border-radius:20px;padding:56px 72px;text-align:center;cursor:pointer;transition:all .2s;max-width:500px;width:100%;background:rgba(201,150,60,0.03)}
+.upload-box:hover,.upload-box.drag{border-color:var(--gold);background:rgba(201,150,60,0.07)}
+.upload-icon{font-size:46px;margin-bottom:14px;opacity:.65}
+.upload-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.upload-sub{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:22px}
+#file-input{display:none}
+
+/* LAYOUT */
+#dashboard{display:none;min-height:calc(100vh - 52px)}
+.dash-layout{display:flex;height:calc(100vh - 52px)}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border);background:rgba(0,0,0,0.15);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-head{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-head-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.sidebar-head-file{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-list{flex:1;overflow-y:auto;padding:8px}
+.client-item{padding:10px 12px;border-radius:9px;cursor:pointer;transition:all .15s;margin-bottom:3px;border:1px solid transparent}
+.client-item:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.07)}
+.client-item.active{background:rgba(201,150,60,0.1);border-color:rgba(201,150,60,0.3)}
+.client-item-name{font-size:11px;font-weight:700;margin-bottom:3px}
+.client-item-saldo{font-size:10px;font-weight:800}
+.saldo-pos{color:#6ee7b7}.saldo-neg{color:#fca5a5}.saldo-zero{color:var(--muted)}
+.sidebar-foot{padding:10px 12px;border-top:1px solid var(--border)}
+.btn-trocar{width:100%;padding:7px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
+.btn-trocar:hover{color:#fff;background:rgba(255,255,255,0.08)}
+
+/* MAIN */
+.main-content{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.client-header{padding:18px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.client-name{font-size:22px;font-weight:900;letter-spacing:-.3px}
+.client-period{font-size:10px;color:var(--muted);margin-top:3px}
+
+/* KPI CARDS */
+.kpi-row{padding:16px 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{border-radius:10px;padding:13px 16px;border:1px solid var(--border);background:rgba(255,255,255,0.03)}
+.kpi.saldo-card{background:rgba(255,255,255,0.04)}
+.kpi-label{font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.kpi-val{font-size:18px;font-weight:900;line-height:1}
+.kpi-sub{font-size:9px;color:var(--muted);margin-top:3px}
+.kpi-entrada .kpi-val{color:#6ee7b7}
+.kpi-saida .kpi-val{color:#fca5a5}
+.kpi-agendado .kpi-val{color:#93c5fd}
+.kpi-saldo-pos .kpi-val{color:#6ee7b7}
+.kpi-saldo-neg .kpi-val{color:#fca5a5}
+.kpi-saldo-neg{border-color:rgba(239,68,68,0.25);background:rgba(239,68,68,0.05)}
+.kpi-saldo-pos{border-color:rgba(16,185,129,0.25);background:rgba(16,185,129,0.05)}
+
+/* CHARTS ROW */
+.charts-row{padding:0 24px 16px;display:grid;grid-template-columns:1fr 260px;gap:16px}
+.chart-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:16px}
+.chart-card-title{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.chart-wrap-bar{height:200px;position:relative}
+.chart-wrap-pie{height:200px;position:relative;display:flex;align-items:center;justify-content:center}
+.pie-legend{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.pie-leg-item{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:600;color:rgba(255,255,255,0.55)}
+.pie-leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* TABLE */
+.table-section{padding:0 24px 32px}
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.table-title{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+.filter-pills{display:flex;gap:4px}
+.fpill{padding:4px 10px;border-radius:16px;font-size:9px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);transition:all .12s}
+.fpill:hover{color:#fff}
+.fpill.active{background:rgba(201,150,60,0.12);border-color:rgba(201,150,60,0.4);color:var(--gold)}
+.fpill.f-entrada.active{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.35);color:#6ee7b7}
+.fpill.f-saida.active{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#fca5a5}
+.fpill.f-agendado.active{background:rgba(59,139,255,0.1);border-color:rgba(59,139,255,0.3);color:#93c5fd}
+.ext-table{width:100%;border-collapse:collapse;font-size:11px}
+.ext-table th{padding:7px 10px;text-align:left;font-size:8.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+.ext-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.ext-table tr:hover td{background:rgba(255,255,255,0.025)}
+.badge-entrada{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:8.5px;font-weight:800;background:rgba(16,185,129,0.12);color:#6ee7b7}
+.badge-saida{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:8.5px;font-weight:800;background:rgba(239,68,68,0.1);color:#fca5a5}
+.badge-agendado{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:8.5px;font-weight:800;background:rgba(59,139,255,0.12);color:#93c5fd}
+.val-pos{color:#6ee7b7;font-weight:700}
+.val-neg{color:#fca5a5;font-weight:700}
+.val-age{color:#93c5fd;font-weight:600}
+.tipo-tag{font-size:9px;color:var(--muted)}
+.empty-table{padding:32px;text-align:center;color:var(--muted);font-size:11px}
+
+@media(max-width:800px){
+  .dash-layout{flex-direction:column}
+  .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border)}
+  .sidebar-list{display:flex;flex-direction:row;padding:8px;gap:6px;overflow-x:auto}
+  .client-item{flex-shrink:0;min-width:130px}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .charts-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <a href="../ferramentas.html" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:12px">
+      <span class="logo-soma">Soma</span><span class="logo-pipe"></span><span class="logo-partners">Partners</span>
+    </a>
+    <div class="nav-sep"></div>
+    <span class="nav-title">Extrato de Saldo</span>
+  </div>
+  <button class="btn btn-ghost" onclick="window.location.href='../ferramentas.html'">
+    <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="15 18 9 12 15 6"/></svg>
+    Ferramentas
+  </button>
+</nav>
+
+<!-- UPLOAD -->
+<div id="upload-screen">
+  <div class="upload-box" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="upload-icon">💳</div>
+    <div class="upload-title">Extrato de Saldo por Cliente</div>
+    <div class="upload-sub">Faça upload da planilha de pagamentos com múltiplas abas.<br>Cada aba será reconhecida como um cliente.</div>
+    <button class="btn btn-gold" style="margin:0 auto" onclick="event.stopPropagation();document.getElementById('file-input').click()">Selecionar arquivo .xlsx</button>
+  </div>
+  <input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(this.files[0])"/>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="dash-layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-head">
+        <div class="sidebar-head-title">Clientes</div>
+        <div class="sidebar-head-file" id="sb-file">—</div>
+      </div>
+      <div class="sidebar-list" id="sidebar-list"></div>
+      <div class="sidebar-foot">
+        <button class="btn-trocar" onclick="trocarArquivo()">⟳ Trocar arquivo</button>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main-content" id="main-content">
+      <!-- preenchido por JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+if(sessionStorage.getItem('soma_auth')!=='1'||sessionStorage.getItem('soma_admin')!=='1'){window.location.href='../login.html';}
+
+let _clientes=[], _sel=0, _filtro='todos', _chartBar=null, _chartPie=null, _fileName='';
+
+/* ── DRAG & DROP ──────────────────────────────── */
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleFile(f);});
+
+/* ── FILE HANDLING ────────────────────────────── */
+async function handleFile(file){
+  if(!file)return;
+  _fileName=file.name;
+  const buf=await file.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array'});
+  _clientes=wb.SheetNames
+    .filter(n=>n.trim().toUpperCase()!=='MODELO BASE'&&n.trim().toUpperCase()!=='MODELO')
+    .map(n=>parseCliente(wb.Sheets[n],n))
+    .filter(c=>c&&c.transacoes.length>0);
+  if(!_clientes.length){alert('Nenhum cliente com dados encontrado.');return;}
+  _sel=0;
+  document.getElementById('upload-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('sb-file').textContent=_fileName.replace(/\.[^.]+$/,'');
+  renderSidebar();
+  renderCliente();
+}
+
+function trocarArquivo(){
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('upload-screen').style.display='flex';
+  document.getElementById('file-input').value='';
+  _clientes=[];
+}
+
+/* ── EXCEL PARSER ─────────────────────────────── */
+function parseValor(v){
+  if(v===null||v===undefined||v==='')return 0;
+  if(typeof v==='number')return v;
+  const s=String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();
+  return parseFloat(s)||0;
+}
+
+function parseCliente(ws,sheetName){
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+  // Nome do cliente — linha 2 (índice 1), coluna 0, ou sheetName
+  let nome=sheetName.trim();
+  for(let i=0;i<4;i++){
+    const r=rows[i];if(!r)continue;
+    const v=r[0];
+    if(v&&typeof v==='string'&&v.trim().length>1&&!/^(DATA|CARACT|#|SALDO)/i.test(v.trim())){
+      nome=v.trim();break;
+    }
+  }
+  // Encontrar linha de cabeçalho (contém "DATA")
+  let hRow=-1;
+  for(let i=0;i<Math.min(rows.length,10);i++){
+    const r=rows[i];
+    if(r&&r.some(c=>String(c||'').toUpperCase().trim()==='DATA')){hRow=i;break;}
+  }
+  if(hRow===-1)return{nome,transacoes:[]};
+  const hdrs=rows[hRow].map(h=>String(h||'').toUpperCase().trim());
+  const ci={
+    data:hdrs.findIndex(h=>h==='DATA'),
+    caract:hdrs.findIndex(h=>h.startsWith('CARACT')||h.startsWith('CARACTERÍ')),
+    tipo:hdrs.findIndex(h=>h==='TIPO'),
+    desc:hdrs.findIndex(h=>h.startsWith('DESC')),
+    valor:hdrs.findIndex(h=>h==='VALOR')
+  };
+  const transacoes=[];
+  for(let i=hRow+1;i<rows.length;i++){
+    const r=rows[i];
+    if(!r)continue;
+    const dataVal=r[ci.data];
+    if(!dataVal&&dataVal!==0)continue;
+    const valor=parseValor(r[ci.valor]);
+    if(!dataVal||valor===0)continue;
+    transacoes.push({
+      data:String(dataVal).trim(),
+      caracteristicas:String(r[ci.caract]||'').trim(),
+      tipo:String(r[ci.tipo]||'').trim(),
+      descricao:String(r[ci.desc]||'').trim().toUpperCase(),
+      valor
+    });
+  }
+  return{nome,transacoes};
+}
+
+/* ── CALCULATIONS ─────────────────────────────── */
+function calcular(transacoes){
+  const entrada=transacoes.filter(t=>t.descricao==='ENTRADA');
+  const saida=transacoes.filter(t=>t.descricao==='SAÍDA'||t.descricao==='SAIDA');
+  const agendado=transacoes.filter(t=>t.descricao==='AGENDADO');
+  const totalEntrada=entrada.reduce((s,t)=>s+t.valor,0);
+  const totalSaida=saida.reduce((s,t)=>s+t.valor,0);
+  const totalAgendado=agendado.reduce((s,t)=>s+t.valor,0);
+  const saldo=transacoes.reduce((s,t)=>s+t.valor,0);
+  // Por tipo (apenas saídas)
+  const porTipo={};
+  saida.forEach(t=>{
+    const tp=t.tipo||t.caracteristicas||'Outros';
+    porTipo[tp]=(porTipo[tp]||0)+Math.abs(t.valor);
+  });
+  // Período
+  const datas=transacoes.map(t=>t.data).filter(Boolean);
+  const periodo=datas.length?`${datas[0]} — ${datas[datas.length-1]}`:'—';
+  return{totalEntrada,totalSaida,totalAgendado,saldo,porTipo,periodo,nEntrada:entrada.length,nSaida:saida.length};
+}
+
+/* ── FORMATTERS ───────────────────────────────── */
+const fmtBRL=v=>'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtBRLsign=v=>(v<0?'-':v>0?'+':'')+' R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ── SIDEBAR ──────────────────────────────────── */
+function renderSidebar(){
+  const list=document.getElementById('sidebar-list');
+  list.innerHTML=_clientes.map((c,i)=>{
+    const{saldo}=calcular(c.transacoes);
+    const cls=saldo>0?'saldo-pos':saldo<0?'saldo-neg':'saldo-zero';
+    const sinal=saldo>0?'+':saldo<0?'':' ';
+    return`<div class="client-item${i===_sel?' active':''}" onclick="selCliente(${i})">
+      <div class="client-item-name">${escHtml(c.nome)}</div>
+      <div class="client-item-saldo ${cls}">${sinal}${fmtBRL(saldo)}</div>
+    </div>`;
+  }).join('');
+}
+
+function selCliente(i){
+  _sel=i;_filtro='todos';
+  renderSidebar();renderCliente();
+}
+
+/* ── MAIN CLIENT VIEW ─────────────────────────── */
+function renderCliente(){
+  const c=_clientes[_sel];
+  const{totalEntrada,totalSaida,totalAgendado,saldo,porTipo,periodo,nEntrada,nSaida}=calcular(c.transacoes);
+  const saldoCls=saldo>=0?'kpi-saldo-pos':'kpi-saldo-neg';
+  const mc=document.getElementById('main-content');
+  mc.innerHTML=`
+    <div class="client-header">
+      <div>
+        <div class="client-name">${escHtml(c.nome)}</div>
+        <div class="client-period">${periodo}</div>
+      </div>
+      <button class="btn btn-gold" onclick="gerarRelatorio()">
+        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Gerar Relatório
+      </button>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi kpi-entrada">
+        <div class="kpi-label">Total Entradas</div>
+        <div class="kpi-val">${fmtBRL(totalEntrada)}</div>
+        <div class="kpi-sub">${nEntrada} transaç${nEntrada===1?'ão':'ões'}</div>
+      </div>
+      <div class="kpi kpi-saida">
+        <div class="kpi-label">Total Saídas</div>
+        <div class="kpi-val">${fmtBRL(totalSaida)}</div>
+        <div class="kpi-sub">${nSaida} transaç${nSaida===1?'ão':'ões'}</div>
+      </div>
+      <div class="kpi kpi-agendado">
+        <div class="kpi-label">Agendado</div>
+        <div class="kpi-val">${fmtBRL(totalAgendado)}</div>
+        <div class="kpi-sub">${c.transacoes.filter(t=>t.descricao==='AGENDADO').length} lançamento(s)</div>
+      </div>
+      <div class="kpi ${saldoCls}">
+        <div class="kpi-label">Saldo Final</div>
+        <div class="kpi-val">${fmtBRLsign(saldo)}</div>
+        <div class="kpi-sub">${saldo>=0?'Saldo positivo':'Saldo devedor'}</div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-card-title">Entradas vs Saídas por Categoria</div>
+        <div class="chart-wrap-bar"><canvas id="chart-bar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Distribuição das Saídas</div>
+        <div class="chart-wrap-pie"><canvas id="chart-pie"></canvas></div>
+      </div>
+    </div>
+
+    <div class="table-section">
+      <div class="table-header">
+        <span class="table-title">Lançamentos (${c.transacoes.length})</span>
+        <div class="filter-pills">
+          <span class="fpill${_filtro==='todos'?' active':''}" onclick="setFiltro('todos')">Todos</span>
+          <span class="fpill f-entrada${_filtro==='ENTRADA'?' active':''}" onclick="setFiltro('ENTRADA')">Entradas</span>
+          <span class="fpill f-saida${_filtro==='SAÍDA'?' active':''}" onclick="setFiltro('SAÍDA')">Saídas</span>
+          <span class="fpill f-agendado${_filtro==='AGENDADO'?' active':''}" onclick="setFiltro('AGENDADO')">Agendados</span>
+        </div>
+      </div>
+      <table class="ext-table">
+        <thead><tr>
+          <th>Data</th><th>Descrição / Características</th><th>Tipo</th><th>Movimento</th><th style="text-align:right">Valor</th>
+        </tr></thead>
+        <tbody id="ext-tbody"></tbody>
+      </table>
+    </div>`;
+
+  renderCharts(c.transacoes,porTipo);
+  renderTable(c.transacoes);
+}
+
+/* ── CHARTS ───────────────────────────────────── */
+const CHART_COLORS=['#c9963c','#3b8bff','#10b981','#f59e0b','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16'];
+
+function renderCharts(transacoes,porTipo){
+  // Bar chart: agrupado por tipo, entradas vs saídas
+  const tipos=[...new Set(transacoes.map(t=>t.tipo||t.caracteristicas).filter(Boolean))].slice(0,12);
+  const barEntrada=tipos.map(tp=>transacoes.filter(t=>(t.tipo===tp||t.caracteristicas===tp)&&t.descricao==='ENTRADA').reduce((s,t)=>s+t.valor,0));
+  const barSaida=tipos.map(tp=>transacoes.filter(t=>(t.tipo===tp||t.caracteristicas===tp)&&(t.descricao==='SAÍDA'||t.descricao==='SAIDA')).reduce((s,t)=>s+Math.abs(t.valor),0));
+
+  if(_chartBar){_chartBar.destroy();}
+  const ctxB=document.getElementById('chart-bar');
+  if(ctxB){
+    _chartBar=new Chart(ctxB.getContext('2d'),{
+      type:'bar',
+      data:{labels:tipos.map(t=>t.length>16?t.slice(0,14)+'…':t),datasets:[
+        {label:'Entrada',data:barEntrada,backgroundColor:'rgba(16,185,129,0.65)',borderRadius:3},
+        {label:'Saída',data:barSaida,backgroundColor:'rgba(239,68,68,0.55)',borderRadius:3}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        scales:{x:{ticks:{color:'rgba(255,255,255,0.4)',font:{family:'Montserrat',size:8},maxRotation:35},grid:{color:'rgba(255,255,255,0.04)'}},
+                y:{ticks:{color:'rgba(255,255,255,0.35)',font:{size:8},callback:v=>fmtBRL(v)},grid:{color:'rgba(255,255,255,0.05)'}}},
+        plugins:{legend:{labels:{color:'rgba(255,255,255,0.5)',font:{family:'Montserrat',size:9}}},tooltip:{
+          backgroundColor:'rgba(8,20,34,0.95)',titleFont:{family:'Montserrat',size:10,weight:'800'},bodyFont:{family:'Montserrat',size:10},
+          callbacks:{label:c=>` ${c.dataset.label}: ${fmtBRL(c.raw)}`}
+        }}}
+    });
+  }
+
+  // Pie chart: saídas por tipo
+  if(_chartPie){_chartPie.destroy();}
+  const ctxP=document.getElementById('chart-pie');
+  const pieEntries=Object.entries(porTipo).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if(ctxP&&pieEntries.length){
+    _chartPie=new Chart(ctxP.getContext('2d'),{
+      type:'doughnut',
+      data:{labels:pieEntries.map(([k])=>k.length>14?k.slice(0,12)+'…':k),datasets:[{
+        data:pieEntries.map(([,v])=>v),
+        backgroundColor:CHART_COLORS.slice(0,pieEntries.length),
+        borderWidth:0,borderRadius:2
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+        plugins:{legend:{display:false},tooltip:{
+          backgroundColor:'rgba(8,20,34,0.95)',titleFont:{family:'Montserrat',size:10,weight:'800'},bodyFont:{family:'Montserrat',size:10},
+          callbacks:{label:c=>` ${fmtBRL(c.raw)} (${(c.raw/pieEntries.reduce((s,[,v])=>s+v,0)*100).toFixed(1)}%)`}
+        }}}
+    });
+  }
+}
+
+/* ── TABLE ────────────────────────────────────── */
+function setFiltro(f){_filtro=f;renderCliente();}
+
+function renderTable(transacoes){
+  const filtered=_filtro==='todos'?transacoes:transacoes.filter(t=>t.descricao===_filtro||((_filtro==='SAÍDA')&&t.descricao==='SAIDA'));
+  const tbody=document.getElementById('ext-tbody');
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="5" class="empty-table">Nenhum lançamento.</td></tr>`;return;}
+  tbody.innerHTML=filtered.map(t=>{
+    const isEnt=t.descricao==='ENTRADA';
+    const isAge=t.descricao==='AGENDADO';
+    const badge=isEnt?'badge-entrada':isAge?'badge-agendado':'badge-saida';
+    const bdgTxt=isEnt?'↑ ENTRADA':isAge?'⏱ AGENDADO':'↓ SAÍDA';
+    const valCls=isEnt?'val-pos':isAge?'val-age':'val-neg';
+    const sinal=isEnt?'+ ':isAge?'':' - ';
+    return`<tr>
+      <td style="white-space:nowrap;color:rgba(255,255,255,0.55);font-size:10px">${escHtml(t.data)}</td>
+      <td><div style="font-weight:600;font-size:11px">${escHtml(t.caracteristicas)}</div></td>
+      <td><span class="tipo-tag">${escHtml(t.tipo||'—')}</span></td>
+      <td><span class="${badge}">${bdgTxt}</span></td>
+      <td style="text-align:right" class="${valCls}">${sinal}${fmtBRL(t.valor)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── RELATÓRIO PDF ────────────────────────────── */
+function renderChartOffscreen(transacoes,porTipo,w=900,h=280){
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  const tipos=[...new Set(transacoes.map(t=>t.tipo||t.caracteristicas).filter(Boolean))].slice(0,10);
+  const barE=tipos.map(tp=>transacoes.filter(t=>(t.tipo===tp||t.caracteristicas===tp)&&t.descricao==='ENTRADA').reduce((s,t)=>s+t.valor,0));
+  const barS=tipos.map(tp=>transacoes.filter(t=>(t.tipo===tp||t.caracteristicas===tp)&&(t.descricao==='SAÍDA'||t.descricao==='SAIDA')).reduce((s,t)=>s+Math.abs(t.valor),0));
+  const tmp=new Chart(ctx,{type:'bar',data:{
+    labels:tipos.map(t=>t.length>18?t.slice(0,16)+'…':t),
+    datasets:[{label:'Entrada',data:barE,backgroundColor:'rgba(16,185,129,0.7)',borderRadius:3},{label:'Saída',data:barS,backgroundColor:'rgba(239,68,68,0.6)',borderRadius:3}]},
+    options:{animation:false,responsive:false,scales:{x:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.07)'}},y:{ticks:{font:{size:10},callback:v=>fmtBRL(v)},grid:{color:'rgba(0,0,0,0.07)'}}},plugins:{legend:{labels:{font:{size:10}}}}}
+  });
+  const img=canvas.toDataURL('image/png',1.0);tmp.destroy();return img;
+}
+
+function gerarRelatorio(){
+  const c=_clientes[_sel];
+  const{totalEntrada,totalSaida,totalAgendado,saldo,porTipo,periodo}=calcular(c.transacoes);
+  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const chartImg=renderChartOffscreen(c.transacoes,porTipo);
+  const saldoColor=saldo>=0?'#10b981':'#ef4444';
+  const pieEntries=Object.entries(porTipo).sort((a,b)=>b[1]-a[1]);
+  const pieColors=CHART_COLORS;
+
+  const tableRows=c.transacoes.map((t,i)=>{
+    const isE=t.descricao==='ENTRADA',isA=t.descricao==='AGENDADO';
+    return`<tr class="${isE?'r-entrada':isA?'r-age':'r-saida'}">
+      <td class="r-data">${escHtml(t.data)}</td>
+      <td class="r-desc">${escHtml(t.caracteristicas)}</td>
+      <td class="r-tipo">${escHtml(t.tipo||'—')}</td>
+      <td><span class="r-badge ${isE?'rb-e':isA?'rb-a':'rb-s'}">${isE?'ENTRADA':isA?'AGENDADO':'SAÍDA'}</span></td>
+      <td class="r-val ${isE?'rc-e':isA?'rc-a':'rc-s'}">${isE?'+ ':' - '}${fmtBRL(t.valor)}</td>
+    </tr>`;
+  }).join('');
+
+  const pieRows=pieEntries.slice(0,8).map(([k,v],i)=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:9.5px">
+      <div style="width:10px;height:10px;border-radius:2px;background:${pieColors[i]||'#999'};flex-shrink:0"></div>
+      <div style="flex:1;color:#475569">${escHtml(k)}</div>
+      <div style="font-weight:800;color:#1a2740">${fmtBRL(v)}</div>
+      <div style="color:#94a3b8;min-width:38px;text-align:right">${(v/Object.values(porTipo).reduce((s,x)=>s+x,0)*100).toFixed(1)}%</div>
+    </div>`).join('');
+
+  const html=`<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8"/>
+<title>Extrato — ${escHtml(c.nome)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Montserrat',sans-serif;background:#fff;color:#1a2740;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@page{size:A4 portrait;margin:11mm 13mm 13mm}
+.hd{background:#0b1e30;color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;border-radius:8px;margin-bottom:16px}
+.hd-logo{display:flex;align-items:center;gap:9px}
+.hd-soma{font-size:16px;font-weight:300}.hd-pipe{width:1px;height:16px;background:rgba(255,255,255,0.3)}.hd-p{font-size:8px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.6}
+.hd-r{text-align:right}.hd-rl{font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.4;margin-bottom:2px}.hd-rd{font-size:10px;font-weight:600;opacity:.8}
+.title-block{border-bottom:2px solid #c9963c;padding-bottom:10px;margin-bottom:14px}
+.title-label{font-size:7.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:4px}
+.title-name{font-size:21px;font-weight:900;color:#0b1e30;line-height:1.1}
+.title-period{font-size:10px;color:#64748b;margin-top:3px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.kc{border-radius:7px;padding:10px 12px;border:1px solid #e2e8f0}
+.kc.gold{border-color:#c9963c;background:#fffbf4}
+.kc.green{border-color:#bbf7d0;background:#f0fdf4}
+.kc.red{border-color:#fecaca;background:#fff5f5}
+.kc.blue{border-color:#bfdbfe;background:#eff6ff}
+.kl{font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:3px}
+.kv{font-size:16px;font-weight:900;line-height:1}
+.kc.gold .kv{color:#c9963c}.kc.green .kv{color:#059669}.kc.red .kv{color:#dc2626}.kc.blue .kv{color:#2563eb}
+.ks{font-size:8.5px;color:#94a3b8;margin-top:2px}
+.two-col{display:grid;grid-template-columns:1fr 220px;gap:12px;margin-bottom:14px}
+.sec{background:#f8fafc;border-radius:8px;padding:13px}
+.sec-t{font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0}
+.chart-img{width:100%;border-radius:5px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{padding:5px 8px;text-align:left;font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;border-bottom:2px solid #e2e8f0;background:#f8fafc}
+.tbl td{padding:5px 8px;border-bottom:1px solid #f1f5f9;font-size:9.5px}
+.r-entrada td{background:#f0fdf4}.r-saida td{background:#fff}.r-age td{background:#eff6ff}
+.r-data{color:#94a3b8;white-space:nowrap;font-size:9px}.r-desc{font-weight:600}.r-tipo{color:#64748b}
+.r-val{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.rc-e{color:#059669}.rc-s{color:#dc2626}.rc-a{color:#2563eb}
+.r-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:7px;font-weight:800}
+.rb-e{background:#dcfce7;color:#16a34a}.rb-s{background:#fee2e2;color:#dc2626}.rb-a{background:#dbeafe;color:#2563eb}
+.foot{margin-top:14px;padding-top:8px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:7.5px;color:#94a3b8}
+@media print{.r-entrada td,.r-age td,.kc{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="hd">
+  <div class="hd-logo"><span class="hd-soma">Soma</span><span class="hd-pipe"></span><span class="hd-p">Partners</span></div>
+  <div class="hd-r"><div class="hd-rl">Extrato de Saldo</div><div class="hd-rd">${hoje}</div></div>
+</div>
+<div class="title-block">
+  <div class="title-label">Relatório de Saldo</div>
+  <div class="title-name">${escHtml(c.nome)}</div>
+  <div class="title-period">Período: ${periodo}</div>
+</div>
+<div class="kpis">
+  <div class="kc green"><div class="kl">Total Entradas</div><div class="kv">${fmtBRL(totalEntrada)}</div><div class="ks">${c.transacoes.filter(t=>t.descricao==='ENTRADA').length} transações</div></div>
+  <div class="kc red"><div class="kl">Total Saídas</div><div class="kv">${fmtBRL(totalSaida)}</div><div class="ks">${c.transacoes.filter(t=>t.descricao==='SAÍDA'||t.descricao==='SAIDA').length} transações</div></div>
+  <div class="kc blue"><div class="kl">Agendado</div><div class="kv">${fmtBRL(totalAgendado)}</div><div class="ks">${c.transacoes.filter(t=>t.descricao==='AGENDADO').length} lançamento(s)</div></div>
+  <div class="kc gold"><div class="kl">Saldo Final</div><div class="kv" style="color:${saldoColor}">${fmtBRLsign(saldo)}</div><div class="ks">${saldo>=0?'Saldo positivo':'Saldo devedor'}</div></div>
+</div>
+<div class="two-col">
+  <div class="sec">
+    <div class="sec-t">Entradas vs Saídas por Categoria</div>
+    <img class="chart-img" src="${chartImg}"/>
+  </div>
+  <div class="sec">
+    <div class="sec-t">Distribuição das Saídas</div>
+    ${pieRows||'<div style="color:#94a3b8;font-size:10px">Sem saídas</div>'}
+  </div>
+</div>
+<div class="sec-t" style="margin-bottom:8px">Lançamentos (${c.transacoes.length})</div>
+<table class="tbl">
+  <thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Movimento</th><th style="text-align:right">Valor</th></tr></thead>
+  <tbody>${tableRows}</tbody>
+</table>
+<div class="foot"><span>Soma Partners — Extrato de Saldo · ${escHtml(c.nome)}</span><span>Gerado em ${hoje} · Uso interno</span></div>
+<script>window.onload=()=>setTimeout(()=>window.print(),500);<\/script>
+</body></html>`;
+
+  const win=window.open('','_blank');
+  if(!win){alert('Permita pop-ups para gerar o relatório.');return;}
+  win.document.write(html);win.document.close();
+}
+</script>
+</body>
+</html>
