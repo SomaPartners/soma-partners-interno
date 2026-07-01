@@ -167,7 +167,7 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 <script>
 if(sessionStorage.getItem('soma_auth')!=='1'||sessionStorage.getItem('soma_admin')!=='1'){window.location.href='../login.html';}
 
-let _clientes=[], _sel=0, _filtro='todos', _chartBar=null, _chartPie=null, _fileName='';
+let _clientes=[], _sel=0, _filtro='todos', _mesFiltro='todos', _chartBar=null, _chartPie=null, _fileName='';
 
 /* ── DRAG & DROP ──────────────────────────────── */
 const dz=document.getElementById('drop-zone');
@@ -180,7 +180,7 @@ async function handleFile(file){
   if(!file)return;
   _fileName=file.name;
   const buf=await file.arrayBuffer();
-  const wb=XLSX.read(buf,{type:'array'});
+  const wb=XLSX.read(buf,{type:'array',cellDates:true});
   _clientes=wb.SheetNames
     .filter(n=>n.trim().toUpperCase()!=='MODELO BASE'&&n.trim().toUpperCase()!=='MODELO')
     .map(n=>parseCliente(wb.Sheets[n],n))
@@ -209,18 +209,33 @@ function parseValor(v){
   return parseFloat(s)||0;
 }
 
+// Converte Date object ou serial numérico do Excel para { display, mesKey, mesLabel, dateObj }
+function parseData(v){
+  let d=null;
+  if(v instanceof Date&&!isNaN(v)) d=v;
+  else if(typeof v==='number'&&v>0) d=new Date(Math.round((v-25569)*86400*1000));
+  if(d){
+    const meses=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    const dia=String(d.getDate()).padStart(2,'0');
+    const mes=meses[d.getMonth()];
+    const ano=String(d.getFullYear()).slice(-2);
+    const mesKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const mesLabel=mes.charAt(0).toUpperCase()+mes.slice(1)+'/'+ano;
+    return{display:`${dia}/${mes}`,mesKey,mesLabel,dateObj:d};
+  }
+  // Fallback: já é string formatada (ex: "03/mar")
+  const s=String(v||'').trim();
+  return{display:s,mesKey:'',mesLabel:'',dateObj:null};
+}
+
 function parseCliente(ws,sheetName){
   const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
-  // Nome do cliente — linha 2 (índice 1), coluna 0, ou sheetName
   let nome=sheetName.trim();
   for(let i=0;i<4;i++){
     const r=rows[i];if(!r)continue;
     const v=r[0];
-    if(v&&typeof v==='string'&&v.trim().length>1&&!/^(DATA|CARACT|#|SALDO)/i.test(v.trim())){
-      nome=v.trim();break;
-    }
+    if(v&&typeof v==='string'&&v.trim().length>1&&!/^(DATA|CARACT|#|SALDO)/i.test(v.trim())){nome=v.trim();break;}
   }
-  // Encontrar linha de cabeçalho (contém "DATA")
   let hRow=-1;
   for(let i=0;i<Math.min(rows.length,10);i++){
     const r=rows[i];
@@ -240,11 +255,12 @@ function parseCliente(ws,sheetName){
     const r=rows[i];
     if(!r)continue;
     const dataVal=r[ci.data];
-    if(!dataVal&&dataVal!==0)continue;
+    if(dataVal===null||dataVal===undefined||dataVal==='')continue;
     const valor=parseValor(r[ci.valor]);
-    if(!dataVal||valor===0)continue;
+    if(!valor)continue;
+    const dt=parseData(dataVal);
     transacoes.push({
-      data:String(dataVal).trim(),
+      data:dt.display, mesKey:dt.mesKey, mesLabel:dt.mesLabel, dateObj:dt.dateObj,
       caracteristicas:String(r[ci.caract]||'').trim(),
       tipo:String(r[ci.tipo]||'').trim(),
       descricao:String(r[ci.desc]||'').trim().toUpperCase(),
@@ -295,27 +311,53 @@ function renderSidebar(){
 }
 
 function selCliente(i){
-  _sel=i;_filtro='todos';
+  _sel=i;_filtro='todos';_mesFiltro='todos';
   renderSidebar();renderCliente();
+}
+
+function getMeses(transacoes){
+  const map=new Map();
+  transacoes.forEach(t=>{if(t.mesKey)map.set(t.mesKey,t.mesLabel);});
+  return [...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function transFiltradas(transacoes){
+  return transacoes.filter(t=>{
+    const okMes=_mesFiltro==='todos'||t.mesKey===_mesFiltro;
+    const okTipo=_filtro==='todos'||t.descricao===_filtro||(_filtro==='SAÍDA'&&t.descricao==='SAIDA');
+    return okMes&&okTipo;
+  });
 }
 
 /* ── MAIN CLIENT VIEW ─────────────────────────── */
 function renderCliente(){
   const c=_clientes[_sel];
-  const{totalEntrada,totalSaida,totalAgendado,saldo,porTipo,periodo,nEntrada,nSaida}=calcular(c.transacoes);
+  const meses=getMeses(c.transacoes);
+  const filtered=transFiltradas(c.transacoes);
+  const{totalEntrada,totalSaida,totalAgendado,saldo,porTipo,periodo,nEntrada,nSaida}=calcular(filtered);
+  const{periodo:periodoTotal}=calcular(c.transacoes);
   const saldoCls=saldo>=0?'kpi-saldo-pos':'kpi-saldo-neg';
+  const mesPillsHtml=meses.length>1?`
+    <div style="padding:0 24px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Mês</span>
+      <span class="fpill${_mesFiltro==='todos'?' active':''}" onclick="setMes('todos')">Todos</span>
+      ${meses.map(([k,l])=>`<span class="fpill${_mesFiltro===k?' active':''}" onclick="setMes('${k}')">${l}</span>`).join('')}
+    </div>`:'';
+  const periodoLabel=_mesFiltro==='todos'?periodoTotal:(meses.find(([k])=>k===_mesFiltro)?.[1]||_mesFiltro);
   const mc=document.getElementById('main-content');
   mc.innerHTML=`
     <div class="client-header">
       <div>
         <div class="client-name">${escHtml(c.nome)}</div>
-        <div class="client-period">${periodo}</div>
+        <div class="client-period">${_mesFiltro==='todos'?periodoTotal:`Período: ${periodoLabel}`}</div>
       </div>
       <button class="btn btn-gold" onclick="gerarRelatorio()">
         <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Gerar Relatório
       </button>
     </div>
+
+    ${mesPillsHtml}
 
     <div class="kpi-row">
       <div class="kpi kpi-entrada">
@@ -331,10 +373,10 @@ function renderCliente(){
       <div class="kpi kpi-agendado">
         <div class="kpi-label">Agendado</div>
         <div class="kpi-val">${fmtBRL(totalAgendado)}</div>
-        <div class="kpi-sub">${c.transacoes.filter(t=>t.descricao==='AGENDADO').length} lançamento(s)</div>
+        <div class="kpi-sub">${filtered.filter(t=>t.descricao==='AGENDADO').length} lançamento(s)</div>
       </div>
       <div class="kpi ${saldoCls}">
-        <div class="kpi-label">Saldo Final</div>
+        <div class="kpi-label">${_mesFiltro==='todos'?'Saldo Total':'Saldo do Mês'}</div>
         <div class="kpi-val">${fmtBRLsign(saldo)}</div>
         <div class="kpi-sub">${saldo>=0?'Saldo positivo':'Saldo devedor'}</div>
       </div>
@@ -353,7 +395,7 @@ function renderCliente(){
 
     <div class="table-section">
       <div class="table-header">
-        <span class="table-title">Lançamentos (${c.transacoes.length})</span>
+        <span class="table-title">Lançamentos (${filtered.length}${filtered.length!==c.transacoes.length?' de '+c.transacoes.length:''})</span>
         <div class="filter-pills">
           <span class="fpill${_filtro==='todos'?' active':''}" onclick="setFiltro('todos')">Todos</span>
           <span class="fpill f-entrada${_filtro==='ENTRADA'?' active':''}" onclick="setFiltro('ENTRADA')">Entradas</span>
@@ -369,8 +411,11 @@ function renderCliente(){
       </table>
     </div>`;
 
-  renderCharts(c.transacoes,porTipo);
-  renderTable(c.transacoes);
+  // Gráficos e tabela usam as transações filtradas por mês (sem filtro de tipo)
+  const transParaGrafico=_mesFiltro==='todos'?c.transacoes:c.transacoes.filter(t=>t.mesKey===_mesFiltro);
+  const{porTipo:porTipoGrafico}=calcular(transParaGrafico);
+  renderCharts(transParaGrafico,porTipoGrafico);
+  renderTable(filtered);
 }
 
 /* ── CHARTS ───────────────────────────────────── */
@@ -424,9 +469,10 @@ function renderCharts(transacoes,porTipo){
 
 /* ── TABLE ────────────────────────────────────── */
 function setFiltro(f){_filtro=f;renderCliente();}
+function setMes(m){_mesFiltro=m;renderCliente();}
 
 function renderTable(transacoes){
-  const filtered=_filtro==='todos'?transacoes:transacoes.filter(t=>t.descricao===_filtro||((_filtro==='SAÍDA')&&t.descricao==='SAIDA'));
+  const filtered=transacoes; // já filtrado em renderCliente via transFiltradas()
   const tbody=document.getElementById('ext-tbody');
   if(!filtered.length){tbody.innerHTML=`<tr><td colspan="5" class="empty-table">Nenhum lançamento.</td></tr>`;return;}
   tbody.innerHTML=filtered.map(t=>{
