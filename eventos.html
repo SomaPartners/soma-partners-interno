@@ -726,6 +726,7 @@ async function saveEvento(){
     checklist: existing?.checklist||[],
     compras: existing?.compras||[],
     createdAt: existing?.createdAt||today(),
+    conviteFoto: existing?.conviteFoto||null,
   };
   if(!await dbUpsert('eventos',data))return;
   const idx = DB.eventos.findIndex(e=>e.id===id);
