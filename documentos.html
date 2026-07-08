@@ -311,13 +311,16 @@ async function init(){
 
 async function loadClientes(){
   try{
-    const [{data:onb},{data:conc}]=await Promise.all([
-      sb.from('wealth_responsaveis').select('id,data').order('created_at'),
+    const [{data:leads},{data:conc}]=await Promise.all([
+      sb.from('wealth_leads').select('id,data').order('created_at'),
       sb.from('concierge_clientes').select('id,data').order('created_at')
     ]);
-    const r=(onb||[]).map(x=>({id:x.id,nome:(x.data?.nome||'').trim(),tag:'Onboarding'}));
+    // Onboarding = leads sincronizados da planilha de onboarding
+    const onb=(leads||[])
+      .filter(x=>(x.data?.obs||'')==='Importado do Onboarding')
+      .map(x=>({id:x.id,nome:(x.data?.nome||'').trim(),tag:'Onboarding'}));
     const c=(conc||[]).map(x=>({id:x.id,nome:(x.data?.nome||'').trim(),tag:'Concierge'}));
-    _clientes=[...r,...c].filter(x=>x.nome).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    _clientes=[...onb,...c].filter(x=>x.nome).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
   }catch(err){console.warn('Clientes:',err);}
 }
 
