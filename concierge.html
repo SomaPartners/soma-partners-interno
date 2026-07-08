@@ -394,7 +394,13 @@ function addMembroForm(m=null){
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
       <div><label class="form-label">E-mail secundário</label><input class="form-control" type="email" id="me2-${idx}" placeholder="outro@email.com" value="${m?.email2||''}"></div>
-      <div><label class="form-label">Endereço</label><input class="form-control" id="mend-${idx}" placeholder="Rua, número, cidade, CEP" value="${m?.endereco||''}"></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label class="form-label" style="margin:0">Endereços</label>
+        <button type="button" onclick="addEnderecoForm(${idx})" style="background:rgba(201,150,60,0.12);border:1px solid rgba(201,150,60,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-weight:700;color:#c9963c;cursor:pointer;font-family:'Montserrat',sans-serif">+ Endereço</button>
+      </div>
+      <div id="mend-list-${idx}"></div>
     </div>
 
     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.25);margin:12px 0 8px">CNH</div>
@@ -415,6 +421,8 @@ function addMembroForm(m=null){
       <div><label class="form-label">Placa</label><input class="form-control" id="mplaca-${idx}" placeholder="Ex: GHN6C61" value="${m?.placa||''}"></div>
     </div>`;
   document.getElementById('membros-form-list').appendChild(div);
+  const _addrs=m?.enderecos||(m?.endereco?[{label:'',texto:m.endereco}]:[]);
+  _addrs.forEach(e=>addEnderecoForm(idx,e));
   div.querySelector(`#mn-${idx}`).focus();
 }
 
@@ -469,8 +477,37 @@ function collectMembros(){
     const nome = document.getElementById(`mn-${idx}`)?.value.trim();
     if(!nome) return null;
     const gv = id => document.getElementById(id)?.value?.trim()||'';
-    return {nome, rel:gv(`mr-${idx}`)||'outro', cpf:gv(`mc-${idx}`), nasc:gv(`md-${idx}`), nascLocal:gv(`mnl-${idx}`), profissao:gv(`mpr-${idx}`), pai:gv(`mpai-${idx}`), mae:gv(`mmae-${idx}`), tel:gv(`mt-${idx}`), email:gv(`me-${idx}`), email2:gv(`me2-${idx}`), endereco:gv(`mend-${idx}`), cnh:{num:gv(`mcnh-${idx}`),cat:gv(`mcnhcat-${idx}`),primeiraHab:gv(`mcnh1-${idx}`),emissao:gv(`mcnhem-${idx}`),venc:gv(`mcnhv-${idx}`),orgao:gv(`mcnhorg-${idx}`)}, veiculo:gv(`mvei-${idx}`), placa:gv(`mplaca-${idx}`)};
+    return {nome, rel:gv(`mr-${idx}`)||'outro', cpf:gv(`mc-${idx}`), nasc:gv(`md-${idx}`), nascLocal:gv(`mnl-${idx}`), profissao:gv(`mpr-${idx}`), pai:gv(`mpai-${idx}`), mae:gv(`mmae-${idx}`), tel:gv(`mt-${idx}`), email:gv(`me-${idx}`), email2:gv(`me2-${idx}`), enderecos:collectEnderecos(idx), cnh:{num:gv(`mcnh-${idx}`),cat:gv(`mcnhcat-${idx}`),primeiraHab:gv(`mcnh1-${idx}`),emissao:gv(`mcnhem-${idx}`),venc:gv(`mcnhv-${idx}`),orgao:gv(`mcnhorg-${idx}`)}, veiculo:gv(`mvei-${idx}`), placa:gv(`mplaca-${idx}`)};
   }).filter(Boolean);
+}
+
+let _endCounters={};
+function addEnderecoForm(membroIdx,end=null){
+  if(!_endCounters[membroIdx])_endCounters[membroIdx]=0;
+  const eidx=_endCounters[membroIdx]++;
+  const container=document.getElementById(`mend-list-${membroIdx}`);
+  if(!container)return;
+  const div=document.createElement('div');
+  div.id=`ea-${membroIdx}-${eidx}`;
+  div.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:6px';
+  div.innerHTML=`
+    <input class="form-control" id="eal-${membroIdx}-${eidx}" placeholder="Tipo (Casa, Trabalho...)" style="width:130px;flex-shrink:0" value="${end?.label||''}">
+    <input class="form-control" id="eat-${membroIdx}-${eidx}" placeholder="Rua, número, bairro, cidade, CEP" style="flex:1" value="${end?.texto||''}">
+    <button type="button" onclick="document.getElementById('ea-${membroIdx}-${eidx}').remove()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.3);font-size:20px;line-height:1;padding:0 4px;flex-shrink:0" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">×</button>
+  `;
+  container.appendChild(div);
+}
+function collectEnderecos(membroIdx){
+  const list=[];
+  const max=_endCounters[membroIdx]||0;
+  for(let i=0;i<max;i++){
+    const el=document.getElementById(`ea-${membroIdx}-${i}`);
+    if(!el)continue;
+    const label=document.getElementById(`eal-${membroIdx}-${i}`)?.value.trim()||'';
+    const texto=document.getElementById(`eat-${membroIdx}-${i}`)?.value.trim()||'';
+    if(texto)list.push({label,texto});
+  }
+  return list;
 }
 
 async function saveCliente(){
@@ -570,7 +607,7 @@ function openModal(c=null){
   document.getElementById('modal-title').textContent='Nova Família / Projeto';
   // Limpa membros
   document.getElementById('membros-form-list').innerHTML='';
-  membroCount=0;
+  membroCount=0;_endCounters={};
   if(c){
     document.getElementById('edit-id').value=c.id;
     document.getElementById('c-nome').value=c.nome||'';

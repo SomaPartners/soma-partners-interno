@@ -957,7 +957,13 @@ select.fc{appearance:none;-webkit-appearance:none;cursor:pointer;background-imag
         <div class="fg"><label class="fl">E-mail secundário</label><input class="fc" id="m-email2" type="email" placeholder="outro@email.com"></div>
         <div class="fg"></div>
       </div>
-      <div class="fg"><label class="fl">Endereço</label><input class="fc" id="m-end" placeholder="Rua, número, bairro, cidade, CEP"></div>
+      <div class="fg">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <label class="fl" style="margin:0">Endereços</label>
+          <button type="button" onclick="addEnderecoItem()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:5px;padding:3px 9px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);cursor:pointer;font-family:'Montserrat',sans-serif">+ Endereço</button>
+        </div>
+        <div id="m-end-list"></div>
+      </div>
 
       <!-- CNH -->
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin:14px 0 10px">CNH</div>
@@ -2316,7 +2322,7 @@ function renderDados(){
           ${row('Telefone', m.tel)}
           ${row('E-mail', m.email)}
           ${row('E-mail 2', m.email2)}
-          ${row('Endereço', m.endereco)}
+          ${(m.enderecos&&m.enderecos.length?m.enderecos:m.endereco?[{label:'',texto:m.endereco}]:[]).map(a=>row(a.label?`Endereço · ${a.label}`:'Endereço',a.texto)).join('')}
           ${m.cnh&&m.cnh.num?row('CNH', `Nº ${m.cnh.num}${m.cnh.cat?' | Cat. '+m.cnh.cat:''}${m.cnh.venc?' | Venc. '+fmtDate(m.cnh.venc):''}${m.cnh.orgao?' | '+m.cnh.orgao:''}`):''}
           ${m.cnh&&m.cnh.primeiraHab?row('1ª Habilitação', fmtDate(m.cnh.primeiraHab)):''}
           ${row('Veículo', m.veiculo?(m.veiculo+(m.placa?' · '+m.placa:'')):'')}
@@ -2375,6 +2381,30 @@ async function syncLeadWealth(){
       if(error)console.error('syncLeadWealth error:',error);
     }
   }catch(e){console.error('syncLeadWealth exception:',e);}
+}
+
+// ── ENDEREÇOS DO MEMBRO ──
+let _endItemCount=0;
+function addEnderecoItem(end=null){
+  const idx=_endItemCount++;
+  const container=document.getElementById('m-end-list');
+  if(!container)return;
+  const div=document.createElement('div');
+  div.id=`end-item-${idx}`;
+  div.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:6px';
+  div.innerHTML=`<input class="fc" id="end-lbl-${idx}" placeholder="Tipo (Casa, Trabalho...)" style="width:130px;flex-shrink:0" value="${end?.label||''}"><input class="fc" id="end-txt-${idx}" placeholder="Rua, número, bairro, cidade, CEP" style="flex:1" value="${end?.texto||''}"><button type="button" onclick="document.getElementById('end-item-${idx}').remove()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0 4px;flex-shrink:0;transition:color .15s" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='var(--muted)'">×</button>`;
+  container.appendChild(div);
+}
+function collectEnderecosMembro(){
+  const list=[];
+  for(let i=0;i<_endItemCount;i++){
+    const el=document.getElementById(`end-item-${i}`);
+    if(!el)continue;
+    const label=document.getElementById(`end-lbl-${i}`)?.value.trim()||'';
+    const texto=document.getElementById(`end-txt-${i}`)?.value.trim()||'';
+    if(texto)list.push({label,texto});
+  }
+  return list;
 }
 
 // ── OUTROS DOCUMENTOS ──
@@ -2464,7 +2494,7 @@ async function saveMembro(){
   if(!CLIENT.membros)CLIENT.membros=[];
   const idx=parseInt(document.getElementById('membro-idx').value);
   const gv=id=>{const el=document.getElementById(id);return el?el.value.trim():''};
-  const rec={nome,rel:gv('m-rel'),cpf:gv('m-cpf'),nasc:gv('m-nasc'),nascLocal:gv('m-nasc-local'),pai:gv('m-pai'),mae:gv('m-mae'),tel:gv('m-tel'),email:gv('m-email'),email2:gv('m-email2'),endereco:gv('m-end'),profissao:gv('m-profissao'),foto:gv('m-foto'),cnh:{num:gv('m-cnh-num'),cat:gv('m-cnh-cat'),emissao:gv('m-cnh-emissao'),venc:gv('m-cnh-venc'),orgao:gv('m-cnh-orgao'),primeiraHab:gv('m-cnh-1hab')},veiculo:gv('m-veiculo'),placa:gv('m-placa'),obs:gv('m-obs'),documentos:collectDocs()};
+  const rec={nome,rel:gv('m-rel'),cpf:gv('m-cpf'),nasc:gv('m-nasc'),nascLocal:gv('m-nasc-local'),pai:gv('m-pai'),mae:gv('m-mae'),tel:gv('m-tel'),email:gv('m-email'),email2:gv('m-email2'),enderecos:collectEnderecosMembro(),profissao:gv('m-profissao'),foto:gv('m-foto'),cnh:{num:gv('m-cnh-num'),cat:gv('m-cnh-cat'),emissao:gv('m-cnh-emissao'),venc:gv('m-cnh-venc'),orgao:gv('m-cnh-orgao'),primeiraHab:gv('m-cnh-1hab')},veiculo:gv('m-veiculo'),placa:gv('m-placa'),obs:gv('m-obs'),documentos:collectDocs()};
   if(idx>=0)CLIENT.membros[idx]=rec;else CLIENT.membros.push(rec);
   closeModal('modal-membro');renderDados();renderCounters();
   const{error}=await _sb.from('concierge_clientes').upsert({id:CLIENT.id,data:CLIENT});
@@ -2475,7 +2505,10 @@ async function saveMembro(){
 function editMembro(i){
   const m=CLIENT.membros[i];document.getElementById('membro-idx').value=i;document.getElementById('mt-membro').textContent='Editar Membro';
   const sv=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||''};
-  sv('m-nome',m.nome);sv('m-rel',m.rel||'outro');sv('m-cpf',m.cpf);sv('m-nasc',m.nasc);sv('m-nasc-local',m.nascLocal);sv('m-pai',m.pai);sv('m-mae',m.mae);sv('m-tel',m.tel);sv('m-email',m.email);sv('m-email2',m.email2);sv('m-end',m.endereco);sv('m-profissao',m.profissao);sv('m-obs',m.obs);sv('m-foto',m.foto);
+  sv('m-nome',m.nome);sv('m-rel',m.rel||'outro');sv('m-cpf',m.cpf);sv('m-nasc',m.nasc);sv('m-nasc-local',m.nascLocal);sv('m-pai',m.pai);sv('m-mae',m.mae);sv('m-tel',m.tel);sv('m-email',m.email);sv('m-email2',m.email2);sv('m-profissao',m.profissao);sv('m-obs',m.obs);sv('m-foto',m.foto);
+  const _endList=document.getElementById('m-end-list');if(_endList){_endList.innerHTML='';_endItemCount=0;}
+  const _addrs=m.enderecos||(m.endereco?[{label:'',texto:m.endereco}]:[]);
+  _addrs.forEach(e=>addEnderecoItem(e));
   if(m.cnh){sv('m-cnh-num',m.cnh.num);sv('m-cnh-cat',m.cnh.cat);sv('m-cnh-emissao',m.cnh.emissao);sv('m-cnh-venc',m.cnh.venc);sv('m-cnh-orgao',m.cnh.orgao);sv('m-cnh-1hab',m.cnh.primeiraHab);}
   sv('m-veiculo',m.veiculo);sv('m-placa',m.placa);
   if(m.foto)setMembroFotoPreview(m.foto);else clearMembroFotoPreview();
@@ -2621,7 +2654,7 @@ function openModal(id){
     const sl=document.getElementById('e-senhas-list');
     if(sl){sl.innerHTML='';_senhaEditCount=0;(CLIENT.senhas||[]).forEach(s=>addSenhaFormEdit(s));}
   }
-  if(id==='modal-membro'){document.getElementById('membro-idx').value='-1';document.getElementById('mt-membro').textContent='Adicionar Membro';['m-nome','m-cpf','m-nasc','m-nasc-local','m-pai','m-mae','m-tel','m-email','m-email2','m-end','m-profissao','m-cnh-num','m-cnh-cat','m-cnh-emissao','m-cnh-venc','m-cnh-orgao','m-cnh-1hab','m-veiculo','m-placa','m-obs','m-foto'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});document.getElementById('m-rel').value='outro';clearMembroFotoPreview();const dl=document.getElementById('docs-list');if(dl){dl.innerHTML='';_docCount=0;}}
+  if(id==='modal-membro'){document.getElementById('membro-idx').value='-1';document.getElementById('mt-membro').textContent='Adicionar Membro';['m-nome','m-cpf','m-nasc','m-nasc-local','m-pai','m-mae','m-tel','m-email','m-email2','m-profissao','m-cnh-num','m-cnh-cat','m-cnh-emissao','m-cnh-venc','m-cnh-orgao','m-cnh-1hab','m-veiculo','m-placa','m-obs','m-foto'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});document.getElementById('m-rel').value='outro';clearMembroFotoPreview();const dl=document.getElementById('docs-list');if(dl){dl.innerHTML='';_docCount=0;}const el=document.getElementById('m-end-list');if(el){el.innerHTML='';_endItemCount=0;}}
   if(id==='modal-pgto'){document.getElementById('pgto-id').value='';['pgto-carac','pgto-val','pgto-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value=''});setTimeout(()=>initCurrencyInput(document.getElementById('pgto-val')),50);const pd=document.getElementById('pgto-data');if(pd)pd.value=today();const pt=document.getElementById('pgto-tipo');if(pt)pt.value='SERVIÇOS';const pd2=document.getElementById('pgto-desc');if(pd2)pd2.value='SAÍDA';// Reset toggle
     _pgtoRecorrente=false;_editRecIdx=-1;const tog=document.getElementById('pgto-rec-toggle');const kn=document.getElementById('pgto-rec-knob');const rf=document.getElementById('pgto-rec-fields');if(tog){tog.style.background='rgba(255,255,255,0.1)';tog.style.borderColor='rgba(255,255,255,0.15)';}if(kn){kn.style.left='2px';kn.style.opacity='0.4';}if(rf)rf.style.display='none';
     // Reset pagador
