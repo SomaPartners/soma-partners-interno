@@ -5267,7 +5267,7 @@ function gerarRelatorioGlobalEquipe360(rodadaId){
 
   const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Equipe — Soma Partners</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Montserrat',sans-serif;background:#fff;color:#111;padding:32px;max-width:900px;margin:0 auto}@media print{@page{margin:18mm}body{padding:0;max-width:none}.no-print{display:none}}</style>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Montserrat',sans-serif;background:#fff;color:#111;padding:32px;max-width:900px;margin:0 auto}@media screen{body{padding-top:80px}}@media print{@page{margin:18mm}body{padding:0;max-width:none}.no-print{display:none}}</style>
   </head><body>
   <div class="no-print" style="position:fixed;top:16px;right:16px;display:flex;gap:8px;z-index:999">
     <button onclick="window.print()" style="background:#0b1e30;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer">🖨 Imprimir / PDF</button>
@@ -5315,7 +5315,7 @@ function gerarRelatorioGlobalEquipe360(rodadaId){
     </div>
   </div>
   <!-- Ranking -->
-  <div style="border-top:1px solid #f3f4f6;padding-top:24px">
+  <div style="page-break-before:always;padding-top:8px">
     <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:14px">Ranking da Equipe</div>
     <div style="max-width:520px">${rankingHtml}</div>
   </div>
