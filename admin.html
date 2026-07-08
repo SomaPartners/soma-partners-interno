@@ -4923,6 +4923,7 @@ function renderRodadas360(){
           ${isAtiva?`<button onclick="copiarLink360('${r.id}')" style="background:rgba(201,150,60,0.15);border:1px solid rgba(201,150,60,0.3);color:var(--gold);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif">🔗 Link</button>`:''}
           ${total>0?`<button onclick="verResultados360('${r.id}')" style="background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.3);color:#a5b4fc;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif">📊 Detalhe</button>`:''}
           ${total>0?`<button onclick="gerarRelatorioEquipe360('${r.id}')" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif">📋 Relatório</button>`:''}
+          ${total>0?`<button onclick="gerarRelatorioGlobalEquipe360('${r.id}')" style="background:rgba(201,150,60,0.12);border:1px solid rgba(201,150,60,0.3);color:#f0c97a;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif">📊 Equipe</button>`:''}
           ${isAtiva?`<button onclick="encerrarRodada360('${r.id}')" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);color:#fcd34d;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif">⏹ Encerrar</button>`:''}
           <button onclick="deletarRodada360('${r.id}')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#fca5a5;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif">×</button>
         </div>
@@ -5166,6 +5167,157 @@ function gerarRelatorioEquipe360(rodadaId){
     <div style="margin-top:24px;display:flex;flex-wrap:wrap;gap:16px;align-items:center">
       ${membros.map(({f,medias})=>`<div style="text-align:center">${svgPentPrint(medias,90)}<div style="font-size:9px;font-weight:700;color:#6b7280;margin-top:2px">${f.nome.split(' ')[0]}</div></div>`).join('')}
     </div>
+  </div>
+  </body></html>`;
+
+  const w=window.open('','_blank','width=900,height=700');
+  w.document.write(html);
+  w.document.close();
+}
+
+// ════════════════════════════════
+//  RELATÓRIO GLOBAL DA EQUIPE
+// ════════════════════════════════
+function gerarRelatorioGlobalEquipe360(rodadaId){
+  const rodada=rodadas360.find(r=>r.id===rodadaId);
+  const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const n360cor=n=>n>=4?'#059669':n>=3?'#d97706':'#dc2626';
+
+  // Montar dados de membros (idêntico ao relatório completo)
+  const avaliadosIds=[...new Set(respostas360.filter(r=>r.rodada_id===rodadaId).map(r=>r.avaliado_id))];
+  const membros=avaliadosIds.map(avaliadoId=>{
+    const f=equipe.find(x=>x.id===avaliadoId);
+    if(!f)return null;
+    const resps=respostas360.filter(r=>r.rodada_id===rodadaId&&r.avaliado_id===avaliadoId);
+    if(!resps.length)return null;
+    const medias=CRITERIOS_360.map(c=>{
+      const ns=resps.flatMap(r=>(r.criterios||[]).filter(x=>x.id===c.id).map(x=>x.nota).filter(x=>x!=null));
+      return{...c,avg:ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null};
+    }).filter(c=>c.avg!==null);
+    if(!medias.length)return null;
+    const areas=getAreaPessoa360(f.id);
+    const scores=calcScoresAreas360(medias);
+    const mediaGeral=calcMediaPonderada360(medias,areas);
+    return{f,medias,scores,mediaGeral};
+  }).filter(Boolean);
+
+  if(!membros.length){showToast('Nenhuma avaliação disponível.','err');return;}
+
+  // Médias por área e por critério
+  const avgScores=Object.fromEntries(AREAS_360.map(a=>[a.id,membros.reduce((s,m)=>s+(m.scores[a.id]||0),0)/membros.length]));
+  const avgCriterios=CRITERIOS_360.map(c=>{
+    const vals=membros.map(m=>{const found=m.medias.find(x=>x.id===c.id);return found?.avg??null;}).filter(v=>v!==null);
+    return{...c,avg:vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0};
+  });
+  const topCrit=avgCriterios.slice().sort((a,b)=>b.avg-a.avg)[0]?.label||'';
+  const topArea=[...AREAS_360].sort((a,b)=>(avgScores[b.id]||0)-(avgScores[a.id]||0))[0]?.label||'';
+  const valsGerais=membros.map(m=>m.mediaGeral).filter(v=>v>0);
+  const mediaGeralEquipe=valsGerais.length?valsGerais.reduce((a,b)=>a+b,0)/valsGerais.length:0;
+
+  // SVG pentágono por critérios
+  function svgPentPrint(medias,size=160){
+    const data=CRITERIOS_360.map(c=>{const m=medias.find(x=>x.id===c.id);return{key:c.id,label:c.label,value:m?.avg||0};});
+    const n=data.length,pad=size<130?65:82,total=size+pad*2,cx=total/2,cy=total/2,R=size/2*0.76;
+    const axes=data.map((item,i)=>{const ang=(2*Math.PI*i/n)-(Math.PI/2);return{...item,ax:Math.cos(ang),ay:Math.sin(ang)};});
+    const grid=[1,.8,.6,.4,.2].map(f=>{const pts=axes.map(a=>`${cx+a.ax*R*f},${cy+a.ay*R*f}`).join(' ');return`<polygon points="${pts}" fill="none" stroke="rgba(0,0,0,0.07)" stroke-width="0.7"/>`;}).join('');
+    const axLines=axes.map(a=>`<line x1="${cx}" y1="${cy}" x2="${cx+a.ax*R}" y2="${cy+a.ay*R}" stroke="rgba(0,0,0,0.1)" stroke-width="0.7"/>`).join('');
+    const dpts=axes.map(a=>{const s=Math.min(5,Math.max(0,a.value||0));return`${cx+a.ax*R*(s/5)},${cy+a.ay*R*(s/5)}`;}).join(' ');
+    const dots=axes.map(a=>{const s=Math.min(5,Math.max(0,a.value||0));return`<circle cx="${cx+a.ax*R*(s/5)}" cy="${cy+a.ay*R*(s/5)}" r="${size<130?2.5:3}" fill="rgba(180,120,30,1)" stroke="#fff" stroke-width="0.8"/>`;}).join('');
+    const fs=size<130?7.5:9,fsv=size<130?9.5:11,LOFF=size<130?14:20;
+    const NOMES={comunicacao:'Comunic.',comercial:'Comercial',coletividade:'Coletiv.',conhecimento_tec:'C. Técnico',alinhamento:'Alinhm.'};
+    const lbls=axes.map(a=>{
+      const lx=cx+a.ax*(R+LOFF),ly=cy+a.ay*(R+LOFF);
+      const anch=a.ax>0.25?'start':a.ax<-0.25?'end':'middle';
+      const nome=(NOMES[a.key]||a.label).toUpperCase();
+      const score=a.value>0?a.value.toFixed(1):'—';
+      const isUp=a.ay<-0.1;
+      const scoreY=isUp?ly-fs-3:ly+fsv;
+      const nameY=isUp?ly-2:ly+fsv+fs+2;
+      return`<text x="${lx}" y="${nameY}" text-anchor="${anch}" font-size="${fs}" font-weight="800" letter-spacing="0.3" font-family="Montserrat,sans-serif" fill="#555">${nome}</text><text x="${lx}" y="${scoreY}" text-anchor="${anch}" font-size="${fsv}" font-weight="900" font-family="Montserrat,sans-serif" fill="rgba(160,100,20,1)">${score}</text>`;
+    }).join('');
+    return`<svg viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">${grid}${axLines}<polygon points="${dpts}" fill="rgba(201,150,60,0.22)" stroke="rgba(180,120,30,0.9)" stroke-width="1.5"/>${dots}${lbls}</svg>`;
+  }
+
+  // SVG losango por áreas
+  function svgPrint(scores,size=160){
+    const pad=36,total=size+pad*2,cx=total/2,cy=total/2,R=size/2*0.82;
+    const axes=[{key:'comercial',label:'Comercial',ax:0,ay:-1},{key:'investimentos',label:'Invest.',ax:1,ay:0},{key:'servicos',label:'Serviços',ax:0,ay:1},{key:'juridico',label:'Jurídico',ax:-1,ay:0}];
+    const grid=[1,.8,.6,.4,.2].map(f=>{const pts=axes.map(a=>`${cx+a.ax*R*f},${cy+a.ay*R*f}`).join(' ');return`<polygon points="${pts}" fill="none" stroke="rgba(0,0,0,0.07)" stroke-width="0.7"/>`;}).join('');
+    const axLines=axes.map(a=>`<line x1="${cx}" y1="${cy}" x2="${cx+a.ax*R}" y2="${cy+a.ay*R}" stroke="rgba(0,0,0,0.1)" stroke-width="0.7"/>`).join('');
+    const dpts=axes.map(a=>{const s=Math.min(5,Math.max(0,scores[a.key]||0));return`${cx+a.ax*R*(s/5)},${cy+a.ay*R*(s/5)}`;}).join(' ');
+    const dots=axes.map(a=>{const s=Math.min(5,Math.max(0,scores[a.key]||0));return`<circle cx="${cx+a.ax*R*(s/5)}" cy="${cy+a.ay*R*(s/5)}" r="3" fill="rgba(180,120,30,1)"/>`;}).join('');
+    const lbls=axes.map(a=>{const s=scores[a.key]||0;const lx=cx+a.ax*(R+pad*0.78),ly=cy+a.ay*(R+pad*0.78);const anch=a.ax>0.5?'start':a.ax<-0.5?'end':'middle';const dy=a.ay>0.5?14:a.ay<-0.5?-4:4;const dy2=a.ay>0.5?26:a.ay<-0.5?8:18;return`<text x="${lx}" y="${ly+dy}" text-anchor="${anch}" font-size="8" font-weight="800" font-family="Montserrat,sans-serif" fill="#666">${a.label.toUpperCase()}</text><text x="${lx}" y="${ly+dy2}" text-anchor="${anch}" font-size="10" font-weight="900" font-family="Montserrat,sans-serif" fill="rgba(160,100,20,1)">${s.toFixed(1)}</text>`;}).join('');
+    return`<svg viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" xmlns="http://www.w3.org/2000/svg">${grid}${axLines}<polygon points="${dpts}" fill="rgba(201,150,60,0.25)" stroke="rgba(180,120,30,0.9)" stroke-width="1.5"/>${dots}${lbls}</svg>`;
+  }
+
+  const pentSvg=svgPentPrint(avgCriterios,220);
+  const diamSvg=svgPrint(avgScores,150);
+
+  // Ranking da equipe
+  const rankingHtml=[...membros].sort((a,b)=>b.mediaGeral-a.mediaGeral).map(({f,mediaGeral},i)=>{
+    const cor=n360cor(mediaGeral);
+    const pct=Math.round((mediaGeral/5)*100);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f3f4f6">
+      <span style="font-size:11px;font-weight:800;color:#9ca3af;min-width:20px">${i+1}°</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:#374151">${f.nome}</span>
+      <div style="width:90px;background:#f3f4f6;border-radius:3px;height:5px"><div style="background:${cor};height:5px;border-radius:3px;width:${pct}%"></div></div>
+      <span style="font-size:14px;font-weight:900;color:${cor};min-width:30px;text-align:right">${mediaGeral.toFixed(1)}</span>
+    </div>`;
+  }).join('');
+
+  const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Equipe — Soma Partners</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Montserrat',sans-serif;background:#fff;color:#111;padding:32px;max-width:900px;margin:0 auto}@media print{@page{margin:18mm}body{padding:0;max-width:none}.no-print{display:none}}</style>
+  </head><body>
+  <div class="no-print" style="position:fixed;top:16px;right:16px;display:flex;gap:8px;z-index:999">
+    <button onclick="window.print()" style="background:#0b1e30;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer">🖨 Imprimir / PDF</button>
+    <button onclick="window.close()" style="background:#f3f4f6;color:#374151;border:none;padding:10px 16px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer">✕ Fechar</button>
+  </div>
+  <!-- Cabeçalho -->
+  <div style="border-bottom:3px solid #c9963c;padding-bottom:20px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">Avaliação 360° · Soma Partners</div>
+      <div style="font-size:26px;font-weight:900;color:#0b1e30">${rodada?.nome||'Relatório'}</div>
+      <div style="font-size:12px;color:#6b7280;margin-top:4px">${hoje} · ${membros.length} colaborador${membros.length!==1?'es':''} avaliado${membros.length!==1?'s':''}</div>
+    </div>
+    <div style="text-align:center;background:#fdf8ef;border:2px solid #c9963c;border-radius:12px;padding:14px 22px">
+      <div style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;margin-bottom:4px">Média Geral</div>
+      <div style="font-size:44px;font-weight:900;color:${n360cor(mediaGeralEquipe)};line-height:1">${mediaGeralEquipe.toFixed(1)}</div>
+      <div style="font-size:9px;color:#9ca3af;margin-top:3px">/ 5.0</div>
+    </div>
+  </div>
+  <!-- Critérios -->
+  <div style="margin-bottom:28px">
+    <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:16px">Média por Critério</div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      ${pentSvg}
+      <div style="flex:1;min-width:180px">
+        ${avgCriterios.map(c=>{const cor=n360cor(c.avg);const pct=Math.round((c.avg/5)*100);return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:#374151;font-weight:600">${c.label}</span><span style="font-size:15px;font-weight:900;color:${cor}">${c.avg.toFixed(1)}</span></div><div style="background:#f3f4f6;border-radius:3px;height:7px"><div style="background:${cor};height:7px;border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')}
+        <div style="margin-top:14px;padding:10px 14px;background:#fdf8ef;border-radius:8px;border-left:3px solid #c9963c">
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#9ca3af">Critério mais forte</div>
+          <div style="font-size:15px;font-weight:900;color:#c9963c;margin-top:3px">${topCrit}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Áreas -->
+  <div style="margin-bottom:28px;page-break-inside:avoid">
+    <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:16px">Score por Área</div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      ${diamSvg}
+      <div style="flex:1;min-width:160px">
+        ${AREAS_360.map(a=>{const s=avgScores[a.id]||0;const cor=n360cor(s);return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:#374151;font-weight:600">${a.label}</span><span style="font-size:15px;font-weight:900;color:${cor}">${s.toFixed(1)}</span></div><div style="background:#f3f4f6;border-radius:3px;height:7px"><div style="background:${cor};height:7px;border-radius:3px;width:${Math.round((s/5)*100)}%"></div></div></div>`;}).join('')}
+        <div style="margin-top:14px;padding:10px 14px;background:#fdf8ef;border-radius:8px;border-left:3px solid #c9963c">
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#9ca3af">Área mais forte</div>
+          <div style="font-size:15px;font-weight:900;color:#c9963c;margin-top:3px">${topArea}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Ranking -->
+  <div style="border-top:1px solid #f3f4f6;padding-top:24px">
+    <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c9963c;margin-bottom:14px">Ranking da Equipe</div>
+    <div style="max-width:520px">${rankingHtml}</div>
   </div>
   </body></html>`;
 
