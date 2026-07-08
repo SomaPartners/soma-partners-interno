@@ -191,6 +191,11 @@
       background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.015) 0%, rgba(6,12,22,1) 80%),
         linear-gradient(135deg, #080e1c 0%, #050b16 100%);
     }
+    .card-slides .card-placeholder {
+      background: radial-gradient(ellipse at 60% 30%, rgba(201,150,60,0.18) 0%, rgba(8,12,24,1) 70%),
+        linear-gradient(135deg, #10130a 0%, #0a0c14 60%, #080a10 100%);
+    }
+    .card-slides { cursor: pointer; }
     .card-embreve-body {
       position: absolute; inset: 0; z-index: 3;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
@@ -379,14 +384,13 @@
       </div>
     </div>
 
-    <!-- EM BREVE 1 -->
-    <div class="card card-embreve card-extra">
+    <!-- GERADOR DE SLIDES -->
+    <div class="card card-slides card-extra" onclick="window.location.href='gerador-slides.html'">
       <div class="card-placeholder"></div>
-      <div class="card-embreve-body">
-        <div class="card-embreve-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="card-embreve-label">Em breve</div>
+      <div class="card-tint"></div>
+      <div class="card-footer">
+        <div class="card-title">Gerador de Slides</div>
+        <div class="card-subtitle">Apresentações com IA</div>
       </div>
     </div>
 

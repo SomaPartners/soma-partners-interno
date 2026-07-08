@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soma Partners — Gerador de Slides</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --accent: #c9963c; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0d273d; min-height: 100vh; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #f4f7fa; }
+textarea, select, input { outline: none; font-family: inherit; }
+textarea::placeholder { color: rgba(255,255,255,0.2); }
+textarea:focus, select:focus { border-color: var(--accent) !important; }
+#form-view, #loading-view, #preview-view { display: none; }
+#form-view.active, #loading-view.active, #preview-view.active { display: flex; }
+button { cursor: pointer; }
+button:hover { opacity: 0.84; }
+
+/* ── Style toggle pills ── */
+.pill {
+  padding: 9px 20px;
+  border-radius: 2px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: rgba(255,255,255,0.38);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.pill.on {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Color preset dots ── */
+.dot {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+  flex-shrink: 0;
+  position: relative;
+}
+.dot:hover { transform: scale(1.12); }
+.dot.on { border-color: #fff; transform: scale(1.12); }
+.dot-custom {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255,255,255,0.28);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  position: relative; overflow: hidden;
+}
+.dot-custom:hover { border-color: var(--accent); }
+.dot-custom input[type="color"] {
+  position: absolute; inset: -6px;
+  opacity: 0; cursor: pointer; border: none; padding: 0;
+  width: calc(100% + 12px); height: calc(100% + 12px);
+}
+
+/* ── Photo zone ── */
+.photo-zone {
+  border: 1.5px dashed rgba(255,255,255,0.13);
+  border-radius: 3px;
+  padding: 22px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-zone:hover, .photo-zone.drag-over { border-color: var(--accent); }
+.thumb {
+  position: relative;
+  width: 88px; height: 60px;
+  border-radius: 3px;
+  overflow: hidden; flex-shrink: 0;
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb .del {
+  position: absolute; top: 3px; right: 3px;
+  width: 18px; height: 18px;
+  background: rgba(0,0,0,0.72);
+  border: none; border-radius: 50%;
+  color: #fff; font-size: 9px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s;
+  cursor: pointer; font-family: inherit;
+}
+.thumb:hover .del { opacity: 1; }
+
+/* ── Field ── */
+.field { display: flex; flex-direction: column; gap: 10px; }
+.field-label {
+  font-size: 11px; font-weight: 400;
+  letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--accent);
+}
+.field-label span { opacity: 0.4; text-transform: none; letter-spacing: 0; }
+.field-textarea {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 3px;
+  padding: 15px 18px;
+  font-size: 17px; font-weight: 300;
+  color: #f4f7fa; line-height: 1.6;
+  resize: none; width: 100%;
+}
+.field-select {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 3px;
+  padding: 15px 18px;
+  font-size: 17px; font-weight: 300;
+  color: #f4f7fa; width: 100%;
+  appearance: none; cursor: pointer;
+}
+.section-label {
+  font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: rgba(255,255,255,0.28); font-weight: 400;
+}
+.sub-label {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.45); font-weight: 400;
+}
+.divider { height: 1px; background: rgba(255,255,255,0.07); }
+</style>
+</head>
+<body>
+
+<!-- ══ FORMULÁRIO ════════════════════════════════════════════════════════════ -->
+<div id="form-view" class="active"
+  style="min-height:100vh;background:#0d273d;flex-direction:column;align-items:center;justify-content:flex-start;padding:72px 40px 64px;">
+
+  <!-- Voltar -->
+  <a href="soma-partners.html"
+    style="position:fixed;top:20px;left:32px;font-size:10px;font-weight:400;letter-spacing:0.32em;text-transform:uppercase;color:rgba(255,255,255,0.28);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.2s;"
+    onmouseover="this.style.color='rgba(255,255,255,0.65)'" onmouseout="this.style.color='rgba(255,255,255,0.28)'">
+    ← Voltar
+  </a>
+
+  <div style="width:100%;max-width:680px;display:flex;flex-direction:column;gap:36px;">
+
+    <!-- Header -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:4px;">
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:50px;font-weight:300;color:var(--accent);letter-spacing:0.04em;line-height:1;">Soma Partners</div>
+      <div style="font-size:10px;font-weight:400;letter-spacing:0.48em;text-transform:uppercase;color:rgba(255,255,255,0.3);">Gerador de Slides</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Campos de conteúdo -->
+    <div style="display:flex;flex-direction:column;gap:22px;">
+      <div class="field">
+        <div class="field-label">Sobre o que é a apresentação?</div>
+        <textarea id="topic" class="field-textarea" placeholder="Ex: Nossos serviços de concierge premium no Rio de Janeiro" style="height:96px;"></textarea>
+      </div>
+      <div class="field">
+        <div class="field-label">Pontos principais <span>(opcional)</span></div>
+        <textarea id="keypoints" class="field-textarea" placeholder="Ex: 20 anos de experiência, equipe 24h, discreção absoluta..." style="height:116px;"></textarea>
+      </div>
+      <div class="field">
+        <div class="field-label">Propósito</div>
+        <select id="purpose" class="field-select">
+          <option>Proposta para clientes</option>
+          <option>Apresentação de serviço</option>
+          <option>Case de sucesso</option>
+          <option>Apresentação institucional</option>
+          <option>Pitch para parceiros</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Personalizar -->
+    <div style="display:flex;flex-direction:column;gap:26px;">
+      <div class="section-label">Personalizar</div>
+
+      <!-- Cor de destaque -->
+      <div style="display:flex;flex-direction:column;gap:13px;">
+        <div class="sub-label">Cor de destaque</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="dot on" style="background:#c9963c;" data-color="#c9963c" onclick="setAccent('#c9963c',this)"></div>
+          <div class="dot" style="background:#3b8bff;" data-color="#3b8bff" onclick="setAccent('#3b8bff',this)"></div>
+          <div class="dot" style="background:#10b981;" data-color="#10b981" onclick="setAccent('#10b981',this)"></div>
+          <div class="dot" style="background:#e07b54;" data-color="#e07b54" onclick="setAccent('#e07b54',this)"></div>
+          <div class="dot" style="background:#9b7ecb;" data-color="#9b7ecb" onclick="setAccent('#9b7ecb',this)"></div>
+          <div class="dot" style="background:#e8c84a;" data-color="#e8c84a" onclick="setAccent('#e8c84a',this)"></div>
+          <div class="dot-custom" title="Cor personalizada" onclick="document.getElementById('custom-color').click()">
+            +
+            <input type="color" id="custom-color" value="#c9963c" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Tema -->
+      <div style="display:flex;flex-direction:column;gap:13px;">
+        <div class="sub-label">Tema</div>
+        <div style="display:flex;gap:8px;">
+          <button class="pill on" id="theme-dark" onclick="setTheme('dark')">● Escuro</button>
+          <button class="pill" id="theme-light" onclick="setTheme('light')">● Claro</button>
+        </div>
+      </div>
+
+      <!-- Estilo de texto -->
+      <div style="display:flex;flex-direction:column;gap:13px;">
+        <div class="sub-label">Estilo de texto</div>
+        <div style="display:flex;gap:8px;">
+          <button class="pill on" id="font-classic" onclick="setFont('classic')" style="font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:0.04em;text-transform:none;padding:9px 22px;">Clássico</button>
+          <button class="pill" id="font-modern" onclick="setFont('modern')" style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;">Moderno</button>
+        </div>
+      </div>
+
+      <!-- Fotos -->
+      <div style="display:flex;flex-direction:column;gap:13px;">
+        <div class="sub-label">Fotos <span style="opacity:0.45;text-transform:none;letter-spacing:0;font-size:10px;font-weight:300;">(opcional — até 5)</span></div>
+
+        <div id="photo-zone" class="photo-zone"
+          onclick="document.getElementById('photo-input').click()"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="handleDrop(event)">
+          <div style="pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:8px;">
+            <div style="font-size:22px;opacity:0.35;">↑</div>
+            <div style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.38);">Clique ou arraste fotos aqui</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.2);">JPG, PNG — máx 5 fotos</div>
+          </div>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" multiple style="display:none;" onchange="handleFiles(this.files)">
+        <div id="photo-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Gerar -->
+    <button id="generate-btn"
+      style="background:var(--accent);border:none;padding:20px;font-size:13px;font-weight:500;letter-spacing:0.32em;text-transform:uppercase;color:#0d273d;border-radius:2px;width:100%;font-family:inherit;">
+      Gerar Apresentação
+    </button>
+
+    <div id="error-msg" style="display:none;font-size:14px;font-weight:300;color:#ef4444;text-align:center;line-height:1.6;white-space:pre-wrap;"></div>
+
+  </div>
+</div>
+
+<!-- ══ CARREGANDO ═════════════════════════════════════════════════════════════ -->
+<div id="loading-view"
+  style="min-height:100vh;background:#0d273d;flex-direction:column;align-items:center;justify-content:center;gap:34px;">
+  <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:50px;font-weight:300;color:var(--accent);">Soma Partners</div>
+  <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:36px;font-weight:300;font-style:italic;color:#f4f7fa;">Criando sua apresentação…</div>
+  <div style="width:48px;height:1px;background:var(--accent);"></div>
+  <div style="font-size:12px;font-weight:300;color:rgba(255,255,255,0.32);letter-spacing:0.18em;text-transform:uppercase;">Aguarde um momento</div>
+</div>
+
+<!-- ══ PREVIEW ════════════════════════════════════════════════════════════════ -->
+<div id="preview-view" style="min-height:100vh;background:#0a1e30;flex-direction:column;">
+  <div style="background:#0d273d;border-bottom:1px solid rgba(255,255,255,0.07);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;color:var(--accent);">Soma Partners</div>
+    <div style="display:flex;gap:10px;">
+      <button id="reset-btn"
+        style="background:transparent;border:1px solid rgba(255,255,255,0.14);padding:8px 20px;font-size:11px;font-weight:400;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.45);border-radius:2px;font-family:inherit;">
+        Nova apresentação
+      </button>
+      <button id="open-btn"
+        style="background:var(--accent);border:none;padding:8px 22px;font-size:11px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:#0d273d;border-radius:2px;font-family:inherit;">
+        Abrir completo ↗
+      </button>
+    </div>
+  </div>
+  <iframe id="preview-frame" frameborder="0"
+    style="flex:1;width:100%;border:none;display:block;height:calc(100vh - 58px);"></iframe>
+</div>
+
+<script>
+// ── Auth ──────────────────────────────────────────────────────────────────────
+if (sessionStorage.getItem('soma_auth') !== '1') window.location.href = 'index.html';
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var photos = [];        // base64 strings
+var accentColor = '#c9963c';
+var theme = 'dark';    // 'dark' | 'light'
+var fontStyle = 'classic'; // 'classic' | 'modern'
+var currentDeckHtml = null;
+
+// ── Accent color ──────────────────────────────────────────────────────────────
+function setAccent(color, dotEl) {
+  accentColor = color;
+  document.documentElement.style.setProperty('--accent', color);
+  document.querySelectorAll('.dot').forEach(function(d) { d.classList.remove('on'); });
+  if (dotEl) dotEl.classList.add('on');
+  document.getElementById('custom-color').value = color;
+}
+
+// Custom color picker
+document.getElementById('custom-color').addEventListener('input', function() {
+  accentColor = this.value;
+  document.documentElement.style.setProperty('--accent', this.value);
+  document.querySelectorAll('.dot').forEach(function(d) { d.classList.remove('on'); });
+});
+
+// Dot-custom click passthrough
+document.querySelector('.dot-custom').addEventListener('click', function(e) {
+  e.stopPropagation();
+  document.getElementById('custom-color').click();
+});
+
+// ── Theme & Font ──────────────────────────────────────────────────────────────
+function setTheme(t) {
+  theme = t;
+  document.getElementById('theme-dark').classList.toggle('on', t === 'dark');
+  document.getElementById('theme-light').classList.toggle('on', t === 'light');
+}
+function setFont(f) {
+  fontStyle = f;
+  document.getElementById('font-classic').classList.toggle('on', f === 'classic');
+  document.getElementById('font-modern').classList.toggle('on', f === 'modern');
+}
+
+// ── Photos ────────────────────────────────────────────────────────────────────
+function handleFiles(files) {
+  var remaining = 5 - photos.length;
+  Array.from(files).slice(0, remaining).forEach(function(file) {
+    if (!file.type.startsWith('image/')) return;
+    var reader = new FileReader();
+    reader.onload = function(e) { photos.push(e.target.result); renderThumbs(); };
+    reader.readAsDataURL(file);
+  });
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('photo-zone').classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+}
+function removePhoto(i) {
+  photos.splice(i, 1);
+  renderThumbs();
+}
+function renderThumbs() {
+  var container = document.getElementById('photo-thumbs');
+  container.innerHTML = photos.map(function(src, i) {
+    return '<div class="thumb">'
+      + '<img src="' + src + '" alt="">'
+      + '<button class="del" onclick="removePhoto(' + i + ')">×</button>'
+      + '</div>';
+  }).join('');
+  document.getElementById('photo-zone').style.display = photos.length >= 5 ? 'none' : 'flex';
+}
+
+// ── Views ─────────────────────────────────────────────────────────────────────
+function showView(id) {
+  ['form-view','loading-view','preview-view'].forEach(function(v) {
+    document.getElementById(v).classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Listeners ─────────────────────────────────────────────────────────────────
+document.getElementById('generate-btn').addEventListener('click', generate);
+document.getElementById('reset-btn').addEventListener('click', function() {
+  currentDeckHtml = null;
+  document.getElementById('error-msg').style.display = 'none';
+  showView('form-view');
+});
+document.getElementById('open-btn').addEventListener('click', function() {
+  if (!currentDeckHtml) return;
+  var blob = new Blob([currentDeckHtml], { type: 'text/html' });
+  window.open(URL.createObjectURL(blob), '_blank');
+});
+
+// ── Generate ──────────────────────────────────────────────────────────────────
+async function generate() {
+  var topic = document.getElementById('topic').value.trim();
+  if (!topic) { document.getElementById('topic').focus(); return; }
+  var keypoints = document.getElementById('keypoints').value.trim();
+  var purpose = document.getElementById('purpose').value;
+  document.getElementById('error-msg').style.display = 'none';
+  showView('loading-view');
+  try {
+    var userMsg = 'Tema: "' + topic + '"\nPropósito: ' + purpose
+      + (keypoints ? '\nPontos-chave:\n' + keypoints : '')
+      + (photos.length ? '\nFotos disponíveis: ' + photos.length + '. Use photo-left/photo-right distribuindo organicamente.' : '');
+    var raw = await window.claude.complete({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 8000,
+      system: buildSystemPrompt(),
+      messages: [{ role: 'user', content: userMsg }]
+    });
+    var cleaned = raw.replace(/^```[a-z]*\n?/gm, '').replace(/```\s*$/gm, '').trim();
+    var data = JSON.parse(cleaned);
+    currentDeckHtml = buildDeckHtml(data);
+    var iframe = document.getElementById('preview-frame');
+    var blob = new Blob([currentDeckHtml], { type: 'text/html' });
+    iframe.src = URL.createObjectURL(blob);
+    showView('preview-view');
+  } catch(e) {
+    showView('form-view');
+    var err = document.getElementById('error-msg');
+    err.textContent = 'Erro ao gerar. Tente novamente.\n' + e.message;
+    err.style.display = 'block';
+  }
+}
+
+// ── System Prompt ─────────────────────────────────────────────────────────────
+function buildSystemPrompt() {
+  return 'Você gera conteúdo para apresentações da Soma Partners, empresa brasileira de concierge premium.\n'
+    + 'Tom: poderoso, direto, luxo discreto. Idioma: Português brasileiro.\n'
+    + 'Retorne APENAS JSON válido — sem markdown, sem blocos de código, sem explicações.\n\n'
+    + 'Tipos de slide disponíveis:\n'
+    + '1. cover         – { "type":"cover", "eyebrow":"label", "heading":"título grande", "tagline":"subtítulo curto" }\n'
+    + '2. statement     – { "type":"statement", "italic":"frase em itálico", "bold":"conclusão colorida", "body":"parágrafo opcional" }\n'
+    + '3. two-col       – { "type":"two-col", "eyebrow":"label", "heading":"título", "body1":"texto esq", "body2":"texto dir opcional" }\n'
+    + '4. three-col     – { "type":"three-col", "eyebrow":"label", "heading":"título", "cols":[{"title":"...","body":"..."},{"title":"...","body":"..."},{"title":"...","body":"..."}] }\n'
+    + '5. grid-cards    – { "type":"grid-cards", "eyebrow":"label", "heading":"título", "cards":[{"title":"...","body":"..."}] } — exatamente 6 cards\n'
+    + '6. steps         – { "type":"steps", "eyebrow":"label", "heading":"título", "steps":[{"title":"...","body":"..."},{"title":"...","body":"..."},{"title":"...","body":"..."}] } — exatamente 3\n'
+    + '7. numbered-list – { "type":"numbered-list", "eyebrow":"label", "heading":"título", "items":[{"title":"...","body":"..."}] } — 3 a 5 itens\n'
+    + '8. photo-left    – { "type":"photo-left",  "photo_index":0, "eyebrow":"label", "heading":"título", "body":"texto" }\n'
+    + '9. photo-right   – { "type":"photo-right", "photo_index":0, "eyebrow":"label", "heading":"título", "body":"texto" }\n'
+    + '10. contact      – { "type":"contact", "question":"frase em itálico", "cta":"texto de apoio", "handle":"@somapartners", "url":"somapartners.co" }\n\n'
+    + 'Regras: 8–10 slides; cover primeiro, contact último; 1–2 statements para impacto; '
+    + 'varie os tipos — nunca repita o mesmo consecutivamente; textos concisos (máx 2 frases por campo); '
+    + 'use photo-left/photo-right somente se houver fotos disponíveis; retorne SOMENTE: {"slides":[...]}';
+}
+
+// ── Slide builder ─────────────────────────────────────────────────────────────
+function buildSlide(slide) {
+  var isDark = (theme === 'dark');
+  var D  = isDark ? '#0d273d' : '#f5f0e8';
+  var L  = isDark ? '#f4f7fa' : '#1a1a2e';
+  var G  = accentColor;
+  var M  = isDark ? 'rgba(244,247,250,0.58)' : 'rgba(26,26,46,0.58)';
+  var DD = isDark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.09)';
+  var DL = isDark ? 'rgba(26,26,46,0.18)' : 'rgba(26,26,46,0.12)';
+  var LB = isDark ? '#f4f7fa' : '#ffffff'; // light-bg slides text
+  var LT = isDark ? '#1a1a2e' : '#1a1a2e'; // text on light slides
+
+  var isClassic = (fontStyle === 'classic');
+  var serif = isClassic ? "'Cormorant Garamond',Georgia,serif" : "'Montserrat','Helvetica Neue',sans-serif";
+  var sans  = isClassic ? "'Helvetica Neue',Helvetica,Arial,sans-serif" : "'Montserrat','Helvetica Neue',sans-serif";
+  var hBig  = isClassic ? '102px' : '76px';
+  var wBig  = isClassic ? '300' : '700';
+  var hMed  = isClassic ? '70px' : '58px';
+  var wMed  = isClassic ? '400' : '700';
+  var PX = '118px', PY = '78px';
+
+  var ph = function(idx) { return (photos[idx] || null); };
+
+  switch (slide.type) {
+
+    case 'cover': {
+      var hasBg = !!ph(0);
+      var bgStyle = hasBg
+        ? 'background:' + D + ';'
+        : 'background:' + D + ';';
+      var overlay = hasBg
+        ? '<div style="position:absolute;inset:0;background:url(' + ph(0) + ') center/cover no-repeat;opacity:0.35;z-index:0;"></div>'
+          + '<div style="position:absolute;inset:0;background:rgba(8,20,38,0.62);z-index:0;"></div>'
+        : '';
+      return '<div class="slide" style="' + bgStyle + 'display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;padding:' + PY + ' ' + PX + ';position:relative;">'
+        + overlay
+        + '<div style="position:absolute;top:' + PY + ';right:' + PX + ';width:1px;height:200px;background:' + G + ';opacity:0.45;z-index:1;"></div>'
+        + '<div style="position:absolute;top:' + PY + ';right:calc(' + PX + ' + 22px);font-family:' + sans + ';font-size:22px;font-weight:300;letter-spacing:0.3em;text-transform:uppercase;color:' + G + ';writing-mode:vertical-rl;transform:rotate(180deg);z-index:1;">' + (slide.eyebrow || 'Soma Partners') + '</div>'
+        + '<div style="display:flex;flex-direction:column;gap:22px;position:relative;z-index:2;">'
+        + '<div style="font-family:' + sans + ';font-size:20px;font-weight:' + (isClassic?'400':'600') + ';letter-spacing:0.48em;color:' + G + ';text-transform:uppercase;">Soma Partners</div>'
+        + '<div style="font-family:' + serif + ';font-size:' + hBig + ';font-weight:' + wBig + ';color:' + L + ';line-height:0.92;letter-spacing:-0.02em;">' + (slide.heading || '') + '</div>'
+        + '<div style="width:54px;height:1px;background:' + G + ';"></div>'
+        + '<div style="font-family:' + sans + ';font-size:24px;font-weight:300;color:' + M + ';letter-spacing:0.1em;text-transform:uppercase;">' + (slide.tagline || '') + '</div>'
+        + '</div></div>';
+    }
+
+    case 'statement':
+      return '<div class="slide" style="background:' + D + ';display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:' + PY + ' ' + PX + ';">'
+        + '<div style="display:flex;flex-direction:column;gap:10px;max-width:1440px;">'
+        + '<div style="font-family:' + serif + ';font-size:' + hBig + ';font-weight:' + wBig + ';font-style:italic;color:' + L + ';line-height:1.0;letter-spacing:-0.02em;">' + (slide.italic || '') + '</div>'
+        + '<div style="font-family:' + serif + ';font-size:' + hBig + ';font-weight:600;color:' + G + ';line-height:1.0;letter-spacing:-0.02em;">' + (slide.bold || '') + '</div>'
+        + (slide.body ? '<div style="margin-top:46px;font-family:' + sans + ';font-size:30px;font-weight:300;color:' + M + ';line-height:1.7;max-width:840px;">' + slide.body + '</div>' : '')
+        + '</div></div>';
+
+    case 'two-col':
+      return '<div class="slide" style="background:' + LB + ';display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:' + PY + ' ' + PX + ';">'
+        + '<div style="display:flex;flex-direction:row;align-items:flex-start;gap:96px;width:100%;">'
+        + '<div style="flex:0 0 460px;display:flex;flex-direction:column;gap:26px;">'
+        + '<div style="font-family:' + sans + ';font-size:20px;font-weight:' + (isClassic?'400':'600') + ';letter-spacing:0.38em;text-transform:uppercase;color:' + G + ';">' + (slide.eyebrow || '') + '</div>'
+        + '<div style="font-family:' + serif + ';font-size:' + hMed + ';font-weight:' + wMed + ';color:' + LT + ';line-height:1.08;letter-spacing:-0.01em;">' + (slide.heading || '') + '</div>'
+        + '<div style="width:46px;height:1px;background:' + G + ';"></div>'
+        + '</div>'
+        + '<div style="flex:1;display:flex;flex-direction:column;gap:28px;padding-top:20px;">'
+        + '<div style="font-family:' + sans + ';font-size:28px;font-weight:300;color:' + LT + ';line-height:1.78;opacity:0.72;">' + (slide.body1 || '') + '</div>'
+        + (slide.body2 ? '<div style="font-family:' + sans + ';font-size:28px;font-weight:300;color:' + LT + ';line-height:1.78;opacity:0.72;">' + slide.body2 + '</div>' : '')
+        + '</div></div></div>';
+
+    case 'three-col': {
+      var cH = (slide.cols || []).map(function(c, i, arr) {
+        var last = i === arr.length - 1, first = i === 0;
+        var pad = first ? 'padding-right:68px' : (last ? 'padding-left:68px' : 'padding:0 68px');
+        var brd = !last ? 'border-right:1px solid ' + DL + ';' : '';
+        return '<div style="display:flex;flex-direction:column;gap:16px;' + pad + ';' + brd + '">'
+          + '<div style="font-family:' + serif + ';font-size:42px;font-weight:600;color:' + LT + ';line-height:1.2;">' + c.title + '</div>'
+          + '<div style="font-family:' + sans + ';font-size:26px;font-weight:300;color:' + LT + ';line-height:1.76;opacity:0.7;">' + c.body + '</div>'
+          + '</div>';
+      }).join('');
+      return '<div class="slide" style="background:' + LB + ';display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:' + PY + ' ' + PX + ';">'
+        + '<div style="display:flex;flex-direction:column;gap:52px;width:100%;">'
+        + '<div style="display:flex;flex-direction:column;gap:10px;">'
+        + '<div style="font-family:' + sans + ';font-size:20px;font-weight:' + (isClassic?'400':'600') + ';letter-spacing:0.38em;text-transform:uppercase;color:' + G + ';">' + (slide.eyebrow || '') + '</div>'
+        + '<div style="font-family:' + serif + ';font-size:' + hMed + ';font-weight:' + wMed + ';color:' + LT + ';line-height:1.05;">' + (slide.heading || '') + '</div>'
+        + '</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(' + (slide.cols || []).length + ',1fr);gap:0;width:100%;">' + cH + '</div>'
+        + '</div></div>';
+    }
+
+    case 'grid-cards': {
+      var gH = (slide.cards || []).map(function(c) {
+        return '<div style="display:flex;flex-direction:column;gap:14px;padding:34px 38px;background:' + D + ';">'
+          + '<div style="font-family:' + serif + ';font-size:38px;font-weight:' + (isClassic?'400':'600') + ';color:' + G + ';">' + c.title + '</div>'
+          + '<div style="font-family:' + sans + ';font-size:23px;font-weight:300;color:' + M + ';line-height:1.72;">' + c.body + '</div>'
+          + '</div>';
+      }).join('');
+      return '<div class="slide" style="background:' + D + ';display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:' + PY + ' ' + PX + ';">'
+        + '<div style="display:flex;flex-direction:column;gap:44px;width:100%;">'
+        + '<div style="display:flex;flex-direction:column;gap:8px;">'
+        + '<div style="font-family:' + sans + ';font-size:20px;font-weight:' + (isClassic?'400':'600') + ';letter-spacing:0.38em;text-transform:uppercase;color:' + G + ';">' + (slide.eyebrow || '') + '</div>'
+        + '<div style="font-family:' + serif + ';font-size:' + hMed + ';font-weight:' + wMed + ';color:' + L + ';line-height:1.05;">' + (slide.heading || '') + '</div>'
+        + '</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:100%;background:rgba(255,255,255,0.06);">' + gH + '</div>'
+        + '</div></div>';
+    }
+
+    case 'steps': {
+      var st = slide.steps || [];
+      var sH = st.map(function(s, i) {
+        var last = i === st.length - 1, first = i === 0;
+        var pad = first ? 'padding-right:68px' : (last ? 'padding-left:68px' : 'padding:0 68px');
+        var brd = !last ? 'border-right:1px solid ' + DL + ';' : '';
+        return '<div style="display:flex;flex-direction:column;gap:18px;' + pad + ';' + brd + '">'
+          + '<div style="font-family:' + serif + ';font-size:78px;font-weight:300;color:' + G + ';line-height:1;">' + String(i+1).padStart(2,'0') + '</div>'
+          + '<div style="font-family:' + serif + ';font-size:40px;font-weight:600;color:' + LT + ';line-height:1.2;">' + s.title + '</div>'
+          + '<div style="font-family:' + sans + ';font-size:26px;font-weight:300;color:' + LT + ';line-height:1.76;opacity:0.7;">' + s.body + '</div>'
+          + '</div>';
+      }).join('');
+      return '<div class="slide" style="background:' + LB + ';display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:' + PY + ' ' + PX + ';">'
+        + '<div style="display:flex;flex-direction:column;gap:52px;width:100%;">'
+        + '<div style="display:flex;flex-direction:column;gap:10px;">'
+        + '<div style="font-family:' + sans + ';font-size:20px;font-weight:' + (isClassic?'400':'600') + ';letter-spacing:0.38em;text-transform:uppercase;color:' + G + ';">' + (slide.eyebrow || '') + '</div>'
+        + '<div style="font-family:' + serif + ';font-size:' + hMed + ';font-weight:' + wMed + ';color:' + LT + ';line-height:1.05;">' + (slide.heading || '') + '</div>'
+        + '</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(' + st.length + ',1fr);gap:0;width:100%;">' + sH + '</div>'
+        + '</div></div>';
+    }
+
+    case 'numbered-list': {
+      var nl = slide.items || [];
+      var nH = nl.map(function(item, i) {
+        var last = i === nl.length - 1;
+        return '<div style="display:flex;flex-direction:row;gap:34px;align-items:flex-start;padding:26px 0;' + (!last ? 'border-bottom:1px solid ' + DD + ';' : '') + '">'
+          + '<div style="font-family:' + serif + ';font-size:50px;font-weight:300;color:' + G + ';line-height:1;flex:0 0 68px;">' + String(i+1).padStart(2,'0') + '</div>'
+          + '<div style="display:flex;flex-direction:column;gap:8px;">'
+          + '<div style="font-family:' + serif + ';font-size:38px;font-weight:600;color:' + L + ';">' + item.title + '</div>'
+          + '<div style="font-family:' + sans + ';font-size:23px;font-weight:300;color:' + M + ';line-height:1.72;">' + item.body + '</div>'
+          + '</div></div>';
+      }).join('');
+      return '<div class="slide" style="background:' + D + ';display:flex;flex-direction:row;gap:96px;align-items:flex-start;justify-content:flex-start;padding:' + PY + ' ' + PX + ';">'
+        + '<div style="flex:0 0 420px;display:flex;flex-direction:column;gap:26px;padding-top:8px;">'
+        + '<div style="font-family:' + sans + ';font-size:20px;font-weight:' + (isClassic?'400':'600') + ';letter-spacing:0.38em;text-transform:uppercase;color:' + G + ';">' + (slide.eyebrow || '') + '</div>'
+        + '<div style="font-family:' + serif + ';font-size:' + hMed + ';font-weight:' + wMed + ';color:' + L + ';line-height:1.05;">' + (slide.heading || '') + '</div>'
+        + '</div>'
+        + '<div style="flex:1;display:flex;flex-direction:column;">' + nH + '</div>'
+        + '</div>';
+    }
+
+    case 'photo-left':
+    case 'photo-right': {
+      var pIdx = slide.photo_index || 0;
+      var pSrc = ph(pIdx);
+      var isLeft = slide.type === 'photo-left';
+      var photoHalf = pSrc
+        ? '<div style="flex:0 0 840px;position:relative;overflow:hidden;">'
+          + '<div style="position:absolute;inset:0;background:url(' + pSrc + ') center/cover no-repeat;"></div>'
+          + '<div style="position:absolute;inset:0;background:rgba(8,20,38,0.18);"></div>'
+          + '</div>'
+        : '<div style="flex:0 0 840px;background:' + DD + ';"></div>';
+      var textHalf = '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;padding:' + PY + ' ' + PX + ';background:' + D + ';">'
+        + '<div style="font-family:' + sans + ';font-size:19px;font-weight:' + (isClassic?'400':'600') + ';letter-spacing:0.38em;text-transform:uppercase;color:' + G + ';">' + (slide.eyebrow || '') + '</div>'
+        + '<div style="font-family:' + serif + ';font-size:' + hMed + ';font-weight:' + wMed + ';color:' + L + ';line-height:1.08;letter-spacing:-0.01em;">' + (slide.heading || '') + '</div>'
+        + '<div style="width:44px;height:1px;background:' + G + ';"></div>'
+        + '<div style="font-family:' + sans + ';font-size:26px;font-weight:300;color:' + M + ';line-height:1.76;">' + (slide.body || '') + '</div>'
+        + '</div>';
+      return '<div class="slide" style="background:' + D + ';display:flex;flex-direction:row;overflow:hidden;">'
+        + (isLeft ? photoHalf + textHalf : textHalf + photoHalf)
+        + '</div>';
+    }
+
+    case 'contact':
+      return '<div class="slide" style="background:' + D + ';display:flex;flex-direction:column;align-items:center;justify-content:center;padding:' + PY + ' ' + PX + ';text-align:center;position:relative;">'
+        + '<div style="position:absolute;bottom:' + PY + ';left:' + PX + ';right:' + PX + ';height:1px;background:' + DD + ';"></div>'
+        + '<div style="display:flex;flex-direction:column;align-items:center;gap:34px;max-width:980px;">'
+        + '<div style="font-family:' + sans + ';font-size:20px;font-weight:' + (isClassic?'400':'600') + ';letter-spacing:0.48em;text-transform:uppercase;color:' + G + ';">Soma Partners</div>'
+        + '<div style="font-family:' + serif + ';font-size:' + hBig + ';font-weight:' + wBig + ';font-style:italic;color:' + L + ';line-height:0.96;letter-spacing:-0.02em;">' + (slide.question || '') + '</div>'
+        + '<div style="width:46px;height:1px;background:' + G + ';"></div>'
+        + '<div style="font-family:' + sans + ';font-size:28px;font-weight:300;color:' + M + ';letter-spacing:0.04em;">' + (slide.cta || '') + '</div>'
+        + '<div style="display:flex;flex-direction:row;gap:76px;margin-top:10px;">'
+        + '<div style="font-family:' + sans + ';font-size:28px;font-weight:' + (isClassic?'400':'500') + ';color:' + L + ';letter-spacing:0.05em;">' + (slide.handle || '@somapartners') + '</div>'
+        + '<div style="font-family:' + sans + ';font-size:28px;font-weight:' + (isClassic?'400':'500') + ';color:' + L + ';letter-spacing:0.05em;">' + (slide.url || 'somapartners.co') + '</div>'
+        + '</div></div></div>';
+
+    default:
+      return '<div class="slide" style="background:' + D + ';display:flex;align-items:center;justify-content:center;">'
+        + '<div style="font-family:' + serif + ';font-size:72px;font-weight:300;color:' + L + ';">' + (slide.heading || '') + '</div>'
+        + '</div>';
+  }
+}
+
+// ── Build deck HTML ───────────────────────────────────────────────────────────
+function buildDeckHtml(data) {
+  var slideHtmlArr = (data.slides || []).map(function(s) { return buildSlide(s); });
+  var total = slideHtmlArr.length;
+  var isDark = (theme === 'dark');
+  var fontImport = fontStyle === 'classic'
+    ? '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap" rel="stylesheet">'
+    : '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">';
+  var bgDeck = isDark ? '#0a1828' : '#e8e3d8';
+
+  var navScript = [
+    'var cur=0;',
+    'var slides=document.querySelectorAll(".slide");',
+    'function go(n){slides[cur].style.display="none";cur=(n+slides.length)%slides.length;slides[cur].style.display="flex";document.getElementById("ctr").textContent=(cur+1)+" / "+slides.length;}',
+    'document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" ")go(cur+1);if(e.key==="ArrowLeft")go(cur-1);e.preventDefault();});',
+    'document.getElementById("nxt").addEventListener("click",function(){go(cur+1);});',
+    'document.getElementById("prv").addEventListener("click",function(){go(cur-1);});',
+    'function scaleStage(){var sx=window.innerWidth/1920,sy=window.innerHeight/1080,sc=Math.min(sx,sy);var el=document.getElementById("stg");el.style.transform="scale("+sc+")";el.style.marginLeft=((window.innerWidth-1920*sc)/2)+"px";el.style.marginTop=((window.innerHeight-1080*sc)/2)+"px";}',
+    'window.addEventListener("resize",scaleStage);scaleStage();'
+  ].join('\n');
+
+  return '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>Soma Partners</title>\n'
+    + fontImport + '\n'
+    + '<style>*{box-sizing:border-box;margin:0;padding:0;}body{background:' + bgDeck + ';overflow:hidden;}'
+    + '.slide{display:none;width:1920px;height:1080px;position:relative;}.slide:first-child{display:flex;}'
+    + '#nav{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;z-index:100;}'
+    + '#nav button{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);color:#f4f7fa;padding:10px 22px;cursor:pointer;font-family:Helvetica,sans-serif;font-size:14px;letter-spacing:0.1em;border-radius:2px;}'
+    + '#nav button:hover{background:rgba(255,255,255,0.13);}'
+    + '#ctr{color:' + accentColor + ';font-family:Helvetica,sans-serif;font-size:14px;letter-spacing:0.2em;min-width:72px;text-align:center;}'
+    + '</style>\n</head>\n<body>\n'
+    + '<div id="stg" style="width:1920px;height:1080px;transform-origin:top left;">\n'
+    + slideHtmlArr.join('\n')
+    + '\n</div>\n'
+    + '<div id="nav"><button id="prv">←</button><span id="ctr">1 / ' + total + '</span><button id="nxt">→</button></div>\n'
+    + '<script>\n' + navScript + '\n<\/script>\n</body>\n</html>';
+}
+</script>
+</body>
+</html>
