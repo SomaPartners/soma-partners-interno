@@ -112,6 +112,7 @@ html,body{min-height:100vh;background:#f8f5ef;font-family:'Montserrat',sans-seri
 .op-relacionamento{background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.35);color:#93c5fd}
 .op-retencao{background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.35);color:#6ee7b7}
 .op-outro{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7)}
+.op-naorealizado{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
 
 /* ── EMPTY ── */
 .empty-grid{grid-column:1/-1;text-align:center;padding:80px 24px;color:var(--text-muted)}
@@ -548,7 +549,7 @@ textarea.form-control-dark{resize:vertical;min-height:80px}
       </div>
       <div class="form-group"><label class="form-label">Local</label><input class="form-control-dark" id="ev-local" placeholder="Endereço ou nome do local"></div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Objetivo</label><select class="form-control-dark" id="ev-objetivo"><option value="captacao">Captação</option><option value="relacionamento">Relacionamento</option><option value="retencao">Retenção</option><option value="outro">Outro</option></select></div>
+        <div class="form-group"><label class="form-label">Objetivo</label><select class="form-control-dark" id="ev-objetivo"><option value="captacao">Captação</option><option value="relacionamento">Relacionamento</option><option value="retencao">Retenção</option><option value="outro">Outro</option><option value="naorealizado">Não Realizado</option></select></div>
         <div class="form-group"><label class="form-label">Público-alvo</label><input class="form-control-dark" id="ev-publico" placeholder="Ex: Clientes premium"></div>
       </div>
       <div class="form-group"><label class="form-label">Status</label><select class="form-control-dark" id="ev-status"><option value="planejamento">Planejamento</option><option value="execucao">Em Execução</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div>
@@ -642,8 +643,8 @@ function today(){return new Date().toISOString().split('T')[0]}
 
 const STATUS_LABELS={planejamento:'Planejamento',execucao:'Em Execução',concluido:'Concluído',cancelado:'Cancelado'};
 const STATUS_CLASS={planejamento:'sp-planejamento',execucao:'sp-execucao',concluido:'sp-concluido',cancelado:'sp-cancelado'};
-const OBJ_LABELS={captacao:'Captação',relacionamento:'Relacionamento',retencao:'Retenção',outro:'Outro'};
-const OBJ_CLASS={captacao:'op-captacao',relacionamento:'op-relacionamento',retencao:'op-retencao',outro:'op-outro'};
+const OBJ_LABELS={captacao:'Captação',relacionamento:'Relacionamento',retencao:'Retenção',outro:'Outro',naorealizado:'Não Realizado'};
+const OBJ_CLASS={captacao:'op-captacao',relacionamento:'op-relacionamento',retencao:'op-retencao',outro:'op-outro',naorealizado:'op-naorealizado'};
 
 function statusPill(s){return`<span class="status-pill ${STATUS_CLASS[s]||'sp-planejamento'}"><span class="status-pill-dot"></span>${STATUS_LABELS[s]||s}</span>`}
 function objPill(o){return`<span class="obj-pill ${OBJ_CLASS[o]||'op-outro'}">${OBJ_LABELS[o]||o}</span>`}
