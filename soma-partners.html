@@ -55,12 +55,12 @@
     .hero-thin { font-size: clamp(16px, 2.2vw, 36px); font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
     .hero-bold { font-size: clamp(20px, 2.8vw, 44px); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
 
-    /* ════════════ CARDS GRID 4×2 ════════════ */
+    /* ════════════ CARDS GRID 3×3 ════════════ */
     .cards-grid {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
       gap: 5px;
       min-height: 0;
     }
@@ -103,6 +103,10 @@
     .card-somanews .card-placeholder {
       background: radial-gradient(ellipse at 50% 35%, rgba(180,40,30,0.22) 0%, rgba(10,8,8,1) 65%),
         linear-gradient(135deg, #1e0a08 0%, #110707 60%, #0a0505 100%);
+    }
+    .card-documentos .card-placeholder {
+      background: radial-gradient(ellipse at 45% 45%, rgba(20,50,80,0.9) 0%, rgba(8,15,28,1) 70%),
+        linear-gradient(135deg, #0e2038 0%, #0a1525 60%, #070e1c 100%);
     }
     .card-ferramentas .card-placeholder {
       background: #080c18;
@@ -165,7 +169,7 @@
       .page { height: auto; overflow: visible; padding: 18px 14px 28px; gap: 12px; }
       .hero-thin { font-size: clamp(16px, 4.5vw, 28px); }
       .hero-bold { font-size: clamp(20px, 5.5vw, 34px); }
-      .cards-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, 42vw); gap: 5px; }
+      .cards-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 42vw); gap: 5px; }
       .card-footer { opacity: 1; transform: none; }
       .card-title { font-size: 11px; letter-spacing: 3px; }
       .card-subtitle { font-size: 9px; }
@@ -264,6 +268,16 @@
       <div class="card-footer">
         <div class="card-title">Soma Club</div>
         <div class="card-subtitle">Portal do Cliente</div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTOS -->
+    <div class="card card-documentos" onclick="window.location.href='documentos.html'">
+      <div class="card-placeholder"></div>
+      <div class="card-tint"></div>
+      <div class="card-footer">
+        <div class="card-title">Documentos</div>
+        <div class="card-subtitle">Arquivos &amp; Links por Cliente</div>
       </div>
     </div>
 
