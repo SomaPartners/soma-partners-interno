@@ -103,6 +103,8 @@ html,body{min-height:100vh;background:#f8f5ef;font-family:'Montserrat',sans-seri
 .sp-execucao .status-pill-dot{background:#f59e0b}
 .sp-concluido{background:rgba(16,185,129,0.25);border:1px solid rgba(16,185,129,0.5);color:#6ee7b7}
 .sp-concluido .status-pill-dot{background:#10b981}
+.sp-cancelado{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#fca5a5}
+.sp-cancelado .status-pill-dot{background:#ef4444}
 
 /* Objetivo pill */
 .obj-pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:0.3px;backdrop-filter:blur(8px)}
@@ -324,6 +326,7 @@ textarea.form-control-dark{resize:vertical;min-height:80px}
     <div class="filter-chip" data-filter="planejamento" onclick="setFilter(this,'planejamento')">Planejamento</div>
     <div class="filter-chip" data-filter="execucao" onclick="setFilter(this,'execucao')">Em Execução</div>
     <div class="filter-chip" data-filter="concluido" onclick="setFilter(this,'concluido')">Concluído</div>
+    <div class="filter-chip" data-filter="cancelado" onclick="setFilter(this,'cancelado')">Cancelado</div>
   </div>
 
   <!-- GRID -->
@@ -548,7 +551,7 @@ textarea.form-control-dark{resize:vertical;min-height:80px}
         <div class="form-group"><label class="form-label">Objetivo</label><select class="form-control-dark" id="ev-objetivo"><option value="captacao">Captação</option><option value="relacionamento">Relacionamento</option><option value="retencao">Retenção</option><option value="outro">Outro</option></select></div>
         <div class="form-group"><label class="form-label">Público-alvo</label><input class="form-control-dark" id="ev-publico" placeholder="Ex: Clientes premium"></div>
       </div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-control-dark" id="ev-status"><option value="planejamento">Planejamento</option><option value="execucao">Em Execução</option><option value="concluido">Concluído</option></select></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="form-control-dark" id="ev-status"><option value="planejamento">Planejamento</option><option value="execucao">Em Execução</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div>
       <div class="form-group"><label class="form-label">Descrição</label><textarea class="form-control-dark" id="ev-desc" placeholder="Detalhes, objetivos, informações gerais..."></textarea></div>
       <div class="form-group"><label class="form-label">Inscrição</label><textarea class="form-control-dark" id="ev-inscricao" placeholder="Informações sobre inscrição, valores, benefícios..." rows="3"></textarea></div>
       <div class="form-group"><label class="form-label">Credenciamento</label><textarea class="form-control-dark" id="ev-credenciamento" placeholder="Como funciona o credenciamento no dia do evento..." rows="3"></textarea></div>
@@ -637,8 +640,8 @@ function getInitials(n){const p=(n||'?').trim().split(' ');return(p[0][0]+(p.len
 function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
 function today(){return new Date().toISOString().split('T')[0]}
 
-const STATUS_LABELS={planejamento:'Planejamento',execucao:'Em Execução',concluido:'Concluído'};
-const STATUS_CLASS={planejamento:'sp-planejamento',execucao:'sp-execucao',concluido:'sp-concluido'};
+const STATUS_LABELS={planejamento:'Planejamento',execucao:'Em Execução',concluido:'Concluído',cancelado:'Cancelado'};
+const STATUS_CLASS={planejamento:'sp-planejamento',execucao:'sp-execucao',concluido:'sp-concluido',cancelado:'sp-cancelado'};
 const OBJ_LABELS={captacao:'Captação',relacionamento:'Relacionamento',retencao:'Retenção',outro:'Outro'};
 const OBJ_CLASS={captacao:'op-captacao',relacionamento:'op-relacionamento',retencao:'op-retencao',outro:'op-outro'};
 
