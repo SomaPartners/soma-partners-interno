@@ -16,7 +16,7 @@
       background: var(--navy);
       font-family: 'Montserrat', sans-serif;
       color: var(--white);
-      overflow: hidden;
+      overflow-y: auto;
     }
 
     /* ════════════ PAGE WRAPPER ════════════ */
@@ -24,7 +24,7 @@
       width: 100%; height: 100vh;
       display: flex;
       flex-direction: column;
-      padding: 22px 28px 24px;
+      padding: 22px 28px 10px;
       gap: 14px;
     }
 
@@ -55,12 +55,12 @@
     .hero-thin { font-size: clamp(16px, 2.2vw, 36px); font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
     .hero-bold { font-size: clamp(20px, 2.8vw, 44px); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
 
-    /* ════════════ CARDS GRID 3×3 ════════════ */
+    /* ════════════ CARDS GRID 4×2 ════════════ */
     .cards-grid {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
       gap: 5px;
       min-height: 0;
     }
@@ -163,16 +163,39 @@
     }
     .admin-lock-icon svg { width: 28px; height: 28px; stroke: #fff; stroke-width: 1.5; fill: none; }
 
+    /* ════════════ SCROLL HINT ════════════ */
+    .scroll-hint {
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 6px 0 6px;
+      font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      color: rgba(255,255,255,0.16);
+      cursor: pointer; transition: color .2s;
+      user-select: none;
+    }
+    .scroll-hint:hover { color: rgba(255,255,255,0.35); }
+    .scroll-hint svg { animation: bounce-down 2s ease-in-out infinite; }
+    @keyframes bounce-down { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
+
+    /* ════════════ EXTRA SECTION ════════════ */
+    .extra-section {
+      padding: 0 28px 32px;
+    }
+    .card-extra {
+      height: 160px;
+    }
+
     /* ════════════ MOBILE ════════════ */
     @media(max-width: 900px){
-      html, body { overflow: auto; height: auto; }
-      .page { height: auto; overflow: visible; padding: 18px 14px 28px; gap: 12px; }
+      html, body { height: auto; }
+      .page { height: auto; padding: 18px 14px 10px; gap: 12px; }
       .hero-thin { font-size: clamp(16px, 4.5vw, 28px); }
       .hero-bold { font-size: clamp(20px, 5.5vw, 34px); }
-      .cards-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 42vw); gap: 5px; }
+      .cards-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, 42vw); gap: 5px; }
       .card-footer { opacity: 1; transform: none; }
       .card-title { font-size: 11px; letter-spacing: 3px; }
       .card-subtitle { font-size: 9px; }
+      .extra-section { padding: 0 14px 32px; }
     }
   </style>
   <!-- PWA -->
@@ -271,16 +294,6 @@
       </div>
     </div>
 
-    <!-- DOCUMENTOS -->
-    <div class="card card-documentos" onclick="window.location.href='documentos.html'">
-      <div class="card-placeholder"></div>
-      <div class="card-tint"></div>
-      <div class="card-footer">
-        <div class="card-title">Documentos</div>
-        <div class="card-subtitle">Arquivos &amp; Links por Cliente</div>
-      </div>
-    </div>
-
     <!-- SOMA NEWS -->
     <div class="card card-somanews">
       <div class="card-placeholder"></div>
@@ -322,7 +335,26 @@
 
   </div><!-- /cards-grid -->
 
+  <!-- SCROLL HINT -->
+  <div class="scroll-hint" onclick="document.querySelector('.extra-section').scrollIntoView({behavior:'smooth'})">
+    <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="6 9 12 15 18 9"/></svg>
+    Documentos
+    <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+
 </div><!-- /page -->
+
+<!-- EXTRA: DOCUMENTOS (abaixo do fold) -->
+<div class="extra-section">
+  <div class="card card-documentos card-extra" onclick="window.location.href='documentos.html'">
+    <div class="card-placeholder"></div>
+    <div class="card-tint"></div>
+    <div class="card-footer" style="opacity:1;transform:none;padding:30px 24px 20px">
+      <div class="card-title">Documentos</div>
+      <div class="card-subtitle">Arquivos &amp; Links por Cliente</div>
+    </div>
+  </div>
+</div>
 
 <script>
 if(sessionStorage.getItem('soma_auth')!=='1') window.location.href='login.html';
