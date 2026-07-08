@@ -556,6 +556,18 @@ textarea.form-control-dark{resize:vertical;min-height:80px}
       <div class="form-group"><label class="form-label">Descrição</label><textarea class="form-control-dark" id="ev-desc" placeholder="Detalhes, objetivos, informações gerais..."></textarea></div>
       <div class="form-group"><label class="form-label">Inscrição</label><textarea class="form-control-dark" id="ev-inscricao" placeholder="Informações sobre inscrição, valores, benefícios..." rows="3"></textarea></div>
       <div class="form-group"><label class="form-label">Credenciamento</label><textarea class="form-control-dark" id="ev-credenciamento" placeholder="Como funciona o credenciamento no dia do evento..." rows="3"></textarea></div>
+      <div class="form-group">
+        <label class="form-label">Foto do Convite</label>
+        <div id="ev-foto-preview" style="display:none;margin-bottom:10px;position:relative">
+          <img id="ev-foto-img" src="" style="max-width:100%;border-radius:8px;max-height:220px;object-fit:cover;display:block"/>
+          <button type="button" onclick="clearEditFoto()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif">×</button>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('ev-foto-input').click()" style="width:100%;justify-content:center;gap:6px">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span id="ev-foto-btn-txt">Enviar foto do convite</span>
+        </button>
+        <input type="file" id="ev-foto-input" accept="image/*" style="display:none" onchange="handleEditFoto(this)">
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-evento')">Cancelar</button>
@@ -705,6 +717,47 @@ function renderGrid(){
 }
 
 // ════ SAVE EVENT ════
+let _editFoto = null; // null=sem mudança | 'remove'=remover | 'data:...'=nova foto
+
+function handleEditFoto(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const canvas=document.createElement('canvas');
+      let w=img.width,h=img.height,maxW=1200;
+      if(w>maxW){h=h*maxW/w;w=maxW;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      _editFoto=canvas.toDataURL('image/jpeg',0.85);
+      document.getElementById('ev-foto-img').src=_editFoto;
+      document.getElementById('ev-foto-preview').style.display='block';
+      document.getElementById('ev-foto-btn-txt').textContent='Trocar foto';
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function clearEditFoto(){
+  _editFoto='remove';
+  document.getElementById('ev-foto-preview').style.display='none';
+  document.getElementById('ev-foto-img').src='';
+  document.getElementById('ev-foto-input').value='';
+  document.getElementById('ev-foto-btn-txt').textContent='Enviar foto do convite';
+}
+function loadEditFotoPreview(src){
+  if(src){
+    document.getElementById('ev-foto-img').src=src;
+    document.getElementById('ev-foto-preview').style.display='block';
+    document.getElementById('ev-foto-btn-txt').textContent='Trocar foto';
+  } else {
+    document.getElementById('ev-foto-preview').style.display='none';
+    document.getElementById('ev-foto-img').src='';
+    document.getElementById('ev-foto-btn-txt').textContent='Enviar foto do convite';
+  }
+}
+
 async function saveEvento(){
   const nome = document.getElementById('ev-nome').value.trim();
   if(!nome){alert('Informe o nome do evento');return}
@@ -726,8 +779,9 @@ async function saveEvento(){
     checklist: existing?.checklist||[],
     compras: existing?.compras||[],
     createdAt: existing?.createdAt||today(),
-    conviteFoto: existing?.conviteFoto||null,
+    conviteFoto: _editFoto==='remove'?null:(_editFoto||existing?.conviteFoto||null),
   };
+  _editFoto=null;
   if(!await dbUpsert('eventos',data))return;
   const idx = DB.eventos.findIndex(e=>e.id===id);
   const full = {...data, convidados: existing?.convidados||[]};
@@ -876,6 +930,8 @@ function editCurrentEvent(){
   document.getElementById('ev-inscricao').value=e.inscricao||'';
   document.getElementById('ev-credenciamento').value=e.credenciamento||'';
   document.getElementById('modal-evento-title').textContent='Editar Evento';
+  _editFoto=null;
+  loadEditFotoPreview(e.conviteFoto||null);
   document.getElementById('modal-evento').classList.add('open');
 }
 
@@ -1358,7 +1414,7 @@ function switchTab(name){
 
 // ════ MODALS ════
 function openModal(id){
-  if(id==='modal-evento'){document.getElementById('ev-edit-id').value='';document.getElementById('modal-evento-title').textContent='Novo Evento';['ev-nome','ev-horario','ev-local','ev-publico','ev-desc','ev-inscricao','ev-credenciamento'].forEach(f=>document.getElementById(f).value='');document.getElementById('ev-data').value=today();document.getElementById('ev-objetivo').value='captacao';document.getElementById('ev-status').value='planejamento'}
+  if(id==='modal-evento'){document.getElementById('ev-edit-id').value='';document.getElementById('modal-evento-title').textContent='Novo Evento';['ev-nome','ev-horario','ev-local','ev-publico','ev-desc','ev-inscricao','ev-credenciamento'].forEach(f=>document.getElementById(f).value='');document.getElementById('ev-data').value=today();document.getElementById('ev-objetivo').value='captacao';document.getElementById('ev-status').value='planejamento';_editFoto=null;loadEditFotoPreview(null);}
   document.getElementById(id).classList.add('open');
 }
 function closeModal(id){document.getElementById(id).classList.remove('open')}
