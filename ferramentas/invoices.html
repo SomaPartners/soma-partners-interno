@@ -40,6 +40,7 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .field{display:flex;flex-direction:column;gap:5px}
 .field label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
 .field input,.field textarea,.field select{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Montserrat',sans-serif;font-weight:400;color:#fff;outline:none;transition:border-color .18s;width:100%}
+.field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,0.2);font-style:italic}
 .field textarea{resize:vertical;min-height:80px;line-height:1.6}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:rgba(201,150,60,0.5)}
 .field select option{background:#0d2035;color:#fff}
@@ -106,11 +107,11 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
     <div class="row row-3">
       <div class="field">
         <label>Número do Invoice</label>
-        <input type="text" id="inv-number" placeholder="007/26"/>
+        <input type="text" autocomplete="off" id="inv-number" placeholder="007/26"/>
       </div>
       <div class="field">
         <label>Data de Emissão</label>
-        <input type="date" id="inv-date"/>
+        <input type="date" id="inv-date" autocomplete="off"/>
       </div>
       <div class="field">
         <label>Moeda</label>
@@ -130,11 +131,11 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
     <div class="row row-2">
       <div class="field">
         <label>Nome Completo / Empresa</label>
-        <input type="text" id="cred-name" placeholder="Diego A. B. Lima"/>
+        <input type="text" autocomplete="off" id="cred-name" placeholder="Diego A. B. Lima"/>
       </div>
       <div class="field">
         <label>Endereço</label>
-        <input type="text" id="cred-address" placeholder="10630 Rabbit Ridge Ct, Las Vegas, NV 89183, USA"/>
+        <input type="text" autocomplete="off" id="cred-address" placeholder="10630 Rabbit Ridge Ct, Las Vegas, NV 89183, USA"/>
       </div>
     </div>
   </div>
@@ -145,21 +146,21 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
     <div class="row row-2">
       <div class="field">
         <label>Nome / Empresa</label>
-        <input type="text" id="payer-name" placeholder="Joya Sports B.V. (Joyagear)"/>
+        <input type="text" autocomplete="off" id="payer-name" placeholder="Joya Sports B.V. (Joyagear)"/>
       </div>
       <div class="field">
         <label>Endereço Completo</label>
-        <textarea id="payer-address" placeholder="Kobaltstraat 5&#10;1362 JM Almere&#10;Netherlands"></textarea>
+        <textarea autocomplete="off" id="payer-address" placeholder="Kobaltstraat 5&#10;1362 JM Almere&#10;Netherlands"></textarea>
       </div>
     </div>
     <div class="row row-2">
       <div class="field">
         <label>Tax ID 1 (ex: BTW, CNPJ, VAT)</label>
-        <input type="text" id="payer-tax1" placeholder="BTW: NL819034381B01"/>
+        <input type="text" autocomplete="off" id="payer-tax1" placeholder="BTW: NL819034381B01"/>
       </div>
       <div class="field">
         <label>Tax ID 2 (ex: KvK, opcional)</label>
-        <input type="text" id="payer-tax2" placeholder="KvK: 32131709"/>
+        <input type="text" autocomplete="off" id="payer-tax2" placeholder="KvK: 32131709"/>
       </div>
     </div>
   </div>
@@ -170,31 +171,31 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
     <div class="row row-2">
       <div class="field">
         <label>Beneficiário</label>
-        <input type="text" id="pay-beneficiary" placeholder="Diego A. B. Lima"/>
+        <input type="text" autocomplete="off" id="pay-beneficiary" placeholder="Diego A. B. Lima"/>
       </div>
       <div class="field">
         <label>Banco</label>
-        <input type="text" id="pay-bank" placeholder="Wells Fargo"/>
+        <input type="text" autocomplete="off" id="pay-bank" placeholder="Wells Fargo"/>
       </div>
     </div>
     <div class="row row-3">
       <div class="field">
         <label>Número da Conta</label>
-        <input type="text" id="pay-account" placeholder="5359798179"/>
+        <input type="text" autocomplete="off" id="pay-account" placeholder="5359798179"/>
       </div>
       <div class="field">
         <label>ABA Routing / PIX / IBAN</label>
-        <input type="text" id="pay-aba" placeholder="121000248"/>
+        <input type="text" autocomplete="off" id="pay-aba" placeholder="121000248"/>
       </div>
       <div class="field">
         <label>SWIFT / BIC</label>
-        <input type="text" id="pay-swift" placeholder="WFBIUS6S"/>
+        <input type="text" autocomplete="off" id="pay-swift" placeholder="WFBIUS6S"/>
       </div>
     </div>
     <div class="row">
       <div class="field">
         <label>Observação (aparece em itálico abaixo dos dados bancários)</label>
-        <input type="text" id="pay-note" placeholder="ABA routing is for domestic transfers. For international wires use the SWIFT/BIC code above."/>
+        <input type="text" autocomplete="off" id="pay-note" placeholder="ABA routing is for domestic transfers. For international wires use the SWIFT/BIC code above."/>
       </div>
     </div>
   </div>
@@ -301,9 +302,9 @@ function addItem(qty, desc, val) {
   var descVal = desc || '';
   var valVal  = val  || '';
   row.innerHTML =
-    '<input type="text" placeholder="01" value="' + qtyVal + '" class="item-qty"/>'
-    + '<input type="text" placeholder="Descrição do serviço" value="' + descVal.replace(/"/g,'&quot;') + '" class="item-desc"/>'
-    + '<input type="text" placeholder="1,000.00" value="' + valVal + '" class="item-val"/>'
+    '<input type="text" autocomplete="off" placeholder="01" value="' + qtyVal + '" class="item-qty"/>'
+    + '<input type="text" autocomplete="off" placeholder="Descrição do serviço" value="' + descVal.replace(/"/g,'&quot;') + '" class="item-desc"/>'
+    + '<input type="text" autocomplete="off" placeholder="1,000.00" value="' + valVal + '" class="item-val"/>'
     + '<button class="btn-remove" onclick="removeItem(this)" title="Remover">×</button>';
   list.appendChild(row);
 }
