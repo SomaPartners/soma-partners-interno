@@ -380,24 +380,11 @@ body{display:flex;flex-direction:column;overflow:hidden}
   </div>
 
   <!-- ════ CLIENTES ANTECIPAÇÃO ════ -->
-  <div class="section" id="section-fin-antecip">
-    <div class="tbl-header">
-      <div>
-        <div class="sec-title">Clientes — Antecipação de Saldo</div>
-        <div class="sec-sub" style="margin-bottom:0">Famílias e membros que usam antecipação de saldo</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <a class="btn btn-outline" href="../antecipacao.html" target="_blank" style="text-decoration:none">
-          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Ver Dashboard
-        </a>
-        <button class="btn btn-primary" onclick="abrirModalAntecipCliente()">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nova Família
-        </button>
-      </div>
-    </div>
-    <div id="antecip-clientes-lista" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
+  <div class="section" id="section-fin-antecip" style="margin:-28px -32px;overflow:hidden">
+    <iframe src="antecipacao.html?embed=1"
+      style="width:100%;height:calc(100vh - 58px);border:none;display:block"
+      title="Antecipação de Saldos">
+    </iframe>
   </div>
 
   <!-- ════ RH — EQUIPE ════ -->
