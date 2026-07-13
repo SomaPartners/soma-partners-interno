@@ -74,6 +74,24 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .btn-save-tpl{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;border:1px solid rgba(59,139,255,0.3);background:rgba(59,139,255,0.1);color:rgba(59,139,255,0.9);font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;white-space:nowrap;transition:all .18s}
 .btn-save-tpl:hover{background:rgba(59,139,255,0.2);border-color:rgba(59,139,255,0.5);color:#fff}
 
+/* HISTORY */
+.history-list{display:flex;flex-direction:column;gap:10px}
+.hist-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;position:relative;overflow:hidden}
+.hist-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue);opacity:.6}
+.hist-left{padding-left:8px}
+.hist-num{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--blue);margin-bottom:3px}
+.hist-payer{font-size:13px;font-weight:700;color:#fff}
+.hist-meta{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+.hist-right{text-align:right;flex-shrink:0}
+.hist-total{font-size:18px;font-weight:800;color:#fff}
+.hist-currency{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1px}
+.hist-lang{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:rgba(201,150,60,0.12);color:rgba(201,150,60,0.9);border:1px solid rgba(201,150,60,0.2);margin-top:4px}
+.hist-delete{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:4px;border:none;background:transparent;color:rgba(255,255,255,0.2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;line-height:1}
+.hist-delete:hover{background:rgba(255,80,80,0.15);color:#ff6060}
+.hist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.btn-clear-hist{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;border:1px solid rgba(255,80,80,0.2);background:transparent;color:rgba(255,100,100,0.5);font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;letter-spacing:.5px;transition:all .18s}
+.btn-clear-hist:hover{background:rgba(255,80,80,0.1);color:#ff6060;border-color:rgba(255,80,80,0.4)}
+
 /* GENERATE BUTTON */
 .btn-generate{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,#c9963c,#e0b060);color:#0b1e30;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .2s;letter-spacing:.3px;margin-top:32px}
 .btn-generate:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(201,150,60,0.3)}
@@ -101,6 +119,17 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 <div class="container">
   <div class="page-title">Gerador de Invoice</div>
   <div class="page-sub">Preencha os campos e clique em Gerar para abrir o invoice pronto para imprimir ou salvar como PDF.</div>
+
+  <!-- HISTÓRICO -->
+  <div class="section" id="section-history" style="display:none">
+    <div class="hist-header">
+      <div class="section-label" style="margin-bottom:0">Histórico de Invoices</div>
+      <button class="btn-clear-hist" onclick="clearHistory()">🗑 Limpar histórico</button>
+    </div>
+    <div class="history-list" id="history-list">
+      <!-- rendered by JS -->
+    </div>
+  </div>
 
   <!-- TEMPLATES -->
   <div class="section" id="section-templates" style="display:none">
@@ -343,7 +372,58 @@ function deleteTemplate(id, e) {
   renderTemplates();
 }
 
+// ── History (localStorage) ────────────────────────────────────────────────────
+var HISTORY_KEY = 'soma_invoice_history';
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+  catch(e) { return []; }
+}
+
+function logInvoice(entry) {
+  var list = getHistory();
+  list.unshift(entry); // most recent first
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+  renderHistory();
+}
+
+function deleteHistoryEntry(id, e) {
+  e.stopPropagation();
+  var list = getHistory().filter(function(h){ return h.id !== id; });
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+  renderHistory();
+}
+
+function clearHistory() {
+  if (!confirm('Limpar todo o histórico de invoices?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+}
+
+function renderHistory() {
+  var list = getHistory();
+  var container = document.getElementById('history-list');
+  document.getElementById('section-history').style.display = list.length ? '' : 'none';
+  if (!list.length) return;
+  container.innerHTML = list.map(function(h) {
+    var langLabel = h.lang === 'EN' ? '🇺🇸 EN' : '🇧🇷 PT';
+    return '<div class="hist-card">'
+      + '<div class="hist-left">'
+      + '<div class="hist-num">Invoice ' + h.invNum + '</div>'
+      + '<div class="hist-payer">' + (h.payerName || '—') + '</div>'
+      + '<div class="hist-meta">' + (h.credName || '') + (h.invDate ? ' &nbsp;·&nbsp; ' + h.invDate : '') + '<br>Gerado em ' + h.generatedAt + '</div>'
+      + '</div>'
+      + '<div class="hist-right">'
+      + '<div class="hist-total">' + h.currency + ' ' + h.total + '</div>'
+      + '<div><span class="hist-lang">' + langLabel + '</span></div>'
+      + '</div>'
+      + '<button class="hist-delete" onclick="deleteHistoryEntry(\'' + h.id + '\',event)" title="Remover">×</button>'
+      + '</div>';
+  }).join('');
+}
+
 // Init
+renderHistory();
 renderTemplates();
 
 // Set today as default date
@@ -591,6 +671,21 @@ function generateInvoice() {
     + '</div>' // page wrapper
     + '<script>window.onload=function(){window.print();}<\/script>'
     + '</body></html>';
+
+  // Registrar no histórico
+  var now = new Date();
+  var genAt = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  logInvoice({
+    id:        Date.now().toString(),
+    invNum:    invNum,
+    invDate:   dateFormatted,
+    credName:  credName,
+    payerName: payerName,
+    total:     totalStr,
+    currency:  currency,
+    lang:      lang,
+    generatedAt: genAt
+  });
 
   var blob = new Blob([html], {type:'text/html'});
   window.open(URL.createObjectURL(blob), '_blank');
