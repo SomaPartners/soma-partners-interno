@@ -95,6 +95,42 @@ th.r,td.r{text-align:right}
 .load-msg{font-size:11px;color:var(--muted);max-width:280px;line-height:1.6}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* REPORT BUTTON */
+.btn-rpt{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;border:1px solid rgba(59,139,255,0.35);background:rgba(59,139,255,0.1);color:#fff;font-size:11px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .18s;letter-spacing:.3px;white-space:nowrap}
+.btn-rpt:hover{background:rgba(59,139,255,0.22);border-color:rgba(59,139,255,0.6);box-shadow:0 4px 18px rgba(59,139,255,0.2)}
+.btn-rpt svg{flex-shrink:0}
+
+/* REPORT MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;animation:fadein .18s}
+.modal-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:201;background:#0f2540;border:1px solid rgba(255,255,255,0.11);border-radius:18px;width:min(480px,94vw);box-shadow:0 24px 80px rgba(0,0,0,.55);animation:slidein .2s}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes slidein{from{opacity:0;transform:translate(-50%,-47%)}to{opacity:1;transform:translate(-50%,-50%)}}
+.modal-hd{padding:24px 28px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:flex-start;justify-content:space-between}
+.modal-title{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.modal-cname{font-size:18px;font-weight:900}
+.modal-x{background:none;border:none;color:rgba(255,255,255,.3);font-size:20px;cursor:pointer;padding:0 4px;border-radius:5px;transition:color .15s;line-height:1}
+.modal-x:hover{color:#fff}
+.modal-body{padding:20px 28px}
+.modal-sec{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.modal-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.dg label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.dg input{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.11);border-radius:8px;color:#fff;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;padding:8px 10px;width:100%;outline:none;transition:border-color .15s}
+.dg input:focus{border-color:rgba(59,139,255,.5);background:rgba(59,139,255,.06)}
+.dg input::-webkit-calendar-picker-indicator{filter:invert(.55)}
+.quick-dates{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.qd{padding:4px 11px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.45);font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .14s}
+.qd:hover{color:#fff;border-color:rgba(255,255,255,.25)}.qd.active{background:rgba(59,139,255,.12);border-color:rgba(59,139,255,.4);color:#fff}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ck-row{display:flex;align-items:center;gap:9px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;cursor:pointer;transition:background .14s}
+.ck-row:hover{background:rgba(255,255,255,.07)}
+.ck-row input{accent-color:var(--blue);width:14px;height:14px;cursor:pointer;flex-shrink:0}
+.ck-row span{font-size:11px;font-weight:600;color:rgba(255,255,255,.8)}
+.modal-ft{padding:16px 28px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid rgba(255,255,255,.07)}
+.btn-cancel{padding:9px 18px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.5);font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
+.btn-cancel:hover{color:#fff;border-color:rgba(255,255,255,.25)}
+.btn-gen{display:inline-flex;align-items:center;gap:6px;padding:9px 22px;border-radius:9px;border:none;background:var(--blue);color:#fff;font-size:11px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s;letter-spacing:.3px}
+.btn-gen:hover{background:#5a9fff;box-shadow:0 4px 20px rgba(59,139,255,.35)}
+
 @media(max-width:900px){
   .charts-grid{grid-template-columns:1fr}
   .kpi-grid,.clients-grid{grid-template-columns:1fr}
@@ -147,6 +183,47 @@ th.r,td.r{text-align:right}
   <div class="loading">
     <div class="spinner"></div>
     <div class="load-msg" id="load-msg">Carregando clientes...</div>
+  </div>
+</div>
+
+<!-- Report Modal -->
+<div id="rpt-modal" style="display:none;position:fixed;inset:0;z-index:200">
+  <div class="modal-overlay" onclick="closeRpt()"></div>
+  <div class="modal-panel">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title">Gerar Relatório</div>
+        <div class="modal-cname" id="rpt-cname"></div>
+      </div>
+      <button class="modal-x" onclick="closeRpt()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-sec">Período</div>
+      <div class="modal-dates">
+        <div class="dg"><label>De</label><input type="date" id="rpt-from"></div>
+        <div class="dg"><label>Até</label><input type="date" id="rpt-to"></div>
+      </div>
+      <div class="quick-dates">
+        <button class="qd active" onclick="setQD('all',this)">Tudo</button>
+        <button class="qd" onclick="setQD('m',this)">Mês atual</button>
+        <button class="qd" onclick="setQD('m-1',this)">Mês anterior</button>
+        <button class="qd" onclick="setQD('y',this)">Este ano</button>
+      </div>
+      <div class="modal-sec">Incluir no relatório</div>
+      <div class="checks">
+        <label class="ck-row"><input type="checkbox" id="rpt-kpis" checked><span>Resumo (KPIs)</span></label>
+        <label class="ck-row"><input type="checkbox" id="rpt-table" checked><span>Tabela de transações</span></label>
+        <label class="ck-row"><input type="checkbox" id="rpt-chart-cats" checked><span>Gráfico por categoria</span></label>
+        <label class="ck-row"><input type="checkbox" id="rpt-chart-mes" checked><span>Gráfico mensal</span></label>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-cancel" onclick="closeRpt()">Cancelar</button>
+      <button class="btn-gen" onclick="generateReport()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Gerar PDF
+      </button>
+    </div>
   </div>
 </div>
 
@@ -474,9 +551,15 @@ function openClient(idx){
       </div>`;
 
   document.getElementById('detail-content').innerHTML=`
-    <div class="client-header">
-      <div class="client-label">${c.isBilling?'Faturamento Mensal':'Antecipação de Saldos'}</div>
-      <div class="client-name">${c.name}</div>
+    <div class="client-header" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px">
+      <div>
+        <div class="client-label">${c.isBilling?'Faturamento Mensal':'Antecipação de Saldos'}</div>
+        <div class="client-name">${c.name}</div>
+      </div>
+      <button class="btn-rpt" onclick="openRpt(${idx})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Gerar Relatório
+      </button>
     </div>
 
     <div class="kpi-grid">${kpiHTML}</div>
@@ -616,6 +699,160 @@ function showErr(msg){
         Tentar novamente
       </button>
     </div>`;
+}
+
+// ── Report modal ──────────────────────────────────────────────────────────
+let _rptIdx = -1;
+const MMAP_D = {jan:0,fev:1,mar:2,abr:3,mai:4,jun:5,jul:6,ago:7,set:8,out:9,nov:10,dez:11};
+
+function txToDate(d){
+  const s=String(d).trim();
+  const m1=s.match(/(\d{1,2})[\/\-]([a-záéíóú]+)\.?\s*(\d{4})/i);
+  if(m1){const mon=MMAP_D[m1[2].toLowerCase().slice(0,3)];if(mon!==undefined) return new Date(+m1[3],mon,+m1[1]);}
+  const m2=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m2) return new Date(+m2[3],+m2[2]-1,+m2[1]);
+  return null;
+}
+function toISO(d){return d.toISOString().slice(0,10);}
+
+function openRpt(idx){
+  _rptIdx=idx;
+  const c=_clients[idx];
+  document.getElementById('rpt-cname').textContent=c.name;
+  document.getElementById('rpt-from').value='';
+  document.getElementById('rpt-to').value='';
+  document.querySelectorAll('.qd').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.getElementById('rpt-modal').style.display='block';
+}
+function closeRpt(){document.getElementById('rpt-modal').style.display='none';}
+
+function setQD(p,btn){
+  document.querySelectorAll('.qd').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const n=new Date();
+  const fi=document.getElementById('rpt-from'), ti=document.getElementById('rpt-to');
+  if(p==='all'){fi.value='';ti.value='';}
+  else if(p==='m'){fi.value=toISO(new Date(n.getFullYear(),n.getMonth(),1));ti.value=toISO(new Date(n.getFullYear(),n.getMonth()+1,0));}
+  else if(p==='m-1'){fi.value=toISO(new Date(n.getFullYear(),n.getMonth()-1,1));ti.value=toISO(new Date(n.getFullYear(),n.getMonth(),0));}
+  else if(p==='y'){fi.value=toISO(new Date(n.getFullYear(),0,1));ti.value=toISO(new Date(n.getFullYear(),11,31));}
+}
+
+function kpiCard(label,val,sub,color){
+  return `<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:18px 20px;border-top:3px solid ${color}">
+    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:8px">${label}</div>
+    <div style="font-size:19px;font-weight:900;letter-spacing:-.5px;color:#0b1e30">${val}</div>
+    <div style="font-size:10px;color:#9ca3af;margin-top:5px">${sub}</div>
+  </div>`;
+}
+
+function generateReport(){
+  const c=_clients[_rptIdx]; if(!c) return;
+  const fv=document.getElementById('rpt-from').value;
+  const tv=document.getElementById('rpt-to').value;
+  const incKPI=document.getElementById('rpt-kpis').checked;
+  const incTbl=document.getElementById('rpt-table').checked;
+  const incCat=document.getElementById('rpt-chart-cats').checked;
+  const incMes=document.getElementById('rpt-chart-mes').checked;
+
+  let tx=c.transactions;
+  const fd=fv?new Date(fv+'T00:00:00'):null;
+  const td=tv?new Date(tv+'T23:59:59'):null;
+  if(fd||td){
+    tx=tx.filter(t=>{
+      const d=txToDate(t.date); if(!d) return true;
+      if(fd&&d<fd) return false; if(td&&d>td) return false; return true;
+    });
+  }
+
+  const ent=tx.filter(t=>t.direction==='ENTRADA').reduce((s,t)=>s+t.valor,0);
+  const sai=tx.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
+  const sal=Math.round((ent-sai)*100)/100;
+
+  // grab chart images before opening window
+  let catImg='',mesImg='';
+  if(incCat){const cv=document.getElementById('ch-cats');if(cv) catImg=cv.toDataURL('image/png');}
+  if(incMes){const cv=document.getElementById('ch-mes');if(cv) mesImg=cv.toDataURL('image/png');}
+
+  const period=(!fv&&!tv)?'Todo o período':
+    (fv&&tv)?`${fv.split('-').reverse().join('/')} a ${tv.split('-').reverse().join('/')}`:
+    fv?`A partir de ${fv.split('-').reverse().join('/')}`:
+    `Até ${tv.split('-').reverse().join('/')}`;
+
+  const genDate=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+
+  const kHtml=incKPI?(c.isBilling?`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
+      ${kpiCard('Em Aberto (Período Atual)',BRL(c.lastPeriodSaldo||sai),'Aguardando pagamento','#f59e0b')}
+      ${kpiCard('Total Cobrado (Histórico)',BRL(sai),tx.length+' lançamentos','#ef4444')}
+      ${kpiCard('Regime','Faturamento Mensal','Pagamento ao final de cada período','#3b8bff')}
+    </div>`:`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
+      ${kpiCard('Saldo Atual',BRL(sal),tx.length+' transações',sal>=0?'#10b981':'#ef4444')}
+      ${kpiCard('Total Entradas',BRL(ent),tx.filter(t=>t.direction==='ENTRADA').length+' antecipações','#10b981')}
+      ${kpiCard('Total Saídas',BRL(sai),tx.filter(t=>t.direction==='SAÍDA').length+' lançamentos','#ef4444')}
+    </div>`):'';
+
+  const chHtml=(catImg||mesImg)?`
+    <div style="display:grid;grid-template-columns:${catImg&&mesImg?'1fr 1fr':'1fr'};gap:14px;margin-bottom:28px">
+      ${catImg?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
+        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">GASTOS POR CATEGORIA</div>
+        <img src="${catImg}" style="width:100%;height:auto"></div>`:''}
+      ${mesImg?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
+        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">ENTRADAS × SAÍDAS POR MÊS</div>
+        <img src="${mesImg}" style="width:100%;height:auto"></div>`:''}
+    </div>`:'';
+
+  const tHtml=incTbl?`
+    <div>
+      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">EXTRATO — ${tx.length} LANÇAMENTOS</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="border-bottom:2px solid #e5e7eb">
+          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;white-space:nowrap">Data</th>
+          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">Descrição</th>
+          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">Categoria</th>
+          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">Tipo</th>
+          <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">Valor</th>
+        </tr></thead>
+        <tbody>${tx.map((t,i)=>`
+          <tr style="border-bottom:1px solid #f3f4f6;background:${i%2===0?'#fff':'#fafafa'}">
+            <td style="padding:8px 10px;color:#6b7280;white-space:nowrap">${t.date}</td>
+            <td style="padding:8px 10px;color:#374151">${t.desc||'—'}</td>
+            <td style="padding:8px 10px"><span style="background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase">${t.tipo||'GERAL'}</span></td>
+            <td style="padding:8px 10px"><span style="background:${t.direction==='ENTRADA'?'#d1fae5':'#fee2e2'};color:${t.direction==='ENTRADA'?'#065f46':'#991b1b'};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${t.direction}</span></td>
+            <td style="padding:8px 10px;text-align:right;font-weight:700;color:${t.direction==='ENTRADA'?'#059669':'#dc2626'}">${t.direction==='ENTRADA'?'+':'−'} ${BRL(t.valor)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`:'';
+
+  const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+<title>Relatório — ${c.name}</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',sans-serif;background:#fff;color:#111;padding:36px 44px}@media print{body{padding:0}@page{margin:18mm 16mm}}</style>
+</head><body>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #0b1e30;margin-bottom:28px">
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">Soma Partners</div>
+      <div style="font-size:26px;font-weight:900;letter-spacing:-.5px;color:#0b1e30">${c.name}</div>
+      <div style="font-size:12px;color:#6b7280;margin-top:6px">${c.isBilling?'Faturamento Mensal':'Antecipação de Saldos'} &nbsp;·&nbsp; ${period}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">Gerado em</div>
+      <div style="font-size:12px;font-weight:700;color:#374151;margin-top:3px">${genDate}</div>
+    </div>
+  </div>
+  ${kHtml}${chHtml}${tHtml}
+  <div style="margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between">
+    <div style="font-size:9px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase">Soma Partners · Documento Confidencial</div>
+    <div style="font-size:9px;color:#9ca3af">atendimento@somapartners.co</div>
+  </div>
+</body></html>`;
+
+  const win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(()=>{if(!win.closed)win.print();},1000);
+  closeRpt();
 }
 
 // hide nav when embedded (admin iframe)
