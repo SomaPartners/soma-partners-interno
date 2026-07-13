@@ -1,0 +1,105 @@
+/* ══════════════════════════════════════════════════════════════
+   Soma Partners — Shared Dark-Theme Components
+   v1.0 — link ONLY from dark-themed pages (admin, followups,
+          avaliacao360, cliente, antecipacao).
+          Do NOT link from light pages (relatorios, wealth).
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Custom Select ─────────────────────────────────────────────
+   Strips the OS-native widget and replaces it with a polished
+   dark-glass control consistent with the Soma design system.
+   Targets every select variant used across dark pages:
+     • bare <select>          (admin modals, .field)
+     • select.fc              (admin, followups, avaliacao360)
+     • select.toolbar-select  (admin toolbar)
+     • select.filter-select   (cliente)
+   ─────────────────────────────────────────────────────────── */
+
+/* chevron SVG: 11×11 px, rgba(255,255,255,.52) stroke */
+:root {
+  --sp-select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='rgba(255%2C255%2C255%2C0.52)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+
+/* base rule — applies appearance:none + chevron to ALL selects */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: var(--sp-select-arrow);
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  padding-right: 32px;
+  cursor: pointer;
+  transition: border-color .16s, background-color .16s;
+}
+
+/* keep option dropdowns dark on every variant */
+select option {
+  background-color: #0d1f34;
+  color: #fff;
+}
+
+/* ── .toolbar-select ─────────────────────────────────────────── */
+select.toolbar-select {
+  background-color: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 9px;
+  color: rgba(255,255,255,.72);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+}
+
+select.toolbar-select:hover {
+  background-color: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.2);
+}
+
+select.toolbar-select:focus {
+  border-color: rgba(59,139,255,.45);
+  background-color: rgba(59,139,255,.07);
+  outline: none;
+}
+
+/* ── .fc (followups, avaliacao360, admin) ────────────────────── */
+select.fc {
+  background-image: var(--sp-select-arrow);
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+}
+
+select.fc:hover {
+  border-color: rgba(255,255,255,.22);
+  background-color: rgba(255,255,255,.08);
+}
+
+select.fc:focus {
+  border-color: rgba(59,139,255,.45);
+  background-color: rgba(59,139,255,.07);
+}
+
+/* ── .filter-select (cliente.html dark toolbar) ──────────────── */
+select.filter-select {
+  background-image: var(--sp-select-arrow);
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+}
+
+select.filter-select:hover {
+  border-color: rgba(255,255,255,.22);
+}
+
+select.filter-select:focus {
+  border-color: rgba(59,139,255,.45);
+  background-color: rgba(59,139,255,.07);
+}
+
+/* ── admin .field select (modal forms) ──────────────────────── */
+/* .field select already gets width:100%, padding, bg from admin.html.
+   We only need to ensure padding-right is big enough for the arrow. */
+.field select {
+  padding-right: 36px;
+}
