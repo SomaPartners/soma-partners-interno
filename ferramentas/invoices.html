@@ -248,36 +248,9 @@ function joyagearInstallment() {
   return Math.min(Math.max(months, 1), 12);
 }
 
-var TEMPLATES = [
-  {
-    id: 'joyagear',
-    name: 'Joyagear × Chute Boxe',
-    sub: 'Diego Lima · Wells Fargo · USD 1,000/mês',
-    auto: function() {
-      var inst = joyagearInstallment();
-      return {
-        invNumber:     autoInvNumber(),
-        invDate:       firstOfMonth(),
-        currency:      'USD',
-        credName:      'Diego A. B. Lima',
-        credAddress:   '10630 Rabbit Ridge Ct, Las Vegas, NV 89183, USA',
-        payerName:     'Joya Sports B.V. (Joyagear)',
-        payerAddress:  'Kobaltstraat 5\n1362 JM Almere\nNetherlands',
-        payerTax1:     'BTW: NL819034381B01',
-        payerTax2:     'KvK: 32131709',
-        beneficiary:   'Diego A. B. Lima',
-        bank:          'Wells Fargo',
-        account:       '5359798179',
-        aba:           '121000248',
-        swift:         'WFBIUS6S',
-        payNote:       'ABA routing is for domestic transfers. For international wires use the SWIFT/BIC code above.',
-        items: [
-          { qty: '01', desc: 'Joya Sports B.V. (Joyagear) × Chute Boxe — Parcela ' + inst + ' de 12', val: '1000.00' }
-        ]
-      };
-    }
-  }
-];
+// Templates: salvam apenas Credor + Dados Bancários
+// Adicione novos perfis aqui conforme necessário
+var TEMPLATES = [];
 
 // ── Render templates ──────────────────────────────────────────────────────────
 function renderTemplates() {
@@ -296,23 +269,9 @@ function loadTemplate(id) {
   if (!tpl) return;
   var d = tpl.auto();
 
-  // Invoice info
-  document.getElementById('inv-number').value = d.invNumber || '';
-  document.getElementById('inv-date').value    = d.invDate   || '';
-  var sel = document.getElementById('inv-currency');
-  for (var i=0;i<sel.options.length;i++) if(sel.options[i].value===d.currency) sel.selectedIndex=i;
-
-  // Creditor
-  document.getElementById('cred-name').value    = d.credName    || '';
-  document.getElementById('cred-address').value = d.credAddress || '';
-
-  // Payer
-  document.getElementById('payer-name').value    = d.payerName    || '';
-  document.getElementById('payer-address').value = d.payerAddress || '';
-  document.getElementById('payer-tax1').value    = d.payerTax1   || '';
-  document.getElementById('payer-tax2').value    = d.payerTax2   || '';
-
-  // Payment details
+  // Apenas Credor + Dados Bancários
+  document.getElementById('cred-name').value       = d.credName    || '';
+  document.getElementById('cred-address').value    = d.credAddress || '';
   document.getElementById('pay-beneficiary').value = d.beneficiary || '';
   document.getElementById('pay-bank').value        = d.bank        || '';
   document.getElementById('pay-account').value     = d.account     || '';
@@ -320,18 +279,12 @@ function loadTemplate(id) {
   document.getElementById('pay-swift').value       = d.swift       || '';
   document.getElementById('pay-note').value        = d.payNote     || '';
 
-  // Items
-  var list = document.getElementById('items-list');
-  list.innerHTML = '';
-  (d.items || []).forEach(function(item) {
-    addItem(item.qty, item.desc, item.val);
-  });
-
-  // Scroll to form
-  document.getElementById('inv-number').scrollIntoView({behavior:'smooth', block:'center'});
+  document.getElementById('cred-name').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
+// Só mostra a seção de templates se houver algum cadastrado
 renderTemplates();
+document.querySelector('.section:first-of-type').style.display = TEMPLATES.length ? '' : 'none';
 
 // Set today as default date
 document.getElementById('inv-date').value = today();
@@ -420,9 +373,11 @@ function generateInvoice() {
     + '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>'
     + '<style>'
     + '*{margin:0;padding:0;box-sizing:border-box}'
-    + 'body{font-family:"Montserrat",Arial,sans-serif;background:#fff;color:#333}'
+    + 'body{font-family:"Montserrat",Arial,sans-serif;background:#e8eaed;color:#333}'
+    + '.paper{max-width:720px;margin:72px auto 48px;background:#fff;padding:60px 56px 72px;position:relative;box-shadow:0 4px 24px rgba(0,0,0,0.10)}'
     + '@media print{'
-    + '  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + '  body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + '  .paper{margin:0!important;box-shadow:none!important;padding:40px 48px 60px!important}'
     + '  .no-print{display:none!important}'
     + '  @page{margin:0;size:A4}'
     + '}'
@@ -435,11 +390,11 @@ function generateInvoice() {
     + '<button onclick="window.close()" style="padding:8px 14px;background:#eee;color:#555;border:none;border-radius:7px;font-family:Montserrat,sans-serif;font-size:12px;font-weight:600;cursor:pointer;">✕ Fechar</button>'
     + '</div>'
 
-    // Page wrapper
-    + '<div style="max-width:720px;margin:0 auto;padding:60px 56px 80px;position:relative;min-height:100vh;">'
+    // Page wrapper (paper card)
+    + '<div class="paper">'
 
     // BIG ROTATED INVOICE TEXT (left side)
-    + '<div style="position:fixed;left:-48px;top:50%;transform:translateY(-50%) rotate(-90deg);font-family:Montserrat,sans-serif;font-size:80px;font-weight:300;font-style:italic;color:rgba(0,0,0,0.06);white-space:nowrap;letter-spacing:-2px;user-select:none;pointer-events:none;">'
+    + '<div style="position:absolute;left:-52px;top:50%;transform:translateY(-50%) rotate(-90deg);font-family:Montserrat,sans-serif;font-size:80px;font-weight:300;font-style:italic;color:rgba(0,0,0,0.05);white-space:nowrap;letter-spacing:-2px;user-select:none;pointer-events:none;">'
     + 'Invoice ' + invNum
     + '</div>'
 
