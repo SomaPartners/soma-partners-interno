@@ -286,14 +286,18 @@ function loadTemplate(id) {
   var list = getTemplates();
   var t = list.find(function(x){ return x.id === id; });
   if (!t) return;
-  document.getElementById('cred-name').value       = t.credName    || '';
-  document.getElementById('cred-address').value    = t.credAddress || '';
-  document.getElementById('pay-beneficiary').value = t.beneficiary || '';
-  document.getElementById('pay-bank').value        = t.bank        || '';
-  document.getElementById('pay-account').value     = t.account     || '';
-  document.getElementById('pay-aba').value         = t.aba         || '';
-  document.getElementById('pay-swift').value       = t.swift       || '';
-  document.getElementById('pay-note').value        = t.payNote     || '';
+  document.getElementById('cred-name').value       = t.credName     || '';
+  document.getElementById('cred-address').value    = t.credAddress  || '';
+  document.getElementById('payer-name').value      = t.payerName    || '';
+  document.getElementById('payer-address').value   = t.payerAddress || '';
+  document.getElementById('payer-tax1').value      = t.payerTax1   || '';
+  document.getElementById('payer-tax2').value      = t.payerTax2   || '';
+  document.getElementById('pay-beneficiary').value = t.beneficiary  || '';
+  document.getElementById('pay-bank').value        = t.bank         || '';
+  document.getElementById('pay-account').value     = t.account      || '';
+  document.getElementById('pay-aba').value         = t.aba          || '';
+  document.getElementById('pay-swift').value       = t.swift        || '';
+  document.getElementById('pay-note').value        = t.payNote      || '';
   document.getElementById('cred-name').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
@@ -305,6 +309,10 @@ function saveTemplate() {
     name:        name,
     credName:    document.getElementById('cred-name').value.trim(),
     credAddress: document.getElementById('cred-address').value.trim(),
+    payerName:   document.getElementById('payer-name').value.trim(),
+    payerAddress:document.getElementById('payer-address').value.trim(),
+    payerTax1:   document.getElementById('payer-tax1').value.trim(),
+    payerTax2:   document.getElementById('payer-tax2').value.trim(),
     beneficiary: document.getElementById('pay-beneficiary').value.trim(),
     bank:        document.getElementById('pay-bank').value.trim(),
     account:     document.getElementById('pay-account').value.trim(),
