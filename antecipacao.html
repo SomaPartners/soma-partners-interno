@@ -820,19 +820,29 @@ function generateReport(){
   const sai=tx.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
   const sal=Math.round((ent-sai)*100)/100;
 
-  let catImg='',mesImg='';
-  if(incCat){const cv=document.getElementById('ch-cats');if(cv) catImg=cv.toDataURL('image/png');}
-  if(incMes){const cv=document.getElementById('ch-mes');if(cv) mesImg=cv.toDataURL('image/png');}
+  // ── Chart data (re-computed for light-mode rendering) ────────────────────
+  const cats2={};
+  tx.filter(t=>t.direction==='SAÍDA').forEach(t=>{const k=t.tipo||L.general;cats2[k]=(cats2[k]||0)+t.valor;});
+  const topCats=Object.entries(cats2).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const mes2={};
+  tx.forEach(t=>{const m=getMes(t.date);if(!m)return;if(!mes2[m])mes2[m]={e:0,s:0};if(t.direction==='ENTRADA')mes2[m].e+=t.valor;else mes2[m].s+=t.valor;});
+  const mKeys2=MESES.filter(m=>mes2[m]);
+  const mLbl2=mKeys2.map(m=>MMES[m]||m);
+  let cum2=0;
+  const mSaldo2=mKeys2.map(m=>{cum2+=mes2[m].e-mes2[m].s;return+cum2.toFixed(2);});
+  const mEnt2=mKeys2.map(m=>mes2[m].e);
+  const mSai2=mKeys2.map(m=>mes2[m].s);
+
+  const PAL_P=['#3b8bff','#c9963c','#10b981','#8b5cf6','#ef4444','#f97316','#06b6d4','#ec4899','#84cc16','#6366f1'];
+  const catBg=topCats.map((_,i)=>PAL_P[i%PAL_P.length]+'66');
+  const catBd=topCats.map((_,i)=>PAL_P[i%PAL_P.length]);
 
   const fmt=d=>d.split('-').reverse().join('/');
-  const period=(!fv&&!tv)?L.allPeriodText:
-    (fv&&tv)?`${fmt(fv)} – ${fmt(tv)}`:
-    fv?`${L.from} ${fmt(fv)}`:
-    `${L.until} ${fmt(tv)}`;
-
+  const period=(!fv&&!tv)?L.allPeriodText:(fv&&tv)?`${fmt(fv)} – ${fmt(tv)}`:fv?`${L.from} ${fmt(fv)}`:`${L.until} ${fmt(tv)}`;
   const locale=_rptLang==='en'?'en-US':'pt-BR';
   const genDate=new Date().toLocaleDateString(locale,{day:'2-digit',month:'long',year:'numeric'});
 
+  // ── KPI HTML ──────────────────────────────────────────────────────────────
   const kHtml=incKPI?(c.isBilling?`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
       ${kpiCard(L.openAmount,BRL(c.lastPeriodSaldo||sai),L.awaitingPayment,'#f59e0b')}
@@ -845,16 +855,22 @@ function generateReport(){
       ${kpiCard(L.totalSaidas,BRL(sai),tx.filter(t=>t.direction==='SAÍDA').length+' '+L.launches,'#ef4444')}
     </div>`):'';
 
-  const chHtml=(catImg||mesImg)?`
-    <div style="display:grid;grid-template-columns:${catImg&&mesImg?'1fr 1fr':'1fr'};gap:14px;margin-bottom:28px">
-      ${catImg?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
+  // ── Charts HTML — canvas elements (re-rendered with light theme) ──────────
+  const showCat=incCat&&topCats.length>0;
+  const showMes=incMes&&mKeys2.length>0;
+  const chHtml=(showCat||showMes)?`
+    <div style="display:grid;grid-template-columns:${showCat&&showMes?'1fr 1fr':'1fr'};gap:14px;margin-bottom:28px">
+      ${showCat?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
         <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.expensesByCategory}</div>
-        <img src="${catImg}" style="width:100%;height:auto"></div>`:''}
-      ${mesImg?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
+        <div style="position:relative;height:${Math.max(160,topCats.length*34)}px"><canvas id="ch-cats-p"></canvas></div>
+      </div>`:''}
+      ${showMes?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
         <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.monthlyFlow}</div>
-        <img src="${mesImg}" style="width:100%;height:auto"></div>`:''}
+        <div style="position:relative;height:220px"><canvas id="ch-mes-p"></canvas></div>
+      </div>`:''}
     </div>`:'';
 
+  // ── Table HTML ────────────────────────────────────────────────────────────
   const tHtml=incTbl?`
     <div>
       <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.extractTitle} — ${tx.length} ${L.launches.toUpperCase()}</div>
@@ -878,6 +894,51 @@ function generateReport(){
       </table>
     </div>`:'';
 
+  // ── Chart init script (light-mode: dark labels on white background) ────────
+  const brlFn=`function brl(v){return new Intl.NumberFormat('${locale}',{style:'currency',currency:'BRL'}).format(v);}`;
+  let chartJs='';
+  if(showCat){chartJs+=`
+  new Chart(document.getElementById('ch-cats-p'),{type:'bar',data:{
+    labels:${JSON.stringify(topCats.map(([k])=>k))},
+    datasets:[{data:${JSON.stringify(topCats.map(([,v])=>v))},
+      backgroundColor:${JSON.stringify(catBg)},borderColor:${JSON.stringify(catBd)},borderWidth:1.5,borderRadius:5}]
+  },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return' '+brl(c.parsed.x);}}}},
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{color:'#6b7280',font:{family:'Montserrat',size:10},callback:function(v){return brl(v);}},border:{display:false}},
+      y:{grid:{display:false},ticks:{color:'#111',font:{family:'Montserrat',size:10,weight:'700'}},border:{display:false}}
+    }
+  }});`;}
+  if(showMes){chartJs+=`
+  new Chart(document.getElementById('ch-mes-p'),{data:{
+    labels:${JSON.stringify(mLbl2)},
+    datasets:[
+      {type:'bar',label:${JSON.stringify(L.totalEntradas)},data:${JSON.stringify(mEnt2)},backgroundColor:'rgba(16,185,129,0.25)',borderColor:'#10b981',borderWidth:1.5,borderRadius:4,yAxisID:'y'},
+      {type:'bar',label:${JSON.stringify(L.totalSaidas)},data:${JSON.stringify(mSai2)},backgroundColor:'rgba(239,68,68,0.2)',borderColor:'#ef4444',borderWidth:1.5,borderRadius:4,yAxisID:'y'},
+      {type:'line',label:${JSON.stringify(L.currentBalance)},data:${JSON.stringify(mSaldo2)},borderColor:'#3b8bff',backgroundColor:'rgba(59,139,255,0.07)',borderWidth:2,pointBackgroundColor:'#3b8bff',pointRadius:3,tension:.3,fill:true,yAxisID:'y2'}
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{color:'#6b7280',font:{family:'Montserrat',size:10},boxWidth:10,padding:12}},
+      tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+brl(c.parsed.y);}}}
+    },
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{color:'#6b7280',font:{family:'Montserrat',size:10}},border:{display:false}},
+      y:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{color:'#6b7280',font:{family:'Montserrat',size:10},callback:function(v){return brl(v);}},border:{display:false}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'rgba(59,139,255,0.75)',font:{family:'Montserrat',size:10},callback:function(v){return brl(v);}},border:{display:false}}
+    }
+  }});`;}
+
+  const scriptTag=(showCat||showMes)?`
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>
+<script>
+${brlFn}
+window.addEventListener('load',function(){${chartJs}
+  setTimeout(function(){window.print();},600);
+});
+<\/script>`:``;
+
+  // ── Compose HTML ──────────────────────────────────────────────────────────
   const html=`<!DOCTYPE html><html lang="${_rptLang}"><head><meta charset="UTF-8">
 <title>Report — ${c.name}</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -899,12 +960,14 @@ function generateReport(){
     <div style="font-size:9px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase">Soma Partners · ${L.confidential}</div>
     <div style="font-size:9px;color:#9ca3af">atendimento@somapartners.co</div>
   </div>
+  ${scriptTag}
 </body></html>`;
 
   const win=window.open('','_blank');
   win.document.write(html);
   win.document.close();
-  setTimeout(()=>{if(!win.closed)win.print();},1000);
+  // If no charts, trigger print after font load delay
+  if(!showCat&&!showMes) setTimeout(()=>{if(!win.closed)win.print();},800);
   closeRpt();
 }
 
