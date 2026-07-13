@@ -130,6 +130,10 @@ th.r,td.r{text-align:right}
 .btn-cancel:hover{color:#fff;border-color:rgba(255,255,255,.25)}
 .btn-gen{display:inline-flex;align-items:center;gap:6px;padding:9px 22px;border-radius:9px;border:none;background:var(--blue);color:#fff;font-size:11px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s;letter-spacing:.3px}
 .btn-gen:hover{background:#5a9fff;box-shadow:0 4px 20px rgba(59,139,255,.35)}
+.lang-toggle{display:flex;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.12)}
+.lang-btn{padding:5px 13px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:11px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .14s;letter-spacing:.5px}
+.lang-btn.active{background:rgba(59,139,255,.18);color:#fff}
+.lang-btn:hover:not(.active){color:rgba(255,255,255,.7)}
 
 @media(max-width:900px){
   .charts-grid{grid-template-columns:1fr}
@@ -209,7 +213,16 @@ th.r,td.r{text-align:right}
         <button class="qd" onclick="setQD('m-1',this)">Mês anterior</button>
         <button class="qd" onclick="setQD('y',this)">Este ano</button>
       </div>
-      <div class="modal-sec">Incluir no relatório</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="modal-sec" style="margin-bottom:0">Incluir no relatório</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)">Idioma</span>
+          <div class="lang-toggle">
+            <button class="lang-btn active" id="lang-pt" onclick="setLang('pt')">🇧🇷 PT</button>
+            <button class="lang-btn" id="lang-en" onclick="setLang('en')">🇺🇸 EN</button>
+          </div>
+        </div>
+      </div>
       <div class="checks">
         <label class="ck-row"><input type="checkbox" id="rpt-kpis" checked><span>Resumo (KPIs)</span></label>
         <label class="ck-row"><input type="checkbox" id="rpt-table" checked><span>Tabela de transações</span></label>
@@ -703,6 +716,44 @@ function showErr(msg){
 
 // ── Report modal ──────────────────────────────────────────────────────────
 let _rptIdx = -1;
+let _rptLang = 'pt';
+
+const T = {
+  pt:{
+    billing:'Faturamento Mensal', antecipacao:'Antecipação de Saldos',
+    generatedOn:'Gerado em', confidential:'Documento Confidencial',
+    allPeriodText:'Todo o período', from:'A partir de', until:'Até',
+    openAmount:'Em Aberto (Período Atual)', awaitingPayment:'Aguardando pagamento',
+    totalCharged:'Total Cobrado (Histórico)', launches:'lançamentos',
+    regime:'Regime', monthlyBilling:'Faturamento Mensal', paymentAtEnd:'Pagamento ao final de cada período',
+    currentBalance:'Saldo Atual', transactions:'transações',
+    totalEntradas:'Total Entradas', anticipations:'antecipações',
+    totalSaidas:'Total Saídas',
+    expensesByCategory:'GASTOS POR CATEGORIA', monthlyFlow:'ENTRADAS × SAÍDAS POR MÊS',
+    extractTitle:'EXTRATO', date:'Data', description:'Descrição', category:'Categoria', type:'Tipo', amount:'Valor',
+    general:'GERAL', entrada:'ENTRADA', saida:'SAÍDA'
+  },
+  en:{
+    billing:'Monthly Billing', antecipacao:'Balance Advance',
+    generatedOn:'Generated on', confidential:'Confidential Document',
+    allPeriodText:'All time', from:'From', until:'Until',
+    openAmount:'Outstanding (Current Period)', awaitingPayment:'Awaiting client payment',
+    totalCharged:'Total Charged (Historical)', launches:'entries',
+    regime:'Billing Regime', monthlyBilling:'Monthly Billing', paymentAtEnd:'Payment at end of each period',
+    currentBalance:'Current Balance', transactions:'transactions',
+    totalEntradas:'Total Inflows', anticipations:'advances',
+    totalSaidas:'Total Outflows',
+    expensesByCategory:'EXPENSES BY CATEGORY', monthlyFlow:'INFLOWS × OUTFLOWS BY MONTH',
+    extractTitle:'STATEMENT', date:'Date', description:'Description', category:'Category', type:'Type', amount:'Amount',
+    general:'GENERAL', entrada:'INFLOW', saida:'OUTFLOW'
+  }
+};
+
+function setLang(l){
+  _rptLang=l;
+  document.getElementById('lang-pt').classList.toggle('active',l==='pt');
+  document.getElementById('lang-en').classList.toggle('active',l==='en');
+}
 const MMAP_D = {jan:0,fev:1,mar:2,abr:3,mai:4,jun:5,jul:6,ago:7,set:8,out:9,nov:10,dez:11};
 
 function txToDate(d){
@@ -747,6 +798,7 @@ function kpiCard(label,val,sub,color){
 
 function generateReport(){
   const c=_clients[_rptIdx]; if(!c) return;
+  const L=T[_rptLang];
   const fv=document.getElementById('rpt-from').value;
   const tv=document.getElementById('rpt-to').value;
   const incKPI=document.getElementById('rpt-kpis').checked;
@@ -768,65 +820,66 @@ function generateReport(){
   const sai=tx.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
   const sal=Math.round((ent-sai)*100)/100;
 
-  // grab chart images before opening window
   let catImg='',mesImg='';
   if(incCat){const cv=document.getElementById('ch-cats');if(cv) catImg=cv.toDataURL('image/png');}
   if(incMes){const cv=document.getElementById('ch-mes');if(cv) mesImg=cv.toDataURL('image/png');}
 
-  const period=(!fv&&!tv)?'Todo o período':
-    (fv&&tv)?`${fv.split('-').reverse().join('/')} a ${tv.split('-').reverse().join('/')}`:
-    fv?`A partir de ${fv.split('-').reverse().join('/')}`:
-    `Até ${tv.split('-').reverse().join('/')}`;
+  const fmt=d=>d.split('-').reverse().join('/');
+  const period=(!fv&&!tv)?L.allPeriodText:
+    (fv&&tv)?`${fmt(fv)} – ${fmt(tv)}`:
+    fv?`${L.from} ${fmt(fv)}`:
+    `${L.until} ${fmt(tv)}`;
 
-  const genDate=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const locale=_rptLang==='en'?'en-US':'pt-BR';
+  const genDate=new Date().toLocaleDateString(locale,{day:'2-digit',month:'long',year:'numeric'});
 
   const kHtml=incKPI?(c.isBilling?`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
-      ${kpiCard('Em Aberto (Período Atual)',BRL(c.lastPeriodSaldo||sai),'Aguardando pagamento','#f59e0b')}
-      ${kpiCard('Total Cobrado (Histórico)',BRL(sai),tx.length+' lançamentos','#ef4444')}
-      ${kpiCard('Regime','Faturamento Mensal','Pagamento ao final de cada período','#3b8bff')}
+      ${kpiCard(L.openAmount,BRL(c.lastPeriodSaldo||sai),L.awaitingPayment,'#f59e0b')}
+      ${kpiCard(L.totalCharged,BRL(sai),tx.length+' '+L.launches,'#ef4444')}
+      ${kpiCard(L.regime,L.monthlyBilling,L.paymentAtEnd,'#3b8bff')}
     </div>`:`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
-      ${kpiCard('Saldo Atual',BRL(sal),tx.length+' transações',sal>=0?'#10b981':'#ef4444')}
-      ${kpiCard('Total Entradas',BRL(ent),tx.filter(t=>t.direction==='ENTRADA').length+' antecipações','#10b981')}
-      ${kpiCard('Total Saídas',BRL(sai),tx.filter(t=>t.direction==='SAÍDA').length+' lançamentos','#ef4444')}
+      ${kpiCard(L.currentBalance,BRL(sal),tx.length+' '+L.transactions,sal>=0?'#10b981':'#ef4444')}
+      ${kpiCard(L.totalEntradas,BRL(ent),tx.filter(t=>t.direction==='ENTRADA').length+' '+L.anticipations,'#10b981')}
+      ${kpiCard(L.totalSaidas,BRL(sai),tx.filter(t=>t.direction==='SAÍDA').length+' '+L.launches,'#ef4444')}
     </div>`):'';
 
   const chHtml=(catImg||mesImg)?`
     <div style="display:grid;grid-template-columns:${catImg&&mesImg?'1fr 1fr':'1fr'};gap:14px;margin-bottom:28px">
       ${catImg?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
-        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">GASTOS POR CATEGORIA</div>
+        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.expensesByCategory}</div>
         <img src="${catImg}" style="width:100%;height:auto"></div>`:''}
       ${mesImg?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
-        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">ENTRADAS × SAÍDAS POR MÊS</div>
+        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.monthlyFlow}</div>
         <img src="${mesImg}" style="width:100%;height:auto"></div>`:''}
     </div>`:'';
 
   const tHtml=incTbl?`
     <div>
-      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">EXTRATO — ${tx.length} LANÇAMENTOS</div>
+      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.extractTitle} — ${tx.length} ${L.launches.toUpperCase()}</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
         <thead><tr style="border-bottom:2px solid #e5e7eb">
-          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;white-space:nowrap">Data</th>
-          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">Descrição</th>
-          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">Categoria</th>
-          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">Tipo</th>
-          <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">Valor</th>
+          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;white-space:nowrap">${L.date}</th>
+          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.description}</th>
+          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.category}</th>
+          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.type}</th>
+          <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.amount}</th>
         </tr></thead>
         <tbody>${tx.map((t,i)=>`
           <tr style="border-bottom:1px solid #f3f4f6;background:${i%2===0?'#fff':'#fafafa'}">
             <td style="padding:8px 10px;color:#6b7280;white-space:nowrap">${t.date}</td>
             <td style="padding:8px 10px;color:#374151">${t.desc||'—'}</td>
-            <td style="padding:8px 10px"><span style="background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase">${t.tipo||'GERAL'}</span></td>
-            <td style="padding:8px 10px"><span style="background:${t.direction==='ENTRADA'?'#d1fae5':'#fee2e2'};color:${t.direction==='ENTRADA'?'#065f46':'#991b1b'};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${t.direction}</span></td>
+            <td style="padding:8px 10px"><span style="background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase">${t.tipo||L.general}</span></td>
+            <td style="padding:8px 10px"><span style="background:${t.direction==='ENTRADA'?'#d1fae5':'#fee2e2'};color:${t.direction==='ENTRADA'?'#065f46':'#991b1b'};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${t.direction==='ENTRADA'?L.entrada:L.saida}</span></td>
             <td style="padding:8px 10px;text-align:right;font-weight:700;color:${t.direction==='ENTRADA'?'#059669':'#dc2626'}">${t.direction==='ENTRADA'?'+':'−'} ${BRL(t.valor)}</td>
           </tr>`).join('')}
         </tbody>
       </table>
     </div>`:'';
 
-  const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-<title>Relatório — ${c.name}</title>
+  const html=`<!DOCTYPE html><html lang="${_rptLang}"><head><meta charset="UTF-8">
+<title>Report — ${c.name}</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',sans-serif;background:#fff;color:#111;padding:36px 44px}@media print{body{padding:0}@page{margin:18mm 16mm}}</style>
 </head><body>
@@ -834,16 +887,16 @@ function generateReport(){
     <div>
       <div style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">Soma Partners</div>
       <div style="font-size:26px;font-weight:900;letter-spacing:-.5px;color:#0b1e30">${c.name}</div>
-      <div style="font-size:12px;color:#6b7280;margin-top:6px">${c.isBilling?'Faturamento Mensal':'Antecipação de Saldos'} &nbsp;·&nbsp; ${period}</div>
+      <div style="font-size:12px;color:#6b7280;margin-top:6px">${c.isBilling?L.billing:L.antecipacao} &nbsp;·&nbsp; ${period}</div>
     </div>
     <div style="text-align:right">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">Gerado em</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">${L.generatedOn}</div>
       <div style="font-size:12px;font-weight:700;color:#374151;margin-top:3px">${genDate}</div>
     </div>
   </div>
   ${kHtml}${chHtml}${tHtml}
   <div style="margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between">
-    <div style="font-size:9px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase">Soma Partners · Documento Confidencial</div>
+    <div style="font-size:9px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase">Soma Partners · ${L.confidential}</div>
     <div style="font-size:9px;color:#9ca3af">atendimento@somapartners.co</div>
   </div>
 </body></html>`;
