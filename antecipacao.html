@@ -940,9 +940,19 @@ window.addEventListener('load',function(){${chartJs}
 
   // ── Compose HTML ──────────────────────────────────────────────────────────
   const html=`<!DOCTYPE html><html lang="${_rptLang}"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=794">
 <title>Report — ${c.name}</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',sans-serif;background:#fff;color:#111;padding:36px 44px}@media print{body{padding:0}@page{margin:18mm 16mm}}</style>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;overflow-x:hidden}
+body{font-family:'Montserrat',sans-serif;background:#fff;color:#111;padding:28px 36px}
+@media print{
+  body{padding:0}
+  @page{size:A4 portrait;margin:12mm 10mm}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+</style>
 </head><body>
   <div style="display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #0b1e30;margin-bottom:28px">
     <div>
@@ -963,11 +973,11 @@ window.addEventListener('load',function(){${chartJs}
   ${scriptTag}
 </body></html>`;
 
-  const win=window.open('','_blank');
+  const win=window.open('','_blank','width=900,height=700,scrollbars=yes');
   win.document.write(html);
   win.document.close();
   // If no charts, trigger print after font load delay
-  if(!showCat&&!showMes) setTimeout(()=>{if(!win.closed)win.print();},800);
+  if(!showCat&&!showMes) setTimeout(()=>{if(!win.closed)win.print();},900);
   closeRpt();
 }
 
