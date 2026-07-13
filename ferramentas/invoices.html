@@ -166,20 +166,20 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 
   <!-- PAYMENT DETAILS -->
   <div class="section">
-    <div class="section-label">Payment Details</div>
+    <div class="section-label">Dados Bancários</div>
     <div class="row row-2">
       <div class="field">
-        <label>Beneficiary</label>
+        <label>Beneficiário</label>
         <input type="text" id="pay-beneficiary" placeholder="Diego A. B. Lima"/>
       </div>
       <div class="field">
-        <label>Bank</label>
+        <label>Banco</label>
         <input type="text" id="pay-bank" placeholder="Wells Fargo"/>
       </div>
     </div>
     <div class="row row-3">
       <div class="field">
-        <label>Account Number</label>
+        <label>Número da Conta</label>
         <input type="text" id="pay-account" placeholder="5359798179"/>
       </div>
       <div class="field">
@@ -272,7 +272,7 @@ var TEMPLATES = [
         swift:         'WFBIUS6S',
         payNote:       'ABA routing is for domestic transfers. For international wires use the SWIFT/BIC code above.',
         items: [
-          { qty: '01', desc: 'Joya Sports B.V. (Joyagear) × Chute Boxe — Installment ' + inst + ' of 12', val: '1000.00' }
+          { qty: '01', desc: 'Joya Sports B.V. (Joyagear) × Chute Boxe — Parcela ' + inst + ' de 12', val: '1000.00' }
         ]
       };
     }
@@ -455,15 +455,15 @@ function generateInvoice() {
     // THREE COLUMNS: Date | Payer | Creditor
     + '<div style="display:grid;grid-template-columns:140px 1fr 180px;gap:24px;margin-bottom:28px;">'
 
-    // Date col
+    // Data col
     + '<div>'
-    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#3b8bff;margin-bottom:6px;">Date</div>'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#3b8bff;margin-bottom:6px;">Data</div>'
     + '<div style="font-size:13px;color:#333;">' + (dateFormatted || '') + '</div>'
     + '</div>'
 
-    // Payer col
+    // Pagador col
     + '<div>'
-    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#3b8bff;margin-bottom:6px;">Payer</div>'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#3b8bff;margin-bottom:6px;">Pagador</div>'
     + '<div style="font-size:13px;color:#333;line-height:1.7;">'
     + (payerName ? '<strong>' + payerName + '</strong><br>' : '')
     + (payerAddr ? payerAddr + '<br>' : '')
@@ -472,9 +472,9 @@ function generateInvoice() {
     + '</div>'
     + '</div>'
 
-    // Creditor col
+    // Credor col
     + '<div>'
-    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#3b8bff;margin-bottom:6px;">Creditor</div>'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#3b8bff;margin-bottom:6px;">Credor</div>'
     + '<div style="font-size:13px;color:#333;">' + credName + '</div>'
     + '</div>'
 
@@ -483,27 +483,27 @@ function generateInvoice() {
     // DIVIDER
     + '<hr style="border:none;border-top:1.5px solid #e8e8e8;margin-bottom:24px;"/>'
 
-    // PAYMENT DETAILS
+    // DADOS BANCÁRIOS
     + '<div style="margin-bottom:28px;">'
-    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#3b8bff;margin-bottom:12px;">Payment Details</div>'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#3b8bff;margin-bottom:12px;">Dados Bancários</div>'
     + '<table style="border-collapse:collapse;width:auto;">'
-    + payRow('Beneficiary', beneficiary)
-    + payRow('Bank', bank)
-    + payRow('Account Number', account)
+    + payRow('Beneficiário', beneficiary)
+    + payRow('Banco', bank)
+    + payRow('Número da Conta', account)
     + payRow('ABA Routing Number', aba)
     + payRow('SWIFT / BIC', swift)
-    + payRow('Currency', currency)
+    + payRow('Moeda', currency)
     + '</table>'
     + (note ? '<div style="font-size:11px;font-style:italic;color:#aaa;margin-top:10px;">' + note + '</div>' : '')
     + '</div>'
 
-    // ITEMS TABLE
+    // TABELA DE ITENS
     + '<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">'
     + '<thead>'
     + '<tr style="background:#3b8bff;">'
-    + '<th style="padding:12px;text-align:left;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;width:80px;">Qty</th>'
-    + '<th style="padding:12px;text-align:left;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Description</th>'
-    + '<th style="padding:12px;text-align:right;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;width:140px;">Total Value</th>'
+    + '<th style="padding:12px;text-align:left;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;width:80px;">Qtd</th>'
+    + '<th style="padding:12px;text-align:left;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Descrição</th>'
+    + '<th style="padding:12px;text-align:right;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;width:140px;">Valor Total</th>'
     + '</tr>'
     + '</thead>'
     + '<tbody>'
@@ -516,14 +516,14 @@ function generateInvoice() {
 
     // TOTAL
     + '<div style="display:flex;justify-content:flex-end;align-items:baseline;gap:24px;margin-bottom:40px;">'
-    + '<div style="font-size:13px;color:#666;">Total Due on <strong style="color:#333;">' + (dateFormatted || '') + '</strong></div>'
+    + '<div style="font-size:13px;color:#666;">Total a Pagar em <strong style="color:#333;">' + (dateFormatted || '') + '</strong></div>'
     + '<div style="font-size:26px;font-weight:800;color:#333;">$ ' + totalStr + '</div>'
     + '</div>'
 
-    // THANK YOU
+    // OBRIGADO
     + '<div style="text-align:right;margin-bottom:16px;">'
-    + '<div style="font-family:Montserrat,sans-serif;font-size:32px;font-style:italic;font-weight:300;color:#3b8bff;">Thank You!</div>'
-    + '<div style="font-size:11px;color:#bbb;margin-top:6px;">Invoice ' + invNum + '&nbsp;&nbsp;·&nbsp;&nbsp;Issued ' + (dateFormatted || '') + '&nbsp;&nbsp;·&nbsp;&nbsp;Amounts in ' + currency + '</div>'
+    + '<div style="font-family:Montserrat,sans-serif;font-size:32px;font-style:italic;font-weight:300;color:#3b8bff;">Obrigado!</div>'
+    + '<div style="font-size:11px;color:#bbb;margin-top:6px;">Invoice ' + invNum + '&nbsp;&nbsp;·&nbsp;&nbsp;Emitido em ' + (dateFormatted || '') + '&nbsp;&nbsp;·&nbsp;&nbsp;Valores em ' + currency + '</div>'
     + '</div>'
 
     + '</div>' // page wrapper
