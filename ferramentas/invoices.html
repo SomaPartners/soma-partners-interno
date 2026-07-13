@@ -438,8 +438,8 @@ function generateInvoice() {
     // Page wrapper (paper card)
     + '<div class="paper">'
 
-    // BIG ROTATED INVOICE TEXT (left side)
-    + '<div style="position:absolute;left:-52px;top:50%;transform:translateY(-50%) rotate(-90deg);font-family:Montserrat,sans-serif;font-size:80px;font-weight:300;font-style:italic;color:rgba(0,0,0,0.05);white-space:nowrap;letter-spacing:-2px;user-select:none;pointer-events:none;">'
+    // WATERMARK — bottom right corner
+    + '<div style="position:absolute;bottom:56px;right:40px;transform:rotate(-12deg);transform-origin:bottom right;font-family:Montserrat,sans-serif;font-size:52px;font-weight:300;font-style:italic;color:rgba(0,0,0,0.05);white-space:nowrap;letter-spacing:-1px;user-select:none;pointer-events:none;">'
     + 'Invoice ' + invNum
     + '</div>'
 
