@@ -333,11 +333,15 @@ async function loadDocs(){
     console.error(error);return;
   }
   _docs=(data||[]).map(r=>({id:r.id,...(r.data||{}),_created:r.created_at}));
-  // adiciona clientes manuais que só existem em docs
-  const nomesEmDocs=[...new Set(_docs.map(d=>d.cliente_nome).filter(n=>n&&n!=='Soma Partners'))];
-  nomesEmDocs.forEach(nome=>{
-    if(!_clientes.find(c=>c.nome===nome))
-      _clientes.push({id:'manual__'+btoa(nome).replace(/[^a-zA-Z0-9]/g,''),nome,tag:'Manual'});
+  // adiciona clientes que estão em docs mas não na sidebar (usa o cliente_id real)
+  const seen=new Map();
+  _docs.forEach(d=>{
+    if(d.cliente_id&&d.cliente_id!==EMPRESA_ID&&d.cliente_nome&&!seen.has(d.cliente_id))
+      seen.set(d.cliente_id,{id:d.cliente_id,nome:d.cliente_nome,tag:'Manual'});
+  });
+  seen.forEach(({id,nome,tag})=>{
+    if(!_clientes.find(c=>c.id===id))
+      _clientes.push({id,nome,tag});
   });
   _clientes.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
 }
