@@ -166,7 +166,15 @@ const BRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}
 
 function parseVal(s){
   if(!s) return 0;
-  const c=String(s).replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.').trim();
+  const raw=String(s).trim();
+  if(raw==='-'||raw==='R$ -'||raw==='R$-') return 0;
+  // Remove currency symbol, spaces, non-numeric except , . -
+  const c=raw
+    .replace(/R\$\s*/gi,'')   // R$
+    .replace(/\s+/g,'')       // spaces
+    .replace(/\.(?=\d{3})/g,'') // thousand-separator dots (1.000,00 → 1000,00)
+    .replace(',','.')          // decimal comma → dot
+    .replace(/[^\d.\-]/g,''); // anything else
   const n=parseFloat(c);
   return isNaN(n)?0:Math.abs(n);
 }
@@ -238,19 +246,25 @@ function processSheet(rows){
     const row=rows[i];
     const date=(row[0]||'').trim(); if(!date) continue;
 
-    // Repeated header row (period separator) — capture its SALDO
-    if(date.toUpperCase()==='DATA'){
+    // Repeated header row (period separator) — capture its SALDO and skip
+    if(date.toUpperCase()==='DATA'||date.toUpperCase()==='DATE'){
       if(saldoCol>=0){const v=parseVal(row[saldoCol]);if(v) lastPeriodSaldo=v;}
       continue;
     }
 
     const desc=(row[1]||'').trim();
     const tipo=(row[2]||'').trim();
-    const dir=(row[3]||'').trim().toUpperCase();
+    const dirRaw=(row[3]||'').trim().toUpperCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g,''); // strip accents for comparison
     const val=parseVal(row[4]);
+
+    // Skip zero-value rows
     if(!val) continue;
-    if(dir!=='ENTRADA'&&dir!=='SAÍDA') continue;
-    tx.push({date,desc,tipo,direction:dir,valor:val});
+
+    // Direction: explicit ENTRADA wins; everything else is SAÍDA
+    // (handles blank, "SAIDA" without accent, lowercase, etc.)
+    const direction = dirRaw.startsWith('EN') ? 'ENTRADA' : 'SAÍDA';
+    tx.push({date,desc,tipo,direction,valor:val});
   }
   if(!tx.length) return null;
 
