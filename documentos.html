@@ -325,7 +325,8 @@ async function loadClientes(){
 }
 
 async function loadDocs(){
-  const{data,error}=await sb.from('documentos').select('id,data,created_at').order('created_at',{ascending:false});
+  // usa view sem 'conteudo' para evitar payload enorme (base64 de todos os arquivos)
+  const{data,error}=await sb.from('documentos_list').select('id,data,created_at').order('created_at',{ascending:false});
   if(error){
     if(error.code==='42P01'||String(error.message).includes('does not exist')){
       showSetupBanner();return;
@@ -591,16 +592,24 @@ async function salvarDoc(){
 }
 
 /* ─── OPEN / DOWNLOAD ────────────────────── */
-function abrirDoc(id){
+async function abrirDoc(id){
   const d=_docs.find(x=>x.id===id);if(!d)return;
   if(d.tipo==='link'){
     window.open(d.url,'_blank');
-  } else {
-    const a=document.createElement('a');
-    a.href=d.conteudo;
-    a.download=(d.nome||'documento')+(d.ext&&d.ext!=='link'?'.'+d.ext:'');
-    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    return;
   }
+  // busca conteúdo completo sob demanda (não carregado na listagem)
+  const btn=document.querySelector(`.dab-open[onclick="abrirDoc('${id}')"]`);
+  if(btn){btn.innerHTML='<span class="loading-spinner" style="width:10px;height:10px;border-width:1.5px"></span>';btn.disabled=true;}
+  const{data:row,error}=await sb.from('documentos').select('data').eq('id',id).single();
+  if(btn){btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';btn.disabled=false;}
+  if(error||!row){alert('Erro ao carregar documento.');return;}
+  const conteudo=row.data?.conteudo;
+  if(!conteudo){alert('Conteúdo não encontrado.');return;}
+  const a=document.createElement('a');
+  a.href=conteudo;
+  a.download=(d.nome||'documento')+(d.ext&&d.ext!=='link'?'.'+d.ext:'');
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
 /* ─── DELETE ─────────────────────────────── */
