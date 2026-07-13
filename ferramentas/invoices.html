@@ -55,6 +55,15 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .btn-add{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px dashed rgba(201,150,60,0.35);background:transparent;color:rgba(201,150,60,0.7);font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .18s;margin-top:4px}
 .btn-add:hover{background:rgba(201,150,60,0.08);color:var(--gold);border-color:rgba(201,150,60,0.6)}
 
+/* TEMPLATES */
+.templates-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:36px}
+.tpl-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:18px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;text-align:left}
+.tpl-card:hover{background:rgba(217,64,64,0.07);border-color:rgba(217,64,64,0.35);transform:translateY(-2px)}
+.tpl-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:#d94040;opacity:.6}
+.tpl-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px}
+.tpl-sub{font-size:11px;color:var(--muted);line-height:1.5}
+.tpl-badge{display:inline-block;margin-top:10px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:rgba(217,64,64,0.12);color:rgba(217,64,64,0.8);border:1px solid rgba(217,64,64,0.2)}
+
 /* GENERATE BUTTON */
 .btn-generate{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,#c9963c,#e0b060);color:#0b1e30;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .2s;letter-spacing:.3px;margin-top:32px}
 .btn-generate:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(201,150,60,0.3)}
@@ -81,7 +90,15 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 
 <div class="container">
   <div class="page-title">Gerador de Invoice</div>
-  <div class="page-sub">Preencha os campos e clique em Gerar para abrir o invoice pronto para imprimir ou salvar como PDF.</div>
+  <div class="page-sub">Selecione um template salvo ou preencha os campos manualmente. Clique em Gerar para abrir o invoice pronto para imprimir ou salvar como PDF.</div>
+
+  <!-- TEMPLATES -->
+  <div class="section">
+    <div class="section-label">Templates Salvos</div>
+    <div class="templates-grid" id="templates-grid">
+      <!-- rendered by JS -->
+    </div>
+  </div>
 
   <!-- INVOICE INFO -->
   <div class="section">
@@ -206,21 +223,134 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 <script>
 if(sessionStorage.getItem('soma_auth')!=='1'){window.location.href='../login.html';}
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function today() { return new Date().toISOString().split('T')[0]; }
+function pad(n,len){return String(n).padStart(len||2,'0');}
+
+// Auto invoice number for current month: 007/26 format
+function autoInvNumber() {
+  var d = new Date();
+  return pad(d.getMonth()+1,3) + '/' + String(d.getFullYear()).slice(-2);
+}
+
+// First day of current month: YYYY-MM-01
+function firstOfMonth() {
+  var d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-01';
+}
+
+// ── Templates ─────────────────────────────────────────────────────────────────
+// Installment for Joyagear: started Jan 2026 (month 1), so installment = months since Jan 2026
+function joyagearInstallment() {
+  var now = new Date();
+  var start = new Date(2026, 0); // January 2026
+  var months = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()) + 1;
+  return Math.min(Math.max(months, 1), 12);
+}
+
+var TEMPLATES = [
+  {
+    id: 'joyagear',
+    name: 'Joyagear × Chute Boxe',
+    sub: 'Diego Lima · Wells Fargo · USD 1,000/mês',
+    auto: function() {
+      var inst = joyagearInstallment();
+      return {
+        invNumber:     autoInvNumber(),
+        invDate:       firstOfMonth(),
+        currency:      'USD',
+        credName:      'Diego A. B. Lima',
+        credAddress:   '10630 Rabbit Ridge Ct, Las Vegas, NV 89183, USA',
+        payerName:     'Joya Sports B.V. (Joyagear)',
+        payerAddress:  'Kobaltstraat 5\n1362 JM Almere\nNetherlands',
+        payerTax1:     'BTW: NL819034381B01',
+        payerTax2:     'KvK: 32131709',
+        beneficiary:   'Diego A. B. Lima',
+        bank:          'Wells Fargo',
+        account:       '5359798179',
+        aba:           '121000248',
+        swift:         'WFBIUS6S',
+        payNote:       'ABA routing is for domestic transfers. For international wires use the SWIFT/BIC code above.',
+        items: [
+          { qty: '01', desc: 'Joya Sports B.V. (Joyagear) × Chute Boxe — Installment ' + inst + ' of 12', val: '1000.00' }
+        ]
+      };
+    }
+  }
+];
+
+// ── Render templates ──────────────────────────────────────────────────────────
+function renderTemplates() {
+  var grid = document.getElementById('templates-grid');
+  grid.innerHTML = TEMPLATES.map(function(t) {
+    return '<button class="tpl-card" onclick="loadTemplate(\'' + t.id + '\')">'
+      + '<div class="tpl-name">' + t.name + '</div>'
+      + '<div class="tpl-sub">' + t.sub + '</div>'
+      + '<span class="tpl-badge">Carregar template</span>'
+      + '</button>';
+  }).join('');
+}
+
+function loadTemplate(id) {
+  var tpl = TEMPLATES.find(function(t){ return t.id === id; });
+  if (!tpl) return;
+  var d = tpl.auto();
+
+  // Invoice info
+  document.getElementById('inv-number').value = d.invNumber || '';
+  document.getElementById('inv-date').value    = d.invDate   || '';
+  var sel = document.getElementById('inv-currency');
+  for (var i=0;i<sel.options.length;i++) if(sel.options[i].value===d.currency) sel.selectedIndex=i;
+
+  // Creditor
+  document.getElementById('cred-name').value    = d.credName    || '';
+  document.getElementById('cred-address').value = d.credAddress || '';
+
+  // Payer
+  document.getElementById('payer-name').value    = d.payerName    || '';
+  document.getElementById('payer-address').value = d.payerAddress || '';
+  document.getElementById('payer-tax1').value    = d.payerTax1   || '';
+  document.getElementById('payer-tax2').value    = d.payerTax2   || '';
+
+  // Payment details
+  document.getElementById('pay-beneficiary').value = d.beneficiary || '';
+  document.getElementById('pay-bank').value        = d.bank        || '';
+  document.getElementById('pay-account').value     = d.account     || '';
+  document.getElementById('pay-aba').value         = d.aba         || '';
+  document.getElementById('pay-swift').value       = d.swift       || '';
+  document.getElementById('pay-note').value        = d.payNote     || '';
+
+  // Items
+  var list = document.getElementById('items-list');
+  list.innerHTML = '';
+  (d.items || []).forEach(function(item) {
+    addItem(item.qty, item.desc, item.val);
+  });
+
+  // Scroll to form
+  document.getElementById('inv-number').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+renderTemplates();
+
 // Set today as default date
-document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+document.getElementById('inv-date').value = today();
 
 // Add initial item
 addItem();
 
-function addItem() {
+function addItem(qty, desc, val) {
   var list = document.getElementById('items-list');
   var idx = list.children.length;
   var row = document.createElement('div');
   row.className = 'item-row';
+  var qtyVal  = qty  || String(idx+1).padStart(2,'0');
+  var descVal = desc || '';
+  var valVal  = val  || '';
   row.innerHTML =
-    '<input type="text" placeholder="01" value="' + String(idx+1).padStart(2,'0') + '" class="item-qty"/>'
-    + '<input type="text" placeholder="Descrição do serviço" class="item-desc"/>'
-    + '<input type="text" placeholder="1,000.00" class="item-val"/>'
+    '<input type="text" placeholder="01" value="' + qtyVal + '" class="item-qty"/>'
+    + '<input type="text" placeholder="Descrição do serviço" value="' + descVal.replace(/"/g,'&quot;') + '" class="item-desc"/>'
+    + '<input type="text" placeholder="1,000.00" value="' + valVal + '" class="item-val"/>'
     + '<button class="btn-remove" onclick="removeItem(this)" title="Remover">×</button>';
   list.appendChild(row);
 }
