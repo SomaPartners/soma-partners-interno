@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Invoice Generator — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--border:rgba(255,255,255,0.09);--text:#fff;--muted:rgba(255,255,255,0.45);--red:#d94040}
+html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:var(--text)}
+
+/* NAV */
+.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-left{display:flex;align-items:center;gap:14px}
+.nav-logo{display:flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none}
+.logo-soma{font-size:17px;font-weight:300;color:#fff;letter-spacing:.5px}
+.logo-pipe{width:1px;height:20px;background:rgba(255,255,255,0.35)}
+.logo-partners{font-size:10px;font-weight:700;letter-spacing:5px;color:#fff;text-transform:uppercase}
+.nav-sep{width:1px;height:24px;background:rgba(255,255,255,0.1)}
+.nav-title{font-size:13px;font-weight:800;color:#fff;letter-spacing:.3px}
+.btn-back{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);transition:all .18s}
+.btn-back:hover{background:rgba(255,255,255,0.12);color:#fff}
+.btn-back svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.5;fill:none}
+
+/* LAYOUT */
+.container{max-width:860px;margin:0 auto;padding:40px 32px 80px}
+.page-title{font-size:24px;font-weight:900;letter-spacing:-.4px;margin-bottom:4px}
+.page-sub{font-size:12px;color:var(--muted);margin-bottom:36px}
+
+/* SECTION */
+.section{margin-bottom:28px}
+.section-label{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(201,150,60,0.2)}
+
+/* FIELDS */
+.row{display:grid;gap:14px;margin-bottom:14px}
+.row-2{grid-template-columns:1fr 1fr}
+.row-3{grid-template-columns:1fr 1fr 1fr}
+.row-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.field input,.field textarea,.field select{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Montserrat',sans-serif;font-weight:400;color:#fff;outline:none;transition:border-color .18s;width:100%}
+.field textarea{resize:vertical;min-height:80px;line-height:1.6}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:rgba(201,150,60,0.5)}
+.field select option{background:#0d2035;color:#fff}
+
+/* ITEMS TABLE */
+.items-header{display:grid;grid-template-columns:80px 1fr 140px 36px;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:8px}
+.items-header span{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.item-row{display:grid;grid-template-columns:80px 1fr 140px 36px;gap:10px;margin-bottom:8px;align-items:start}
+.item-row input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Montserrat',sans-serif;color:#fff;outline:none;width:100%;transition:border-color .18s}
+.item-row input:focus{border-color:rgba(201,150,60,0.5)}
+.btn-remove{width:32px;height:40px;border-radius:8px;border:1px solid rgba(255,80,80,0.25);background:rgba(255,80,80,0.06);color:rgba(255,100,100,0.7);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0}
+.btn-remove:hover{background:rgba(255,80,80,0.15);color:#ff6060;border-color:rgba(255,80,80,0.4)}
+.btn-add{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px dashed rgba(201,150,60,0.35);background:transparent;color:rgba(201,150,60,0.7);font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .18s;margin-top:4px}
+.btn-add:hover{background:rgba(201,150,60,0.08);color:var(--gold);border-color:rgba(201,150,60,0.6)}
+
+/* GENERATE BUTTON */
+.btn-generate{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,#c9963c,#e0b060);color:#0b1e30;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .2s;letter-spacing:.3px;margin-top:32px}
+.btn-generate:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(201,150,60,0.3)}
+.btn-generate svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <a class="nav-logo" href="../soma-partners.html">
+      <span class="logo-soma">Soma</span>
+      <span class="logo-pipe"></span>
+      <span class="logo-partners">Partners</span>
+    </a>
+    <div class="nav-sep"></div>
+    <span class="nav-title">Gerador de Invoice</span>
+  </div>
+  <button class="btn-back" onclick="window.location.href='../ferramentas.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Voltar
+  </button>
+</nav>
+
+<div class="container">
+  <div class="page-title">Gerador de Invoice</div>
+  <div class="page-sub">Preencha os campos e clique em Gerar para abrir o invoice pronto para imprimir ou salvar como PDF.</div>
+
+  <!-- INVOICE INFO -->
+  <div class="section">
+    <div class="section-label">Invoice</div>
+    <div class="row row-3">
+      <div class="field">
+        <label>Número do Invoice</label>
+        <input type="text" id="inv-number" placeholder="007/26"/>
+      </div>
+      <div class="field">
+        <label>Data de Emissão</label>
+        <input type="date" id="inv-date"/>
+      </div>
+      <div class="field">
+        <label>Moeda</label>
+        <select id="inv-currency">
+          <option value="USD">USD — Dólar</option>
+          <option value="EUR">EUR — Euro</option>
+          <option value="BRL">BRL — Real</option>
+          <option value="GBP">GBP — Libra</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREDITOR -->
+  <div class="section">
+    <div class="section-label">Creditor (quem emite)</div>
+    <div class="row row-2">
+      <div class="field">
+        <label>Nome Completo / Empresa</label>
+        <input type="text" id="cred-name" placeholder="Diego A. B. Lima"/>
+      </div>
+      <div class="field">
+        <label>Endereço</label>
+        <input type="text" id="cred-address" placeholder="10630 Rabbit Ridge Ct, Las Vegas, NV 89183, USA"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYER -->
+  <div class="section">
+    <div class="section-label">Payer (quem paga)</div>
+    <div class="row row-2">
+      <div class="field">
+        <label>Nome / Empresa</label>
+        <input type="text" id="payer-name" placeholder="Joya Sports B.V. (Joyagear)"/>
+      </div>
+      <div class="field">
+        <label>Endereço Completo</label>
+        <textarea id="payer-address" placeholder="Kobaltstraat 5&#10;1362 JM Almere&#10;Netherlands"></textarea>
+      </div>
+    </div>
+    <div class="row row-2">
+      <div class="field">
+        <label>Tax ID 1 (ex: BTW, CNPJ, VAT)</label>
+        <input type="text" id="payer-tax1" placeholder="BTW: NL819034381B01"/>
+      </div>
+      <div class="field">
+        <label>Tax ID 2 (ex: KvK, opcional)</label>
+        <input type="text" id="payer-tax2" placeholder="KvK: 32131709"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT DETAILS -->
+  <div class="section">
+    <div class="section-label">Payment Details</div>
+    <div class="row row-2">
+      <div class="field">
+        <label>Beneficiary</label>
+        <input type="text" id="pay-beneficiary" placeholder="Diego A. B. Lima"/>
+      </div>
+      <div class="field">
+        <label>Bank</label>
+        <input type="text" id="pay-bank" placeholder="Wells Fargo"/>
+      </div>
+    </div>
+    <div class="row row-3">
+      <div class="field">
+        <label>Account Number</label>
+        <input type="text" id="pay-account" placeholder="5359798179"/>
+      </div>
+      <div class="field">
+        <label>ABA Routing / PIX / IBAN</label>
+        <input type="text" id="pay-aba" placeholder="121000248"/>
+      </div>
+      <div class="field">
+        <label>SWIFT / BIC</label>
+        <input type="text" id="pay-swift" placeholder="WFBIUS6S"/>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Observação (aparece em itálico abaixo dos dados bancários)</label>
+        <input type="text" id="pay-note" placeholder="ABA routing is for domestic transfers. For international wires use the SWIFT/BIC code above."/>
+      </div>
+    </div>
+  </div>
+
+  <!-- LINE ITEMS -->
+  <div class="section">
+    <div class="section-label">Itens</div>
+    <div class="items-header">
+      <span>Qty</span>
+      <span>Descrição</span>
+      <span>Valor Total</span>
+      <span></span>
+    </div>
+    <div id="items-list">
+      <!-- items added by JS -->
+    </div>
+    <button class="btn-add" onclick="addItem()">+ Adicionar Item</button>
+  </div>
+
+  <button class="btn-generate" onclick="generateInvoice()">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Gerar Invoice
+  </button>
+</div>
+
+<script>
+if(sessionStorage.getItem('soma_auth')!=='1'){window.location.href='../login.html';}
+
+// Set today as default date
+document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+
+// Add initial item
+addItem();
+
+function addItem() {
+  var list = document.getElementById('items-list');
+  var idx = list.children.length;
+  var row = document.createElement('div');
+  row.className = 'item-row';
+  row.innerHTML =
+    '<input type="text" placeholder="01" value="' + String(idx+1).padStart(2,'0') + '" class="item-qty"/>'
+    + '<input type="text" placeholder="Descrição do serviço" class="item-desc"/>'
+    + '<input type="text" placeholder="1,000.00" class="item-val"/>'
+    + '<button class="btn-remove" onclick="removeItem(this)" title="Remover">×</button>';
+  list.appendChild(row);
+}
+
+function removeItem(btn) {
+  var list = document.getElementById('items-list');
+  if (list.children.length > 1) btn.parentElement.remove();
+}
+
+function v(id) { return (document.getElementById(id)||{}).value || ''; }
+
+function formatDate(d) {
+  if (!d) return '';
+  var p = d.split('-');
+  return p[1] + '/' + p[2] + '/' + p[0];
+}
+
+function generateInvoice() {
+  var invNum    = v('inv-number') || '001/26';
+  var invDate   = v('inv-date');
+  var currency  = v('inv-currency');
+  var credName  = v('cred-name') || 'Creditor Name';
+  var credAddr  = v('cred-address');
+  var payerName = v('payer-name');
+  var payerAddr = v('payer-address').replace(/\n/g,'<br>');
+  var payerTax1 = v('payer-tax1');
+  var payerTax2 = v('payer-tax2');
+  var beneficiary = v('pay-beneficiary');
+  var bank      = v('pay-bank');
+  var account   = v('pay-account');
+  var aba       = v('pay-aba');
+  var swift     = v('pay-swift');
+  var note      = v('pay-note');
+  var dateFormatted = formatDate(invDate);
+
+  // Collect items
+  var rows = document.querySelectorAll('#items-list .item-row');
+  var itemsHtml = '';
+  var total = 0;
+  rows.forEach(function(row) {
+    var qty  = row.querySelector('.item-qty').value.trim();
+    var desc = row.querySelector('.item-desc').value.trim();
+    var val  = row.querySelector('.item-val').value.trim().replace(/,/g,'');
+    var num  = parseFloat(val) || 0;
+    total += num;
+    var valStr = num.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    itemsHtml += '<tr>'
+      + '<td style="padding:16px 12px;vertical-align:top;color:#444;font-size:13px;">' + (qty||'01') + '</td>'
+      + '<td style="padding:16px 12px;vertical-align:top;color:#222;font-size:13px;line-height:1.5;">' + desc + '</td>'
+      + '<td style="padding:16px 12px;vertical-align:top;text-align:right;color:#222;font-size:13px;font-weight:500;">$ ' + valStr + '</td>'
+      + '</tr>';
+  });
+  var totalStr = total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  // Payment details rows
+  function payRow(label, val) {
+    if (!val) return '';
+    return '<tr>'
+      + '<td style="padding:4px 0;color:#aaa;font-size:12px;width:160px;vertical-align:top;">' + label + '</td>'
+      + '<td style="padding:4px 0;color:#333;font-size:12px;font-weight:500;">' + val + '</td>'
+      + '</tr>';
+  }
+
+  var html = '<!DOCTYPE html><html lang="en"><head>'
+    + '<meta charset="UTF-8"/>'
+    + '<title>Invoice ' + invNum + '</title>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>'
+    + '<style>'
+    + '*{margin:0;padding:0;box-sizing:border-box}'
+    + 'body{font-family:"Montserrat",Arial,sans-serif;background:#fff;color:#333}'
+    + '@media print{'
+    + '  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + '  .no-print{display:none!important}'
+    + '  @page{margin:0;size:A4}'
+    + '}'
+    + '</style>'
+    + '</head><body>'
+
+    // Print / close buttons
+    + '<div class="no-print" style="position:fixed;top:16px;left:16px;display:flex;gap:8px;z-index:999">'
+    + '<button onclick="window.print()" style="padding:8px 18px;background:#d94040;color:#fff;border:none;border-radius:7px;font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">🖨 Imprimir / Salvar PDF</button>'
+    + '<button onclick="window.close()" style="padding:8px 14px;background:#eee;color:#555;border:none;border-radius:7px;font-family:Montserrat,sans-serif;font-size:12px;font-weight:600;cursor:pointer;">✕ Fechar</button>'
+    + '</div>'
+
+    // Page wrapper
+    + '<div style="max-width:720px;margin:0 auto;padding:60px 56px 80px;position:relative;min-height:100vh;">'
+
+    // BIG ROTATED INVOICE TEXT (left side)
+    + '<div style="position:fixed;left:-48px;top:50%;transform:translateY(-50%) rotate(-90deg);font-family:Montserrat,sans-serif;font-size:80px;font-weight:300;font-style:italic;color:rgba(0,0,0,0.06);white-space:nowrap;letter-spacing:-2px;user-select:none;pointer-events:none;">'
+    + 'Invoice ' + invNum
+    + '</div>'
+
+    // HEADER — Creditor name
+    + '<div style="margin-bottom:28px;">'
+    + '<div style="font-family:Montserrat,sans-serif;font-size:38px;font-weight:800;color:#d94040;letter-spacing:-1px;line-height:1;">' + credName + '</div>'
+    + (credAddr ? '<div style="font-size:12px;color:#888;margin-top:8px;font-weight:400;">' + credAddr + '</div>' : '')
+    + '</div>'
+
+    // DIVIDER
+    + '<hr style="border:none;border-top:1.5px solid #e8e8e8;margin-bottom:24px;"/>'
+
+    // THREE COLUMNS: Date | Payer | Creditor
+    + '<div style="display:grid;grid-template-columns:140px 1fr 180px;gap:24px;margin-bottom:28px;">'
+
+    // Date col
+    + '<div>'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#d94040;margin-bottom:6px;">Date</div>'
+    + '<div style="font-size:13px;color:#333;">' + (dateFormatted || '') + '</div>'
+    + '</div>'
+
+    // Payer col
+    + '<div>'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#d94040;margin-bottom:6px;">Payer</div>'
+    + '<div style="font-size:13px;color:#333;line-height:1.7;">'
+    + (payerName ? '<strong>' + payerName + '</strong><br>' : '')
+    + (payerAddr ? payerAddr + '<br>' : '')
+    + (payerTax1 ? payerTax1 + '<br>' : '')
+    + (payerTax2 ? payerTax2 : '')
+    + '</div>'
+    + '</div>'
+
+    // Creditor col
+    + '<div>'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#d94040;margin-bottom:6px;">Creditor</div>'
+    + '<div style="font-size:13px;color:#333;">' + credName + '</div>'
+    + '</div>'
+
+    + '</div>' // end grid
+
+    // DIVIDER
+    + '<hr style="border:none;border-top:1.5px solid #e8e8e8;margin-bottom:24px;"/>'
+
+    // PAYMENT DETAILS
+    + '<div style="margin-bottom:28px;">'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#d94040;margin-bottom:12px;">Payment Details</div>'
+    + '<table style="border-collapse:collapse;width:auto;">'
+    + payRow('Beneficiary', beneficiary)
+    + payRow('Bank', bank)
+    + payRow('Account Number', account)
+    + payRow('ABA Routing Number', aba)
+    + payRow('SWIFT / BIC', swift)
+    + payRow('Currency', currency)
+    + '</table>'
+    + (note ? '<div style="font-size:11px;font-style:italic;color:#aaa;margin-top:10px;">' + note + '</div>' : '')
+    + '</div>'
+
+    // ITEMS TABLE
+    + '<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">'
+    + '<thead>'
+    + '<tr style="background:#d94040;">'
+    + '<th style="padding:12px;text-align:left;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;width:80px;">Qty</th>'
+    + '<th style="padding:12px;text-align:left;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Description</th>'
+    + '<th style="padding:12px;text-align:right;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;width:140px;">Total Value</th>'
+    + '</tr>'
+    + '</thead>'
+    + '<tbody>'
+    + itemsHtml
+    + '</tbody>'
+    + '</table>'
+
+    // DIVIDER
+    + '<hr style="border:none;border-top:1.5px solid #e8e8e8;margin-bottom:20px;"/>'
+
+    // TOTAL
+    + '<div style="display:flex;justify-content:flex-end;align-items:baseline;gap:24px;margin-bottom:40px;">'
+    + '<div style="font-size:13px;color:#666;">Total Due on <strong style="color:#333;">' + (dateFormatted || '') + '</strong></div>'
+    + '<div style="font-size:26px;font-weight:800;color:#333;">$ ' + totalStr + '</div>'
+    + '</div>'
+
+    // THANK YOU
+    + '<div style="text-align:right;margin-bottom:16px;">'
+    + '<div style="font-family:Montserrat,sans-serif;font-size:32px;font-style:italic;font-weight:300;color:#d94040;">Thank You!</div>'
+    + '<div style="font-size:11px;color:#bbb;margin-top:6px;">Invoice ' + invNum + '&nbsp;&nbsp;·&nbsp;&nbsp;Issued ' + (dateFormatted || '') + '&nbsp;&nbsp;·&nbsp;&nbsp;Amounts in ' + currency + '</div>'
+    + '</div>'
+
+    + '</div>' // page wrapper
+    + '<script>window.onload=function(){window.print();}<\/script>'
+    + '</body></html>';
+
+  var blob = new Blob([html], {type:'text/html'});
+  window.open(URL.createObjectURL(blob), '_blank');
+}
+</script>
+</body>
+</html>
