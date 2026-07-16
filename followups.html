@@ -146,6 +146,10 @@ textarea.fc{resize:vertical;min-height:70px;line-height:1.5}
   </div>
   <div class="nav-right">
     <div class="stat-bar" id="stat-bar"></div>
+    <button class="btn btn-outline-nav" id="btn-rec" onclick="openRec()">
+      <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.6"/></svg>
+      Recorrentes <span id="rec-count" style="background:rgba(59,139,255,0.22);color:#93c5fd;border-radius:10px;padding:1px 7px;font-size:9px;font-weight:800;margin-left:3px">0</span>
+    </button>
     <button class="btn btn-outline-nav" onclick="gerarRelatorio()">
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       Relatório
@@ -238,6 +242,20 @@ textarea.fc{resize:vertical;min-height:70px;line-height:1.5}
   </div>
 </div>
 
+<!-- MODAL RECORRENTES -->
+<div class="modal-overlay" id="modal-rec">
+  <div class="modal-box" style="max-width:640px;width:100%;display:flex;flex-direction:column;max-height:82vh;padding:24px 28px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-shrink:0">
+      <div>
+        <div class="modal-title" style="margin-bottom:2px">↻ Follow-ups Recorrentes</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:600">Ative ou pare a recorrência de cada item</div>
+      </div>
+      <button onclick="closeRec()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:5px 11px;color:rgba(255,255,255,0.4);cursor:pointer;font-size:13px;font-family:'Montserrat',sans-serif">✕</button>
+    </div>
+    <div id="rec-list" style="overflow-y:auto;flex:1;padding-right:2px"></div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 <div id="loader-wrap" class="loader-wrap"><div class="loader-spin"></div></div>
 
@@ -315,6 +333,8 @@ function render(){
     <div class="stat-chip chip-red"><div class="chip-dot" style="background:#ef4444"></div>${atN} atrasado${atN!==1?'s':''}</div>
     <div class="stat-chip chip-orange"><div class="chip-dot" style="background:#f59e0b"></div>${hjN} hoje</div>
     <div class="stat-chip chip-green"><div class="chip-dot" style="background:#10b981"></div>${semN} esta semana</div>`;
+  const recN=followups.filter(f=>f.recorrente).length;
+  document.getElementById('rec-count').textContent=recN;
 }
 
 // CARD
@@ -415,6 +435,62 @@ async function saveFu(){
   followups.push(rec);
   showToast('Follow-up agendado!','ok');
   closeModal();render();
+}
+
+// ── PAINEL RECORRENTES ──
+function openRec(){renderRec();document.getElementById('modal-rec').classList.add('open')}
+function closeRec(){document.getElementById('modal-rec').classList.remove('open')}
+document.getElementById('modal-rec').addEventListener('click',e=>{if(e.target===document.getElementById('modal-rec'))closeRec()});
+
+function renderRec(){
+  const recs=followups.filter(f=>f.recorrente).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  const el=document.getElementById('rec-list');
+  if(!recs.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 0;color:rgba(255,255,255,0.25);font-size:12px;font-weight:600">Nenhum follow-up recorrente ativo</div>';
+    return;
+  }
+  el.innerHTML=recs.map(f=>{
+    const lead=leadNome(f);
+    const ov=isOver(f.data),td=isTod(f.data);
+    const dc=ov?'#fca5a5':td?'#fcd34d':'rgba(255,255,255,0.4)';
+    const dl=ov?`${Math.abs(diffDays(f.data))}d atraso`:td?'Hoje':fmtDate(f.data);
+    return`<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:13px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+      <span class="tipo-tag t-rec" style="flex-shrink:0;font-size:10px;padding:3px 8px">↻ ${REC_LABEL[f.recorrencia]||'Rec.'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.desc||'—'}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.38);display:flex;gap:8px;flex-wrap:wrap">
+          <span>${lead||'Tarefa interna'}</span>
+          <span>·</span>
+          <span style="color:${dc}">${dl}</span>
+          ${f.responsavel?`<span>·</span><span>${f.responsavel}</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button onclick="pararRecorrencia('${f.id}')" style="background:rgba(201,150,60,0.1);border:1px solid rgba(201,150,60,0.3);border-radius:7px;padding:6px 11px;font-size:10px;font-weight:700;color:#c9963c;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap">Parar</button>
+        <button onclick="removerRec('${f.id}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:7px;padding:6px 11px;font-size:10px;font-weight:700;color:#fca5a5;cursor:pointer;font-family:'Montserrat',sans-serif">Remover</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function pararRecorrencia(id){
+  const f=followups.find(x=>x.id===id);if(!f)return;
+  const upd={...f,recorrente:false,recorrencia:''};
+  const{error}=await _sb.from('wealth_followups').upsert({id,lead_id:f.lead_id||null,data:upd});
+  if(error){showToast('Erro','err');return}
+  const idx=followups.findIndex(x=>x.id===id);
+  if(idx!==-1)followups[idx]=upd;
+  showToast('Recorrência pausada — follow-up mantido','ok');
+  renderRec();render();
+}
+
+async function removerRec(id){
+  if(!confirm('Remover este follow-up completamente?'))return;
+  const{error}=await _sb.from('wealth_followups').delete().eq('id',id);
+  if(error){showToast('Erro ao remover','err');return}
+  followups=followups.filter(f=>f.id!==id);
+  showToast('Removido','ok');
+  renderRec();render();
 }
 
 // ── RELATÓRIO PDF ──
