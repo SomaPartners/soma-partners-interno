@@ -84,6 +84,7 @@ html,body{height:100%;background:var(--navy);font-family:'Montserrat',sans-serif
 .t-eml{background:rgba(139,92,246,0.1);color:#7c3aed}
 .t-reu{background:rgba(245,158,11,0.1);color:#d97706}
 .t-out{background:rgba(7,12,24,0.06);color:rgba(7,12,24,0.4)}
+.t-rec{background:rgba(59,139,255,0.11);color:#3b8bff;border:1px solid rgba(59,139,255,0.2)}
 
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -213,6 +214,23 @@ textarea.fc{resize:vertical;min-height:70px;line-height:1.5}
         </select>
       </div>
     </div>
+    <div class="toggle-row" style="margin-top:2px">
+      <span class="toggle-lbl">🔄 É recorrente?</span>
+      <label class="toggle-sw">
+        <input type="checkbox" id="fu-recorrente" onchange="toggleRecorrencia()"/>
+        <span class="toggle-sl"></span>
+      </label>
+    </div>
+    <div id="fu-recorrencia-wrap" style="display:none" class="fg">
+      <label class="fl">Repetir a cada</label>
+      <select class="fc" id="fu-recorrencia">
+        <option value="semanal">Toda semana (7 dias)</option>
+        <option value="quinzenal">Quinzenal (14 dias)</option>
+        <option value="mensal">Todo mês (30 dias)</option>
+        <option value="bimestral">Bimestral (2 meses)</option>
+        <option value="trimestral">Trimestral (3 meses)</option>
+      </select>
+    </div>
     <div class="mf">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="btn-save" onclick="saveFu()">Salvar</button>
@@ -250,6 +268,9 @@ function firstName(n){return n?n.trim().split(/\s+/)[0]:''}
 function respBadge(n){if(!n)return'';return`<span class="resp-badge"><span class="resp-av" style="background:${avColor(n)}">${sigla(n)}</span><span class="resp-name">${firstName(n)}</span></span>`}
 
 const TIPO={ligacao:'<span class="tipo-tag t-lig">📞 Lig.</span>',whatsapp:'<span class="tipo-tag t-wpp">💬 Wpp</span>',email:'<span class="tipo-tag t-eml">✉️ Email</span>',reuniao:'<span class="tipo-tag t-reu">🤝 Reu.</span>',outro:'<span class="tipo-tag t-out">Outro</span>'};
+const REC_SHORT={semanal:'7d',quinzenal:'15d',mensal:'1m',bimestral:'2m',trimestral:'3m'};
+const REC_LABEL={semanal:'Semanal',quinzenal:'Quinzenal',mensal:'Mensal',bimestral:'Bimestral',trimestral:'Trimestral'};
+function nextDate(base,rec){const d=new Date(base+'T12:00:00');if(rec==='semanal')d.setDate(d.getDate()+7);else if(rec==='quinzenal')d.setDate(d.getDate()+14);else if(rec==='mensal')d.setMonth(d.getMonth()+1);else if(rec==='bimestral')d.setMonth(d.getMonth()+2);else if(rec==='trimestral')d.setMonth(d.getMonth()+3);return toDS(d)}
 
 let leads=[],followups=[],equipe=[];
 
@@ -303,11 +324,12 @@ function cardHTML(f){
   const ov=isOver(f.data),td=isTod(f.data);
   const dc=ov?'date-over':td?'date-hoje':'date-ok';
   const dl=ov?`${Math.abs(diffDays(f.data))}d atraso`:td?'Hoje':fmtDate(f.data);
+  const recBadge=f.recorrente?`<span class="tipo-tag t-rec" title="${REC_LABEL[f.recorrencia]||'Recorrente'}">↻ ${REC_SHORT[f.recorrencia]||'Rec.'}</span>`:'';
   return`<div class="fu-card">
     <button class="check-btn" onclick="marcarFeito('${f.id}')"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
     <div class="card-body">
       <div class="card-titulo">${f.desc||'—'}</div>
-      <div class="card-sub">${f.responsavel?respBadge(f.responsavel):''}${TIPO[f.tipo]||''}</div>
+      <div class="card-sub">${f.responsavel?respBadge(f.responsavel):''}${TIPO[f.tipo]||''}${recBadge}</div>
       <div class="card-footer">
         ${lead?`<span class="lead-tag">${lead}</span>`:`<span class="internal-tag">Tarefa interna</span>`}
         <span class="card-date ${dc}">${dl}</span>
@@ -324,7 +346,17 @@ async function marcarFeito(id){
   const{error}=await _sb.from('wealth_followups').upsert({id,lead_id:rec.lead_id||null,data:rec});
   if(error){showToast('Erro','err');return}
   followups=followups.filter(x=>x.id!==id);
-  showToast('Concluído! ✓','ok');render();
+  if(f.recorrente&&f.recorrencia&&f.data){
+    const nextId=uid();
+    const nextDt=nextDate(f.data,f.recorrencia);
+    const nextRec={id:nextId,lead_id:f.lead_id||null,data:nextDt,tipo:f.tipo,desc:f.desc,feito:false,responsavel:f.responsavel,recorrente:true,recorrencia:f.recorrencia};
+    const{error:e2}=await _sb.from('wealth_followups').upsert({id:nextId,lead_id:f.lead_id||null,data:nextRec});
+    if(!e2){followups.push(nextRec);showToast(`Concluído! Próximo reagendado para ${fmtDate(nextDt)} ↻`,'ok')}
+    else showToast('Concluído! (erro ao reagendar)','ok');
+  }else{
+    showToast('Concluído! ✓','ok');
+  }
+  render();
 }
 async function deleteFu(id){
   if(!confirm('Remover este follow-up?'))return;
@@ -346,6 +378,9 @@ function populateEquipeSel(){
 function toggleLeadField(){
   document.getElementById('fu-lead-wrap').style.display=document.getElementById('fu-tem-lead').checked?'block':'none';
 }
+function toggleRecorrencia(){
+  document.getElementById('fu-recorrencia-wrap').style.display=document.getElementById('fu-recorrente').checked?'block':'none';
+}
 function openModal(){
   document.getElementById('fu-desc').value='';
   document.getElementById('fu-data').value=today();
@@ -353,6 +388,9 @@ function openModal(){
   document.getElementById('fu-resp').value='';
   document.getElementById('fu-tem-lead').checked=false;
   document.getElementById('fu-lead-wrap').style.display='none';
+  document.getElementById('fu-recorrente').checked=false;
+  document.getElementById('fu-recorrencia-wrap').style.display='none';
+  document.getElementById('fu-recorrencia').value='semanal';
   populateLeadSel();populateEquipeSel();
   document.getElementById('modal-fu').classList.add('open');
 }
@@ -369,7 +407,9 @@ async function saveFu(){
   if(!data||!desc){alert('Preencha data e descrição');return}
   if(temLead&&!lead_id){alert('Selecione o lead ou desative a opção');return}
   const id=uid();
-  const rec={id,lead_id:lead_id||null,data,tipo:document.getElementById('fu-tipo').value,desc,feito:false,responsavel:resp};
+  const recorrente=document.getElementById('fu-recorrente').checked;
+  const recorrencia=recorrente?document.getElementById('fu-recorrencia').value:'';
+  const rec={id,lead_id:lead_id||null,data,tipo:document.getElementById('fu-tipo').value,desc,feito:false,responsavel:resp,recorrente,recorrencia};
   const{error}=await _sb.from('wealth_followups').upsert({id,lead_id:lead_id||null,data:rec});
   if(error){showToast('Erro ao salvar','err');return}
   followups.push(rec);
