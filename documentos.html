@@ -177,7 +177,11 @@ textarea.fc{resize:vertical;min-height:68px}
         Carregando...
       </div>
     </div>
-    <div class="sb-foot">
+    <div class="sb-foot" style="display:flex;flex-direction:column;gap:6px">
+      <button class="btn-novo-cliente" onclick="openConciergePicker()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
+        Selecionar do Concierge
+      </button>
       <button class="btn-novo-cliente" onclick="openModalCliente()">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Novo cliente manual
@@ -194,6 +198,20 @@ textarea.fc{resize:vertical;min-height:68px}
     </div>
   </div>
 
+</div>
+
+<!-- MODAL PICKER CONCIERGE -->
+<div class="modal-overlay" id="modal-conc-picker">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-hd">
+      <span class="modal-hd-title">Selecionar do Concierge</span>
+      <button class="modal-close" onclick="closeModal('modal-conc-picker')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" style="padding:14px 22px 18px">
+      <input class="fc" id="conc-search" placeholder="🔍  Buscar cliente..." oninput="renderConciergePicker()" style="margin-bottom:12px"/>
+      <div id="conc-pick-list" style="max-height:360px;overflow-y:auto"></div>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL ADICIONAR DOCUMENTO -->
@@ -297,6 +315,7 @@ const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 const EMPRESA_ID='__empresa__';
 
 let _clientes=[];
+let _conciergeAll=[];
 let _docs=[];
 let _selId=null;
 let _selNome='';
@@ -304,23 +323,24 @@ let _addTab='arquivo';
 let _fileData=null;
 
 /* ─── INIT ───────────────────────────────── */
+function getSavedConcierge(){try{return JSON.parse(localStorage.getItem('docs_conc_sel')||'[]');}catch{return[];}}
+
 async function init(){
-  await Promise.all([loadClientes(),loadDocs()]);
+  await loadClientes();   // carrega _conciergeAll primeiro
+  await loadDocs();       // loadDocs pode checar _conciergeAll para tags
   renderSidebar();
 }
 
 async function loadClientes(){
   try{
-    const [{data:leads},{data:conc}]=await Promise.all([
-      sb.from('wealth_leads').select('id,data').order('created_at'),
-      sb.from('concierge_clientes').select('id,data').order('created_at')
-    ]);
-    // Onboarding = leads sincronizados da planilha de onboarding
-    const onb=(leads||[])
-      .filter(x=>(x.data?.obs||'')==='Importado do Onboarding')
-      .map(x=>({id:x.id,nome:(x.data?.nome||'').trim(),tag:'Onboarding'}));
-    const c=(conc||[]).map(x=>({id:x.id,nome:(x.data?.nome||'').trim(),tag:'Concierge'}));
-    _clientes=[...onb,...c].filter(x=>x.nome).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    const{data:conc}=await sb.from('concierge_clientes').select('id,data').order('created_at');
+    _conciergeAll=(conc||[])
+      .map(x=>({id:x.id,nome:(x.data?.nome||x.data?.name||'').trim(),tag:'Concierge'}))
+      .filter(x=>x.nome);
+    // Só adiciona à sidebar os que foram explicitamente selecionados
+    const savedIds=getSavedConcierge();
+    _clientes=_conciergeAll.filter(c=>savedIds.includes(c.id));
+    _clientes.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
   }catch(err){console.warn('Clientes:',err);}
 }
 
@@ -341,8 +361,10 @@ async function loadDocs(){
       seen.set(d.cliente_id,{id:d.cliente_id,nome:d.cliente_nome,tag:'Manual'});
   });
   seen.forEach(({id,nome,tag})=>{
-    if(!_clientes.find(c=>c.id===id))
-      _clientes.push({id,nome,tag});
+    if(!_clientes.find(c=>c.id===id)){
+      const realTag=_conciergeAll.find(c=>c.id===id)?'Concierge':tag;
+      _clientes.push({id,nome,tag:realTag});
+    }
   });
   _clientes.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
 }
@@ -626,6 +648,46 @@ async function deletarDoc(id){
   closeModal('modal-confirm');
   renderSidebar();
   if(_selId) renderMain();
+}
+
+/* ─── CONCIERGE PICKER ───────────────────── */
+function openConciergePicker(){
+  document.getElementById('conc-search').value='';
+  renderConciergePicker();
+  openModal('modal-conc-picker');
+}
+
+function renderConciergePicker(){
+  const q=(document.getElementById('conc-search').value||'').toLowerCase().trim();
+  const inSidebar=new Set(_clientes.map(c=>c.id));
+  const list=_conciergeAll.filter(c=>!q||c.nome.toLowerCase().includes(q));
+  const el=document.getElementById('conc-pick-list');
+  if(!list.length){
+    el.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:11px">Nenhum cliente encontrado</div>';
+    return;
+  }
+  el.innerHTML=list.map(c=>{
+    const added=inSidebar.has(c.id);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:${added?'default':'pointer'};opacity:${added?'.5':'1'};border-radius:6px;transition:background .12s"
+      ${added?'':`onclick="addConcierge('${c.id}')"`}
+      onmouseover="${added?'':'this.style.background=\"rgba(255,255,255,0.05)\"'}"
+      onmouseout="this.style.background=''">
+      <div class="sb-avatar" style="background:${avatarColor(c.nome)};width:28px;height:28px;border-radius:7px;font-size:10px;flex-shrink:0">${initials(c.nome)}</div>
+      <div style="flex:1;font-size:12px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.nome)}</div>
+      <span style="font-size:9px;font-weight:800;letter-spacing:.3px;flex-shrink:0;color:${added?'var(--muted)':'var(--blue)'}">${added?'✓ adicionado':'+ Adicionar'}</span>
+    </div>`;
+  }).join('');
+}
+
+function addConcierge(id){
+  const c=_conciergeAll.find(x=>x.id===id);
+  if(!c||_clientes.find(x=>x.id===id))return;
+  const saved=getSavedConcierge();
+  if(!saved.includes(id)){saved.push(id);localStorage.setItem('docs_conc_sel',JSON.stringify(saved));}
+  _clientes.push({...c});
+  _clientes.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  renderConciergePicker();
+  renderSidebar();
 }
 
 /* ─── UTILS ──────────────────────────────── */
