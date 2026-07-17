@@ -44,6 +44,9 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .sb-item-name{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-item-tag{font-size:9px;color:var(--muted);margin-top:1px}
 .sb-count{margin-left:auto;font-size:9px;font-weight:700;color:var(--muted);background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:8px;flex-shrink:0}
+.sb-remove{display:none;background:none;border:none;color:rgba(255,255,255,0.22);cursor:pointer;font-size:15px;line-height:1;padding:3px 5px;border-radius:5px;transition:color .12s;flex-shrink:0;margin-left:2px}
+.sb-item:hover .sb-remove{display:block}
+.sb-remove:hover{color:#fca5a5!important}
 .sb-foot{padding:10px 12px;border-top:1px solid var(--border)}
 .btn-novo-cliente{width:100%;padding:8px;border-radius:7px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.45);font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
 .btn-novo-cliente:hover{color:#fff;background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.2)}
@@ -198,6 +201,23 @@ textarea.fc{resize:vertical;min-height:68px}
     </div>
   </div>
 
+</div>
+
+<!-- MODAL CONFIRMAR REMOÇÃO DE CLIENTE -->
+<div class="modal-overlay" id="modal-confirm-cliente">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-hd">
+      <span class="modal-hd-title">Remover cliente?</span>
+      <button class="modal-close" onclick="closeModal('modal-confirm-cliente')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">Deseja remover <strong id="confirm-cliente-nome" style="color:#fff">este cliente</strong> da lista lateral?<br><span style="color:rgba(255,255,255,0.4);font-size:11px">Os documentos já cadastrados não serão excluídos.</span></p>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-confirm-cliente')">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="confirm-del-cliente-btn">Remover</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL PICKER CONCIERGE -->
@@ -405,6 +425,7 @@ function renderSidebar(){
             <div class="sb-item-tag">${c.tag}</div>
           </div>
           ${count?`<div class="sb-count">${count}</div>`:''}
+          <button class="sb-remove" onclick="event.stopPropagation();confirmarRemoverCliente('${c.id}','${esc(c.nome)}')" title="Remover da lista">×</button>
         </div>`;
       }).join('')
     :`<div style="padding:16px 10px;text-align:center;color:var(--muted);font-size:10px">${q?'Sem resultados':'Nenhum cliente'}</div>`;
@@ -648,6 +669,32 @@ async function deletarDoc(id){
   closeModal('modal-confirm');
   renderSidebar();
   if(_selId) renderMain();
+}
+
+/* ─── REMOVER CLIENTE DA SIDEBAR ─────────── */
+function confirmarRemoverCliente(id,nome){
+  document.getElementById('confirm-cliente-nome').textContent=nome||'este cliente';
+  document.getElementById('confirm-del-cliente-btn').onclick=()=>removerCliente(id);
+  openModal('modal-confirm-cliente');
+}
+
+function removerCliente(id){
+  _clientes=_clientes.filter(c=>c.id!==id);
+  // Remove do localStorage (caso seja cliente do Concierge)
+  const saved=getSavedConcierge().filter(x=>x!==id);
+  localStorage.setItem('docs_conc_sel',JSON.stringify(saved));
+  // Se era o cliente selecionado, volta para tela inicial
+  if(_selId===id){
+    _selId=null;_selNome='';
+    document.getElementById('main-content').innerHTML=`
+      <div class="empty-state">
+        <div class="empty-icon">📁</div>
+        <div class="empty-title">Selecione um cliente</div>
+        <div class="empty-sub">Escolha um cliente na lista ao lado.</div>
+      </div>`;
+  }
+  closeModal('modal-confirm-cliente');
+  renderSidebar();
 }
 
 /* ─── CONCIERGE PICKER ───────────────────── */
