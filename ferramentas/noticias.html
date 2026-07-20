@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Gerador de Notícias — Soma Partners</title>
+<title>Gerador de Posts — Soma Partners</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.4)}
+:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.38)}
 html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff}
 
 /* NAV */
@@ -20,72 +20,71 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .btn-back svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.5;fill:none}
 
 /* HERO */
-.hero{padding:40px 32px 28px;border-bottom:1px solid var(--border)}
-.hero-label{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+.hero{padding:38px 32px 26px;border-bottom:1px solid var(--border)}
+.hero-label{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:9px}
 .hero-title{font-size:22px;font-weight:900;letter-spacing:-.3px;margin-bottom:4px}
-.hero-sub{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:22px;max-width:520px}
+.hero-sub{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:20px;max-width:540px}
 
-.input-row{display:flex;gap:10px;max-width:680px}
-.input-box{flex:1;position:relative}
-.input-box input{
-  width:100%;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;
-  font-family:'Montserrat',sans-serif;background:rgba(255,255,255,0.06);
-  border:1.5px solid rgba(255,255,255,0.13);color:#fff;outline:none;
-  transition:border-color .18s,background .18s;
-}
-.input-box input::placeholder{color:rgba(255,255,255,0.25);font-weight:500}
-.input-box input:focus{border-color:rgba(59,139,255,0.55);background:rgba(255,255,255,0.08)}
-.btn-gerar{
-  padding:0 26px;border-radius:12px;font-size:12px;font-weight:800;
-  font-family:'Montserrat',sans-serif;cursor:pointer;background:var(--blue);
-  border:none;color:#fff;transition:all .18s;white-space:nowrap;min-width:140px;
-  display:flex;align-items:center;justify-content:center;gap:7px;
-}
+.input-row{display:flex;gap:10px;max-width:700px}
+.input-box{flex:1}
+.input-box input{width:100%;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;font-family:'Montserrat',sans-serif;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.13);color:#fff;outline:none;transition:border-color .18s,background .18s}
+.input-box input::placeholder{color:rgba(255,255,255,0.24);font-weight:500}
+.input-box input:focus{border-color:rgba(59,139,255,0.5);background:rgba(255,255,255,0.08)}
+.btn-gerar{padding:0 26px;border-radius:12px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;background:var(--blue);border:none;color:#fff;transition:all .18s;white-space:nowrap;min-width:148px;display:flex;align-items:center;justify-content:center;gap:7px}
 .btn-gerar:hover{background:#2d7af0;box-shadow:0 4px 20px rgba(59,139,255,0.3)}
 .btn-gerar svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0}
 
-.sugestoes{margin-top:13px;display:flex;gap:7px;flex-wrap:wrap}
-.sug{padding:5px 13px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);transition:all .15s}
+.sugestoes{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.sug{padding:5px 13px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.45);transition:all .15s}
 .sug:hover{background:rgba(59,139,255,0.1);border-color:rgba(59,139,255,0.3);color:rgba(255,255,255,0.85)}
 
-/* RESULTS BAR */
-.results-bar{padding:16px 32px 0;display:flex;align-items:center;justify-content:space-between;opacity:0;transition:opacity .3s}
-.results-bar.show{opacity:1}
-.rb-left{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
-.rb-tema{color:#fff;font-weight:800}
-.rb-count{background:rgba(59,139,255,0.15);border:1px solid rgba(59,139,255,0.25);color:#93c5fd;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700}
-.btn-regen{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);transition:all .15s}
+/* AREA FILTERS */
+.area-bar{padding:16px 32px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);opacity:0;transition:opacity .3s;pointer-events:none}
+.area-bar.show{opacity:1;pointer-events:auto}
+.area-bar-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.area-btn{padding:5px 13px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.45);transition:all .15s}
+.area-btn.active,.area-btn:hover{background:rgba(59,139,255,0.12);border-color:rgba(59,139,255,0.35);color:#fff}
+.area-btn.active{font-weight:800}
+
+/* RESULTADOS INFO */
+.results-info{padding:14px 32px 0;display:flex;align-items:center;justify-content:space-between;opacity:0;transition:opacity .3s}
+.results-info.show{opacity:1}
+.ri-left{font-size:11px;color:var(--muted)}
+.ri-tema{color:#fff;font-weight:800}
+.btn-regen{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.45);transition:all .15s}
 .btn-regen:hover{background:rgba(255,255,255,0.09);color:#fff}
 .btn-regen svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none}
 
 /* GRID */
-.grid{padding:16px 32px 56px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.grid{padding:14px 32px 56px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
 
 /* CARD */
-.card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s,transform .2s}
+.card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s,transform .18s;display:flex;flex-direction:column}
 .card:hover{border-color:rgba(255,255,255,0.13);transform:translateY(-1px)}
+.card.hidden{display:none}
 
-.card-head{padding:11px 14px 10px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.05)}
-.card-angulo-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.card-angulo{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
-.card-angulo-badge{margin-left:auto;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px}
+.card-area{padding:11px 14px 10px;display:flex;align-items:center;gap:9px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.area-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.area-info{}
+.area-name{font-size:11px;font-weight:800;line-height:1.2}
+.area-desc{font-size:9px;font-weight:600;color:var(--muted);margin-top:1px}
 
 .section{padding:12px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.05)}
 .section-lbl{font-size:8.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
 .section-titulo{font-size:13px;font-weight:800;color:#fff;line-height:1.45;margin-bottom:8px}
-.section-assunto{font-size:11.5px;font-weight:500;color:rgba(255,255,255,0.78);line-height:1.7;margin-bottom:8px;white-space:pre-line}
+.section-assunto{font-size:11.5px;font-weight:500;color:rgba(255,255,255,0.78);line-height:1.72;margin-bottom:8px;white-space:pre-line}
 .btn-copy{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.45);transition:all .15s}
 .btn-copy:hover{background:rgba(255,255,255,0.09);color:#fff;border-color:rgba(255,255,255,0.18)}
 .btn-copy svg{width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
 
-.section.s-titulo{background:rgba(59,139,255,0.04);border-left:2px solid rgba(59,139,255,0.35)}
-.section.s-assunto{background:rgba(201,150,60,0.04);border-left:2px solid rgba(201,150,60,0.35)}
+.s-titulo{border-left:2px solid var(--area-cor,rgba(255,255,255,0.2));background:rgba(0,0,0,0.08)}
+.s-assunto{border-left:2px solid var(--area-cor-dim,rgba(255,255,255,0.08));background:rgba(0,0,0,0.04)}
 
 /* EMPTY */
 .empty{display:none;flex-direction:column;align-items:center;padding:80px 32px;grid-column:1/-1;text-align:center;color:var(--muted);gap:10px}
 .empty.show{display:flex}
-.empty-icon{font-size:44px;opacity:.45;margin-bottom:4px}
-.empty-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.45)}
+.empty-icon{font-size:44px;opacity:.4;margin-bottom:4px}
+.empty-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.4)}
 .empty-sub{font-size:11px;line-height:1.7;max-width:340px}
 
 /* TOAST */
@@ -97,7 +96,7 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
   .input-row{flex-direction:column}
   .btn-gerar{padding:13px}
   .grid{padding:12px 16px 40px}
-  .results-bar{padding:12px 16px 0}
+  .area-bar,.results-info{padding-left:16px;padding-right:16px}
 }
 </style>
 </head>
@@ -109,7 +108,7 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
       <span class="logo-soma">Soma</span><span class="logo-pipe"></span><span class="logo-partners">Partners</span>
     </a>
     <div class="nav-sep"></div>
-    <span class="nav-title">Gerador de Notícias</span>
+    <span class="nav-title">Gerador de Posts</span>
   </div>
   <a class="btn-back" href="../ferramentas.html">
     <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
@@ -118,14 +117,14 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 </nav>
 
 <div class="hero">
-  <div class="hero-label">Gerador de Posts</div>
+  <div class="hero-label">Gerador de Posts — Soma Partners</div>
   <div class="hero-title">📰 Qual tema está em alta hoje?</div>
-  <div class="hero-sub">Digite um assunto em destaque global. A ferramenta desenvolve automaticamente 6 opções de post — com ângulos diferentes — prontos para publicar.</div>
+  <div class="hero-sub">Digite um assunto em destaque. A ferramenta gera automaticamente posts para cada área da Soma — Wealth, Concierge, Jurídico e Sports — conectando o tema ao que cada área oferece.</div>
 
   <div class="input-row">
     <div class="input-box">
       <input type="text" id="tema-input"
-        placeholder="Ex: Copa do Mundo 2026, Selic, Guerra Ucrânia, IA no trabalho..."
+        placeholder="Ex: Copa do Mundo, Selic, IPO na bolsa, GP de F1, AI Act..."
         onkeydown="if(event.key==='Enter')gerarPosts()" />
     </div>
     <button class="btn-gerar" onclick="gerarPosts()">
@@ -136,20 +135,29 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 
   <div class="sugestoes">
     <button class="sug" onclick="usar('Copa do Mundo 2026')">⚽ Copa 2026</button>
-    <button class="sug" onclick="usar('Taxa Selic')">🏦 Selic</button>
+    <button class="sug" onclick="usar('Selic em queda')">🏦 Selic</button>
     <button class="sug" onclick="usar('Inteligência Artificial')">🤖 IA</button>
-    <button class="sug" onclick="usar('Guerra na Ucrânia')">⚔️ Ucrânia</button>
     <button class="sug" onclick="usar('Mercado financeiro global')">💹 Mercados</button>
-    <button class="sug" onclick="usar('Eleições nos EUA')">🇺🇸 EUA</button>
-    <button class="sug" onclick="usar('Crise econômica mundial')">📉 Crise global</button>
+    <button class="sug" onclick="usar('Grande Prêmio de F1')">🏎️ F1</button>
+    <button class="sug" onclick="usar('Olimpíadas 2028')">🥇 Olimpíadas</button>
+    <button class="sug" onclick="usar('Reforma tributária')">📋 Tributária</button>
+    <button class="sug" onclick="usar('Dólar alto')">💵 Dólar</button>
   </div>
 </div>
 
-<div class="results-bar" id="results-bar">
-  <div class="rb-left">
-    Posts gerados para <span class="rb-tema" id="rb-tema"></span>
-    <span class="rb-count">6 opções</span>
-  </div>
+<div class="area-bar" id="area-bar">
+  <span class="area-bar-label">Filtrar:</span>
+  <button class="area-btn active" data-filter="all" onclick="filtrar(this,'all')">Todas as áreas</button>
+  <button class="area-btn" data-filter="wealth" onclick="filtrar(this,'wealth')">💼 Wealth</button>
+  <button class="area-btn" data-filter="concierge" onclick="filtrar(this,'concierge')">✨ Concierge</button>
+  <button class="area-btn" data-filter="juridico" onclick="filtrar(this,'juridico')">⚖️ Jurídico</button>
+  <button class="area-btn" data-filter="sports-wealth" onclick="filtrar(this,'sports-wealth')">⚽ Sports Wealth</button>
+  <button class="area-btn" data-filter="sports-agencia" onclick="filtrar(this,'sports-agencia')">🤝 Agenciamento</button>
+  <button class="area-btn" data-filter="sports-eventos" onclick="filtrar(this,'sports-eventos')">🏆 Eventos</button>
+</div>
+
+<div class="results-info" id="results-info">
+  <div class="ri-left">Posts gerados para <span class="ri-tema" id="ri-tema"></span></div>
   <button class="btn-regen" onclick="gerarPosts()">
     <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.6"/></svg>
     Regerar
@@ -160,7 +168,7 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
   <div class="empty show" id="empty">
     <div class="empty-icon">✍️</div>
     <div class="empty-title">Nenhum tema ainda</div>
-    <div class="empty-sub">Digite um assunto que você viu em destaque — pode ser qualquer coisa: esporte, economia, política, tecnologia. A ferramenta desenvolve o conteúdo completo.</div>
+    <div class="empty-sub">Digite um assunto em destaque e a ferramenta cria posts personalizados para cada área da Soma Partners.</div>
   </div>
 </div>
 
@@ -169,160 +177,201 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 <script>
 if(sessionStorage.getItem('soma_auth')!=='1'){window.location.href='../login.html';}
 
-/* ── UTILITÁRIOS ──────────────────────── */
-function cap(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-
-function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
-
-const EMOJIS = [
-  [/copa|futebol|soccer|football|gol|fifa|mundial/i,       '⚽'],
-  [/econom|pib|inflação|inflation|recessão|recession/i,    '📈'],
-  [/bolsa|mercado|market|ação|stock|dow|nasdaq|s&p/i,      '💹'],
-  [/juros|selic|fed |federal reserve|taxa|interest rate/i, '🏦'],
-  [/guerra|war|conflito|conflict|militar|ataque/i,         '⚔️'],
-  [/politic|governo|eleição|election|presidente|minister/i,'🏛️'],
-  [/inteligência artificial|ia\b|openai|chatgpt|llm/i,     '🤖'],
-  [/tecnolog|apple|google|microsoft|amazon|meta\b/i,       '💻'],
-  [/saúde|health|médic|hospital|câncer|vacina/i,           '🏥'],
-  [/clima|aquecimento|carbon|ambiente|environment/i,       '🌱'],
-  [/espaço|space|nasa|foguete|rocket|marte/i,              '🚀'],
-  [/cripto|bitcoin|crypto|blockchain|ethereum/i,           '₿'],
-  [/imobili|imoveis|real estate/i,                         '🏢'],
-  [/energia|petróleo|oil|combustível|nuclear/i,            '⚡'],
+/* ── AREAS DA SOMA ────────────────────── */
+const AREAS = [
+  {
+    id:    'wealth',
+    nome:  'Wealth Management',
+    desc:  'Gestão de patrimônio & investimentos',
+    emoji: '💼',
+    cor:   '#3b8bff',
+    corDim:'rgba(59,139,255,0.18)',
+  },
+  {
+    id:    'concierge',
+    nome:  'Concierge',
+    desc:  'Experiências exclusivas & lifestyle premium',
+    emoji: '✨',
+    cor:   '#c9963c',
+    corDim:'rgba(201,150,60,0.18)',
+  },
+  {
+    id:    'juridico',
+    nome:  'Jurídico',
+    desc:  'Planejamento tributário & estruturação patrimonial',
+    emoji: '⚖️',
+    cor:   '#8b5cf6',
+    corDim:'rgba(139,92,246,0.18)',
+  },
+  {
+    id:    'sports-wealth',
+    nome:  'Soma Sports — Wealth',
+    desc:  'Gestão financeira para atletas',
+    emoji: '⚽',
+    cor:   '#10b981',
+    corDim:'rgba(16,185,129,0.18)',
+  },
+  {
+    id:    'sports-agencia',
+    nome:  'Soma Sports — Agenciamento',
+    desc:  'Representação & carreira de atletas',
+    emoji: '🤝',
+    cor:   '#ef4444',
+    corDim:'rgba(239,68,68,0.18)',
+  },
+  {
+    id:    'sports-eventos',
+    nome:  'Soma Sports — Eventos',
+    desc:  'Produção de eventos & hospitalidade VIP',
+    emoji: '🏆',
+    cor:   '#06b6d4',
+    corDim:'rgba(6,182,212,0.18)',
+  },
 ];
-function emoji(tema){
-  const t = tema.toLowerCase();
-  for(const [re,e] of EMOJIS) if(re.test(t)) return e;
-  return '📰';
+
+/* ── UTILS ────────────────────────────── */
+function cap(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* ── MOTOR DE POSTS POR ÁREA ──────────── */
+function gerarParaArea(areaId, tema){
+  const T = cap(tema);
+
+  const posts = {
+
+    /* ─── WEALTH MANAGEMENT ─────────────── */
+    wealth: ()=>({
+      titulo: pick([
+        `💼 ${T}: o que muda na sua estratégia de investimentos?`,
+        `💼 Como posicionar seu patrimônio em um cenário de ${T}`,
+        `💼 ${T} e os seus investimentos — o que você precisa saber`,
+        `💼 Seu portfólio está preparado para o impacto de ${T}?`,
+      ]),
+      assunto: pick([
+        `Grandes temas como ${T} raramente ficam isolados do mercado financeiro — eles afetam taxas, setores, câmbio e as expectativas dos investidores.\n\nO momento exige leitura técnica, não reação emocional. Na Soma Partners, monitoramos os desdobramentos de ${T} para garantir que a sua estratégia de alocação está um passo à frente.\n\nQuer entender o que muda para o seu patrimônio? Fala com a gente. 📊`,
+        `Enquanto o mundo debate ${T}, quem tem uma gestão patrimonial ativa já está analisando as oportunidades — e os riscos — que esse cenário cria.\n\nDiversificação inteligente, proteção contra volatilidade e posicionamento de longo prazo são a resposta. Esse é o trabalho que fazemos todo dia para os nossos clientes.\n\nVamos conversar? 💼`,
+        `${T} está no radar de qualquer investidor atento. Mas saber o que fazer com essa informação é o que separa decisões inteligentes de apostas.\n\nNa Soma Wealth Management, transformamos o contexto global em estratégia real para o seu patrimônio.\n\nMarque uma conversa com nossa equipe. 📈`,
+      ]),
+    }),
+
+    /* ─── CONCIERGE ─────────────────────── */
+    concierge: ()=>({
+      titulo: pick([
+        `✨ ${T}: já estamos planejando sua próxima experiência`,
+        `✨ ${T} criou uma janela de oportunidade — e o Concierge Soma já está de olho`,
+        `✨ Você vive ${T} de um jeito completamente diferente com o Concierge Soma`,
+        `✨ Por trás de ${T} existem experiências únicas. Nós abrimos essas portas.`,
+      ]),
+      assunto: pick([
+        `${T} não é só notícia — é uma oportunidade de vivenciar momentos que poucos têm acesso.\n\nO Concierge Soma trabalha antes de todo mundo: ingressos exclusivos, hospitalidade premium, logística impecável e acesso a experiências que não estão disponíveis para o público geral.\n\nQuando o próximo grande evento chegar, você já vai estar com tudo resolvido. É isso que significa ter um concierge de verdade. ✨`,
+        `Grandes acontecimentos como ${T} geram também as melhores oportunidades para quem sabe onde olhar.\n\nAccess exclusivo, reservas em lugares que não aparecem no Google, experiências personalizadas do começo ao fim — esse é o padrão do Concierge Soma.\n\nNos conta o que você tem em mente. 🔑`,
+        `${T} passa. A memória de ter vivido de perto, de um jeito que pouquíssimas pessoas viveram — essa fica.\n\nO Concierge Soma cuida de cada detalhe para que a sua experiência seja exatamente assim: inesquecível.\n\nFala com a nossa equipe e vamos planejar juntos. ✨`,
+      ]),
+    }),
+
+    /* ─── JURÍDICO ───────────────────────── */
+    juridico: ()=>({
+      titulo: pick([
+        `⚖️ ${T} tem impacto fiscal? Saiba como se proteger`,
+        `⚖️ ${T}: os aspectos jurídicos que você não pode ignorar`,
+        `⚖️ Como estruturar seu patrimônio diante do cenário de ${T}`,
+        `⚖️ ${T} e seus reflexos tributários — você está preparado?`,
+      ]),
+      assunto: pick([
+        `Cada grande movimento econômico ou político — como ${T} — traz consequências jurídicas e tributárias que impactam diretamente o seu patrimônio.\n\nEstruturar corretamente como você recebe, investe e transmite seus bens não é detalhe: é a diferença entre pagar o que é justo e pagar mais do que deveria.\n\nNossa equipe jurídica analisa o seu caso com profundidade. Fala com a gente. ⚖️`,
+        `${T} reacendeu o debate sobre planejamento patrimonial e tributário. Muita gente espera para agir — e acaba pagando caro por isso.\n\nNa Soma Partners, antecipamos os movimentos. Holdings, planejamento sucessório, estruturas de proteção patrimonial — tudo alinhado ao contexto atual.\n\nAgende uma conversa com nosso time jurídico. 🛡️`,
+        `No cenário de ${T}, o planejamento jurídico não é precaução — é necessidade.\n\nDos reflexos tributários às oportunidades de estruturação, nossa equipe garante que seu patrimônio esteja protegido, eficiente e pronto para o futuro.\n\nVamos analisar sua situação? ⚖️`,
+      ]),
+    }),
+
+    /* ─── SPORTS WEALTH ─────────────────── */
+    'sports-wealth': ()=>({
+      titulo: pick([
+        `⚽ ${T}: e o seu patrimônio depois dos holofotes?`,
+        `⚽ Atleta: ${T} é o pico — o que vem depois depende do que você faz agora`,
+        `⚽ A carreira acaba. O patrimônio não precisa. Fala com a Soma Sports.`,
+        `⚽ ${T} movimenta contratos e prêmios. Você sabe para onde vai esse dinheiro?`,
+      ]),
+      assunto: pick([
+        `${T} gera exposição, contratos e dinheiro como poucos momentos na carreira de um atleta.\n\nMas a janela é curta. O que define o futuro financeiro de um jogador não é quanto ele ganhou — é o que ele fez com o que ganhou.\n\nNa Soma Sports, cuidamos do patrimônio de atletas com a mesma dedicação que eles colocam dentro de campo. Investimentos, proteção patrimonial e planejamento de longo prazo.\n\nFala com a gente antes que a janela feche. 💼`,
+        `Cada ciclo de ${T} cria novos milionários no esporte. Poucos deles ainda têm esse dinheiro dez anos depois.\n\nNão porque gastaram demais — mas porque não tinham quem estruturasse o patrimônio do jeito certo.\n\nA Soma Sports Wealth existe para mudar essa história. Cuide agora do que você construiu dentro de campo. ⚽`,
+        `${T} é o tipo de momento que transforma carreiras e contratos. É também o momento certo para estruturar o futuro financeiro.\n\nNa Soma Sports, trabalhamos com atletas para garantir que cada conquista dentro de campo se traduzca em patrimônio real fora dele.\n\nVamos conversar? 📊`,
+      ]),
+    }),
+
+    /* ─── SPORTS AGENCIAMENTO ───────────── */
+    'sports-agencia': ()=>({
+      titulo: pick([
+        `🤝 ${T}: o momento certo para o próximo passo na sua carreira`,
+        `🤝 ${T} abre portas — quem representa você quando elas aparecem?`,
+        `🤝 Depois de ${T}, o mercado vai se mover. Você precisa estar bem posicionado.`,
+        `🤝 ${T} cria oportunidades únicas de carreira. Você tem quem identifique todas elas?`,
+      ]),
+      assunto: pick([
+        `${T} coloca atletas na vitrine global. Mas estar em destaque é só metade do trabalho — a outra metade é ter quem saiba aproveitar esse momento da forma certa.\n\nContratos, renovações, oportunidades de marca, transferências — o mercado se move rápido depois de grandes eventos.\n\nA Soma Sports Agenciamento garante que você esteja no lugar certo, na hora certa, com o respaldo que você merece. 🤝`,
+        `Em um ciclo como ${T}, as oportunidades aparecem e desaparecem em questão de semanas.\n\nTer um agenciamento especializado não é luxo — é a diferença entre aproveitar o momento e assistir ele passar.\n\nNa Soma Sports, representamos atletas com visão de longo prazo e conhecimento do mercado nacional e internacional.\n\nFala com a gente. 🌐`,
+        `${T} muda carreiras. Quem tem o suporte certo consegue transformar visibilidade em contratos reais.\n\nA Soma Sports Agenciamento trabalha cada detalhe: negociação, posicionamento de marca, relação com clubes e patrocinadores.\n\nVocê joga. A gente cuida do resto. 🤝`,
+      ]),
+    }),
+
+    /* ─── SPORTS EVENTOS ────────────────── */
+    'sports-eventos': ()=>({
+      titulo: pick([
+        `🏆 ${T} inspira. Quem vai criar a próxima experiência inesquecível?`,
+        `🏆 O legado de ${T}: como transformar o hype em um evento memorável`,
+        `🏆 ${T} gerou audiência. Agora é hora de criar a sua própria experiência esportiva.`,
+        `🏆 Depois de ${T}, o appetite por grandes eventos só cresce. A Soma Sports está pronta.`,
+      ]),
+      assunto: pick([
+        `${T} lembrou ao mundo por que o esporte é uma das forças culturais mais poderosas que existem.\n\nMas os melhores momentos não acontecem por acaso — eles são produzidos com inteligência, parceiros certos e execução impecável.\n\nA Soma Sports Eventos conecta marcas, atletas e públicos em experiências que ficam na memória — da concepção ao último detalhe.\n\nVamos criar juntos? 🏆`,
+        `O mercado de eventos esportivos está em alta e ${T} só confirmou isso.\n\nAtivações de marca, hospitality premium, eventos corporativos com experiência esportiva — cada projeto é uma oportunidade de construir algo extraordinário.\n\nA Soma Sports Eventos produz experiências de alto nível do começo ao fim. Fala com a nossa equipe. ✨`,
+        `${T} gerou paixão, engajamento e audiência em escala global.\n\nAgora pensa: como a sua marca pode ser parte desse universo?\n\nA Soma Sports Eventos cria a ponte entre o que acontece no esporte e as experiências que fazem a diferença para marcas, parceiros e convidados.\n\nVamos conversar sobre o seu próximo evento? 🏆`,
+      ]),
+    }),
+  };
+
+  const fn = posts[areaId];
+  return fn ? fn() : { titulo: '', assunto: '' };
 }
 
-/* ── MOTOR DE GERAÇÃO ─────────────────── */
-function gerarAngulos(tema){
-  const T   = cap(tema);
-  const em  = emoji(tema);
-  const t   = tema.toLowerCase();
-
-  // Variantes por slot para não parecer repetitivo
-  const abertura = pick([
-    `O assunto é ${T}`,
-    `${T} está em todo lugar`,
-    `Muito se fala sobre ${T}`,
-    `${T} voltou a dominar as manchetes`,
-    `Quando ${T} entra em pauta`,
-  ]);
-
-  const fechoEngaja = pick([
-    `Me conta nos comentários 👇`,
-    `Qual é a sua leitura sobre isso? 👇`,
-    `Deixa sua opinião aqui embaixo 👇`,
-    `A sua visão sobre o assunto? Fala com a gente 👇`,
-  ]);
-
-  const fechoSoma = pick([
-    `Na Soma Partners, nossa missão é transformar o que acontece no mundo em decisões inteligentes para o seu patrimônio. 💼`,
-    `É exatamente nesse tipo de cenário que o acompanhamento especializado faz a diferença. Fala com a Soma. 💼`,
-    `Quem cuida do seu patrimônio precisa estar à frente dos acontecimentos. É isso que a Soma Partners faz todos os dias. 💼`,
-  ]);
-
-  const aberturaDados = pick([
-    `Em momentos de destaque como ${T}, os dados que ninguém mostra costumam ser os mais importantes.`,
-    `Por trás das manchetes sobre ${T}, existe um conjunto de números que conta a história real.`,
-    `O debate em torno de ${T} é mais profundo do que parece. Os dados mostram por quê.`,
-  ]);
-
-  return [
-    /* 1. CONTEXTUALIZAÇÃO */
-    {
-      angulo:   'Contextualização',
-      emoji:    '🌐',
-      cor:      '#3b8bff',
-      badge:    { label: 'Contexto', bg: 'rgba(59,139,255,0.12)', color: '#93c5fd' },
-      titulo:   `${em} ${T}: o que está acontecendo e por que o mundo presta atenção`,
-      assunto:  `${abertura} — e entender o contexto por trás das manchetes é o primeiro passo para não se deixar levar pelo ruído.\n\nOs desdobramentos ao redor de ${T} envolvem interesses econômicos, políticos e sociais que se cruzam de formas que raramente chegam ao noticiário de forma clara.\n\nQuer entender o cenário completo? A gente explica. 🔍`,
-    },
-
-    /* 2. IMPACTO FINANCEIRO */
-    {
-      angulo:   'Impacto Financeiro',
-      emoji:    '💰',
-      cor:      '#c9963c',
-      badge:    { label: 'Investimentos', bg: 'rgba(201,150,60,0.12)', color: '#fcd28a' },
-      titulo:   `💰 ${T}: o que os investidores precisam saber agora`,
-      assunto:  `Eventos como ${T} raramente ficam isolados — eles movimentam setores, afetam câmbio, alteram expectativas de mercado e criam tanto riscos quanto oportunidades.\n\n${fechoSoma}`,
-    },
-
-    /* 3. ENGAJAMENTO */
-    {
-      angulo:   'Engajamento',
-      emoji:    '💬',
-      cor:      '#10b981',
-      badge:    { label: 'Engajamento', bg: 'rgba(16,185,129,0.12)', color: '#6ee7b7' },
-      titulo:   `💬 ${T}: você já tem uma opinião formada sobre isso?`,
-      assunto:  `${T} divide opiniões — e está tudo bem não ter uma resposta definitiva sobre um tema tão complexo.\n\nO que importa é estar informado, questionar narrativas e discutir com qualidade.\n\n${fechoEngaja}`,
-    },
-
-    /* 4. EDUCACIONAL */
-    {
-      angulo:   'Educacional',
-      emoji:    '📚',
-      cor:      '#8b5cf6',
-      badge:    { label: 'Conteúdo', bg: 'rgba(139,92,246,0.12)', color: '#c4b5fd' },
-      titulo:   `📚 3 coisas que você precisa entender sobre ${T}`,
-      assunto:  `Muito barulho, pouca explicação. Sobre ${T}, separamos o essencial:\n\n1️⃣ Por que esse tema ganhou escala agora — e não antes\n2️⃣ Quem são os principais agentes e o que cada um tem a ganhar\n3️⃣ O que os próximos movimentos podem indicar sobre o cenário global\n\nSalva esse post para ler com calma. 🔖`,
-    },
-
-    /* 5. DADO EM DESTAQUE */
-    {
-      angulo:   'Dado em Destaque',
-      emoji:    '📊',
-      cor:      '#ef4444',
-      badge:    { label: 'Análise', bg: 'rgba(239,68,68,0.12)', color: '#fca5a5' },
-      titulo:   `📊 ${T} em números: a dimensão real do que está em jogo`,
-      assunto:  `${aberturaDados}\n\nOs impactos de ${T} são muito maiores — e mais estruturais — do que o debate do dia a dia sugere. Contexto importa, e números sem contexto enganam.\n\nNa Soma Partners, analisamos o que está por trás dos dados antes de qualquer recomendação. 📈`,
-    },
-
-    /* 6. PERSPECTIVA FUTURA */
-    {
-      angulo:   'O Que Vem Por Aí',
-      emoji:    '🔮',
-      cor:      '#06b6d4',
-      badge:    { label: 'Perspectiva', bg: 'rgba(6,182,212,0.12)', color: '#67e8f9' },
-      titulo:   `🔮 ${T}: o que esperar nos próximos meses`,
-      assunto:  `Quando um tema como ${T} ganha essa proporção, o mais importante não é o barulho de hoje — é entender o que pode vir a seguir.\n\nQuais cenários estão sobre a mesa? Quais setores tendem a se beneficiar — ou a sofrer? Quem está posicionado para aproveitar o que está por vir?\n\nEssas são as perguntas que guiam as decisões de quem pensa no longo prazo. Acompanhe nossa análise. 🧭`,
-    },
-  ];
-}
-
-/* ── RENDER ──────────────────────────── */
+/* ── GERAR ────────────────────────────── */
 function gerarPosts(){
   const tema = document.getElementById('tema-input').value.trim();
-  if(!tema) {
-    document.getElementById('tema-input').focus();
-    document.getElementById('tema-input').style.borderColor = 'rgba(239,68,68,0.6)';
-    setTimeout(() => document.getElementById('tema-input').style.borderColor = '', 1200);
+  if(!tema){
+    const inp = document.getElementById('tema-input');
+    inp.focus();
+    inp.style.borderColor = 'rgba(239,68,68,0.6)';
+    setTimeout(()=>inp.style.borderColor='',1200);
     return;
   }
 
-  const angulos = gerarAngulos(tema);
+  document.getElementById('ri-tema').textContent = `"${tema}"`;
+  document.getElementById('results-info').classList.add('show');
+  document.getElementById('area-bar').classList.add('show');
+  // reset filter
+  document.querySelectorAll('.area-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.area-btn[data-filter="all"]').classList.add('active');
 
-  // Results bar
-  document.getElementById('rb-tema').textContent = `"${tema}"`;
-  document.getElementById('results-bar').classList.add('show');
-
-  // Grid
   const grid = document.getElementById('grid');
-  grid.innerHTML = angulos.map((a, idx) => {
-    const id = `c${idx}`;
-    return `<div class="card" style="--accent:${a.cor}">
-      <div class="card-head" style="border-bottom:1px solid rgba(255,255,255,0.05)">
-        <div class="card-angulo-dot" style="background:${a.cor}"></div>
-        <span class="card-angulo" style="color:${a.cor}">${a.angulo}</span>
-        <span class="card-angulo-badge" style="background:${a.badge.bg};color:${a.badge.color};border:1px solid ${a.badge.bg}">${a.badge.label}</span>
+  document.getElementById('empty').classList.remove('show');
+
+  grid.innerHTML = AREAS.map((area, idx)=>{
+    const post = gerarParaArea(area.id, tema);
+    const id   = `c${idx}`;
+    return `<div class="card" data-area="${area.id}"
+      style="--area-cor:${area.cor};--area-cor-dim:${area.corDim}">
+
+      <div class="card-area" style="background:${area.corDim};border-bottom:1px solid ${area.cor}22">
+        <div class="area-icon" style="background:${area.cor}22">${area.emoji}</div>
+        <div class="area-info">
+          <div class="area-name" style="color:${area.cor}">${area.nome}</div>
+          <div class="area-desc">${area.desc}</div>
+        </div>
       </div>
 
       <div class="section s-titulo">
         <div class="section-lbl">📣 Título do Post</div>
-        <div class="section-titulo" id="${id}-t">${a.titulo}</div>
+        <div class="section-titulo" id="${id}-t">${post.titulo}</div>
         <button class="btn-copy" onclick="copiar(this,'${id}-t')">
           <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           Copiar título
@@ -330,39 +379,48 @@ function gerarPosts(){
       </div>
 
       <div class="section s-assunto">
-        <div class="section-lbl">📝 Assunto / Legenda</div>
-        <div class="section-assunto" id="${id}-a">${a.assunto}</div>
+        <div class="section-lbl">📝 Legenda / Assunto</div>
+        <div class="section-assunto" id="${id}-a">${post.assunto}</div>
         <button class="btn-copy" onclick="copiar(this,'${id}-a')">
           <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          Copiar assunto
+          Copiar legenda
         </button>
       </div>
     </div>`;
   }).join('');
 }
 
-/* ── HELPERS ─────────────────────────── */
+/* ── FILTRO POR ÁREA ──────────────────── */
+function filtrar(btn, filtro){
+  document.querySelectorAll('.area-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.card[data-area]').forEach(card=>{
+    card.classList.toggle('hidden', filtro!=='all' && card.dataset.area!==filtro);
+  });
+}
+
+/* ── UTILS ────────────────────────────── */
 function usar(tema){
   document.getElementById('tema-input').value = tema;
   gerarPosts();
 }
 
 function copiar(btn, id){
-  const texto = document.getElementById(id)?.textContent?.trim() || '';
+  const texto = document.getElementById(id)?.textContent?.trim()||'';
   if(!texto) return;
   navigator.clipboard.writeText(texto).then(()=>{
     const orig = btn.innerHTML;
     btn.innerHTML = '✓ Copiado!';
     btn.style.cssText = 'color:#6ee7b7;border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08)';
-    setTimeout(()=>{ btn.innerHTML = orig; btn.style.cssText = ''; }, 2000);
+    setTimeout(()=>{ btn.innerHTML=orig; btn.style.cssText=''; },2000);
     showToast('Copiado ✓');
   }).catch(()=>alert('Não foi possível copiar.'));
 }
 
 function showToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2000);
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
 }
 </script>
 </body>
