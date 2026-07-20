@@ -6,7 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.4);--surface:rgba(255,255,255,0.04)}
+:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.4)}
 html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff}
 
 /* NAV */
@@ -14,100 +14,90 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .nav-left{display:flex;align-items:center;gap:12px}
 .logo-a{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
 .logo-soma{font-size:15px;font-weight:300}.logo-pipe{width:1px;height:18px;background:rgba(255,255,255,0.3)}.logo-partners{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.7}
-.nav-sep{width:1px;height:22px;background:var(--border)}.nav-title{font-size:12px;font-weight:800;letter-spacing:.2px}
+.nav-sep{width:1px;height:22px;background:var(--border)}.nav-title{font-size:12px;font-weight:800}
 .btn-back{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);transition:all .18s;text-decoration:none}
 .btn-back:hover{background:rgba(255,255,255,0.11);color:#fff}
 .btn-back svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.5;fill:none}
 
-/* HERO SEARCH */
-.search-hero{padding:40px 32px 28px;border-bottom:1px solid var(--border)}
-.sh-label{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
-.sh-title{font-size:22px;font-weight:900;letter-spacing:-.3px;margin-bottom:4px}
-.sh-sub{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:22px}
+/* HERO */
+.hero{padding:40px 32px 28px;border-bottom:1px solid var(--border)}
+.hero-label{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+.hero-title{font-size:22px;font-weight:900;letter-spacing:-.3px;margin-bottom:4px}
+.hero-sub{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:22px;max-width:520px}
 
-.search-wrap{display:flex;gap:10px;max-width:680px}
-.search-input-box{flex:1;position:relative}
-.search-input-box input{
+.input-row{display:flex;gap:10px;max-width:680px}
+.input-box{flex:1;position:relative}
+.input-box input{
   width:100%;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;
   font-family:'Montserrat',sans-serif;background:rgba(255,255,255,0.06);
   border:1.5px solid rgba(255,255,255,0.13);color:#fff;outline:none;
   transition:border-color .18s,background .18s;
 }
-.search-input-box input::placeholder{color:rgba(255,255,255,0.28);font-weight:500}
-.search-input-box input:focus{border-color:rgba(59,139,255,0.55);background:rgba(255,255,255,0.08)}
-.btn-search{
-  padding:0 24px;border-radius:12px;font-size:12px;font-weight:800;
+.input-box input::placeholder{color:rgba(255,255,255,0.25);font-weight:500}
+.input-box input:focus{border-color:rgba(59,139,255,0.55);background:rgba(255,255,255,0.08)}
+.btn-gerar{
+  padding:0 26px;border-radius:12px;font-size:12px;font-weight:800;
   font-family:'Montserrat',sans-serif;cursor:pointer;background:var(--blue);
-  border:none;color:#fff;transition:all .18s;display:flex;align-items:center;gap:8px;
-  white-space:nowrap;letter-spacing:.2px;min-width:130px;justify-content:center;
+  border:none;color:#fff;transition:all .18s;white-space:nowrap;min-width:140px;
+  display:flex;align-items:center;justify-content:center;gap:7px;
 }
-.btn-search:hover{background:#2d7af0;transform:translateY(-1px)}
-.btn-search:disabled{opacity:.5;cursor:default;transform:none}
-.btn-search svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0}
+.btn-gerar:hover{background:#2d7af0;box-shadow:0 4px 20px rgba(59,139,255,0.3)}
+.btn-gerar svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0}
 
-/* QUICK TAGS */
-.quick-tags{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
-.q-tag{
-  padding:6px 14px;border-radius:20px;font-size:10px;font-weight:700;
-  font-family:'Montserrat',sans-serif;cursor:pointer;
-  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
-  color:rgba(255,255,255,0.55);transition:all .15s;
-}
-.q-tag:hover{background:rgba(59,139,255,0.12);border-color:rgba(59,139,255,0.35);color:rgba(255,255,255,0.85)}
+.sugestoes{margin-top:13px;display:flex;gap:7px;flex-wrap:wrap}
+.sug{padding:5px 13px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);transition:all .15s}
+.sug:hover{background:rgba(59,139,255,0.1);border-color:rgba(59,139,255,0.3);color:rgba(255,255,255,0.85)}
 
-/* RESULTS HEADER */
-.results-header{padding:16px 32px 0;display:flex;align-items:center;justify-content:space-between}
-.results-title{font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:7px}
-.results-badge{background:rgba(59,139,255,0.15);border:1px solid rgba(59,139,255,0.25);color:#93c5fd;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700}
-.results-ts{font-size:10px;color:rgba(255,255,255,0.25)}
+/* RESULTS BAR */
+.results-bar{padding:16px 32px 0;display:flex;align-items:center;justify-content:space-between;opacity:0;transition:opacity .3s}
+.results-bar.show{opacity:1}
+.rb-left{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
+.rb-tema{color:#fff;font-weight:800}
+.rb-count{background:rgba(59,139,255,0.15);border:1px solid rgba(59,139,255,0.25);color:#93c5fd;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700}
+.btn-regen{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);transition:all .15s}
+.btn-regen:hover{background:rgba(255,255,255,0.09);color:#fff}
+.btn-regen svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none}
 
 /* GRID */
-.news-grid{padding:16px 32px 48px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.grid{padding:16px 32px 56px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
 
 /* CARD */
-.news-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .18s}
-.news-card:hover{border-color:rgba(255,255,255,0.14)}
-.nc-header{padding:12px 14px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05)}
-.nc-source{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--blue);background:rgba(59,139,255,0.1);border:1px solid rgba(59,139,255,0.2);padding:3px 9px;border-radius:5px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nc-date{font-size:9px;color:var(--muted);font-weight:600;flex-shrink:0}
-.nc-original{padding:10px 14px 8px;font-size:11px;color:rgba(255,255,255,0.38);line-height:1.5;border-bottom:1px solid rgba(255,255,255,0.05)}
-.nc-section{padding:12px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.05)}
-.nc-section-label{font-size:8.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
-.nc-content{font-size:13px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:8px}
-.nc-desc{font-size:11px;font-weight:500;color:rgba(255,255,255,0.8);line-height:1.65}
-.nc-copy{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);transition:all .15s}
-.nc-copy:hover{background:rgba(255,255,255,0.09);color:#fff;border-color:rgba(255,255,255,0.2)}
-.nc-copy svg{width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
-.nc-footer{padding:10px 14px}
-.nc-link{font-size:10px;font-weight:700;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:color .15s}
-.nc-link:hover{color:var(--blue)}
+.card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s,transform .2s}
+.card:hover{border-color:rgba(255,255,255,0.13);transform:translateY(-1px)}
 
-.nc-section.titulo-sec{background:rgba(59,139,255,0.04);border-left:2px solid rgba(59,139,255,0.35)}
-.nc-section.assunto-sec{background:rgba(201,150,60,0.04);border-left:2px solid rgba(201,150,60,0.35)}
+.card-head{padding:11px 14px 10px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.card-angulo-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.card-angulo{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.card-angulo-badge{margin-left:auto;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px}
 
-/* LOADING */
-.loader{display:none;flex-direction:column;align-items:center;justify-content:center;padding:80px;grid-column:1/-1;gap:14px;color:var(--muted)}
-.loader.show{display:flex}
-.spin{width:32px;height:32px;border:3px solid rgba(59,139,255,0.2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+.section{padding:12px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.section-lbl{font-size:8.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.section-titulo{font-size:13px;font-weight:800;color:#fff;line-height:1.45;margin-bottom:8px}
+.section-assunto{font-size:11.5px;font-weight:500;color:rgba(255,255,255,0.78);line-height:1.7;margin-bottom:8px;white-space:pre-line}
+.btn-copy{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.45);transition:all .15s}
+.btn-copy:hover{background:rgba(255,255,255,0.09);color:#fff;border-color:rgba(255,255,255,0.18)}
+.btn-copy svg{width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
 
-/* ESTADOS VAZIOS */
-.empty{display:none;flex-direction:column;align-items:center;padding:72px 32px;grid-column:1/-1;text-align:center;color:var(--muted);gap:10px}
+.section.s-titulo{background:rgba(59,139,255,0.04);border-left:2px solid rgba(59,139,255,0.35)}
+.section.s-assunto{background:rgba(201,150,60,0.04);border-left:2px solid rgba(201,150,60,0.35)}
+
+/* EMPTY */
+.empty{display:none;flex-direction:column;align-items:center;padding:80px 32px;grid-column:1/-1;text-align:center;color:var(--muted);gap:10px}
 .empty.show{display:flex}
-.empty-icon{font-size:42px;opacity:.5;margin-bottom:4px}
-.empty-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.5)}
-.empty-sub{font-size:11px;line-height:1.6;max-width:340px}
+.empty-icon{font-size:44px;opacity:.45;margin-bottom:4px}
+.empty-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.45)}
+.empty-sub{font-size:11px;line-height:1.7;max-width:340px}
 
 /* TOAST */
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(12px);background:#1a3348;border:1px solid rgba(59,139,255,0.4);border-radius:10px;padding:9px 20px;font-size:11px;font-weight:700;color:#93c5fd;opacity:0;transition:all .25s;z-index:999;pointer-events:none;white-space:nowrap}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);background:#1a3348;border:1px solid rgba(59,139,255,0.4);border-radius:10px;padding:9px 20px;font-size:11px;font-weight:700;color:#93c5fd;opacity:0;transition:all .22s;z-index:999;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 @media(max-width:700px){
-  .search-hero{padding:24px 16px 20px}
-  .search-wrap{flex-direction:column}
-  .btn-search{padding:13px;border-radius:12px}
-  .news-grid{padding:14px 16px 32px}
-  .results-header{padding:12px 16px 0}
+  .hero{padding:24px 16px 20px}
+  .input-row{flex-direction:column}
+  .btn-gerar{padding:13px}
+  .grid{padding:12px 16px 40px}
+  .results-bar{padding:12px 16px 0}
 }
 </style>
 </head>
@@ -127,47 +117,50 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
   </a>
 </nav>
 
-<div class="search-hero">
-  <div class="sh-label">Gerador de Notícias</div>
-  <div class="sh-title">📰 Qual tema está em alta hoje?</div>
-  <div class="sh-sub">Digite um assunto que está no radar global — a ferramenta busca as notícias mais recentes e gera automaticamente título e legenda prontos para post.</div>
+<div class="hero">
+  <div class="hero-label">Gerador de Posts</div>
+  <div class="hero-title">📰 Qual tema está em alta hoje?</div>
+  <div class="hero-sub">Digite um assunto em destaque global. A ferramenta desenvolve automaticamente 6 opções de post — com ângulos diferentes — prontos para publicar.</div>
 
-  <div class="search-wrap">
-    <div class="search-input-box">
-      <input type="text" id="search-input"
-        placeholder="Ex: Copa do Mundo 2026, Taxa Selic, Guerra na Ucrânia, IA..."
-        onkeydown="if(event.key==='Enter') buscarTema()" />
+  <div class="input-row">
+    <div class="input-box">
+      <input type="text" id="tema-input"
+        placeholder="Ex: Copa do Mundo 2026, Selic, Guerra Ucrânia, IA no trabalho..."
+        onkeydown="if(event.key==='Enter')gerarPosts()" />
     </div>
-    <button class="btn-search" id="btn-search" onclick="buscarTema()">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      Pesquisar
+    <button class="btn-gerar" onclick="gerarPosts()">
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Gerar Posts
     </button>
   </div>
 
-  <div class="quick-tags">
-    <button class="q-tag" onclick="preset('Copa do Mundo 2026')">⚽ Copa 2026</button>
-    <button class="q-tag" onclick="preset('economia Brasil')">📈 Economia BR</button>
-    <button class="q-tag" onclick="preset('inteligência artificial')">🤖 IA</button>
-    <button class="q-tag" onclick="preset('geopolítica mundo')">🌐 Geopolítica</button>
-    <button class="q-tag" onclick="preset('mercado financeiro')">💹 Mercado</button>
-    <button class="q-tag" onclick="preset('política Brasil')">🏛️ Política</button>
-    <button class="q-tag" onclick="preset('tecnologia')">💻 Tech</button>
+  <div class="sugestoes">
+    <button class="sug" onclick="usar('Copa do Mundo 2026')">⚽ Copa 2026</button>
+    <button class="sug" onclick="usar('Taxa Selic')">🏦 Selic</button>
+    <button class="sug" onclick="usar('Inteligência Artificial')">🤖 IA</button>
+    <button class="sug" onclick="usar('Guerra na Ucrânia')">⚔️ Ucrânia</button>
+    <button class="sug" onclick="usar('Mercado financeiro global')">💹 Mercados</button>
+    <button class="sug" onclick="usar('Eleições nos EUA')">🇺🇸 EUA</button>
+    <button class="sug" onclick="usar('Crise econômica mundial')">📉 Crise global</button>
   </div>
 </div>
 
-<div id="results-header" class="results-header" style="display:none">
-  <div class="results-title">
-    Resultados para <span id="results-query" style="color:#fff;font-weight:800"></span>
-    <span class="results-badge" id="results-count"></span>
+<div class="results-bar" id="results-bar">
+  <div class="rb-left">
+    Posts gerados para <span class="rb-tema" id="rb-tema"></span>
+    <span class="rb-count">6 opções</span>
   </div>
-  <span class="results-ts" id="results-ts"></span>
+  <button class="btn-regen" onclick="gerarPosts()">
+    <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.6"/></svg>
+    Regerar
+  </button>
 </div>
 
-<div class="news-grid" id="news-grid">
-  <div class="empty show" id="empty-state">
-    <div class="empty-icon">🔍</div>
-    <div class="empty-title">Nenhum tema pesquisado ainda</div>
-    <div class="empty-sub">Digite um assunto que você viu que está em destaque global e clique em Pesquisar.</div>
+<div class="grid" id="grid">
+  <div class="empty show" id="empty">
+    <div class="empty-icon">✍️</div>
+    <div class="empty-title">Nenhum tema ainda</div>
+    <div class="empty-sub">Digite um assunto que você viu em destaque — pode ser qualquer coisa: esporte, economia, política, tecnologia. A ferramenta desenvolve o conteúdo completo.</div>
   </div>
 </div>
 
@@ -176,266 +169,200 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 <script>
 if(sessionStorage.getItem('soma_auth')!=='1'){window.location.href='../login.html';}
 
-let _buscando = false;
+/* ── UTILITÁRIOS ──────────────────────── */
+function cap(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
-/* ── PRESET ──────────────────────────── */
-function preset(tema){
-  document.getElementById('search-input').value = tema;
-  buscarTema();
-}
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
 
-/* ── BUSCA PRINCIPAL ─────────────────── */
-async function buscarTema(){
-  const query = document.getElementById('search-input').value.trim();
-  if(!query || _buscando) return;
-  _buscando = true;
-
-  const btn = document.getElementById('btn-search');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spin" style="width:13px;height:13px;border-width:2px"></div>';
-
-  document.getElementById('results-header').style.display = 'none';
-  const grid = document.getElementById('news-grid');
-  grid.innerHTML = `<div class="loader show"><div class="spin"></div><div style="font-size:11px;margin-top:4px">Buscando notícias sobre "${query}"...</div></div>`;
-
-  // Google News RSS para busca por tema (pt-BR + en)
-  const feedPT = {
-    url: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=pt-BR&gl=BR&ceid=BR:pt-BR`,
-    label: query, emoji: '📰'
-  };
-  const feedEN = {
-    url: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`,
-    label: query, emoji: '📰'
-  };
-
-  const [ptItems, enItems] = await Promise.all([fetchFeed(feedPT), fetchFeed(feedEN)]);
-
-  // Mesclar — PT primeiro, depois EN; deduplicar por título
-  let itens = [...ptItems, ...enItems];
-  const vistos = new Set();
-  itens = itens.filter(i => {
-    const k = i.title.toLowerCase().replace(/\s+/g,'').substring(0,35);
-    if(vistos.has(k)) return false;
-    vistos.add(k); return true;
-  });
-
-  // Ordenar por data
-  itens.sort((a,b) => new Date(b.pubDate||0) - new Date(a.pubDate||0));
-  itens = itens.slice(0, 12);
-
-  _buscando = false;
-  btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Pesquisar';
-
-  const now = new Date();
-  document.getElementById('results-query').textContent = `"${query}"`;
-  document.getElementById('results-count').textContent = `${itens.length} notícias`;
-  document.getElementById('results-ts').textContent =
-    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  document.getElementById('results-header').style.display = 'flex';
-
-  renderNoticias(itens, query);
-}
-
-/* ── PROXY / XML ─────────────────────── */
-function timed(promise, ms){
-  return Promise.race([promise, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
-}
-
-function parseXML(xmlStr, feed){
-  try{
-    const xml = new DOMParser().parseFromString(xmlStr,'text/xml');
-    if(xml.querySelector('parsererror')) return [];
-    const nodes = Array.from(xml.querySelectorAll('item, entry')).slice(0,8);
-    return nodes.map(n=>{
-      const txt = t => (n.querySelector(t)?.textContent||'').trim();
-      let link = txt('link');
-      if(!link){ const el=n.querySelector('link[href]'); link=el?.getAttribute('href')||''; }
-      // Google News: source name fica em <source>
-      const sourceName = n.querySelector('source')?.textContent?.trim() || feed.label;
-      return {
-        title: txt('title'),
-        link: link.replace(/\s/g,''),
-        description: txt('description')||txt('summary')||txt('content'),
-        pubDate: txt('pubDate')||txt('updated')||txt('published'),
-        feedLabel: sourceName,
-        feedEmoji: '📰'
-      };
-    }).filter(i=>i.title&&i.link);
-  }catch{return [];}
-}
-
-async function fetchFeed(feed){
-  const enc = encodeURIComponent(feed.url);
-
-  // Estratégia 1 — corsproxy.io
-  try{
-    const r = await timed(fetch(`https://corsproxy.io/?${enc}`), 8000);
-    if(r.ok){ const items=parseXML(await r.text(), feed); if(items.length) return items; }
-  }catch(e){ console.warn('corsproxy falhou:', e.message); }
-
-  // Estratégia 2 — allorigins.win
-  try{
-    const r = await timed(fetch(`https://api.allorigins.win/get?url=${enc}`), 8000);
-    if(r.ok){ const d=await r.json(); const items=parseXML(d.contents||'', feed); if(items.length) return items; }
-  }catch(e){ console.warn('allorigins falhou:', e.message); }
-
-  // Estratégia 3 — rss2json.com
-  try{
-    const r = await timed(fetch(`https://api.rss2json.com/v1/api.json?count=8&rss_url=${enc}`), 8000);
-    const d = await r.json();
-    if(d.status==='ok'&&d.items?.length)
-      return d.items.map(i=>({...i, feedLabel:i.author||feed.label, feedEmoji:'📰'}));
-  }catch(e){ console.warn('rss2json falhou:', e.message); }
-
-  return [];
-}
-
-/* ── GERAÇÃO DE POST ─────────────────── */
-function limpar(str){
-  return (str||'')
-    .replace(/<[^>]*>/g,'')
-    .replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<')
-    .replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#\d+;/g,'')
-    .replace(/\s+/g,' ').trim();
-}
-
-const EMOJI_RULES = [
+const EMOJIS = [
   [/copa|futebol|soccer|football|gol|fifa|mundial/i,       '⚽'],
-  [/econom|pib|inflação|inflation|recessão|recession/i,   '📈'],
-  [/bolsa|mercado|market|ação|stock|dow|nasdaq|s&p/i,     '💹'],
-  [/juros|selic|fed |federal reserve|taxa|interest rate/i,'🏦'],
-  [/guerra|war|conflito|conflict|militar|troops|ataque/i, '⚔️'],
+  [/econom|pib|inflação|inflation|recessão|recession/i,    '📈'],
+  [/bolsa|mercado|market|ação|stock|dow|nasdaq|s&p/i,      '💹'],
+  [/juros|selic|fed |federal reserve|taxa|interest rate/i, '🏦'],
+  [/guerra|war|conflito|conflict|militar|ataque/i,         '⚔️'],
   [/politic|governo|eleição|election|presidente|minister/i,'🏛️'],
-  [/inteligência artificial|ai\b|openai|chatgpt|llm|machine learn/i,'🤖'],
-  [/tecnolog|apple|google|microsoft|amazon|meta\b|tech/i, '💻'],
-  [/saúde|health|médic|hospital|câncer|cancer|vacina/i,   '🏥'],
-  [/clima|aquecimento|carbon|ambiente|environment|flood/i,'🌱'],
-  [/espaço|space|nasa|foguete|rocket|marte|mars/i,        '🚀'],
-  [/cripto|bitcoin|crypto|blockchain|ethereum/i,          '₿'],
+  [/inteligência artificial|ia\b|openai|chatgpt|llm/i,     '🤖'],
+  [/tecnolog|apple|google|microsoft|amazon|meta\b/i,       '💻'],
+  [/saúde|health|médic|hospital|câncer|vacina/i,           '🏥'],
+  [/clima|aquecimento|carbon|ambiente|environment/i,       '🌱'],
+  [/espaço|space|nasa|foguete|rocket|marte/i,              '🚀'],
+  [/cripto|bitcoin|crypto|blockchain|ethereum/i,           '₿'],
+  [/imobili|imoveis|real estate/i,                         '🏢'],
+  [/energia|petróleo|oil|combustível|nuclear/i,            '⚡'],
 ];
-
-function autoEmoji(text){
-  const t = text.toLowerCase();
-  for(const [re, e] of EMOJI_RULES) if(re.test(t)) return e;
+function emoji(tema){
+  const t = tema.toLowerCase();
+  for(const [re,e] of EMOJIS) if(re.test(t)) return e;
   return '📰';
 }
 
-function gerarTitulo(item){
-  // Remove sufixo " - Fonte" que Google News sempre adiciona
-  let t = limpar(item.title||'')
-    .replace(/\s[-–|]\s.{1,60}$/, '')
-    .trim();
-  const emoji = autoEmoji(t);
-  return `${emoji} ${t}`;
-}
+/* ── MOTOR DE GERAÇÃO ─────────────────── */
+function gerarAngulos(tema){
+  const T   = cap(tema);
+  const em  = emoji(tema);
+  const t   = tema.toLowerCase();
 
-function gerarAssunto(item, tema){
-  const raw = limpar(item.description || '');
+  // Variantes por slot para não parecer repetitivo
+  const abertura = pick([
+    `O assunto é ${T}`,
+    `${T} está em todo lugar`,
+    `Muito se fala sobre ${T}`,
+    `${T} voltou a dominar as manchetes`,
+    `Quando ${T} entra em pauta`,
+  ]);
 
-  if(!raw || raw.length < 20){
-    // Sem descrição: gerar contexto mínimo a partir do título
-    const tit = limpar(item.title||'').replace(/\s[-–|]\s.{1,60}$/,'').trim();
-    return `${tit}. Acesse o link abaixo para ler a cobertura completa sobre o tema.`;
-  }
+  const fechoEngaja = pick([
+    `Me conta nos comentários 👇`,
+    `Qual é a sua leitura sobre isso? 👇`,
+    `Deixa sua opinião aqui embaixo 👇`,
+    `A sua visão sobre o assunto? Fala com a gente 👇`,
+  ]);
 
-  // Truncar em frase completa até ~300 chars
-  const texto = raw.length > 320 ? raw.substring(0, 320) : raw;
-  const idx = Math.max(texto.lastIndexOf('. '), texto.lastIndexOf('! '), texto.lastIndexOf('? '));
-  let resumo = (idx > 80) ? texto.substring(0, idx+1) : texto.substring(0, 280).trimEnd() + '...';
+  const fechoSoma = pick([
+    `Na Soma Partners, nossa missão é transformar o que acontece no mundo em decisões inteligentes para o seu patrimônio. 💼`,
+    `É exatamente nesse tipo de cenário que o acompanhamento especializado faz a diferença. Fala com a Soma. 💼`,
+    `Quem cuida do seu patrimônio precisa estar à frente dos acontecimentos. É isso que a Soma Partners faz todos os dias. 💼`,
+  ]);
 
-  return resumo;
-}
+  const aberturaDados = pick([
+    `Em momentos de destaque como ${T}, os dados que ninguém mostra costumam ser os mais importantes.`,
+    `Por trás das manchetes sobre ${T}, existe um conjunto de números que conta a história real.`,
+    `O debate em torno de ${T} é mais profundo do que parece. Os dados mostram por quê.`,
+  ]);
 
-function fmtData(ds){
-  if(!ds) return '';
-  try{
-    const d = new Date(ds);
-    const agora = Date.now();
-    const diff = agora - d.getTime();
-    if(diff < 3600000) return `${Math.round(diff/60000)}min atrás`;
-    if(diff < 86400000) return `${Math.round(diff/3600000)}h atrás`;
-    return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
-  }catch{return '';}
+  return [
+    /* 1. CONTEXTUALIZAÇÃO */
+    {
+      angulo:   'Contextualização',
+      emoji:    '🌐',
+      cor:      '#3b8bff',
+      badge:    { label: 'Contexto', bg: 'rgba(59,139,255,0.12)', color: '#93c5fd' },
+      titulo:   `${em} ${T}: o que está acontecendo e por que o mundo presta atenção`,
+      assunto:  `${abertura} — e entender o contexto por trás das manchetes é o primeiro passo para não se deixar levar pelo ruído.\n\nOs desdobramentos ao redor de ${T} envolvem interesses econômicos, políticos e sociais que se cruzam de formas que raramente chegam ao noticiário de forma clara.\n\nQuer entender o cenário completo? A gente explica. 🔍`,
+    },
+
+    /* 2. IMPACTO FINANCEIRO */
+    {
+      angulo:   'Impacto Financeiro',
+      emoji:    '💰',
+      cor:      '#c9963c',
+      badge:    { label: 'Investimentos', bg: 'rgba(201,150,60,0.12)', color: '#fcd28a' },
+      titulo:   `💰 ${T}: o que os investidores precisam saber agora`,
+      assunto:  `Eventos como ${T} raramente ficam isolados — eles movimentam setores, afetam câmbio, alteram expectativas de mercado e criam tanto riscos quanto oportunidades.\n\n${fechoSoma}`,
+    },
+
+    /* 3. ENGAJAMENTO */
+    {
+      angulo:   'Engajamento',
+      emoji:    '💬',
+      cor:      '#10b981',
+      badge:    { label: 'Engajamento', bg: 'rgba(16,185,129,0.12)', color: '#6ee7b7' },
+      titulo:   `💬 ${T}: você já tem uma opinião formada sobre isso?`,
+      assunto:  `${T} divide opiniões — e está tudo bem não ter uma resposta definitiva sobre um tema tão complexo.\n\nO que importa é estar informado, questionar narrativas e discutir com qualidade.\n\n${fechoEngaja}`,
+    },
+
+    /* 4. EDUCACIONAL */
+    {
+      angulo:   'Educacional',
+      emoji:    '📚',
+      cor:      '#8b5cf6',
+      badge:    { label: 'Conteúdo', bg: 'rgba(139,92,246,0.12)', color: '#c4b5fd' },
+      titulo:   `📚 3 coisas que você precisa entender sobre ${T}`,
+      assunto:  `Muito barulho, pouca explicação. Sobre ${T}, separamos o essencial:\n\n1️⃣ Por que esse tema ganhou escala agora — e não antes\n2️⃣ Quem são os principais agentes e o que cada um tem a ganhar\n3️⃣ O que os próximos movimentos podem indicar sobre o cenário global\n\nSalva esse post para ler com calma. 🔖`,
+    },
+
+    /* 5. DADO EM DESTAQUE */
+    {
+      angulo:   'Dado em Destaque',
+      emoji:    '📊',
+      cor:      '#ef4444',
+      badge:    { label: 'Análise', bg: 'rgba(239,68,68,0.12)', color: '#fca5a5' },
+      titulo:   `📊 ${T} em números: a dimensão real do que está em jogo`,
+      assunto:  `${aberturaDados}\n\nOs impactos de ${T} são muito maiores — e mais estruturais — do que o debate do dia a dia sugere. Contexto importa, e números sem contexto enganam.\n\nNa Soma Partners, analisamos o que está por trás dos dados antes de qualquer recomendação. 📈`,
+    },
+
+    /* 6. PERSPECTIVA FUTURA */
+    {
+      angulo:   'O Que Vem Por Aí',
+      emoji:    '🔮',
+      cor:      '#06b6d4',
+      badge:    { label: 'Perspectiva', bg: 'rgba(6,182,212,0.12)', color: '#67e8f9' },
+      titulo:   `🔮 ${T}: o que esperar nos próximos meses`,
+      assunto:  `Quando um tema como ${T} ganha essa proporção, o mais importante não é o barulho de hoje — é entender o que pode vir a seguir.\n\nQuais cenários estão sobre a mesa? Quais setores tendem a se beneficiar — ou a sofrer? Quem está posicionado para aproveitar o que está por vir?\n\nEssas são as perguntas que guiam as decisões de quem pensa no longo prazo. Acompanhe nossa análise. 🧭`,
+    },
+  ];
 }
 
 /* ── RENDER ──────────────────────────── */
-function renderNoticias(itens, tema){
-  const grid = document.getElementById('news-grid');
-  if(!itens.length){
-    grid.innerHTML = `<div class="empty show">
-      <div class="empty-icon">😕</div>
-      <div class="empty-title">Nenhuma notícia encontrada</div>
-      <div class="empty-sub">Tente um termo diferente ou mais específico. Ex: "Copa do Mundo" em vez de apenas "copa".</div>
-    </div>`;
+function gerarPosts(){
+  const tema = document.getElementById('tema-input').value.trim();
+  if(!tema) {
+    document.getElementById('tema-input').focus();
+    document.getElementById('tema-input').style.borderColor = 'rgba(239,68,68,0.6)';
+    setTimeout(() => document.getElementById('tema-input').style.borderColor = '', 1200);
     return;
   }
 
-  grid.innerHTML = itens.map((item, idx) => {
-    const titulo  = gerarTitulo(item);
-    const assunto = gerarAssunto(item, tema);
-    const data    = fmtData(item.pubDate);
-    const id      = `n${idx}`;
-    return `<div class="news-card">
-      <div class="nc-header">
-        <span class="nc-source" title="${item.feedLabel}">${item.feedLabel}</span>
-        <span class="nc-date">${data}</span>
-      </div>
-      <div class="nc-original">${limpar(item.title)}</div>
+  const angulos = gerarAngulos(tema);
 
-      <div class="nc-section titulo-sec">
-        <div class="nc-section-label">📣 Título do Post</div>
-        <div class="nc-content" id="${id}-titulo">${titulo}</div>
-        <button class="nc-copy" onclick="copiar(this,'${id}-titulo')">
+  // Results bar
+  document.getElementById('rb-tema').textContent = `"${tema}"`;
+  document.getElementById('results-bar').classList.add('show');
+
+  // Grid
+  const grid = document.getElementById('grid');
+  grid.innerHTML = angulos.map((a, idx) => {
+    const id = `c${idx}`;
+    return `<div class="card" style="--accent:${a.cor}">
+      <div class="card-head" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+        <div class="card-angulo-dot" style="background:${a.cor}"></div>
+        <span class="card-angulo" style="color:${a.cor}">${a.angulo}</span>
+        <span class="card-angulo-badge" style="background:${a.badge.bg};color:${a.badge.color};border:1px solid ${a.badge.bg}">${a.badge.label}</span>
+      </div>
+
+      <div class="section s-titulo">
+        <div class="section-lbl">📣 Título do Post</div>
+        <div class="section-titulo" id="${id}-t">${a.titulo}</div>
+        <button class="btn-copy" onclick="copiar(this,'${id}-t')">
           <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           Copiar título
         </button>
       </div>
 
-      <div class="nc-section assunto-sec">
-        <div class="nc-section-label">📝 Assunto / Legenda</div>
-        <div class="nc-content nc-desc" id="${id}-assunto">${assunto}</div>
-        <button class="nc-copy" onclick="copiar(this,'${id}-assunto')">
+      <div class="section s-assunto">
+        <div class="section-lbl">📝 Assunto / Legenda</div>
+        <div class="section-assunto" id="${id}-a">${a.assunto}</div>
+        <button class="btn-copy" onclick="copiar(this,'${id}-a')">
           <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           Copiar assunto
         </button>
-      </div>
-
-      <div class="nc-footer">
-        <a href="${item.link}" target="_blank" class="nc-link">
-          <svg style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Ver notícia original
-        </a>
       </div>
     </div>`;
   }).join('');
 }
 
-/* ── COPIAR ──────────────────────────── */
-function copiar(btn, elementId){
-  const texto = document.getElementById(elementId)?.textContent?.trim() || '';
+/* ── HELPERS ─────────────────────────── */
+function usar(tema){
+  document.getElementById('tema-input').value = tema;
+  gerarPosts();
+}
+
+function copiar(btn, id){
+  const texto = document.getElementById(id)?.textContent?.trim() || '';
   if(!texto) return;
   navigator.clipboard.writeText(texto).then(()=>{
     const orig = btn.innerHTML;
     btn.innerHTML = '✓ Copiado!';
-    btn.style.color = '#6ee7b7';
-    btn.style.borderColor = 'rgba(16,185,129,0.4)';
-    btn.style.background = 'rgba(16,185,129,0.08)';
-    setTimeout(()=>{
-      btn.innerHTML = orig;
-      btn.style.color = '';
-      btn.style.borderColor = '';
-      btn.style.background = '';
-    }, 2000);
-    showToast('Copiado para a área de transferência ✓');
-  }).catch(()=>alert('Não foi possível copiar. Use Ctrl+C.'));
+    btn.style.cssText = 'color:#6ee7b7;border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08)';
+    setTimeout(()=>{ btn.innerHTML = orig; btn.style.cssText = ''; }, 2000);
+    showToast('Copiado ✓');
+  }).catch(()=>alert('Não foi possível copiar.'));
 }
 
 function showToast(msg){
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2200);
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2000);
 }
 </script>
 </body>
