@@ -106,20 +106,30 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .hist-day-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 8px 6px}
 .hist-entry{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 13px;margin-bottom:6px;cursor:pointer;transition:all .15s;position:relative}
 .hist-entry:hover{background:rgba(255,255,255,0.07);border-color:rgba(59,139,255,0.3)}
-.hist-entry-tema{font-size:12px;font-weight:800;color:#fff;margin-bottom:4px;padding-right:22px}
+.hist-entry-tema{font-size:12px;font-weight:800;color:#fff;margin-bottom:4px}
 .hist-entry-meta{display:flex;align-items:center;justify-content:space-between}
 .hist-entry-hora{font-size:10px;color:var(--muted);font-weight:600}
 .hist-entry-areas{display:flex;gap:4px}
 .hist-entry-areas span{font-size:11px}
-.hist-entry-del{position:absolute;top:8px;right:10px;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:rgba(255,255,255,0.25);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Montserrat',sans-serif}
-.hist-entry-del:hover{background:rgba(239,68,68,0.15);color:#ef4444}
 
 .hist-empty{padding:48px 16px;text-align:center;color:var(--muted)}
 .hist-empty-icon{font-size:32px;opacity:.4;margin-bottom:8px}
 .hist-empty-text{font-size:11px;line-height:1.6}
-.hist-footer{padding:12px;border-top:1px solid var(--border);flex-shrink:0}
-.btn-clear-hist{width:100%;padding:9px;border-radius:8px;border:1px solid rgba(239,68,68,0.25);background:rgba(239,68,68,0.07);color:rgba(239,68,68,0.7);font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
-.btn-clear-hist:hover{background:rgba(239,68,68,0.14);color:#ef4444}
+
+/* MODAL CONFIRMAÇÃO */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal-box{background:#0f2236;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:28px 28px 24px;width:100%;max-width:400px;margin:16px;transform:scale(.96);transition:transform .2s}
+.modal-overlay.open .modal-box{transform:scale(1)}
+.modal-icon{font-size:28px;margin-bottom:12px}
+.modal-title{font-size:15px;font-weight:900;margin-bottom:6px;letter-spacing:-.2px}
+.modal-sub{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.modal-tema{color:#fff;font-weight:800;font-style:normal}
+.modal-actions{display:flex;gap:10px}
+.modal-cancel{flex:1;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,0.13);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
+.modal-cancel:hover{background:rgba(255,255,255,0.1);color:#fff}
+.modal-confirm{flex:2;padding:11px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
+.modal-confirm:hover{background:#2d7af0;box-shadow:0 4px 16px rgba(59,139,255,0.35)}
 
 /* TOAST */
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);background:#1a3348;border:1px solid rgba(59,139,255,0.4);border-radius:10px;padding:9px 20px;font-size:11px;font-weight:700;color:#93c5fd;opacity:0;transition:all .22s;z-index:999;pointer-events:none}
@@ -167,9 +177,9 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
     <div class="input-box">
       <input type="text" id="tema-input"
         placeholder="Ex: Copa do Mundo, Selic, IPO na bolsa, GP de F1, AI Act..."
-        onkeydown="if(event.key==='Enter')gerarPosts()" />
+        onkeydown="if(event.key==='Enter')pedirConfirmacao()" />
     </div>
-    <button class="btn-gerar" onclick="gerarPosts()">
+    <button class="btn-gerar" onclick="pedirConfirmacao()">
       <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
       Gerar Posts
     </button>
@@ -229,8 +239,21 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
     <button class="btn-close-hist" onclick="fecharHistorico()">✕</button>
   </div>
   <div class="hist-body" id="hist-body"></div>
-  <div class="hist-footer">
-    <button class="btn-clear-hist" onclick="limparHistorico()">Limpar todo o histórico</button>
+</div>
+
+<!-- MODAL CONFIRMAÇÃO -->
+<div class="modal-overlay" id="modal-confirma">
+  <div class="modal-box">
+    <div class="modal-icon">✨</div>
+    <div class="modal-title">Gerar posts agora?</div>
+    <div class="modal-sub">Isso vai criar novos posts para o tema <em class="modal-tema" id="modal-tema-label"></em> e salvar no histórico.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="modal-confirm" onclick="confirmarGeracao()">
+        <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;display:inline;vertical-align:middle;margin-right:5px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Gerar Posts
+      </button>
+    </div>
   </div>
 </div>
 
@@ -267,19 +290,6 @@ function salvarGeracao(tema, posts){
   saveHist(h);
 }
 
-function deletarEntrada(id, e){
-  e.stopPropagation();
-  const h = getHist().filter(x => x.id !== id);
-  saveHist(h);
-  renderHistBody();
-}
-
-function limparHistorico(){
-  if(!confirm('Limpar todo o histórico de gerações?')) return;
-  localStorage.removeItem(HIST_KEY);
-  atualizarBadge();
-  renderHistBody();
-}
 
 function atualizarBadge(){
   const n = getHist().length;
@@ -342,7 +352,6 @@ function renderHistBody(){
             <span class="hist-entry-hora">${fmtDataHist(e.data)}</span>
             <div class="hist-entry-areas">${(e.posts||[]).map(p=>`<span title="${p.areaNome||''}">${p.areaEmoji||'📰'}</span>`).join('')}</div>
           </div>
-          <button class="hist-entry-del" onclick="deletarEntrada(${e.id},event)" title="Remover">✕</button>
         </div>
       `).join('')}
     </div>
@@ -510,12 +519,32 @@ function gerarPosts(){
 }
 
 function regerarAtual(){
-  // Se o input tem algo, usa o que está lá (permite trocar tema)
-  // Se o input estiver vazio, restaura o último tema gerado
   const inputVal = document.getElementById('tema-input').value.trim();
   if(!inputVal && _temaAtual){
     document.getElementById('tema-input').value = _temaAtual;
   }
+  pedirConfirmacao();
+}
+
+/* ── CONFIRMAÇÃO ─────────────────────── */
+function pedirConfirmacao(){
+  const tema = document.getElementById('tema-input').value.trim();
+  if(!tema){
+    const inp = document.getElementById('tema-input');
+    inp.focus(); inp.style.borderColor='rgba(239,68,68,0.6)';
+    setTimeout(()=>inp.style.borderColor='',1200);
+    return;
+  }
+  document.getElementById('modal-tema-label').textContent = `"${tema}"`;
+  document.getElementById('modal-confirma').classList.add('open');
+}
+
+function fecharModal(){
+  document.getElementById('modal-confirma').classList.remove('open');
+}
+
+function confirmarGeracao(){
+  fecharModal();
   gerarPosts();
 }
 
@@ -576,7 +605,7 @@ function filtrar(btn, filtro){
 
 function usar(tema){
   document.getElementById('tema-input').value = tema;
-  gerarPosts();
+  pedirConfirmacao();
 }
 
 function copiar(btn, id){
