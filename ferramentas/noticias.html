@@ -83,7 +83,7 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .s-assunto{border-left:2px solid var(--area-cor-dim,rgba(255,255,255,0.08));background:rgba(0,0,0,0.04)}
 
 /* EMPTY */
-.empty{display:none;flex-direction:column;align-items:center;padding:80px 32px;grid-column:1/-1;text-align:center;color:var(--muted);gap:10px}
+.empty{display:none;flex-direction:column;align-items:center;padding:80px 32px;text-align:center;color:var(--muted);gap:10px}
 .empty.show{display:flex}
 .empty-icon{font-size:44px;opacity:.4;margin-bottom:4px}
 .empty-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.4)}
@@ -211,13 +211,12 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
   </div>
 </div>
 
-<div class="grid" id="grid">
-  <div class="empty show" id="empty">
-    <div class="empty-icon">✍️</div>
-    <div class="empty-title">Nenhum tema ainda</div>
-    <div class="empty-sub">Digite um assunto em destaque e a ferramenta cria posts personalizados para cada área da Soma Partners.</div>
-  </div>
+<div class="empty show" id="empty">
+  <div class="empty-icon">✍️</div>
+  <div class="empty-title">Nenhum tema ainda</div>
+  <div class="empty-sub">Digite um assunto em destaque e a ferramenta cria posts personalizados para cada área da Soma Partners.</div>
 </div>
+<div class="grid" id="grid"></div>
 
 <!-- HISTÓRICO DRAWER -->
 <div class="hist-overlay" id="hist-overlay" onclick="fecharHistorico()"></div>
