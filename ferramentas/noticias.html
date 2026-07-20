@@ -19,44 +19,69 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .btn-back:hover{background:rgba(255,255,255,0.11);color:#fff}
 .btn-back svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.5;fill:none}
 
-/* HEADER */
-.page-header{padding:28px 32px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.ph-title{font-size:22px;font-weight:900;letter-spacing:-.3px}
-.ph-sub{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;max-width:460px}
+/* HERO SEARCH */
+.search-hero{padding:40px 32px 28px;border-bottom:1px solid var(--border)}
+.sh-label{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+.sh-title{font-size:22px;font-weight:900;letter-spacing:-.3px;margin-bottom:4px}
+.sh-sub{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:22px}
 
-/* CONTROLS */
-.controls{padding:18px 32px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
-.cat-tabs{display:flex;gap:0;background:rgba(255,255,255,0.05);border-radius:10px;padding:3px;border:1px solid var(--border)}
-.cat-tab{padding:7px 20px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;color:var(--muted);background:none;border:none;transition:all .15s;letter-spacing:.2px}
-.cat-tab.active{background:rgba(59,139,255,0.18);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
-.btn-buscar{display:inline-flex;align-items:center;gap:7px;padding:8px 20px;border-radius:9px;font-size:11px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;background:var(--blue);border:none;color:#fff;transition:all .18s;letter-spacing:.3px}
-.btn-buscar:hover{background:#2d7af0;transform:translateY(-1px)}
-.btn-buscar:disabled{opacity:.5;cursor:default;transform:none}
-.btn-buscar svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
-.last-updated{font-size:10px;color:var(--muted);margin-left:auto}
+.search-wrap{display:flex;gap:10px;max-width:680px}
+.search-input-box{flex:1;position:relative}
+.search-input-box input{
+  width:100%;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;
+  font-family:'Montserrat',sans-serif;background:rgba(255,255,255,0.06);
+  border:1.5px solid rgba(255,255,255,0.13);color:#fff;outline:none;
+  transition:border-color .18s,background .18s;
+}
+.search-input-box input::placeholder{color:rgba(255,255,255,0.28);font-weight:500}
+.search-input-box input:focus{border-color:rgba(59,139,255,0.55);background:rgba(255,255,255,0.08)}
+.btn-search{
+  padding:0 24px;border-radius:12px;font-size:12px;font-weight:800;
+  font-family:'Montserrat',sans-serif;cursor:pointer;background:var(--blue);
+  border:none;color:#fff;transition:all .18s;display:flex;align-items:center;gap:8px;
+  white-space:nowrap;letter-spacing:.2px;min-width:130px;justify-content:center;
+}
+.btn-search:hover{background:#2d7af0;transform:translateY(-1px)}
+.btn-search:disabled{opacity:.5;cursor:default;transform:none}
+.btn-search svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0}
+
+/* QUICK TAGS */
+.quick-tags{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.q-tag{
+  padding:6px 14px;border-radius:20px;font-size:10px;font-weight:700;
+  font-family:'Montserrat',sans-serif;cursor:pointer;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.55);transition:all .15s;
+}
+.q-tag:hover{background:rgba(59,139,255,0.12);border-color:rgba(59,139,255,0.35);color:rgba(255,255,255,0.85)}
+
+/* RESULTS HEADER */
+.results-header{padding:16px 32px 0;display:flex;align-items:center;justify-content:space-between}
+.results-title{font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:7px}
+.results-badge{background:rgba(59,139,255,0.15);border:1px solid rgba(59,139,255,0.25);color:#93c5fd;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700}
+.results-ts{font-size:10px;color:rgba(255,255,255,0.25)}
 
 /* GRID */
-.news-grid{padding:20px 32px 48px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.news-grid{padding:16px 32px 48px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
 
 /* CARD */
 .news-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .18s}
 .news-card:hover{border-color:rgba(255,255,255,0.14)}
 .nc-header{padding:12px 14px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05)}
-.nc-source{font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--blue);background:rgba(59,139,255,0.1);border:1px solid rgba(59,139,255,0.2);padding:3px 8px;border-radius:5px}
-.nc-date{font-size:9px;color:var(--muted);font-weight:600}
-.nc-original{padding:10px 14px 8px;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;font-style:italic;border-bottom:1px solid rgba(255,255,255,0.05)}
+.nc-source{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--blue);background:rgba(59,139,255,0.1);border:1px solid rgba(59,139,255,0.2);padding:3px 9px;border-radius:5px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nc-date{font-size:9px;color:var(--muted);font-weight:600;flex-shrink:0}
+.nc-original{padding:10px 14px 8px;font-size:11px;color:rgba(255,255,255,0.38);line-height:1.5;border-bottom:1px solid rgba(255,255,255,0.05)}
 .nc-section{padding:12px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.05)}
-.nc-section-label{font-size:8.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.nc-section-label{font-size:8.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
 .nc-content{font-size:13px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:8px}
 .nc-desc{font-size:11px;font-weight:500;color:rgba(255,255,255,0.8);line-height:1.65}
-.nc-copy{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.55);transition:all .15s}
+.nc-copy{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);transition:all .15s}
 .nc-copy:hover{background:rgba(255,255,255,0.09);color:#fff;border-color:rgba(255,255,255,0.2)}
 .nc-copy svg{width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
 .nc-footer{padding:10px 14px}
 .nc-link{font-size:10px;font-weight:700;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:color .15s}
 .nc-link:hover{color:var(--blue)}
 
-/* ACCENTS por seção */
 .nc-section.titulo-sec{background:rgba(59,139,255,0.04);border-left:2px solid rgba(59,139,255,0.35)}
 .nc-section.assunto-sec{background:rgba(201,150,60,0.04);border-left:2px solid rgba(201,150,60,0.35)}
 
@@ -66,23 +91,23 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .spin{width:32px;height:32px;border:3px solid rgba(59,139,255,0.2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* EMPTY */
-.empty{display:none;flex-direction:column;align-items:center;padding:80px;grid-column:1/-1;text-align:center;color:var(--muted);gap:10px}
+/* ESTADOS VAZIOS */
+.empty{display:none;flex-direction:column;align-items:center;padding:72px 32px;grid-column:1/-1;text-align:center;color:var(--muted);gap:10px}
 .empty.show{display:flex}
 .empty-icon{font-size:42px;opacity:.5;margin-bottom:4px}
 .empty-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.5)}
-.empty-sub{font-size:11px;line-height:1.6;max-width:320px}
+.empty-sub{font-size:11px;line-height:1.6;max-width:340px}
 
 /* TOAST */
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(12px);background:#1a3348;border:1px solid rgba(59,139,255,0.4);border-radius:10px;padding:9px 20px;font-size:11px;font-weight:700;color:#93c5fd;opacity:0;transition:all .25s;z-index:999;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 @media(max-width:700px){
-  .controls{padding:14px 16px 12px}
+  .search-hero{padding:24px 16px 20px}
+  .search-wrap{flex-direction:column}
+  .btn-search{padding:13px;border-radius:12px}
   .news-grid{padding:14px 16px 32px}
-  .page-header{padding:20px 16px 0}
-  .cat-tab{padding:6px 14px;font-size:10px}
-  .last-updated{display:none}
+  .results-header{padding:12px 16px 0}
 }
 </style>
 </head>
@@ -102,30 +127,47 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
   </a>
 </nav>
 
-<div class="page-header">
-  <div>
-    <div class="ph-title">📰 Gerador de Notícias</div>
-    <div class="ph-sub">Busca as últimas notícias mundiais e gera automaticamente títulos e legendas prontos para post.</div>
+<div class="search-hero">
+  <div class="sh-label">Gerador de Notícias</div>
+  <div class="sh-title">📰 Qual tema está em alta hoje?</div>
+  <div class="sh-sub">Digite um assunto que está no radar global — a ferramenta busca as notícias mais recentes e gera automaticamente título e legenda prontos para post.</div>
+
+  <div class="search-wrap">
+    <div class="search-input-box">
+      <input type="text" id="search-input"
+        placeholder="Ex: Copa do Mundo 2026, Taxa Selic, Guerra na Ucrânia, IA..."
+        onkeydown="if(event.key==='Enter') buscarTema()" />
+    </div>
+    <button class="btn-search" id="btn-search" onclick="buscarTema()">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Pesquisar
+    </button>
+  </div>
+
+  <div class="quick-tags">
+    <button class="q-tag" onclick="preset('Copa do Mundo 2026')">⚽ Copa 2026</button>
+    <button class="q-tag" onclick="preset('economia Brasil')">📈 Economia BR</button>
+    <button class="q-tag" onclick="preset('inteligência artificial')">🤖 IA</button>
+    <button class="q-tag" onclick="preset('geopolítica mundo')">🌐 Geopolítica</button>
+    <button class="q-tag" onclick="preset('mercado financeiro')">💹 Mercado</button>
+    <button class="q-tag" onclick="preset('política Brasil')">🏛️ Política</button>
+    <button class="q-tag" onclick="preset('tecnologia')">💻 Tech</button>
   </div>
 </div>
 
-<div class="controls">
-  <div class="cat-tabs">
-    <button class="cat-tab active" id="tab-eco" onclick="setCategoria('economia')">🌐 Política / Economia</button>
-    <button class="cat-tab" id="tab-esp" onclick="setCategoria('esporte')">⚽ Esporte</button>
+<div id="results-header" class="results-header" style="display:none">
+  <div class="results-title">
+    Resultados para <span id="results-query" style="color:#fff;font-weight:800"></span>
+    <span class="results-badge" id="results-count"></span>
   </div>
-  <button class="btn-buscar" id="btn-buscar" onclick="buscarNoticias()">
-    <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.6"/></svg>
-    Buscar Notícias
-  </button>
-  <span class="last-updated" id="last-updated"></span>
+  <span class="results-ts" id="results-ts"></span>
 </div>
 
 <div class="news-grid" id="news-grid">
   <div class="empty show" id="empty-state">
-    <div class="empty-icon">📰</div>
-    <div class="empty-title">Nenhuma notícia carregada</div>
-    <div class="empty-sub">Selecione uma categoria e clique em "Buscar Notícias" para começar.</div>
+    <div class="empty-icon">🔍</div>
+    <div class="empty-title">Nenhum tema pesquisado ainda</div>
+    <div class="empty-sub">Digite um assunto que você viu que está em destaque global e clique em Pesquisar.</div>
   </div>
 </div>
 
@@ -134,69 +176,68 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 <script>
 if(sessionStorage.getItem('soma_auth')!=='1'){window.location.href='../login.html';}
 
-/* ── CONFIG ──────────────────────────── */
-const FEEDS = {
-  economia:[
-    {url:'https://feeds.bbci.co.uk/news/business/rss.xml',      label:'BBC Business',  emoji:'💰'},
-    {url:'https://feeds.bbci.co.uk/news/world/rss.xml',         label:'BBC World',     emoji:'🌐'},
-    {url:'https://g1.globo.com/dynamo/economia/rss2.xml',       label:'G1 Economia',   emoji:'📊'},
-    {url:'https://g1.globo.com/dynamo/politica/rss2.xml',       label:'G1 Política',   emoji:'🏛️'},
-  ],
-  esporte:[
-    {url:'https://feeds.bbci.co.uk/sport/rss.xml',              label:'BBC Sport',     emoji:'🏆'},
-    {url:'https://feeds.bbci.co.uk/sport/football/rss.xml',     label:'BBC Football',  emoji:'⚽'},
-    {url:'https://ge.globo.com/dynamo/rss2.xml',                label:'GE Globo',      emoji:'🇧🇷'},
-  ]
-};
-
-let _cat = 'economia';
 let _buscando = false;
 
-/* ── CATEGORIA ───────────────────────── */
-function setCategoria(cat){
-  _cat = cat;
-  document.getElementById('tab-eco').classList.toggle('active', cat==='economia');
-  document.getElementById('tab-esp').classList.toggle('active', cat==='esporte');
+/* ── PRESET ──────────────────────────── */
+function preset(tema){
+  document.getElementById('search-input').value = tema;
+  buscarTema();
 }
 
-/* ── FETCH ───────────────────────────── */
-async function buscarNoticias(){
-  if(_buscando) return;
+/* ── BUSCA PRINCIPAL ─────────────────── */
+async function buscarTema(){
+  const query = document.getElementById('search-input').value.trim();
+  if(!query || _buscando) return;
   _buscando = true;
-  const btn = document.getElementById('btn-buscar');
+
+  const btn = document.getElementById('btn-search');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spin" style="width:12px;height:12px;border-width:2px;margin-right:6px"></div>Buscando...';
+  btn.innerHTML = '<div class="spin" style="width:13px;height:13px;border-width:2px"></div>';
 
+  document.getElementById('results-header').style.display = 'none';
   const grid = document.getElementById('news-grid');
-  document.getElementById('empty-state').classList.remove('show');
-  grid.innerHTML = `<div class="loader show"><div class="spin"></div><div style="font-size:11px">Carregando notícias...</div></div>`;
+  grid.innerHTML = `<div class="loader show"><div class="spin"></div><div style="font-size:11px;margin-top:4px">Buscando notícias sobre "${query}"...</div></div>`;
 
-  const feeds = FEEDS[_cat];
-  const resultados = await Promise.all(feeds.map(feed => fetchFeed(feed)));
-  let itens = resultados.flat()
-    .filter(i => i.title && i.link)
-    .sort((a,b) => new Date(b.pubDate||0) - new Date(a.pubDate||0));
+  // Google News RSS para busca por tema (pt-BR + en)
+  const feedPT = {
+    url: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=pt-BR&gl=BR&ceid=BR:pt-BR`,
+    label: query, emoji: '📰'
+  };
+  const feedEN = {
+    url: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`,
+    label: query, emoji: '📰'
+  };
 
-  // deduplicar por similaridade de título
+  const [ptItems, enItems] = await Promise.all([fetchFeed(feedPT), fetchFeed(feedEN)]);
+
+  // Mesclar — PT primeiro, depois EN; deduplicar por título
+  let itens = [...ptItems, ...enItems];
   const vistos = new Set();
   itens = itens.filter(i => {
-    const chave = i.title.toLowerCase().substring(0,40);
-    if(vistos.has(chave)) return false;
-    vistos.add(chave); return true;
-  }).slice(0, 12);
+    const k = i.title.toLowerCase().replace(/\s+/g,'').substring(0,35);
+    if(vistos.has(k)) return false;
+    vistos.add(k); return true;
+  });
+
+  // Ordenar por data
+  itens.sort((a,b) => new Date(b.pubDate||0) - new Date(a.pubDate||0));
+  itens = itens.slice(0, 12);
 
   _buscando = false;
   btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.6"/></svg>Buscar Notícias';
+  btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Pesquisar';
 
   const now = new Date();
-  document.getElementById('last-updated').textContent =
-    `Atualizado às ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('results-query').textContent = `"${query}"`;
+  document.getElementById('results-count').textContent = `${itens.length} notícias`;
+  document.getElementById('results-ts').textContent =
+    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('results-header').style.display = 'flex';
 
-  renderNoticias(itens);
+  renderNoticias(itens, query);
 }
 
-/* ── PROXY / XML ─────────────────────────── */
+/* ── PROXY / XML ─────────────────────── */
 function timed(promise, ms){
   return Promise.race([promise, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
 }
@@ -205,17 +246,20 @@ function parseXML(xmlStr, feed){
   try{
     const xml = new DOMParser().parseFromString(xmlStr,'text/xml');
     if(xml.querySelector('parsererror')) return [];
-    const nodes = Array.from(xml.querySelectorAll('item, entry')).slice(0,7);
+    const nodes = Array.from(xml.querySelectorAll('item, entry')).slice(0,8);
     return nodes.map(n=>{
       const txt = t => (n.querySelector(t)?.textContent||'').trim();
       let link = txt('link');
       if(!link){ const el=n.querySelector('link[href]'); link=el?.getAttribute('href')||''; }
+      // Google News: source name fica em <source>
+      const sourceName = n.querySelector('source')?.textContent?.trim() || feed.label;
       return {
         title: txt('title'),
         link: link.replace(/\s/g,''),
         description: txt('description')||txt('summary')||txt('content'),
         pubDate: txt('pubDate')||txt('updated')||txt('published'),
-        feedLabel: feed.label, feedEmoji: feed.emoji
+        feedLabel: sourceName,
+        feedEmoji: '📰'
       };
     }).filter(i=>i.title&&i.link);
   }catch{return [];}
@@ -224,25 +268,25 @@ function parseXML(xmlStr, feed){
 async function fetchFeed(feed){
   const enc = encodeURIComponent(feed.url);
 
-  // Estratégia 1 — corsproxy.io (direto, retorna RSS)
+  // Estratégia 1 — corsproxy.io
   try{
-    const r = await timed(fetch(`https://corsproxy.io/?${enc}`), 7000);
+    const r = await timed(fetch(`https://corsproxy.io/?${enc}`), 8000);
     if(r.ok){ const items=parseXML(await r.text(), feed); if(items.length) return items; }
-  }catch(e){ console.warn('corsproxy falhou:', feed.label, e.message); }
+  }catch(e){ console.warn('corsproxy falhou:', e.message); }
 
   // Estratégia 2 — allorigins.win
   try{
-    const r = await timed(fetch(`https://api.allorigins.win/get?url=${enc}`), 7000);
+    const r = await timed(fetch(`https://api.allorigins.win/get?url=${enc}`), 8000);
     if(r.ok){ const d=await r.json(); const items=parseXML(d.contents||'', feed); if(items.length) return items; }
-  }catch(e){ console.warn('allorigins falhou:', feed.label, e.message); }
+  }catch(e){ console.warn('allorigins falhou:', e.message); }
 
   // Estratégia 3 — rss2json.com
   try{
-    const r = await timed(fetch(`https://api.rss2json.com/v1/api.json?count=6&rss_url=${enc}`), 7000);
+    const r = await timed(fetch(`https://api.rss2json.com/v1/api.json?count=8&rss_url=${enc}`), 8000);
     const d = await r.json();
     if(d.status==='ok'&&d.items?.length)
-      return d.items.map(i=>({...i, feedLabel:feed.label, feedEmoji:feed.emoji}));
-  }catch(e){ console.warn('rss2json falhou:', feed.label, e.message); }
+      return d.items.map(i=>({...i, feedLabel:i.author||feed.label, feedEmoji:'📰'}));
+  }catch(e){ console.warn('rss2json falhou:', e.message); }
 
   return [];
 }
@@ -256,58 +300,88 @@ function limpar(str){
     .replace(/\s+/g,' ').trim();
 }
 
-function gerarTitulo(item){
-  let t = (item.title||'')
-    .replace(/ [-|–] BBC (News|Sport|Business|World|Brasil).*$/i,'')
-    .replace(/ [-|–|:] Reuters.*$/i,'')
-    .replace(/ [-|–] G1.*$/i,'')
-    .replace(/ [-|–] ge\.globo.*$/i,'')
-    .replace(/ [-|–] Globo.*$/i,'')
-    .replace(/ [-|–] UOL.*$/i,'')
-    .trim();
-  return `${item.feedEmoji} ${t}`;
+const EMOJI_RULES = [
+  [/copa|futebol|soccer|football|gol|fifa|mundial/i,       '⚽'],
+  [/econom|pib|inflação|inflation|recessão|recession/i,   '📈'],
+  [/bolsa|mercado|market|ação|stock|dow|nasdaq|s&p/i,     '💹'],
+  [/juros|selic|fed |federal reserve|taxa|interest rate/i,'🏦'],
+  [/guerra|war|conflito|conflict|militar|troops|ataque/i, '⚔️'],
+  [/politic|governo|eleição|election|presidente|minister/i,'🏛️'],
+  [/inteligência artificial|ai\b|openai|chatgpt|llm|machine learn/i,'🤖'],
+  [/tecnolog|apple|google|microsoft|amazon|meta\b|tech/i, '💻'],
+  [/saúde|health|médic|hospital|câncer|cancer|vacina/i,   '🏥'],
+  [/clima|aquecimento|carbon|ambiente|environment|flood/i,'🌱'],
+  [/espaço|space|nasa|foguete|rocket|marte|mars/i,        '🚀'],
+  [/cripto|bitcoin|crypto|blockchain|ethereum/i,          '₿'],
+];
+
+function autoEmoji(text){
+  const t = text.toLowerCase();
+  for(const [re, e] of EMOJI_RULES) if(re.test(t)) return e;
+  return '📰';
 }
 
-function gerarAssunto(item){
-  const raw = limpar(item.description || item.content || '');
-  if(!raw) return 'Acesse a notícia completa pelo link abaixo.';
-  const texto = raw.substring(0, 320);
-  // cortar na última frase completa
+function gerarTitulo(item){
+  // Remove sufixo " - Fonte" que Google News sempre adiciona
+  let t = limpar(item.title||'')
+    .replace(/\s[-–|]\s.{1,60}$/, '')
+    .trim();
+  const emoji = autoEmoji(t);
+  return `${emoji} ${t}`;
+}
+
+function gerarAssunto(item, tema){
+  const raw = limpar(item.description || '');
+
+  if(!raw || raw.length < 20){
+    // Sem descrição: gerar contexto mínimo a partir do título
+    const tit = limpar(item.title||'').replace(/\s[-–|]\s.{1,60}$/,'').trim();
+    return `${tit}. Acesse o link abaixo para ler a cobertura completa sobre o tema.`;
+  }
+
+  // Truncar em frase completa até ~300 chars
+  const texto = raw.length > 320 ? raw.substring(0, 320) : raw;
   const idx = Math.max(texto.lastIndexOf('. '), texto.lastIndexOf('! '), texto.lastIndexOf('? '));
-  const resumo = (idx > 80) ? texto.substring(0, idx+1) : texto.substring(0, 260).trimEnd() + '...';
+  let resumo = (idx > 80) ? texto.substring(0, idx+1) : texto.substring(0, 280).trimEnd() + '...';
+
   return resumo;
 }
 
 function fmtData(ds){
   if(!ds) return '';
   try{
-    return new Date(ds).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    const d = new Date(ds);
+    const agora = Date.now();
+    const diff = agora - d.getTime();
+    if(diff < 3600000) return `${Math.round(diff/60000)}min atrás`;
+    if(diff < 86400000) return `${Math.round(diff/3600000)}h atrás`;
+    return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
   }catch{return '';}
 }
 
 /* ── RENDER ──────────────────────────── */
-function renderNoticias(itens){
+function renderNoticias(itens, tema){
   const grid = document.getElementById('news-grid');
   if(!itens.length){
     grid.innerHTML = `<div class="empty show">
       <div class="empty-icon">😕</div>
-      <div class="empty-title">Sem notícias disponíveis</div>
-      <div class="empty-sub">Os feeds podem estar temporariamente indisponíveis. Tente novamente em instantes.</div>
+      <div class="empty-title">Nenhuma notícia encontrada</div>
+      <div class="empty-sub">Tente um termo diferente ou mais específico. Ex: "Copa do Mundo" em vez de apenas "copa".</div>
     </div>`;
     return;
   }
 
   grid.innerHTML = itens.map((item, idx) => {
     const titulo  = gerarTitulo(item);
-    const assunto = gerarAssunto(item);
+    const assunto = gerarAssunto(item, tema);
     const data    = fmtData(item.pubDate);
     const id      = `n${idx}`;
     return `<div class="news-card">
       <div class="nc-header">
-        <span class="nc-source">${item.feedEmoji} ${item.feedLabel}</span>
+        <span class="nc-source" title="${item.feedLabel}">${item.feedLabel}</span>
         <span class="nc-date">${data}</span>
       </div>
-      <div class="nc-original" title="Título original">${limpar(item.title)}</div>
+      <div class="nc-original">${limpar(item.title)}</div>
 
       <div class="nc-section titulo-sec">
         <div class="nc-section-label">📣 Título do Post</div>
