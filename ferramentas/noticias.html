@@ -511,8 +511,12 @@ function gerarPosts(){
 }
 
 function regerarAtual(){
-  if(!_temaAtual){ gerarPosts(); return; }
-  document.getElementById('tema-input').value = _temaAtual;
+  // Se o input tem algo, usa o que está lá (permite trocar tema)
+  // Se o input estiver vazio, restaura o último tema gerado
+  const inputVal = document.getElementById('tema-input').value.trim();
+  if(!inputVal && _temaAtual){
+    document.getElementById('tema-input').value = _temaAtual;
+  }
   gerarPosts();
 }
 
