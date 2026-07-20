@@ -137,19 +137,17 @@ if(sessionStorage.getItem('soma_auth')!=='1'){window.location.href='../login.htm
 /* ── CONFIG ──────────────────────────── */
 const FEEDS = {
   economia:[
-    {url:'https://g1.globo.com/dynamo/economia/rss2.xml',       label:'G1 Economia',    emoji:'📊'},
-    {url:'https://g1.globo.com/dynamo/politica/rss2.xml',       label:'G1 Política',    emoji:'🏛️'},
-    {url:'https://feeds.bbci.co.uk/news/business/rss.xml',      label:'BBC Business',   emoji:'💰'},
-    {url:'https://feeds.bbci.co.uk/news/world/rss.xml',         label:'BBC World',      emoji:'🌐'},
+    {url:'https://feeds.bbci.co.uk/news/business/rss.xml',      label:'BBC Business',  emoji:'💰'},
+    {url:'https://feeds.bbci.co.uk/news/world/rss.xml',         label:'BBC World',     emoji:'🌐'},
+    {url:'https://g1.globo.com/dynamo/economia/rss2.xml',       label:'G1 Economia',   emoji:'📊'},
+    {url:'https://g1.globo.com/dynamo/politica/rss2.xml',       label:'G1 Política',   emoji:'🏛️'},
   ],
   esporte:[
-    {url:'https://ge.globo.com/dynamo/rss2.xml',                label:'GE Globo',       emoji:'⚽'},
-    {url:'https://feeds.bbci.co.uk/sport/rss.xml',              label:'BBC Sport',      emoji:'🏆'},
-    {url:'https://ge.globo.com/futebol/times/flamengo/dynamo/rss2.xml', label:'Flamengo', emoji:'🔴'},
+    {url:'https://feeds.bbci.co.uk/sport/rss.xml',              label:'BBC Sport',     emoji:'🏆'},
+    {url:'https://feeds.bbci.co.uk/sport/football/rss.xml',     label:'BBC Football',  emoji:'⚽'},
+    {url:'https://ge.globo.com/dynamo/rss2.xml',                label:'GE Globo',      emoji:'🇧🇷'},
   ]
 };
-
-const RSS2JSON = 'https://api.rss2json.com/v1/api.json?count=6&rss_url=';
 
 let _cat = 'economia';
 let _buscando = false;
@@ -198,16 +196,55 @@ async function buscarNoticias(){
   renderNoticias(itens);
 }
 
-async function fetchFeed(feed){
+/* ── PROXY / XML ─────────────────────────── */
+function timed(promise, ms){
+  return Promise.race([promise, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
+}
+
+function parseXML(xmlStr, feed){
   try{
-    const r = await fetch(RSS2JSON + encodeURIComponent(feed.url));
+    const xml = new DOMParser().parseFromString(xmlStr,'text/xml');
+    if(xml.querySelector('parsererror')) return [];
+    const nodes = Array.from(xml.querySelectorAll('item, entry')).slice(0,7);
+    return nodes.map(n=>{
+      const txt = t => (n.querySelector(t)?.textContent||'').trim();
+      let link = txt('link');
+      if(!link){ const el=n.querySelector('link[href]'); link=el?.getAttribute('href')||''; }
+      return {
+        title: txt('title'),
+        link: link.replace(/\s/g,''),
+        description: txt('description')||txt('summary')||txt('content'),
+        pubDate: txt('pubDate')||txt('updated')||txt('published'),
+        feedLabel: feed.label, feedEmoji: feed.emoji
+      };
+    }).filter(i=>i.title&&i.link);
+  }catch{return [];}
+}
+
+async function fetchFeed(feed){
+  const enc = encodeURIComponent(feed.url);
+
+  // Estratégia 1 — corsproxy.io (direto, retorna RSS)
+  try{
+    const r = await timed(fetch(`https://corsproxy.io/?${enc}`), 7000);
+    if(r.ok){ const items=parseXML(await r.text(), feed); if(items.length) return items; }
+  }catch(e){ console.warn('corsproxy falhou:', feed.label, e.message); }
+
+  // Estratégia 2 — allorigins.win
+  try{
+    const r = await timed(fetch(`https://api.allorigins.win/get?url=${enc}`), 7000);
+    if(r.ok){ const d=await r.json(); const items=parseXML(d.contents||'', feed); if(items.length) return items; }
+  }catch(e){ console.warn('allorigins falhou:', feed.label, e.message); }
+
+  // Estratégia 3 — rss2json.com
+  try{
+    const r = await timed(fetch(`https://api.rss2json.com/v1/api.json?count=6&rss_url=${enc}`), 7000);
     const d = await r.json();
-    if(d.status !== 'ok') return [];
-    return (d.items||[]).map(item=>({...item, feedLabel:feed.label, feedEmoji:feed.emoji}));
-  }catch(e){
-    console.warn('Erro no feed:', feed.url);
-    return [];
-  }
+    if(d.status==='ok'&&d.items?.length)
+      return d.items.map(i=>({...i, feedLabel:feed.label, feedEmoji:feed.emoji}));
+  }catch(e){ console.warn('rss2json falhou:', feed.label, e.message); }
+
+  return [];
 }
 
 /* ── GERAÇÃO DE POST ─────────────────── */
