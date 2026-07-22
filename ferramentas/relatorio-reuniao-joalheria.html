@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<title>Relatório de Reunião — Planejamento Estratégico — 03/08/2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Montserrat',sans-serif;background:#f8fafc;color:#1e293b}
+@media print{
+  body{background:#fff}
+  @page{margin:14mm 12mm;size:A4}
+  .no-print{display:none!important}
+  .page{page-break-before:always;break-before:page}
+  .cover{page-break-before:avoid}
+}
+
+/* TOOLBAR */
+.toolbar{position:fixed;top:0;left:0;right:0;background:#0b1e30;padding:10px 32px;display:flex;align-items:center;justify-content:space-between;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.3)}
+.tb-left{display:flex;align-items:center;gap:10px}
+.logo-soma{font-size:15px;font-weight:300;color:#fff}
+.logo-pipe{width:1px;height:18px;background:rgba(255,255,255,0.3);display:inline-block;margin:0 8px;vertical-align:middle}
+.logo-partners{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#fff;opacity:.7}
+.tb-title{font-size:11px;font-weight:800;color:rgba(255,255,255,0.5);margin-left:6px}
+.btn-print{padding:7px 20px;border-radius:8px;font-size:11px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;background:#7c3aed;border:none;color:#fff;display:flex;align-items:center;gap:7px;transition:all .18s}
+.btn-print:hover{background:#6d28d9;box-shadow:0 3px 14px rgba(124,58,237,0.4)}
+.btn-print svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
+
+/* DOC WRAPPER */
+.doc{margin-top:52px;max-width:860px;margin-left:auto;margin-right:auto}
+
+/* CAPA */
+.cover{background:#0b1e30;color:#fff;padding:40px 52px 36px;display:flex;justify-content:space-between;align-items:flex-start}
+.cover-logo{font-size:0}
+.cover-title{font-size:24px;font-weight:900;letter-spacing:-.5px;margin-top:20px;line-height:1.2;max-width:500px}
+.cover-sub{font-size:12px;color:rgba(255,255,255,0.45);margin-top:8px}
+.cover-stats{text-align:right}
+.stat-big{font-size:38px;font-weight:900;color:#fff;line-height:1}
+.stat-label{font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px}
+.accent-bar{height:4px;background:linear-gradient(90deg,#7c3aed,#2563eb,#059669,#d97706,#dc2626)}
+
+/* META */
+.meta-strip{background:#fff;border-bottom:1px solid #e2e8f0;padding:18px 52px;display:flex;gap:32px;flex-wrap:wrap}
+.mi{display:flex;flex-direction:column;gap:3px}
+.mi-label{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8}
+.mi-value{font-size:12px;font-weight:700;color:#1e293b}
+
+/* PARTICIPANTES */
+.part-strip{padding:14px 52px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-right:4px;flex-shrink:0}
+
+/* LEGENDA */
+.legend-strip{padding:12px 52px;background:#fff;border-bottom:2px solid #e2e8f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ls-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-right:4px;flex-shrink:0}
+.person-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:10px;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* KPI */
+.kpi-row{display:flex;gap:12px;padding:20px 52px 0}
+.kpi{flex:1;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;text-align:center}
+.kpi-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-bottom:6px}
+.kpi-value{font-size:28px;font-weight:900;color:#0b1e30}
+
+/* PÁGINAS */
+.page{background:#fff;padding:32px 52px 44px;min-height:300px}
+.page-header{display:flex;align-items:stretch;border-radius:12px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,0.09);margin-bottom:22px}
+.ph-num{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px;min-width:76px;color:#fff;text-align:center}
+.ph-num-big{font-size:32px;font-weight:900;line-height:1}
+.ph-num-label{font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.75;margin-top:3px}
+.ph-body{flex:1;padding:16px 22px;display:flex;flex-direction:column;justify-content:center}
+.ph-title{font-size:16px;font-weight:900;color:#1e293b;letter-spacing:-.2px;line-height:1.3}
+.ph-note{font-size:11px;color:#64748b;margin-top:5px;line-height:1.65}
+
+/* TABELA */
+table{width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;font-size:11px}
+thead tr{background:#f1f5f9}
+th{padding:8px 12px;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#475569;text-align:left;border-bottom:2px solid #e2e8f0}
+td{padding:9px 12px;border-bottom:1px solid #e2e8f0;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.resp-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;white-space:nowrap}
+.pri-badge{display:inline-block;font-size:8px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 7px;border-radius:4px}
+.task-text{font-size:11px;font-weight:600;color:#1e293b;line-height:1.4}
+.date-text{font-size:11px;color:#64748b;white-space:nowrap}
+
+/* FOOTER */
+.footer{background:#0b1e30;color:rgba(255,255,255,0.3);font-size:10px;padding:14px 52px;display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div class="toolbar no-print">
+  <div class="tb-left">
+    <span><span class="logo-soma">Soma</span><span class="logo-pipe"></span><span class="logo-partners">Partners</span></span>
+    <span class="tb-title">· Relatório de Reunião</span>
+  </div>
+  <button class="btn-print" onclick="window.print()">
+    <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Imprimir / Salvar PDF
+  </button>
+</div>
+
+<div class="doc">
+
+<!-- CAPA -->
+<div class="cover">
+  <div>
+    <div style="font-size:0">
+      <span style="font-size:20px;font-weight:300;color:#fff">Soma</span>
+      <span style="width:1px;height:22px;background:rgba(255,255,255,0.4);display:inline-block;margin:0 8px;vertical-align:middle"></span>
+      <span style="font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#fff;opacity:.8">Partners</span>
+    </div>
+    <div class="cover-title">Planejamento Estratégico</div>
+    <div class="cover-sub">Relatório de Reunião · 03 de agosto de 2026</div>
+  </div>
+  <div class="cover-stats">
+    <div class="stat-big">39</div>
+    <div class="stat-label">tarefas geradas</div>
+    <div style="margin-top:12px;font-size:28px;font-weight:900;color:#fff">9</div>
+    <div class="stat-label">pautas debatidas</div>
+    <div style="margin-top:12px;font-size:22px;font-weight:900;color:#fff">5</div>
+    <div class="stat-label">responsáveis</div>
+  </div>
+</div>
+<div class="accent-bar"></div>
+
+<!-- META -->
+<div class="meta-strip">
+  <div class="mi"><div class="mi-label">Data</div><div class="mi-value">03 de agosto de 2026</div></div>
+  <div class="mi"><div class="mi-label">Total de Tarefas</div><div class="mi-value">39 tarefas</div></div>
+  <div class="mi"><div class="mi-label">Prazo Geral</div><div class="mi-value">03/08/2026</div></div>
+</div>
+
+<!-- PARTICIPANTES -->
+<div class="part-strip">
+  <span class="pl">Participantes</span>
+  <span class="person-chip" style="background:#bfdbfe;color:#2563eb">Marcelo</span>
+  <span class="person-chip" style="background:#ddd6fe;color:#7c3aed">Guilherme</span>
+  <span class="person-chip" style="background:#a7f3d0;color:#059669">Yuri</span>
+  <span class="person-chip" style="background:#fde68a;color:#d97706">Roberta</span>
+  <span class="person-chip" style="background:#fecaca;color:#dc2626">Lari</span>
+</div>
+
+<!-- LEGENDA -->
+<div class="legend-strip">
+  <span class="ls-label">Legenda</span>
+  <span class="person-chip" style="background:#bfdbfe;color:#2563eb"><span class="dot" style="background:#2563eb"></span>Marcelo</span>
+  <span class="person-chip" style="background:#ddd6fe;color:#7c3aed"><span class="dot" style="background:#7c3aed"></span>Guilherme</span>
+  <span class="person-chip" style="background:#a7f3d0;color:#059669"><span class="dot" style="background:#059669"></span>Yuri</span>
+  <span class="person-chip" style="background:#fde68a;color:#d97706"><span class="dot" style="background:#d97706"></span>Roberta</span>
+  <span class="person-chip" style="background:#fecaca;color:#dc2626"><span class="dot" style="background:#dc2626"></span>Lari</span>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-row" style="padding-bottom:24px;background:#f8fafc">
+  <div class="kpi"><div class="kpi-label">Pautas</div><div class="kpi-value">9</div></div>
+  <div class="kpi"><div class="kpi-label">Tarefas</div><div class="kpi-value">39</div></div>
+  <div class="kpi"><div class="kpi-label">Responsáveis</div><div class="kpi-value">5</div></div>
+  <div class="kpi"><div class="kpi-label">Prazo Máximo</div><div class="kpi-value" style="font-size:16px;padding-top:4px">03/08/26</div></div>
+</div>
+
+
+<!-- ══ PÁGINA 1 — ANÁLISE DE MERCADO ══ -->
+<div class="page" style="page-break-before:always;break-before:page">
+  <div class="page-header">
+    <div class="ph-num" style="background:#2563eb">
+      <div class="ph-num-big">1</div>
+      <div class="ph-num-label">PAUTA</div>
+    </div>
+    <div class="ph-body" style="background:#eff6ff">
+      <div class="ph-title">Análise de Mercado</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:55%">Tarefa</th>
+      <th>Responsável</th>
+      <th>Prazo</th>
+    </tr></thead>
+    <tbody>
+      <tr style="background:#eff6ff">
+        <td><div class="task-text">Pontuar concorrentes em São Paulo</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Pontuar concorrentes no Brasil</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#eff6ff">
+        <td><div class="task-text">Pontuar concorrentes em Miami</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Pontuar concorrentes no mundo</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#eff6ff">
+        <td><div class="task-text">Tamanho do mercado no Brasil</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Tamanho do mercado no mundo</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#eff6ff">
+        <td><div class="task-text">Número de empresas no setor</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Crescimento histórico do mercado</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#eff6ff">
+        <td><div class="task-text">Público alvo: quem compra?</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Como o mercado cobra?</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#eff6ff">
+        <td><div class="task-text">Barreiras de entrada</div></td>
+        <td><span class="resp-badge" style="background:#bfdbfe;color:#2563eb">Marcelo</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══ PÁGINA 2 — PESSOAS INFLUENTES ══ -->
+<div class="page" style="page-break-before:always;break-before:page">
+  <div class="page-header">
+    <div class="ph-num" style="background:#7c3aed">
+      <div class="ph-num-big">2</div>
+      <div class="ph-num-label">PAUTA</div>
+    </div>
+    <div class="ph-body" style="background:#f5f3ff">
+      <div class="ph-title">Pessoas Influentes</div>
+      <div class="ph-note">Definir nível de influência (Baixa / Média / Alta) e tipo (Consumo, Tendências, Inovação, Branding...)</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:55%">Tarefa</th>
+      <th>Responsável</th>
+      <th>Prazo</th>
+    </tr></thead>
+    <tbody>
+      <tr style="background:#f5f3ff">
+        <td><div class="task-text">Identificar principais CEOs e fundadores das maiores joalherias</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Mapear designers influentes</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#f5f3ff">
+        <td><div class="task-text">Levantar celebridades e embaixadores de marcas relevantes</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Identificar influencers digitais especializados em joias</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#f5f3ff">
+        <td><div class="task-text">Levantar jornalistas que ditam a tendência do mercado</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Identificar investidores e grupos relevantes do setor</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#f5f3ff">
+        <td><div class="task-text">Definir nível e tipo de influência por pessoa (Baixa/Média/Alta · Consumo/Tendências/Inovação/Branding)</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══ PÁGINA 3 — LUGARES INFLUENTES ══ -->
+<div class="page" style="page-break-before:always;break-before:page">
+  <div class="page-header">
+    <div class="ph-num" style="background:#7c3aed">
+      <div class="ph-num-big">3</div>
+      <div class="ph-num-label">PAUTA</div>
+    </div>
+    <div class="ph-body" style="background:#f5f3ff">
+      <div class="ph-title">Lugares Influentes</div>
+      <div class="ph-note">Identificar centros de consumo, inovação e luxo para possíveis exibições em cenários similares</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:55%">Tarefa</th>
+      <th>Responsável</th>
+      <th>Prazo</th>
+    </tr></thead>
+    <tbody>
+      <tr style="background:#f5f3ff">
+        <td><div class="task-text">Identificar maiores mercados consumidores no Brasil (SP, RJ, MG...)</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Identificar centros de inovação para visualização das peças</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#f5f3ff">
+        <td><div class="task-text">Mapear principais feiras e eventos nacionais e internacionais do setor</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Identificar maiores centros de luxo do mundo para exibições com paisagem similar</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══ PÁGINA 4 — EVENTOS E RELACIONAMENTO ══ -->
+<div class="page" style="page-break-before:always;break-before:page">
+  <div class="page-header">
+    <div class="ph-num" style="background:#7c3aed">
+      <div class="ph-num-big">4</div>
+      <div class="ph-num-label">PAUTA</div>
+    </div>
+    <div class="ph-body" style="background:#f5f3ff">
+      <div class="ph-title">Eventos e Relacionamento com o Cliente</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:55%">Tarefa</th>
+      <th>Responsável</th>
+      <th>Prazo</th>
+    </tr></thead>
+    <tbody>
+      <tr style="background:#f5f3ff">
+        <td><div class="task-text">Onde podemos realizar nossos eventos?</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Qual o estilo de evento que chama atenção do público alvo? (Jantar, Viagem, Esporte...)</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#f5f3ff">
+        <td><div class="task-text">Quais benefícios/cupons podemos oferecer para fidelizar clientes à marca?</div></td>
+        <td><span class="resp-badge" style="background:#ddd6fe;color:#7c3aed">Guilherme</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══ PÁGINA 5 — IDENTIDADE DA MARCA ══ -->
+<div class="page" style="page-break-before:always;break-before:page">
+  <div class="page-header">
+    <div class="ph-num" style="background:#059669">
+      <div class="ph-num-big">5</div>
+      <div class="ph-num-label">PAUTA</div>
+    </div>
+    <div class="ph-body" style="background:#ecfdf5">
+      <div class="ph-title">Identidade da Marca</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:55%">Tarefa</th>
+      <th>Responsável</th>
+      <th>Prazo</th>
+    </tr></thead>
+    <tbody>
+      <tr style="background:#ecfdf5">
+        <td><div class="task-text">Definir propósito, visão e valores</div></td>
+        <td><span class="resp-badge" style="background:#a7f3d0;color:#059669">Yuri</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Identificar o posicionamento da marca</div></td>
+        <td><span class="resp-badge" style="background:#a7f3d0;color:#059669">Yuri</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#ecfdf5">
+        <td><div class="task-text">Mapear a proposta de valor</div></td>
+        <td><span class="resp-badge" style="background:#a7f3d0;color:#059669">Yuri</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Definir público alvo e personas</div></td>
+        <td><span class="resp-badge" style="background:#a7f3d0;color:#059669">Yuri</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#ecfdf5">
+        <td><div class="task-text">Analisar identidade visual e como ela se conecta com o cliente</div></td>
+        <td><span class="resp-badge" style="background:#a7f3d0;color:#059669">Yuri</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Avaliar tom de voz e comunicação</div></td>
+        <td><span class="resp-badge" style="background:#a7f3d0;color:#059669">Yuri</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#ecfdf5">
+        <td><div class="task-text">Identificar diferenciais competitivos</div></td>
+        <td><span class="resp-badge" style="background:#a7f3d0;color:#059669">Yuri</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Branding</div></td>
+        <td><span class="resp-badge" style="background:#a7f3d0;color:#059669">Yuri</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr style="background:#ecfdf5">
+        <td><div class="task-text">Comparar posicionamento com os principais concorrentes</div></td>
+        <td><span class="resp-badge" style="background:#a7f3d0;color:#059669">Yuri</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══ PÁGINA 6 — DATAS COMEMORATIVAS ══ -->
+<div class="page" style="page-break-before:always;break-before:page">
+  <div class="page-header">
+    <div class="ph-num" style="background:#d97706">
+      <div class="ph-num-big">6</div>
+      <div class="ph-num-label">PAUTA</div>
+    </div>
+    <div class="ph-body" style="background:#fffbeb">
+      <div class="ph-title">Datas Comemorativas</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:55%">Tarefa</th>
+      <th>Responsável</th>
+      <th>Prazo</th>
+    </tr></thead>
+    <tbody>
+      <tr style="background:#fffbeb">
+        <td><div class="task-text">Determinar datas comemorativas de todos os clientes para envio de brindes</div></td>
+        <td><span class="resp-badge" style="background:#fde68a;color:#d97706">Roberta</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+      <tr>
+        <td><div class="task-text">Determinar datas de eventos em que precisamos levar nossos clientes</div></td>
+        <td><span class="resp-badge" style="background:#fde68a;color:#d97706">Roberta</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══ PÁGINA 7 — SITE ══ -->
+<div class="page" style="page-break-before:always;break-before:page">
+  <div class="page-header">
+    <div class="ph-num" style="background:#dc2626">
+      <div class="ph-num-big">7</div>
+      <div class="ph-num-label">PAUTA</div>
+    </div>
+    <div class="ph-body" style="background:#fef2f2">
+      <div class="ph-title">Site</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:55%">Tarefa</th>
+      <th>Responsável</th>
+      <th>Prazo</th>
+    </tr></thead>
+    <tbody>
+      <tr style="background:#fef2f2">
+        <td><div class="task-text">Avaliar as cotações recebidas para darmos seguimento com a confecção</div></td>
+        <td><span class="resp-badge" style="background:#fecaca;color:#dc2626">Lari</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══ PÁGINA 8 — CATÁLOGO ══ -->
+<div class="page" style="page-break-before:always;break-before:page">
+  <div class="page-header">
+    <div class="ph-num" style="background:#dc2626">
+      <div class="ph-num-big">8</div>
+      <div class="ph-num-label">PAUTA</div>
+    </div>
+    <div class="ph-body" style="background:#fef2f2">
+      <div class="ph-title">Catálogo</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:55%">Tarefa</th>
+      <th>Responsável</th>
+      <th>Prazo</th>
+    </tr></thead>
+    <tbody>
+      <tr style="background:#fef2f2">
+        <td><div class="task-text">Tirar fotos das nossas primeiras joias para confecção do catálogo profissional</div></td>
+        <td><span class="resp-badge" style="background:#fecaca;color:#dc2626">Lari</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══ PÁGINA 9 — BUSCAR RP ══ -->
+<div class="page" style="page-break-before:always;break-before:page">
+  <div class="page-header">
+    <div class="ph-num" style="background:#059669">
+      <div class="ph-num-big">9</div>
+      <div class="ph-num-label">PAUTA</div>
+    </div>
+    <div class="ph-body" style="background:#ecfdf5">
+      <div class="ph-title">Buscar RP</div>
+    </div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:55%">Tarefa</th>
+      <th>Responsável</th>
+      <th>Prazo</th>
+    </tr></thead>
+    <tbody>
+      <tr style="background:#ecfdf5">
+        <td><div class="task-text">Viabilidade de um RP</div></td>
+        <td><span class="resp-badge" style="background:#a7f3d0;color:#059669">Yuri</span></td>
+        <td><span class="date-text">03/08/2026</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- FOOTER -->
+<div class="footer">
+  <span>Soma Partners · Relatório interno</span>
+  <span>Planejamento Estratégico · 03/08/2026</span>
+</div>
+
+</div><!-- /doc -->
+</body>
+</html>
