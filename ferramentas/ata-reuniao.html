@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Relatório de Reunião — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--purple:#8b5cf6;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.38)}
+html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff}
+
+/* NAV */
+.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-left{display:flex;align-items:center;gap:12px}
+.logo-a{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.logo-soma{font-size:15px;font-weight:300}.logo-pipe{width:1px;height:18px;background:rgba(255,255,255,0.3)}.logo-partners{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;opacity:.7}
+.nav-sep{width:1px;height:22px;background:var(--border)}.nav-title{font-size:12px;font-weight:800}
+.nav-right{display:flex;align-items:center;gap:8px}
+.btn-nav{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);transition:all .18s;text-decoration:none}
+.btn-nav:hover{background:rgba(255,255,255,0.11);color:#fff}
+.btn-nav svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.5;fill:none}
+.btn-gerar-pdf{background:var(--purple);border-color:transparent;color:#fff}
+.btn-gerar-pdf:hover{background:#7c3aed;color:#fff}
+
+/* LAYOUT */
+.body-wrap{display:grid;grid-template-columns:1fr 360px;min-height:calc(100vh - 54px)}
+.main-col{border-right:1px solid var(--border);overflow-y:auto}
+.side-col{padding:20px;overflow-y:auto}
+
+/* SEÇÃO */
+.form-section{padding:24px 28px;border-bottom:1px solid var(--border)}
+.form-section:last-child{border-bottom:none}
+.fs-label{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--purple);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.fs-label svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
+
+/* INPUTS */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.field-row.three{grid-template-columns:1fr 1fr 1fr}
+.field-row.full{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.field input,.field select,.field textarea{padding:9px 12px;border-radius:8px;font-size:12px;font-weight:600;font-family:'Montserrat',sans-serif;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;outline:none;transition:border-color .15s,background .15s;resize:vertical}
+.field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,0.22);font-weight:500}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(139,92,246,0.5);background:rgba(255,255,255,0.08)}
+.field select option{background:#0d1f34;color:#fff}
+.field textarea{min-height:60px}
+
+/* PARTICIPANTES TAGS */
+.tags-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;min-height:32px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#c4b5fd}
+.tag-del{cursor:pointer;opacity:.6;font-size:12px;line-height:1;transition:opacity .15s}
+.tag-del:hover{opacity:1}
+.tags-input{flex:1;min-width:120px;padding:2px 4px;background:none;border:none;outline:none;font-size:11px;font-family:'Montserrat',sans-serif;color:#fff;font-weight:500}
+.tags-input::placeholder{color:rgba(255,255,255,0.22)}
+
+/* PAUTAS */
+.pauta-list{display:flex;flex-direction:column;gap:10px}
+.pauta-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:12px;overflow:hidden}
+.pauta-head{padding:11px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.pauta-num{width:22px;height:22px;border-radius:6px;background:rgba(139,92,246,0.18);border:1px solid rgba(139,92,246,0.3);font-size:11px;font-weight:800;color:#c4b5fd;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pauta-titulo-display{flex:1;font-size:12px;font-weight:700;color:#fff}
+.pauta-titulo-display.vazio{color:rgba(255,255,255,0.3);font-style:italic}
+.pauta-meta{font-size:10px;color:var(--muted)}
+.pauta-actions{display:flex;align-items:center;gap:4px}
+.pauta-chevron{width:16px;height:16px;stroke:var(--muted);stroke-width:2.5;fill:none;transition:transform .2s;flex-shrink:0}
+.pauta-card.open .pauta-chevron{transform:rotate(180deg)}
+.pauta-body{display:none;padding:0 14px 14px;border-top:1px solid rgba(255,255,255,0.06)}
+.pauta-card.open .pauta-body{display:block}
+
+.tarefas-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.tarefa-row{display:grid;grid-template-columns:1fr 140px 130px 90px 28px;gap:6px;align-items:center}
+.tarefa-input{padding:7px 10px;border-radius:7px;font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;outline:none;width:100%;transition:border-color .15s}
+.tarefa-input::placeholder{color:rgba(255,255,255,0.22)}
+.tarefa-input:focus{border-color:rgba(139,92,246,0.45)}
+.tarefa-input.select-input{cursor:pointer}
+.tarefa-input.select-input option{background:#0d1f34}
+.pri-badge{padding:4px 8px;border-radius:5px;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;border:none;cursor:pointer;font-family:'Montserrat',sans-serif;width:100%;transition:all .15s}
+.pri-alta{background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.25)}
+.pri-media{background:rgba(245,158,11,0.15);color:#fde68a;border:1px solid rgba(245,158,11,0.25)}
+.pri-baixa{background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.2)}
+.btn-del-tarefa{width:26px;height:26px;border-radius:6px;border:none;background:transparent;color:rgba(255,255,255,0.22);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.btn-del-tarefa:hover{background:rgba(239,68,68,0.12);color:#ef4444}
+
+/* BOTÕES */
+.btn-add{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:#c4b5fd;transition:all .15s;margin-top:10px}
+.btn-add:hover{background:rgba(139,92,246,0.18);border-color:rgba(139,92,246,0.4)}
+.btn-add svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.5;fill:none}
+.btn-add-pauta{background:rgba(139,92,246,0.08);border:1px dashed rgba(139,92,246,0.25);color:rgba(139,92,246,0.7);padding:12px;width:100%;justify-content:center;font-size:11px;border-radius:10px;margin-top:0}
+.btn-add-pauta:hover{background:rgba(139,92,246,0.14);border-color:rgba(139,92,246,0.4);color:#c4b5fd}
+.btn-del-pauta{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;font-size:9px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:transparent;border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.5);transition:all .15s}
+.btn-del-pauta:hover{background:rgba(239,68,68,0.1);color:#ef4444;border-color:rgba(239,68,68,0.4)}
+
+/* PREVIEW LATERAL */
+.side-header{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.preview-box{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.7}
+.preview-box strong{color:#fff;font-weight:700}
+.preview-meeting-title{font-size:14px;font-weight:900;color:#fff;margin-bottom:4px}
+.preview-meta{font-size:10px;color:var(--muted);margin-bottom:12px}
+.preview-pauta{margin-bottom:10px}
+.preview-pauta-title{font-size:11px;font-weight:800;color:#c4b5fd;margin-bottom:4px}
+.preview-tarefa{display:flex;align-items:flex-start;gap:6px;font-size:10px;color:rgba(255,255,255,0.65);padding:3px 0}
+.preview-tarefa::before{content:'→';color:rgba(139,92,246,0.6);flex-shrink:0;margin-top:1px}
+.pri-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:3px;vertical-align:middle}
+
+.total-bar{margin-top:14px;padding:10px 14px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:8px;display:flex;justify-content:space-between;align-items:center}
+.total-bar-label{font-size:10px;font-weight:700;color:#c4b5fd}
+.total-bar-val{font-size:20px;font-weight:900;color:#c4b5fd}
+
+.btn-pdf-big{width:100%;padding:13px;border-radius:10px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;background:var(--purple);border:none;color:#fff;transition:all .18s;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-pdf-big:hover{background:#7c3aed;box-shadow:0 4px 20px rgba(139,92,246,0.35)}
+.btn-pdf-big svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);background:#1a1040;border:1px solid rgba(139,92,246,0.4);border-radius:10px;padding:9px 20px;font-size:11px;font-weight:700;color:#c4b5fd;opacity:0;transition:all .22s;z-index:999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:900px){
+  .body-wrap{grid-template-columns:1fr}
+  .side-col{border-top:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <a class="logo-a" href="../soma-partners.html">
+      <span class="logo-soma">Soma</span><span class="logo-pipe"></span><span class="logo-partners">Partners</span>
+    </a>
+    <div class="nav-sep"></div>
+    <span class="nav-title">Relatório de Reunião</span>
+  </div>
+  <div class="nav-right">
+    <button class="btn-nav btn-gerar-pdf" onclick="gerarPDF()">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Gerar PDF
+    </button>
+    <a class="btn-nav" href="../ferramentas.html">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Ferramentas
+    </a>
+  </div>
+</nav>
+
+<div class="body-wrap">
+
+  <!-- COLUNA PRINCIPAL -->
+  <div class="main-col">
+
+    <!-- INFORMAÇÕES DA REUNIÃO -->
+    <div class="form-section">
+      <div class="fs-label">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Informações da Reunião
+      </div>
+      <div class="field-row full">
+        <div class="field">
+          <label>Título / Assunto da Reunião</label>
+          <input type="text" id="meet-titulo" placeholder="Ex: Alinhamento Comercial Q3, Reunião de Planejamento..." oninput="atualizarPreview()"/>
+        </div>
+      </div>
+      <div class="field-row three">
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="meet-data" oninput="atualizarPreview()"/>
+        </div>
+        <div class="field">
+          <label>Horário</label>
+          <input type="time" id="meet-hora" oninput="atualizarPreview()"/>
+        </div>
+        <div class="field">
+          <label>Local / Formato</label>
+          <input type="text" id="meet-local" placeholder="Ex: Sala 1, Google Meet..." oninput="atualizarPreview()"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Participantes</label>
+        <div class="tags-wrap" id="tags-wrap" onclick="document.getElementById('tags-input').focus()">
+          <input type="text" class="tags-input" id="tags-input" placeholder="Digite um nome e pressione Enter..."
+            onkeydown="adicionarTag(event)"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAUTAS -->
+    <div class="form-section">
+      <div class="fs-label">
+        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Pautas Debatidas
+      </div>
+      <div class="pauta-list" id="pauta-list"></div>
+      <button class="btn-add btn-add-pauta" style="margin-top:10px" onclick="addPauta()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar Pauta
+      </button>
+    </div>
+
+  </div><!-- /main-col -->
+
+  <!-- COLUNA LATERAL -->
+  <div class="side-col">
+    <div class="side-header">Preview do Relatório</div>
+
+    <div class="preview-box" id="preview-box">
+      <div style="color:rgba(255,255,255,0.25);text-align:center;padding:24px 0;font-size:11px">
+        Preencha os dados ao lado para ver o preview
+      </div>
+    </div>
+
+    <div class="total-bar" id="total-bar" style="display:none">
+      <span class="total-bar-label">Total de tarefas</span>
+      <span class="total-bar-val" id="total-tarefas">0</span>
+    </div>
+
+    <button class="btn-pdf-big" onclick="gerarPDF()">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Gerar Relatório PDF
+    </button>
+
+    <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:9px;color:var(--muted);line-height:1.6">
+      O relatório incluirá capa com dados da reunião, lista de participantes, todas as pautas com anotações e a tabela completa de tarefas com responsáveis e prazos.
+    </div>
+  </div>
+
+</div><!-- /body-wrap -->
+
+<div id="toast" class="toast"></div>
+
+<script>
+if(sessionStorage.getItem('soma_auth')!=='1'){window.location.href='../login.html';}
+
+/* ── ESTADO ──────────────────────────────── */
+let _pautas = [];
+let _participantes = [];
+let _pautaIdx = 0;
+
+/* ── INIT ────────────────────────────────── */
+(function init(){
+  const hoje = new Date();
+  document.getElementById('meet-data').value = hoje.toISOString().split('T')[0];
+  document.getElementById('meet-hora').value =
+    `${String(hoje.getHours()).padStart(2,'0')}:${String(hoje.getMinutes()).padStart(2,'0')}`;
+  addPauta();
+})();
+
+/* ── PARTICIPANTES (tags) ────────────────── */
+function adicionarTag(e){
+  if(e.key !== 'Enter' && e.key !== ',') return;
+  e.preventDefault();
+  const val = e.target.value.trim().replace(/,$/,'');
+  if(!val || _participantes.includes(val)) { e.target.value=''; return; }
+  _participantes.push(val);
+  renderTags();
+  e.target.value = '';
+  atualizarPreview();
+}
+function removerTag(nome){
+  _participantes = _participantes.filter(p=>p!==nome);
+  renderTags(); atualizarPreview();
+}
+function renderTags(){
+  const wrap = document.getElementById('tags-wrap');
+  const inp = document.getElementById('tags-input');
+  wrap.innerHTML = '';
+  _participantes.forEach(p=>{
+    const t = document.createElement('span');
+    t.className = 'tag';
+    t.innerHTML = `${p}<span class="tag-del" onclick="removerTag('${p.replace(/'/g,"\\'")}')">✕</span>`;
+    wrap.appendChild(t);
+  });
+  wrap.appendChild(inp);
+}
+
+/* ── PAUTAS ──────────────────────────────── */
+function addPauta(){
+  const id = ++_pautaIdx;
+  _pautas.push({ id, titulo:'', notas:'', tarefas:[] });
+  renderPautas();
+  // abrir a nova automaticamente
+  setTimeout(()=>{
+    const card = document.querySelector(`.pauta-card[data-id="${id}"]`);
+    if(card) card.classList.add('open');
+  },10);
+}
+
+function removePauta(id){
+  _pautas = _pautas.filter(p=>p.id!==id);
+  renderPautas(); atualizarPreview();
+}
+
+function togglePauta(id){
+  const card = document.querySelector(`.pauta-card[data-id="${id}"]`);
+  if(card) card.classList.toggle('open');
+}
+
+function renderPautas(){
+  const list = document.getElementById('pauta-list');
+  if(!_pautas.length){ list.innerHTML=''; return; }
+  list.innerHTML = _pautas.map((p,i)=>{
+    const nTarefas = p.tarefas.length;
+    const tituloDisplay = p.titulo || 'Nova pauta...';
+    const vazio = !p.titulo;
+    return `<div class="pauta-card" data-id="${p.id}">
+      <div class="pauta-head" onclick="togglePauta(${p.id})">
+        <div class="pauta-num">${i+1}</div>
+        <div class="pauta-titulo-display ${vazio?'vazio':''}">${vazio?'Nova pauta...':escHtml(p.titulo)}</div>
+        <div class="pauta-meta">${nTarefas ? nTarefas+' tarefa'+(nTarefas!==1?'s':'') : ''}</div>
+        <div class="pauta-actions">
+          <button class="btn-del-pauta" onclick="event.stopPropagation();removePauta(${p.id})">Remover</button>
+        </div>
+        <svg class="pauta-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="pauta-body">
+        <div class="field-row full" style="margin-top:12px">
+          <div class="field">
+            <label>Título da Pauta</label>
+            <input type="text" value="${escAttr(p.titulo)}" placeholder="Ex: Estratégia comercial Q3, Revisão de processos..."
+              oninput="updatePauta(${p.id},'titulo',this.value)" />
+          </div>
+        </div>
+        <div class="field-row full">
+          <div class="field">
+            <label>Anotações / Resumo do debate</label>
+            <textarea placeholder="O que foi discutido neste ponto..."
+              oninput="updatePauta(${p.id},'notas',this.value)">${escHtml(p.notas)}</textarea>
+          </div>
+        </div>
+
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:8px 0 6px">Tarefas geradas</div>
+        ${p.tarefas.length
+          ? `<div style="display:grid;grid-template-columns:1fr 140px 130px 90px 28px;gap:4px;padding:0 0 4px;margin-bottom:2px">
+              <span style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25)">Descrição</span>
+              <span style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25)">Responsável</span>
+              <span style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25)">Prazo</span>
+              <span style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25)">Prioridade</span>
+              <span></span>
+             </div>`
+          : ''}
+        <div class="tarefas-list" id="tarefas-${p.id}">
+          ${p.tarefas.map(t=>tarefaHTML(p.id,t)).join('')}
+        </div>
+        <button class="btn-add" onclick="addTarefa(${p.id})">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar Tarefa
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updatePauta(id, campo, valor){
+  const p = _pautas.find(x=>x.id===id);
+  if(!p) return;
+  p[campo] = valor;
+  // atualizar display do título sem re-render completo
+  const display = document.querySelector(`.pauta-card[data-id="${id}"] .pauta-titulo-display`);
+  if(display && campo==='titulo'){
+    display.textContent = valor || 'Nova pauta...';
+    display.classList.toggle('vazio', !valor);
+  }
+  atualizarPreview();
+}
+
+/* ── TAREFAS ─────────────────────────────── */
+let _tarefaIdx = 0;
+
+function addTarefa(pautaId){
+  const p = _pautas.find(x=>x.id===pautaId);
+  if(!p) return;
+  const tid = ++_tarefaIdx;
+  p.tarefas.push({ id:tid, desc:'', responsavel:'', prazo:'', prioridade:'media' });
+  renderPautas();
+  // reabrir
+  setTimeout(()=>{
+    const card = document.querySelector(`.pauta-card[data-id="${pautaId}"]`);
+    if(card) card.classList.add('open');
+    const input = document.querySelector(`#desc-${tid}`);
+    if(input) input.focus();
+  },10);
+}
+
+function removeTarefa(pautaId, tarefaId){
+  const p = _pautas.find(x=>x.id===pautaId);
+  if(!p) return;
+  p.tarefas = p.tarefas.filter(t=>t.id!==tarefaId);
+  renderPautas();
+  setTimeout(()=>{
+    const card = document.querySelector(`.pauta-card[data-id="${pautaId}"]`);
+    if(card) card.classList.add('open');
+  },10);
+  atualizarPreview();
+}
+
+function updateTarefa(pautaId, tarefaId, campo, valor){
+  const p = _pautas.find(x=>x.id===pautaId);
+  if(!p) return;
+  const t = p.tarefas.find(x=>x.id===tarefaId);
+  if(!t) return;
+  t[campo] = valor;
+  if(campo==='prioridade'){
+    const btn = document.getElementById(`pri-${tarefaId}`);
+    if(btn){ btn.className=`tarefa-input pri-badge pri-${valor}`; btn.textContent=priLabel(valor); }
+  }
+  atualizarPreview();
+}
+
+function priLabel(p){ return p==='alta'?'Alta':p==='media'?'Média':'Baixa'; }
+function priCiclo(tarefaId, pautaId){
+  const p = _pautas.find(x=>x.id===pautaId);
+  const t = p?.tarefas.find(x=>x.id===tarefaId);
+  if(!t) return;
+  t.prioridade = t.prioridade==='alta'?'media':t.prioridade==='media'?'baixa':'alta';
+  const btn = document.getElementById(`pri-${tarefaId}`);
+  if(btn){ btn.className=`tarefa-input pri-badge pri-${t.prioridade}`; btn.textContent=priLabel(t.prioridade); }
+  atualizarPreview();
+}
+
+function tarefaHTML(pautaId, t){
+  return `<div class="tarefa-row" id="trow-${t.id}">
+    <input class="tarefa-input" id="desc-${t.id}" type="text" value="${escAttr(t.desc)}"
+      placeholder="Descrição da tarefa..."
+      oninput="updateTarefa(${pautaId},${t.id},'desc',this.value)"/>
+    <input class="tarefa-input" type="text" value="${escAttr(t.responsavel)}"
+      placeholder="Responsável"
+      oninput="updateTarefa(${pautaId},${t.id},'responsavel',this.value)"/>
+    <input class="tarefa-input" type="date" value="${escAttr(t.prazo)}"
+      oninput="updateTarefa(${pautaId},${t.id},'prazo',this.value)"/>
+    <button class="tarefa-input pri-badge pri-${t.prioridade}" id="pri-${t.id}"
+      onclick="priCiclo(${t.id},${pautaId})">${priLabel(t.prioridade)}</button>
+    <button class="btn-del-tarefa" onclick="removeTarefa(${pautaId},${t.id})">✕</button>
+  </div>`;
+}
+
+/* ── PREVIEW ─────────────────────────────── */
+function atualizarPreview(){
+  const titulo = document.getElementById('meet-titulo').value.trim();
+  const data   = document.getElementById('meet-data').value;
+  const hora   = document.getElementById('meet-hora').value;
+  const local  = document.getElementById('meet-local').value.trim();
+
+  const pautas = _pautas.filter(p=>p.titulo||p.tarefas.length);
+  const totalTarefas = _pautas.reduce((s,p)=>s+p.tarefas.length,0);
+
+  document.getElementById('total-bar').style.display = totalTarefas ? 'flex' : 'none';
+  document.getElementById('total-tarefas').textContent = totalTarefas;
+
+  if(!titulo && !pautas.length && !_participantes.length){
+    document.getElementById('preview-box').innerHTML =
+      `<div style="color:rgba(255,255,255,0.25);text-align:center;padding:24px 0;font-size:11px">Preencha os dados ao lado para ver o preview</div>`;
+    return;
+  }
+
+  const fmtData = d => { if(!d)return''; const[y,m,dy]=d.split('-'); return`${dy}/${m}/${y}`; };
+  const priCores = { alta:'#ef4444', media:'#f59e0b', baixa:'#10b981' };
+
+  let html = '';
+  if(titulo) html += `<div class="preview-meeting-title">${escHtml(titulo)}</div>`;
+  const metas = [fmtData(data), hora, local].filter(Boolean).join(' · ');
+  if(metas) html += `<div class="preview-meta">${metas}</div>`;
+  if(_participantes.length) html += `<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:10px">👥 ${_participantes.join(', ')}</div>`;
+
+  pautas.forEach((p,i)=>{
+    html += `<div class="preview-pauta">
+      <div class="preview-pauta-title">${i+1}. ${escHtml(p.titulo)}</div>`;
+    if(p.notas) html += `<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:4px;font-style:italic">${escHtml(p.notas.substring(0,80))}${p.notas.length>80?'…':''}</div>`;
+    p.tarefas.forEach(t=>{
+      if(!t.desc) return;
+      html += `<div class="preview-tarefa">
+        <span><span class="pri-dot" style="background:${priCores[t.prioridade]}"></span>${escHtml(t.desc)}${t.responsavel?` <span style="color:rgba(255,255,255,0.4)">· ${escHtml(t.responsavel)}</span>`:''}${t.prazo?` <span style="color:rgba(255,255,255,0.3)">· ${fmtData(t.prazo)}</span>`:''}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  document.getElementById('preview-box').innerHTML = html || `<div style="color:rgba(255,255,255,0.25);text-align:center;padding:12px 0;font-size:11px">Continue preenchendo...</div>`;
+}
+
+/* ── GERAR PDF ───────────────────────────── */
+function gerarPDF(){
+  const titulo = document.getElementById('meet-titulo').value.trim() || 'Reunião sem título';
+  const data   = document.getElementById('meet-data').value;
+  const hora   = document.getElementById('meet-hora').value;
+  const local  = document.getElementById('meet-local').value.trim();
+
+  const fmtData = d => { if(!d)return''; const[y,m,dy]=d.split('-'); return`${dy}/${m}/${y}`; };
+  const fmtDataExt = d => {
+    if(!d) return '';
+    const dt = new Date(d+'T12:00:00');
+    return dt.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  };
+  const now = new Date();
+  const dtGer = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} às ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  const totalTarefas = _pautas.reduce((s,p)=>s+p.tarefas.length,0);
+  const priCores  = { alta:'#ef4444', media:'#f59e0b', baixa:'#10b981' };
+  const priBg     = { alta:'#fef2f2', media:'#fffbeb', baixa:'#f0fdf4' };
+  const priLabels = { alta:'Alta',    media:'Média',    baixa:'Baixa'  };
+
+  const pautasHTML = _pautas.map((p,i)=>{
+    if(!p.titulo && !p.tarefas.length) return '';
+    const tarefasHTML = p.tarefas.length
+      ? `<table style="width:100%;border-collapse:collapse;margin-top:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+          <thead><tr style="background:#f1f5f9">
+            <th style="padding:8px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#475569;text-align:left;border-bottom:2px solid #e2e8f0">Tarefa</th>
+            <th style="padding:8px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#475569;text-align:left;border-bottom:2px solid #e2e8f0">Responsável</th>
+            <th style="padding:8px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#475569;text-align:left;border-bottom:2px solid #e2e8f0">Prazo</th>
+            <th style="padding:8px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#475569;text-align:center;border-bottom:2px solid #e2e8f0">Prioridade</th>
+          </tr></thead>
+          <tbody>
+            ${p.tarefas.map(t=>`<tr>
+              <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#1e293b;font-weight:600">${t.desc||'—'}</td>
+              <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#475569">${t.responsavel||'—'}</td>
+              <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#475569">${fmtData(t.prazo)||'—'}</td>
+              <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;text-align:center">
+                <span style="font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:${priBg[t.prioridade]};color:${priCores[t.prioridade]}">${priLabels[t.prioridade]}</span>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`
+      : `<p style="color:#94a3b8;font-size:12px;font-style:italic;margin-top:8px">Nenhuma tarefa registrada nesta pauta.</p>`;
+
+    return `<div style="margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid #e2e8f0">
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px">
+        <div style="width:26px;height:26px;border-radius:7px;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#7c3aed;flex-shrink:0">${i+1}</div>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:#1e293b">${p.titulo||'(sem título)'}</div>
+          ${p.notas?`<div style="font-size:11px;color:#64748b;margin-top:3px;line-height:1.6">${p.notas}</div>`:''}
+        </div>
+      </div>
+      ${tarefasHTML}
+    </div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8"/>
+<title>Relatório — ${titulo} — ${fmtData(data)||dtGer.split(' ')[0]}</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Montserrat',sans-serif;background:#f8fafc;color:#1e293b}
+@media print{body{background:#fff}@page{margin:18mm 15mm;size:A4}}
+.cover{background:#0b1e30;color:#fff;padding:36px 48px 32px;display:flex;justify-content:space-between;align-items:flex-start}
+.logo-soma{font-size:20px;font-weight:300}.logo-pipe{width:1px;height:22px;background:rgba(255,255,255,0.4);display:inline-block;margin:0 8px;vertical-align:middle}.logo-partners{font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;opacity:.8}
+.cover-right{text-align:right}
+.cover-title{font-size:22px;font-weight:900;letter-spacing:-.5px;margin-top:18px;max-width:480px}
+.cover-sub{font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px}
+.accent-line{height:3px;background:linear-gradient(90deg,#8b5cf6,#3b8bff)}
+.meta-strip{padding:18px 48px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;gap:28px;flex-wrap:wrap}
+.meta-item{display:flex;flex-direction:column;gap:3px}
+.meta-label{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8}
+.meta-value{font-size:12px;font-weight:700;color:#1e293b}
+.part-strip{padding:16px 48px;background:#f8fafc;border-bottom:2px solid #e2e8f0}
+.part-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:8px}
+.part-tags{display:flex;flex-wrap:wrap;gap:6px}
+.part-tag{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;background:#ede9fe;color:#7c3aed;border:1px solid #ddd6fe}
+.section{padding:28px 48px}
+.section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#64748b;margin-bottom:20px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}
+.kpi-row{display:flex;gap:12px;margin-bottom:24px}
+.kpi{flex:1;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px}
+.kpi-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-bottom:4px}
+.kpi-value{font-size:26px;font-weight:900;color:#0b1e30}
+.footer{background:#0b1e30;color:rgba(255,255,255,0.35);font-size:10px;padding:14px 48px;display:flex;justify-content:space-between;margin-top:auto}
+</style>
+</head><body>
+
+<div class="cover">
+  <div>
+    <div><span class="logo-soma">Soma</span><span class="logo-pipe"></span><span class="logo-partners">Partners</span></div>
+    <div class="cover-title">${titulo}</div>
+    <div class="cover-sub">Relatório de Reunião · Gerado em ${dtGer}</div>
+  </div>
+  <div class="cover-right">
+    <div style="font-size:32px;font-weight:900;color:#fff">${totalTarefas}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.55)">tarefa${totalTarefas!==1?'s':''} gerada${totalTarefas!==1?'s':''}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px">${_pautas.filter(p=>p.titulo).length} pauta${_pautas.filter(p=>p.titulo).length!==1?'s':''}</div>
+  </div>
+</div>
+<div class="accent-line"></div>
+
+<div class="meta-strip">
+  ${data?`<div class="meta-item"><div class="meta-label">Data</div><div class="meta-value">${fmtDataExt(data)}</div></div>`:''}
+  ${hora?`<div class="meta-item"><div class="meta-label">Horário</div><div class="meta-value">${hora}</div></div>`:''}
+  ${local?`<div class="meta-item"><div class="meta-label">Local / Formato</div><div class="meta-value">${local}</div></div>`:''}
+</div>
+
+${_participantes.length?`<div class="part-strip">
+  <div class="part-label">Participantes (${_participantes.length})</div>
+  <div class="part-tags">${_participantes.map(p=>`<span class="part-tag">${p}</span>`).join('')}</div>
+</div>`:''}
+
+<div class="section">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Pautas debatidas</div><div class="kpi-value">${_pautas.filter(p=>p.titulo).length}</div></div>
+    <div class="kpi"><div class="kpi-label">Tarefas geradas</div><div class="kpi-value">${totalTarefas}</div></div>
+    <div class="kpi"><div class="kpi-label">Participantes</div><div class="kpi-value">${_participantes.length}</div></div>
+  </div>
+  <div class="section-title">Pautas e Tarefas</div>
+  ${pautasHTML || '<p style="color:#94a3b8;font-size:13px">Nenhuma pauta registrada.</p>'}
+</div>
+
+<div class="footer">
+  <span>Soma Partners · Relatório interno</span>
+  <span>${titulo} · ${fmtData(data)||''}</span>
+</div>
+
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`;
+
+  const w = window.open('','_blank');
+  if(!w){ showToast('Permita popups para gerar o PDF'); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+/* ── UTILS ───────────────────────────────── */
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s){ return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+</script>
+</body>
+</html>
