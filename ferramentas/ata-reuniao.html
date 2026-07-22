@@ -496,10 +496,47 @@ function gerarPDF(){
   const priBg     = { alta:'#fef2f2', media:'#fffbeb', baixa:'#f0fdf4' };
   const priLabels = { alta:'Alta',    media:'Média',    baixa:'Baixa'  };
 
+  // ── Mapa de cores por pessoa ──────────────
+  const PALETTE = [
+    { color:'#2563eb', bg:'#bfdbfe', light:'#eff6ff' },
+    { color:'#7c3aed', bg:'#ddd6fe', light:'#f5f3ff' },
+    { color:'#059669', bg:'#a7f3d0', light:'#ecfdf5' },
+    { color:'#d97706', bg:'#fde68a', light:'#fffbeb' },
+    { color:'#dc2626', bg:'#fecaca', light:'#fef2f2' },
+    { color:'#0891b2', bg:'#a5f3fc', light:'#ecfeff' },
+    { color:'#db2777', bg:'#fbcfe8', light:'#fdf2f8' },
+  ];
+  const personColorMap = {};
+  let _pci = 0;
+  const registerPerson = name => {
+    if(!name) return;
+    const k = name.trim().toLowerCase();
+    if(!personColorMap[k]){ personColorMap[k] = PALETTE[_pci++ % PALETTE.length]; }
+  };
+  _participantes.forEach(registerPerson);
+  _pautas.forEach(p => p.tarefas.forEach(t => registerPerson(t.responsavel)));
+  const getPC = name => name ? (personColorMap[name.trim().toLowerCase()] || PALETTE[0]) : null;
+
+  // Legenda de pessoas
+  const legendaHTML = Object.entries(personColorMap).length
+    ? `<div style="padding:16px 48px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-right:4px">Equipe:</span>
+        ${Object.entries(personColorMap).map(([k,pc])=>`<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;background:${pc.bg};color:${pc.color};border:1px solid ${pc.bg}">
+          <span style="width:8px;height:8px;border-radius:50%;background:${pc.color};display:inline-block"></span>
+          ${pc._name||k}
+        </span>`).join('')}
+      </div>`
+    : '';
+
   const pautasHTML = _pautas.map((p,i)=>{
     if(!p.titulo && !p.tarefas.length) return '';
+
+    const firstResp = p.tarefas.find(t=>t.responsavel)?.responsavel;
+    const pc = getPC(firstResp) || PALETTE[i % PALETTE.length];
+    const pageBreak = i > 0 ? 'page-break-before:always;break-before:page;' : '';
+
     const tarefasHTML = p.tarefas.length
-      ? `<table style="width:100%;border-collapse:collapse;margin-top:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+      ? `<table style="width:100%;border-collapse:collapse;margin-top:14px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
           <thead><tr style="background:#f1f5f9">
             <th style="padding:8px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#475569;text-align:left;border-bottom:2px solid #e2e8f0">Tarefa</th>
             <th style="padding:8px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#475569;text-align:left;border-bottom:2px solid #e2e8f0">Responsável</th>
@@ -507,24 +544,33 @@ function gerarPDF(){
             <th style="padding:8px 12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#475569;text-align:center;border-bottom:2px solid #e2e8f0">Prioridade</th>
           </tr></thead>
           <tbody>
-            ${p.tarefas.map(t=>`<tr>
-              <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#1e293b;font-weight:600">${t.desc||'—'}</td>
-              <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#475569">${t.responsavel||'—'}</td>
-              <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#475569">${fmtData(t.prazo)||'—'}</td>
-              <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;text-align:center">
-                <span style="font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:${priBg[t.prioridade]};color:${priCores[t.prioridade]}">${priLabels[t.prioridade]}</span>
-              </td>
-            </tr>`).join('')}
+            ${p.tarefas.map(t=>{
+              const tpc = getPC(t.responsavel);
+              const respHtml = t.responsavel && tpc
+                ? `<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${tpc.bg};color:${tpc.color}">${t.responsavel}</span>`
+                : `<span style="color:#94a3b8">—</span>`;
+              return `<tr style="background:${tpc ? tpc.light : '#fff'}">
+                <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#1e293b;font-weight:600">${t.desc||'—'}</td>
+                <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0">${respHtml}</td>
+                <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#475569">${fmtData(t.prazo)||'—'}</td>
+                <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;text-align:center">
+                  <span style="font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:${priBg[t.prioridade]};color:${priCores[t.prioridade]}">${priLabels[t.prioridade]}</span>
+                </td>
+              </tr>`;
+            }).join('')}
           </tbody>
         </table>`
       : `<p style="color:#94a3b8;font-size:12px;font-style:italic;margin-top:8px">Nenhuma tarefa registrada nesta pauta.</p>`;
 
-    return `<div style="margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid #e2e8f0">
-      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px">
-        <div style="width:26px;height:26px;border-radius:7px;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#7c3aed;flex-shrink:0">${i+1}</div>
-        <div>
-          <div style="font-size:14px;font-weight:800;color:#1e293b">${p.titulo||'(sem título)'}</div>
-          ${p.notas?`<div style="font-size:11px;color:#64748b;margin-top:3px;line-height:1.6">${p.notas}</div>`:''}
+    return `<div style="${pageBreak}padding:32px 48px 40px;min-height:200px;background:#fff">
+      <div style="display:flex;align-items:stretch;gap:0;margin-bottom:22px;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
+        <div style="background:${pc.color};color:#fff;padding:20px 22px;min-width:72px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-size:30px;font-weight:900;line-height:1">${i+1}</div>
+          <div style="font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.75;margin-top:3px">PAUTA</div>
+        </div>
+        <div style="flex:1;padding:16px 20px;background:${pc.light}">
+          <div style="font-size:15px;font-weight:900;color:#1e293b;letter-spacing:-.2px;line-height:1.3">${p.titulo||'(sem título)'}</div>
+          ${p.notas?`<div style="font-size:11px;color:#64748b;margin-top:5px;line-height:1.65">${p.notas}</div>`:''}
         </div>
       </div>
       ${tarefasHTML}
@@ -585,8 +631,13 @@ body{font-family:'Montserrat',sans-serif;background:#f8fafc;color:#1e293b}
 
 ${_participantes.length?`<div class="part-strip">
   <div class="part-label">Participantes (${_participantes.length})</div>
-  <div class="part-tags">${_participantes.map(p=>`<span class="part-tag">${p}</span>`).join('')}</div>
+  <div class="part-tags">${_participantes.map(p=>{
+    const pc2=getPC(p);
+    return `<span style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;background:${pc2?pc2.bg:'#ddd6fe'};color:${pc2?pc2.color:'#7c3aed'}">${p}</span>`;
+  }).join('')}</div>
 </div>`:''}
+
+${legendaHTML}
 
 <div class="section">
   <div class="kpi-row">
@@ -594,9 +645,9 @@ ${_participantes.length?`<div class="part-strip">
     <div class="kpi"><div class="kpi-label">Tarefas geradas</div><div class="kpi-value">${totalTarefas}</div></div>
     <div class="kpi"><div class="kpi-label">Participantes</div><div class="kpi-value">${_participantes.length}</div></div>
   </div>
-  <div class="section-title">Pautas e Tarefas</div>
-  ${pautasHTML || '<p style="color:#94a3b8;font-size:13px">Nenhuma pauta registrada.</p>'}
 </div>
+
+${pautasHTML || '<div style="padding:28px 48px"><p style="color:#94a3b8;font-size:13px">Nenhuma pauta registrada.</p></div>'}
 
 <div class="footer">
   <span>Soma Partners · Relatório interno</span>
