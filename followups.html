@@ -580,6 +580,12 @@ th{background:#f1f5f9;padding:9px 12px;font-size:9px;font-weight:800;text-transf
 .sub-title-at{color:#ef4444}.sub-title-hj{color:#f59e0b}.sub-title-sem{color:#10b981}
 
 .footer{background:#0b1e30;color:rgba(255,255,255,0.35);font-size:10px;padding:16px 48px;display:flex;justify-content:space-between}
+
+.page-section{page-break-before:always;break-before:page}
+.section-page-head{padding:22px 48px 18px;display:flex;align-items:center;justify-content:space-between}
+.section-page-title{font-size:18px;font-weight:900;letter-spacing:-.3px}
+.section-page-count{font-size:13px;font-weight:700;opacity:.7}
+.section-page-sub{font-size:10px;opacity:.55;margin-top:2px}
 </style>
 <link rel="stylesheet" href="shared.css">
 </head><body>
@@ -635,20 +641,58 @@ th{background:#f1f5f9;padding:9px 12px;font-size:9px;font-weight:800;text-transf
   </table>
 </div>
 
-<div class="section" style="padding-top:0">
-  <div class="section-title">Lista Completa de Follow-ups</div>
+<!-- PÁGINA 1 — ATRASADOS -->
+<div class="page-section">
+  <div class="accent-line" style="background:linear-gradient(90deg,#ef4444,#b91c1c)"></div>
+  <div class="section-page-head" style="background:#fef2f2;border-bottom:2px solid #fecaca">
+    <div>
+      <div class="section-page-title" style="color:#b91c1c">⚠ Atrasados</div>
+      <div class="section-page-sub" style="color:#b91c1c">Follow-ups com prazo vencido — ação imediata necessária</div>
+    </div>
+    <div class="section-page-count" style="color:#ef4444">${at.length} item${at.length!==1?'s':''}</div>
+  </div>
+  <div class="section">
+    ${at.length
+      ? `<table><thead><tr><th>Descrição</th><th>Lead / Contato</th><th>Data</th><th>Responsável</th><th>Tipo</th><th>Status</th></tr></thead>
+         <tbody>${listaHTML(at,'Atrasado','#ef4444')}</tbody></table>`
+      : `<p style="color:#94a3b8;font-size:13px;padding:24px 0;text-align:center">✓ Nenhum follow-up atrasado</p>`}
+  </div>
+</div>
 
-  ${at.length?`<div class="section-at"><div class="sub-title sub-title-at">⚠ Atrasados (${at.length})</div>
-  <table><thead><tr><th>Descrição</th><th>Lead / Contato</th><th>Data</th><th>Responsável</th><th>Tipo</th><th>Status</th></tr></thead>
-  <tbody>${listaHTML(at,'Atrasado','#ef4444')}</tbody></table></div>`:''}
+<!-- PÁGINA 2 — HOJE -->
+<div class="page-section">
+  <div class="accent-line" style="background:linear-gradient(90deg,#f59e0b,#d97706)"></div>
+  <div class="section-page-head" style="background:#fffbeb;border-bottom:2px solid #fde68a">
+    <div>
+      <div class="section-page-title" style="color:#b45309">● Hoje</div>
+      <div class="section-page-sub" style="color:#b45309">Follow-ups agendados para ${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'})}</div>
+    </div>
+    <div class="section-page-count" style="color:#f59e0b">${hj.length} item${hj.length!==1?'s':''}</div>
+  </div>
+  <div class="section">
+    ${hj.length
+      ? `<table><thead><tr><th>Descrição</th><th>Lead / Contato</th><th>Data</th><th>Responsável</th><th>Tipo</th><th>Status</th></tr></thead>
+         <tbody>${listaHTML(hj,'Hoje','#f59e0b')}</tbody></table>`
+      : `<p style="color:#94a3b8;font-size:13px;padding:24px 0;text-align:center">Nenhum follow-up para hoje</p>`}
+  </div>
+</div>
 
-  ${hj.length?`<div class="section-hj"><div class="sub-title sub-title-hj">● Hoje (${hj.length})</div>
-  <table><thead><tr><th>Descrição</th><th>Lead / Contato</th><th>Data</th><th>Responsável</th><th>Tipo</th><th>Status</th></tr></thead>
-  <tbody>${listaHTML(hj,'Hoje','#f59e0b')}</tbody></table></div>`:''}
-
-  ${sem.length?`<div class="section-sem"><div class="sub-title sub-title-sem">● Esta Semana (${sem.length})</div>
-  <table><thead><tr><th>Descrição</th><th>Lead / Contato</th><th>Data</th><th>Responsável</th><th>Tipo</th><th>Status</th></tr></thead>
-  <tbody>${listaHTML(sem,'Esta semana','#10b981')}</tbody></table></div>`:''}
+<!-- PÁGINA 3 — ESTA SEMANA -->
+<div class="page-section">
+  <div class="accent-line" style="background:linear-gradient(90deg,#10b981,#059669)"></div>
+  <div class="section-page-head" style="background:#f0fdf4;border-bottom:2px solid #bbf7d0">
+    <div>
+      <div class="section-page-title" style="color:#065f46">● Esta Semana</div>
+      <div class="section-page-sub" style="color:#065f46">Follow-ups previstos para os próximos dias</div>
+    </div>
+    <div class="section-page-count" style="color:#10b981">${sem.length} item${sem.length!==1?'s':''}</div>
+  </div>
+  <div class="section">
+    ${sem.length
+      ? `<table><thead><tr><th>Descrição</th><th>Lead / Contato</th><th>Data</th><th>Responsável</th><th>Tipo</th><th>Status</th></tr></thead>
+         <tbody>${listaHTML(sem,'Esta semana','#10b981')}</tbody></table>`
+      : `<p style="color:#94a3b8;font-size:13px;padding:24px 0;text-align:center">Nenhum follow-up para esta semana</p>`}
+  </div>
 </div>
 
 <div class="footer">
