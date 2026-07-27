@@ -11,213 +11,396 @@
 html,body{height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#070c18;overflow:hidden}
 
 /* NAV */
-.topnav{position:relative;z-index:10;background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topnav{position:relative;z-index:10;background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .nav-logo{display:flex;align-items:center;gap:13px;cursor:pointer;text-decoration:none}
-.logo-soma{font-size:17px;font-weight:300;color:#fff;letter-spacing:0.5px}
+.logo-soma{font-size:17px;font-weight:300;color:#fff}
 .logo-pipe{width:1px;height:20px;background:rgba(255,255,255,0.4)}
 .logo-partners{font-size:10px;font-weight:700;letter-spacing:5px;color:#fff;text-transform:uppercase}
-.nav-right{display:flex;gap:10px;align-items:center}
-.nav-title{font-size:14px;font-weight:800;color:#fff;letter-spacing:0.5px}
-.nav-sub{font-size:10px;font-weight:500;color:rgba(255,255,255,0.35);margin-top:1px}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all 0.18s}
+.nav-center{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:4px}
+.tab-btn{padding:6px 18px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,0.4);transition:all .18s;display:flex;align-items:center;gap:6px}
+.tab-btn svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.2;fill:none}
+.tab-btn.active{background:rgba(139,92,246,0.25);color:#c4b5fd;border:1px solid rgba(139,92,246,0.3)}
+.tab-btn:not(.active):hover{color:rgba(255,255,255,0.7)}
+.nav-right{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;border:none;transition:all .18s}
 .btn svg{width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none}
 .btn-purple{background:rgba(139,92,246,0.18);border:1px solid rgba(139,92,246,0.4);color:#a78bfa}.btn-purple:hover{background:rgba(139,92,246,0.32);color:#fff}
-.btn-outline-nav{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.75)}.btn-outline-nav:hover{background:rgba(255,255,255,0.12);color:#fff}
-
-/* STAT CHIPS */
-.stat-bar{display:flex;gap:8px;align-items:center}
-.stat-chip{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:4px 11px;border-radius:20px}
+.btn-outline{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.6)}.btn-outline:hover{background:rgba(255,255,255,0.1);color:#fff}
+.stat-bar{display:flex;gap:6px;align-items:center}
+.stat-chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
 .chip-red{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#fca5a5}
 .chip-orange{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);color:#fcd34d}
 .chip-green{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7}
-.chip-dot{width:6px;height:6px;border-radius:50%}
+.chip-dot{width:5px;height:5px;border-radius:50%}
+.nav-title-area{display:flex;flex-direction:column}
+.nav-title{font-size:14px;font-weight:800;color:#fff}
+.nav-sub{font-size:10px;color:rgba(255,255,255,0.35);margin-top:1px}
 
-/* COLUMNS */
-.columns-area{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:14px 16px;height:calc(100vh - 56px);overflow:hidden}
+/* TABS CONTENT */
+.tab-content{display:none;height:calc(100vh - 56px);overflow:hidden}
+.tab-content.active{display:flex;flex-direction:column}
+
+/* ══ ABA TAREFAS ══ */
+.columns-area{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:12px 16px;flex:1;overflow:hidden}
 .col-wrap{background:#fff;border:1px solid var(--lborder);box-shadow:0 1px 4px rgba(0,0,0,0.05);border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
 .col-atrasado{border-top:2px solid #ef4444}
 .col-hoje{border-top:2px solid #f59e0b}
 .col-semana{border-top:2px solid #10b981}
-.col-head{padding:11px 14px;border-bottom:1px solid rgba(7,12,24,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.col-head{padding:10px 14px;border-bottom:1px solid rgba(7,12,24,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .col-title{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
-.col-atrasado .col-title{color:#fca5a5}
-.col-hoje .col-title{color:#d97706}
-.col-semana .col-title{color:#059669}
+.col-atrasado .col-title{color:#fca5a5}.col-hoje .col-title{color:#d97706}.col-semana .col-title{color:#059669}
 .col-count{font-size:13px;font-weight:800}
-.col-atrasado .col-count{color:#fca5a5}
-.col-hoje .col-count{color:#d97706}
-.col-semana .col-count{color:#059669}
+.col-atrasado .col-count{color:#fca5a5}.col-hoje .col-count{color:#d97706}.col-semana .col-count{color:#059669}
 .col-scroll{overflow-y:auto;flex:1;padding:8px}
-.col-empty{text-align:center;padding:28px 12px;font-size:11px;color:rgba(7,12,24,0.25);font-weight:500}
-
-/* CARD */
-.fu-card{background:#fff;border:1px solid rgba(7,12,24,0.08);border-radius:7px;padding:8px 10px;margin-bottom:5px;display:flex;gap:8px;align-items:flex-start;box-shadow:0 1px 3px rgba(0,0,0,0.04);transition:box-shadow 0.15s}
+.col-empty{text-align:center;padding:28px 12px;font-size:11px;color:rgba(7,12,24,0.22);font-weight:500}
+.fu-card{background:#fff;border:1px solid rgba(7,12,24,0.08);border-radius:7px;padding:8px 10px;margin-bottom:5px;display:flex;gap:8px;align-items:flex-start;box-shadow:0 1px 3px rgba(0,0,0,0.04);transition:box-shadow .15s}
 .fu-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.08)}
-.check-btn{width:24px;height:24px;border-radius:50%;border:2px solid rgba(139,92,246,0.35);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.18s;color:transparent}
-.check-btn:hover{background:rgba(139,92,246,0.15);border-color:#a78bfa;color:#a78bfa}
+.check-btn{width:24px;height:24px;border-radius:50%;border:2px solid rgba(139,92,246,0.3);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;color:transparent}
+.check-btn:hover{background:rgba(139,92,246,0.12);border-color:#a78bfa;color:#a78bfa}
 .check-btn svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none}
 .card-body{flex:1;min-width:0}
 .card-titulo{font-size:12px;font-weight:700;margin-bottom:2px;color:#070c18;line-height:1.3}
 .card-sub{font-size:10px;color:var(--lmuted);margin-bottom:4px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .card-footer-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:2px}
-.internal-tag{font-size:9px;font-weight:700;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.18);color:#8b5cf6;border-radius:4px;padding:1px 6px}
+.ref-tag{font-size:9px;font-weight:700;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.18);color:#8b5cf6;border-radius:4px;padding:1px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
 .card-date{font-size:9px;font-weight:700;white-space:nowrap}
-.date-over{color:#fca5a5}.date-hoje{color:#d97706}.date-ok{color:rgba(7,12,24,0.35)}
-.del-card{background:none;border:none;cursor:pointer;color:rgba(7,12,24,0.15);font-size:15px;line-height:1;padding:0 1px;transition:color 0.15s;flex-shrink:0}
+.date-over{color:#fca5a5}.date-hoje{color:#d97706}.date-ok{color:rgba(7,12,24,0.32)}
+.del-card{background:none;border:none;cursor:pointer;color:rgba(7,12,24,0.15);font-size:16px;line-height:1;padding:0 2px;transition:color .15s;flex-shrink:0}
 .del-card:hover{color:#ef4444}
-
-/* RESP BADGE */
-.resp-badge{display:inline-flex;align-items:center;gap:3px;vertical-align:middle}
+.resp-badge{display:inline-flex;align-items:center;gap:3px}
 .resp-av{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:7px;font-weight:800;color:#fff;flex-shrink:0}
-.resp-name{font-size:10px;font-weight:600;color:rgba(7,12,24,0.55)}
-
-/* TIPO TAG */
-.tipo-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;letter-spacing:0.3px}
+.resp-name{font-size:10px;font-weight:600;color:rgba(7,12,24,0.5)}
+.tipo-tag{display:inline-flex;align-items:center;gap:2px;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px}
 .t-cont{background:rgba(139,92,246,0.1);color:#7c3aed}
 .t-prazo{background:rgba(239,68,68,0.1);color:#dc2626}
 .t-aud{background:rgba(245,158,11,0.1);color:#d97706}
 .t-noti{background:rgba(59,130,246,0.1);color:#3b82f6}
 .t-reu{background:rgba(16,185,129,0.1);color:#059669}
 .t-out{background:rgba(7,12,24,0.06);color:rgba(7,12,24,0.4)}
-.t-rec{background:rgba(139,92,246,0.11);color:#7c3aed;border:1px solid rgba(139,92,246,0.2)}
+.t-rec{background:rgba(139,92,246,0.1);color:#7c3aed;border:1px solid rgba(139,92,246,0.2)}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+/* ══ ABA PROCESSOS ══ */
+.processos-wrap{flex:1;overflow-y:auto;padding:16px 20px 24px}
+.proc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.proc-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;cursor:pointer;transition:all .18s;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.proc-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.1);transform:translateY(-1px)}
+.proc-card-top{padding:14px 16px 10px;border-bottom:1px solid #f1f5f9}
+.proc-title{font-size:13px;font-weight:800;color:#1e293b;margin-bottom:6px;line-height:1.3}
+.proc-badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.pbadge{font-size:8px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:5px}
+.pb-consultivo{background:#ede9fe;color:#7c3aed}
+.pb-contencioso{background:#fee2e2;color:#dc2626}
+.pb-trabalhista{background:#fef3c7;color:#d97706}
+.pb-tributario{background:#dbeafe;color:#2563eb}
+.pb-societario{background:#d1fae5;color:#059669}
+.pb-hora{background:#f1f5f9;color:#475569}
+.pb-mensalidade{background:#f0fdf4;color:#166534}
+.pb-exito{background:#fff7ed;color:#9a3412}
+.pb-pacote{background:#fdf4ff;color:#86198f}
+.pb-ativo{background:#dcfce7;color:#15803d}
+.pb-analise{background:#fef9c3;color:#854d0e}
+.pb-encerrado{background:#f1f5f9;color:#64748b}
+.pb-arquivado{background:#f1f5f9;color:#94a3b8}
+.proc-card-body{padding:10px 16px 14px}
+.proc-notas{font-size:11px;color:#64748b;line-height:1.55;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.proc-datas{display:flex;flex-direction:column;gap:3px}
+.proc-data-item{display:flex;align-items:center;gap:6px;font-size:10px;color:#64748b}
+.proc-data-dot{width:5px;height:5px;border-radius:50%;background:#8b5cf6;flex-shrink:0}
+.proc-data-label{font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proc-data-val{font-weight:700;color:#475569;white-space:nowrap}
+.proc-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#f8fafc;border-top:1px solid #f1f5f9}
+.proc-resp{font-size:10px;color:#94a3b8;font-weight:600}
+.proc-add-card{background:rgba(255,255,255,0.03);border:2px dashed rgba(139,92,246,0.25);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:32px;cursor:pointer;transition:all .18s;min-height:140px}
+.proc-add-card:hover{background:rgba(139,92,246,0.06);border-color:rgba(139,92,246,0.45)}
+.proc-add-icon{width:36px;height:36px;border-radius:50%;background:rgba(139,92,246,0.12);display:flex;align-items:center;justify-content:center}
+.proc-add-icon svg{width:16px;height:16px;stroke:#8b5cf6;stroke-width:2.5;fill:none}
+.proc-add-label{font-size:11px;font-weight:700;color:rgba(139,92,246,0.7)}
+
+/* MODAL GERAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
-.modal-box{background:#0f1a2e;border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:480px}
-.modal-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:22px;letter-spacing:0.3px}
-.fl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);display:block;margin-bottom:5px}
-.fc{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:13px;color:#fff;outline:none;width:100%;transition:border 0.15s}
-.fc:focus{border-color:rgba(139,92,246,0.5)}
+.modal-box{background:#0f1a2e;border:1px solid var(--border);border-radius:16px;padding:0;width:100%;overflow:hidden}
+.modal-box-sm{max-width:480px}
+.modal-box-md{max-width:620px}
+.modal-box-lg{max-width:760px;max-height:88vh;display:flex;flex-direction:column}
+.modal-head{padding:20px 24px 16px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:800;color:#fff;letter-spacing:.3px}
+.modal-close{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:5px 10px;color:rgba(255,255,255,0.4);cursor:pointer;font-size:14px;font-family:'Montserrat',sans-serif;transition:all .15s}
+.modal-close:hover{background:rgba(255,255,255,0.12);color:#fff}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+.modal-foot{padding:14px 24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0}
+
+/* FORM */
+.fl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);display:block;margin-bottom:5px}
+.fc{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:12px;color:#fff;outline:none;width:100%;transition:border .15s}
+.fc:focus{border-color:rgba(139,92,246,0.5);background:rgba(139,92,246,0.04)}
 .fc option{background:#0f1a2e;color:#fff}
-textarea.fc{resize:vertical;min-height:70px;line-height:1.5}
+textarea.fc{resize:vertical;min-height:80px;line-height:1.55}
 .fg{margin-bottom:14px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg-row{display:grid;gap:12px;margin-bottom:14px}
+.fg-row.c2{grid-template-columns:1fr 1fr}
+.fg-row.c3{grid-template-columns:1fr 1fr 1fr}
+.btn-cancel{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:9px 18px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .15s}
+.btn-cancel:hover{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7)}
+.btn-save{background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);border-radius:8px;padding:9px 22px;font-size:11px;font-weight:700;color:#a78bfa;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .18s}
+.btn-save:hover{background:rgba(139,92,246,0.38);color:#fff}
+.btn-del-modal{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:9px 18px;font-size:11px;font-weight:700;color:rgba(239,68,68,0.6);cursor:pointer;font-family:'Montserrat',sans-serif;margin-right:auto;transition:all .15s}
+.btn-del-modal:hover{background:rgba(239,68,68,0.15);color:#ef4444}
 .toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.toggle-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);flex:1}
+.toggle-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);flex:1}
 .toggle-sw{position:relative;width:40px;height:22px;flex-shrink:0}
 .toggle-sw input{opacity:0;width:0;height:0;position:absolute}
-.toggle-sl{position:absolute;inset:0;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:22px;cursor:pointer;transition:all 0.2s}
-.toggle-sl:before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:rgba(255,255,255,0.4);border-radius:50%;transition:all 0.2s}
-.toggle-sw input:checked + .toggle-sl{background:rgba(139,92,246,0.3);border-color:rgba(139,92,246,0.5)}
-.toggle-sw input:checked + .toggle-sl:before{transform:translateX(18px);background:#8b5cf6}
-.mf{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
-.btn-cancel{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:9px 18px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);cursor:pointer;font-family:'Montserrat',sans-serif}
-.btn-save{background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);border-radius:8px;padding:9px 20px;font-size:11px;font-weight:700;color:#a78bfa;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.18s}
-.btn-save:hover{background:rgba(139,92,246,0.35);color:#fff}
+.toggle-sl{position:absolute;inset:0;background:rgba(255,255,255,0.08);border:1px solid var(--border);border-radius:22px;cursor:pointer;transition:all .2s}
+.toggle-sl::before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:rgba(255,255,255,0.35);border-radius:50%;transition:all .2s}
+.toggle-sw input:checked+.toggle-sl{background:rgba(139,92,246,0.3);border-color:rgba(139,92,246,0.5)}
+.toggle-sw input:checked+.toggle-sl::before{transform:translateX(18px);background:#8b5cf6}
+/* datas dinâmicas */
+.datas-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.data-row{display:grid;grid-template-columns:1fr 140px 28px;gap:6px;align-items:center}
+.data-inp{padding:7px 10px;border-radius:7px;font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;outline:none;width:100%;transition:border .15s}
+.data-inp::placeholder{color:rgba(255,255,255,0.2)}
+.data-inp:focus{border-color:rgba(139,92,246,0.45)}
+.btn-del-data{width:26px;height:26px;border-radius:6px;border:none;background:transparent;color:rgba(255,255,255,0.2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.btn-del-data:hover{background:rgba(239,68,68,0.1);color:#ef4444}
+.btn-add-data{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;background:rgba(139,92,246,0.08);border:1px dashed rgba(139,92,246,0.25);color:rgba(139,92,246,0.7);transition:all .15s}
+.btn-add-data:hover{background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.4);color:#a78bfa}
+.btn-add-data svg{width:10px;height:10px;stroke:currentColor;stroke-width:2.5;fill:none}
+/* divider label */
+.form-divider{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(139,92,246,0.5);margin:18px 0 12px;display:flex;align-items:center;gap:8px}
+.form-divider::after{content:'';flex:1;height:1px;background:rgba(139,92,246,0.15)}
 
-/* TOAST */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(12px);background:#1a1040;border:1px solid var(--border);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:700;color:#fff;opacity:0;transition:all 0.3s;z-index:999;pointer-events:none;white-space:nowrap}
+/* TOAST / LOADER */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(12px);background:#1a1040;border:1px solid var(--border);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:700;color:#fff;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap}
 .toast.ok{border-color:rgba(139,92,246,0.5);color:#c4b5fd}
 .toast.err{border-color:rgba(239,68,68,0.4);color:#fca5a5}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* LOADER */
 .loader-wrap{position:fixed;inset:0;z-index:300;background:rgba(11,30,48,0.7);display:none;align-items:center;justify-content:center}
-.loader-spin{width:32px;height:32px;border:3px solid rgba(139,92,246,0.2);border-top-color:#8b5cf6;border-radius:50%;animation:spin 0.7s linear infinite}
+.loader-spin{width:32px;height:32px;border:3px solid rgba(139,92,246,0.2);border-top-color:#8b5cf6;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 @media(max-width:900px){
   html,body{overflow:auto;height:auto}
-  .columns-area{grid-template-columns:1fr;height:auto;overflow:visible;padding-bottom:40px}
+  .tab-content.active{height:auto;overflow:visible}
+  .columns-area{grid-template-columns:1fr;height:auto;overflow:visible;padding-bottom:20px}
   .col-scroll{max-height:none;overflow:visible}
-  .topnav{padding:0 16px}
+  .topnav{padding:0 14px;flex-wrap:wrap;height:auto;padding-top:10px;padding-bottom:10px;gap:8px}
+  .nav-center{order:3;width:100%}
+  .proc-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="topnav">
-  <div style="display:flex;align-items:center;gap:20px">
+  <div style="display:flex;align-items:center;gap:16px">
     <a class="nav-logo" href="soma-partners.html">
       <span class="logo-soma">Soma</span><div class="logo-pipe"></div><span class="logo-partners">Partners</span>
     </a>
     <div style="width:1px;height:24px;background:rgba(255,255,255,0.1)"></div>
-    <div>
+    <div class="nav-title-area">
       <div class="nav-title">⚖️ Jurídico</div>
       <div class="nav-sub" id="relogio"></div>
     </div>
   </div>
+
+  <div class="nav-center">
+    <button class="tab-btn active" id="tab-tarefas-btn" onclick="switchTab('tarefas')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Tarefas
+    </button>
+    <button class="tab-btn" id="tab-processos-btn" onclick="switchTab('processos')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Processos &amp; Casos
+    </button>
+  </div>
+
   <div class="nav-right">
     <div class="stat-bar" id="stat-bar"></div>
-    <button class="btn btn-purple" onclick="openModal()">
+    <button class="btn btn-purple" id="btn-novo" onclick="abrirModalTarefa()">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nova Tarefa
+      <span id="btn-novo-label">Nova Tarefa</span>
     </button>
   </div>
 </nav>
 
-<!-- PAINEL -->
-<div class="columns-area">
-  <div class="col-wrap col-atrasado">
-    <div class="col-head"><span class="col-title">Atrasados</span><span class="col-count" id="cnt-at">0</span></div>
-    <div class="col-scroll" id="col-at"></div>
-  </div>
-  <div class="col-wrap col-hoje">
-    <div class="col-head"><span class="col-title">Hoje</span><span class="col-count" id="cnt-hj">0</span></div>
-    <div class="col-scroll" id="col-hj"></div>
-  </div>
-  <div class="col-wrap col-semana">
-    <div class="col-head"><span class="col-title">Esta Semana</span><span class="col-count" id="cnt-sem">0</span></div>
-    <div class="col-scroll" id="col-sem"></div>
+<!-- ══ ABA TAREFAS ══ -->
+<div class="tab-content active" id="tab-tarefas">
+  <div class="columns-area">
+    <div class="col-wrap col-atrasado">
+      <div class="col-head"><span class="col-title">Atrasados</span><span class="col-count" id="cnt-at">0</span></div>
+      <div class="col-scroll" id="col-at"></div>
+    </div>
+    <div class="col-wrap col-hoje">
+      <div class="col-head"><span class="col-title">Hoje</span><span class="col-count" id="cnt-hj">0</span></div>
+      <div class="col-scroll" id="col-hj"></div>
+    </div>
+    <div class="col-wrap col-semana">
+      <div class="col-head"><span class="col-title">Esta Semana</span><span class="col-count" id="cnt-sem">0</span></div>
+      <div class="col-scroll" id="col-sem"></div>
+    </div>
   </div>
 </div>
 
-<!-- MODAL NOVA TAREFA -->
-<div class="modal-overlay" id="modal-jur">
-  <div class="modal-box">
-    <div class="modal-title">⚖️ Nova Tarefa Jurídica</div>
-    <div class="fg">
-      <label class="fl">Responsável</label>
-      <select class="fc" id="jur-resp"><option value="">— Selecione —</option></select>
+<!-- ══ ABA PROCESSOS ══ -->
+<div class="tab-content" id="tab-processos">
+  <div class="processos-wrap">
+    <div class="proc-grid" id="proc-grid">
+      <div class="proc-add-card" onclick="abrirModalProcesso(null)">
+        <div class="proc-add-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        <div class="proc-add-label">Novo Processo / Caso</div>
+      </div>
     </div>
-    <div class="fg">
-      <label class="fl">Descrição</label>
-      <textarea class="fc" id="jur-desc" placeholder="Descreva a tarefa ou prazo jurídico..."></textarea>
+  </div>
+</div>
+
+<!-- MODAL TAREFA -->
+<div class="modal-overlay" id="modal-tarefa">
+  <div class="modal-box modal-box-sm">
+    <div class="modal-head">
+      <div class="modal-title">Nova Tarefa Jurídica</div>
+      <button class="modal-close" onclick="fecharModalTarefa()">✕</button>
     </div>
-    <div class="grid2">
+    <div class="modal-body">
       <div class="fg">
-        <label class="fl">Data / Prazo</label>
-        <input type="date" class="fc" id="jur-data"/>
+        <label class="fl">Responsável</label>
+        <select class="fc" id="t-resp"><option value="">— Selecione —</option></select>
       </div>
       <div class="fg">
-        <label class="fl">Tipo</label>
-        <select class="fc" id="jur-tipo">
-          <option value="contrato">📄 Contrato</option>
-          <option value="prazo">⏰ Prazo Legal</option>
-          <option value="audiencia">🏛️ Audiência</option>
-          <option value="notificacao">📬 Notificação</option>
-          <option value="reuniao">🤝 Reunião</option>
-          <option value="outro">Outro</option>
+        <label class="fl">Descrição</label>
+        <textarea class="fc" id="t-desc" placeholder="Descreva a tarefa ou prazo..."></textarea>
+      </div>
+      <div class="fg-row c2">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Data / Prazo</label>
+          <input type="date" class="fc" id="t-data"/>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Tipo</label>
+          <select class="fc" id="t-tipo">
+            <option value="prazo">⏰ Prazo Legal</option>
+            <option value="contrato">📄 Contrato</option>
+            <option value="audiencia">🏛️ Audiência</option>
+            <option value="notificacao">📬 Notificação</option>
+            <option value="reuniao">🤝 Reunião</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg" style="margin-top:14px">
+        <label class="fl">Processo / Referência (opcional)</label>
+        <input type="text" class="fc" id="t-ref" placeholder="Ex: João Silva, Processo nº 1234..."/>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-lbl">🔄 É recorrente?</span>
+        <label class="toggle-sw">
+          <input type="checkbox" id="t-recorrente" onchange="document.getElementById('t-rec-wrap').style.display=this.checked?'block':'none'"/>
+          <span class="toggle-sl"></span>
+        </label>
+      </div>
+      <div id="t-rec-wrap" style="display:none" class="fg">
+        <label class="fl">Repetir a cada</label>
+        <select class="fc" id="t-recorrencia">
+          <option value="semanal">Toda semana</option>
+          <option value="quinzenal">Quinzenal</option>
+          <option value="mensal">Todo mês</option>
+          <option value="trimestral">Trimestral</option>
+          <option value="semestral">Semestral</option>
+          <option value="anual">Anual</option>
         </select>
       </div>
     </div>
-    <div class="fg">
-      <label class="fl">Cliente / Referência (opcional)</label>
-      <input type="text" class="fc" id="jur-ref" placeholder="Ex: João Silva, Processo nº 1234..."/>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="fecharModalTarefa()">Cancelar</button>
+      <button class="btn-save" onclick="salvarTarefa()">Salvar</button>
     </div>
-    <div class="toggle-row">
-      <span class="toggle-lbl">🔄 É recorrente?</span>
-      <label class="toggle-sw">
-        <input type="checkbox" id="jur-recorrente" onchange="toggleRecorrencia()"/>
-        <span class="toggle-sl"></span>
-      </label>
+  </div>
+</div>
+
+<!-- MODAL PROCESSO -->
+<div class="modal-overlay" id="modal-processo">
+  <div class="modal-box modal-box-lg">
+    <div class="modal-head">
+      <div class="modal-title" id="proc-modal-title">Novo Processo / Caso</div>
+      <button class="modal-close" onclick="fecharModalProcesso()">✕</button>
     </div>
-    <div id="jur-recorrencia-wrap" style="display:none" class="fg">
-      <label class="fl">Repetir a cada</label>
-      <select class="fc" id="jur-recorrencia">
-        <option value="semanal">Toda semana (7 dias)</option>
-        <option value="quinzenal">Quinzenal (14 dias)</option>
-        <option value="mensal">Todo mês (30 dias)</option>
-        <option value="trimestral">Trimestral (3 meses)</option>
-        <option value="semestral">Semestral (6 meses)</option>
-        <option value="anual">Anual (12 meses)</option>
-      </select>
+    <div class="modal-body">
+
+      <div class="fg-row c2">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Título / Nome do Caso</label>
+          <input type="text" class="fc" id="p-titulo" placeholder="Ex: Contrato de Prestação de Serviços..."/>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Cliente</label>
+          <input type="text" class="fc" id="p-cliente" placeholder="Nome do cliente"/>
+        </div>
+      </div>
+
+      <div class="form-divider">Classificação</div>
+
+      <div class="fg-row c3">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Tipo</label>
+          <select class="fc" id="p-tipo">
+            <option value="consultivo">Consultivo</option>
+            <option value="contencioso">Contencioso</option>
+            <option value="trabalhista">Trabalhista</option>
+            <option value="tributario">Tributário</option>
+            <option value="societario">Societário</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Método de Cobrança</label>
+          <select class="fc" id="p-cobranca" onchange="atualizarCampoValor()">
+            <option value="hora">Por hora</option>
+            <option value="mensalidade">Mensalidade fixa</option>
+            <option value="exito">Honorário de êxito</option>
+            <option value="pacote">Pacote fechado</option>
+            <option value="pro_bono">Pro bono</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:0" id="campo-valor-wrap">
+          <label class="fl" id="campo-valor-label">Valor (R$ / hora)</label>
+          <input type="text" class="fc" id="p-valor" placeholder="0,00"/>
+        </div>
+      </div>
+
+      <div class="fg-row c2" style="margin-top:14px">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Status</label>
+          <select class="fc" id="p-status">
+            <option value="ativo">Ativo</option>
+            <option value="analise">Em análise</option>
+            <option value="encerrado">Encerrado</option>
+            <option value="arquivado">Arquivado</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Responsável</label>
+          <select class="fc" id="p-resp"><option value="">— Selecione —</option></select>
+        </div>
+      </div>
+
+      <div class="form-divider">Anotações</div>
+
+      <div class="fg">
+        <label class="fl">Anotações livres</label>
+        <textarea class="fc" id="p-notas" placeholder="Observações, estratégia, histórico, detalhes relevantes..." style="min-height:110px"></textarea>
+      </div>
+
+      <div class="form-divider">Datas Importantes</div>
+
+      <div class="datas-list" id="p-datas-list"></div>
+      <button class="btn-add-data" onclick="addDataItem()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar data
+      </button>
+
     </div>
-    <div class="mf">
-      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn-save" onclick="saveTarefa()">Salvar</button>
+    <div class="modal-foot">
+      <button class="btn-del-modal" id="btn-del-proc" onclick="deletarProcesso()" style="display:none">Excluir</button>
+      <button class="btn-cancel" onclick="fecharModalProcesso()">Cancelar</button>
+      <button class="btn-save" onclick="salvarProcesso()">Salvar</button>
     </div>
   </div>
 </div>
@@ -233,165 +416,306 @@ const _sb=supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo'
 );
 
+/* ── UTILS ── */
 function showLoader(v){document.getElementById('loader-wrap').style.display=v?'flex':'none'}
 function showToast(m,t='ok'){const el=document.getElementById('toast');el.textContent=m;el.className='toast '+t+' show';setTimeout(()=>el.className='toast '+t,3000)}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function today(){return new Date().toISOString().split('T')[0]}
 function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
 function toDS(d){return d.toISOString().split('T')[0]}
-function diffDays(d){if(!d)return 999;return Math.ceil((new Date(d+'T12:00:00')-new Date(today()+'T12:00:00'))/(864e5))}
+function diffDays(d){return Math.ceil((new Date(d+'T12:00:00')-new Date(today()+'T12:00:00'))/(864e5))}
 function isOver(d){return d&&d<today()}
 function isTod(d){return d===today()}
-function semana(){const d=new Date(),dow=d.getDay(),s=new Date(d);s.setDate(d.getDate()-dow);const e=new Date(s);e.setDate(s.getDate()+6);return{start:toDS(s),end:toDS(e)}}
+function semana(){const d=new Date(),s=new Date(d);s.setDate(d.getDate()-d.getDay());const e=new Date(s);e.setDate(s.getDate()+6);return{start:toDS(s),end:toDS(e)}}
 
 const AV_COLS=['#4f46e5','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#db2777','#65a30d'];
 function avColor(n){if(!n)return'#334155';let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))>>>0;return AV_COLS[h%AV_COLS.length]}
-function sigla(n){if(!n)return'';const p=n.trim().split(/\s+/);return p.length===1?p[0].substring(0,2).toUpperCase():(p[0][0]+(p[p.length-1][0]||'')).toUpperCase()}
+function sigla(n){if(!n)return'';const p=n.trim().split(/\s+/);return(p.length===1?p[0].substring(0,2):(p[0][0]+(p[p.length-1][0]||''))).toUpperCase()}
 function firstName(n){return n?n.trim().split(/\s+/)[0]:''}
 function respBadge(n){if(!n)return'';return`<span class="resp-badge"><span class="resp-av" style="background:${avColor(n)}">${sigla(n)}</span><span class="resp-name">${firstName(n)}</span></span>`}
 
-const TIPO={
-  contrato:'<span class="tipo-tag t-cont">📄 Contrato</span>',
-  prazo:'<span class="tipo-tag t-prazo">⏰ Prazo</span>',
-  audiencia:'<span class="tipo-tag t-aud">🏛️ Audiência</span>',
-  notificacao:'<span class="tipo-tag t-noti">📬 Notif.</span>',
-  reuniao:'<span class="tipo-tag t-reu">🤝 Reu.</span>',
-  outro:'<span class="tipo-tag t-out">Outro</span>'
-};
+const TIPO_TAREFA={prazo:'<span class="tipo-tag t-prazo">⏰ Prazo</span>',contrato:'<span class="tipo-tag t-cont">📄 Contrato</span>',audiencia:'<span class="tipo-tag t-aud">🏛️ Audiência</span>',notificacao:'<span class="tipo-tag t-noti">📬 Notif.</span>',reuniao:'<span class="tipo-tag t-reu">🤝 Reu.</span>',outro:'<span class="tipo-tag t-out">Outro</span>'};
 const REC_SHORT={semanal:'7d',quinzenal:'15d',mensal:'1m',trimestral:'3m',semestral:'6m',anual:'1a'};
 const REC_LABEL={semanal:'Semanal',quinzenal:'Quinzenal',mensal:'Mensal',trimestral:'Trimestral',semestral:'Semestral',anual:'Anual'};
-function nextDate(base,rec){const d=new Date(base+'T12:00:00');if(rec==='semanal')d.setDate(d.getDate()+7);else if(rec==='quinzenal')d.setDate(d.getDate()+14);else if(rec==='mensal')d.setMonth(d.getMonth()+1);else if(rec==='trimestral')d.setMonth(d.getMonth()+3);else if(rec==='semestral')d.setMonth(d.getMonth()+6);else if(rec==='anual')d.setFullYear(d.getFullYear()+1);return toDS(d)}
+function nextDate(base,rec){const d=new Date(base+'T12:00:00');({semanal:()=>d.setDate(d.getDate()+7),quinzenal:()=>d.setDate(d.getDate()+14),mensal:()=>d.setMonth(d.getMonth()+1),trimestral:()=>d.setMonth(d.getMonth()+3),semestral:()=>d.setMonth(d.getMonth()+6),anual:()=>d.setFullYear(d.getFullYear()+1)}[rec]||function(){})();return toDS(d)}
 
-let tarefas=[], equipe=[];
+/* Badges processos */
+const TIPO_PROC_BADGE={consultivo:'<span class="pbadge pb-consultivo">Consultivo</span>',contencioso:'<span class="pbadge pb-contencioso">Contencioso</span>',trabalhista:'<span class="pbadge pb-trabalhista">Trabalhista</span>',tributario:'<span class="pbadge pb-tributario">Tributário</span>',societario:'<span class="pbadge pb-societario">Societário</span>'};
+const COBR_BADGE={hora:'<span class="pbadge pb-hora">Por hora</span>',mensalidade:'<span class="pbadge pb-mensalidade">Mensalidade</span>',exito:'<span class="pbadge pb-exito">Êxito</span>',pacote:'<span class="pbadge pb-pacote">Pacote</span>',pro_bono:'<span class="pbadge pb-arquivado">Pro bono</span>'};
+const STATUS_BADGE={ativo:'<span class="pbadge pb-ativo">Ativo</span>',analise:'<span class="pbadge pb-analise">Em análise</span>',encerrado:'<span class="pbadge pb-encerrado">Encerrado</span>',arquivado:'<span class="pbadge pb-arquivado">Arquivado</span>'};
 
-// RELÓGIO
+let tarefas=[], processos=[], equipe=[];
+let _procAtivo=null; // processo sendo editado
+
+/* ── RELÓGIO ── */
 (function tick(){const n=new Date();const dias=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];const ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];document.getElementById('relogio').textContent=`${dias[n.getDay()]}, ${n.getDate()} ${ms[n.getMonth()]} · ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;setTimeout(tick,30000)})();
 
-// LOAD
+/* ── TABS ── */
+let _abaAtual='tarefas';
+function switchTab(aba){
+  _abaAtual=aba;
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+aba).classList.add('active');
+  document.getElementById('tab-'+aba+'-btn').classList.add('active');
+  document.getElementById('btn-novo-label').textContent=aba==='tarefas'?'Nova Tarefa':'Novo Processo';
+  document.getElementById('btn-novo').onclick=aba==='tarefas'?abrirModalTarefa:()=>abrirModalProcesso(null);
+  if(aba==='tarefas') document.getElementById('stat-bar').style.display='flex';
+  else document.getElementById('stat-bar').style.display='none';
+}
+
+/* ── LOAD ── */
 async function loadAll(){
   showLoader(true);
   try{
-    const[tR,eR]=await Promise.all([
+    const[tR,pR,eR]=await Promise.all([
       _sb.from('juridico_tarefas').select('id,data').order('created_at'),
+      _sb.from('juridico_processos').select('id,data').order('created_at',{ascending:false}),
       _sb.from('wealth_responsaveis').select('id,data').order('created_at'),
     ]);
     tarefas=(tR.data||[]).map(r=>({id:r.id,...(r.data||{})})).filter(r=>!r.feito);
+    processos=(pR.data||[]).map(r=>({id:r.id,...(r.data||{})}));
     equipe=(eR.data||[]).map(r=>({id:r.id,...(r.data||{})})).filter(r=>r.status!=='inativo').sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR'));
   }catch(e){showToast('Erro ao carregar','err')}
   showLoader(false);
-  render();
+  renderTarefas();
+  renderProcessos();
 }
 
-// RENDER
-function render(){
+/* ══════ TAREFAS ══════ */
+function renderTarefas(){
   const{start,end}=semana();
   const sorted=tarefas.slice().sort((a,b)=>(a.data||'').localeCompare(b.data||''));
   const at=sorted.filter(f=>isOver(f.data));
   const hj=sorted.filter(f=>isTod(f.data));
-  const sem=sorted.filter(f=>!isOver(f.data)&&!isTod(f.data)&&f.data>=start&&f.data<=end);
+  const sem=sorted.filter(f=>f.data&&!isOver(f.data)&&!isTod(f.data)&&f.data>=start&&f.data<=end);
   const empty='<div class="col-empty">Nenhuma tarefa</div>';
-
   document.getElementById('cnt-at').textContent=at.length;
   document.getElementById('cnt-hj').textContent=hj.length;
   document.getElementById('cnt-sem').textContent=sem.length;
-  document.getElementById('col-at').innerHTML=at.length?at.map(cardHTML).join(''):empty;
-  document.getElementById('col-hj').innerHTML=hj.length?hj.map(cardHTML).join(''):empty;
-  document.getElementById('col-sem').innerHTML=sem.length?sem.map(cardHTML).join(''):empty;
-
-  const atN=at.length,hjN=hj.length,semN=sem.length;
+  document.getElementById('col-at').innerHTML=at.length?at.map(tarefaCardHTML).join(''):empty;
+  document.getElementById('col-hj').innerHTML=hj.length?hj.map(tarefaCardHTML).join(''):empty;
+  document.getElementById('col-sem').innerHTML=sem.length?sem.map(tarefaCardHTML).join(''):empty;
   document.getElementById('stat-bar').innerHTML=`
-    <div class="stat-chip chip-red"><div class="chip-dot" style="background:#ef4444"></div>${atN} atrasado${atN!==1?'s':''}</div>
-    <div class="stat-chip chip-orange"><div class="chip-dot" style="background:#f59e0b"></div>${hjN} hoje</div>
-    <div class="stat-chip chip-green"><div class="chip-dot" style="background:#10b981"></div>${semN} esta semana</div>`;
+    <div class="stat-chip chip-red"><div class="chip-dot" style="background:#ef4444"></div>${at.length} atrasado${at.length!==1?'s':''}</div>
+    <div class="stat-chip chip-orange"><div class="chip-dot" style="background:#f59e0b"></div>${hj.length} hoje</div>
+    <div class="stat-chip chip-green"><div class="chip-dot" style="background:#10b981"></div>${sem.length} esta semana</div>`;
 }
 
-// CARD
-function cardHTML(f){
+function tarefaCardHTML(f){
   const ov=isOver(f.data),td=isTod(f.data);
   const dc=ov?'date-over':td?'date-hoje':'date-ok';
   const dl=ov?`${Math.abs(diffDays(f.data))}d atraso`:td?'Hoje':fmtDate(f.data);
-  const recBadge=f.recorrente?`<span class="tipo-tag t-rec" title="${REC_LABEL[f.recorrencia]||'Recorrente'}">↻ ${REC_SHORT[f.recorrencia]||'Rec.'}</span>`:'';
-  const refTag=f.ref?`<span class="internal-tag" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f.ref}">${f.ref}</span>`:'<span class="internal-tag">Jurídico</span>';
+  const recBadge=f.recorrente?`<span class="tipo-tag t-rec">↻ ${REC_SHORT[f.recorrencia]||'Rec.'}</span>`:'';
+  const refTag=f.ref?`<span class="ref-tag" title="${f.ref}">${f.ref}</span>`:'<span class="ref-tag" style="opacity:.5">Jurídico</span>';
   return`<div class="fu-card">
     <button class="check-btn" onclick="marcarFeito('${f.id}')"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
     <div class="card-body">
       <div class="card-titulo">${f.desc||'—'}</div>
-      <div class="card-sub">${f.responsavel?respBadge(f.responsavel):''}${TIPO[f.tipo]||''}${recBadge}</div>
-      <div class="card-footer-row">
-        ${refTag}
-        <span class="card-date ${dc}">${dl}</span>
-      </div>
+      <div class="card-sub">${f.responsavel?respBadge(f.responsavel):''}${TIPO_TAREFA[f.tipo]||''}${recBadge}</div>
+      <div class="card-footer-row">${refTag}<span class="card-date ${dc}">${dl}</span></div>
     </div>
-    <button class="del-card" onclick="deleteTarefa('${f.id}')" title="Remover">×</button>
+    <button class="del-card" onclick="deletarTarefa('${f.id}')">×</button>
   </div>`;
 }
 
-// ACTIONS
 async function marcarFeito(id){
   const f=tarefas.find(x=>x.id===id);if(!f)return;
-  const rec={...f,feito:true};
-  const{error}=await _sb.from('juridico_tarefas').upsert({id,data:rec});
-  if(error){showToast('Erro','err');return}
+  await _sb.from('juridico_tarefas').upsert({id,data:{...f,feito:true}});
   tarefas=tarefas.filter(x=>x.id!==id);
   if(f.recorrente&&f.recorrencia&&f.data){
-    const nextId=uid();
-    const nextDt=nextDate(f.data,f.recorrencia);
-    const nextRec={id:nextId,data:nextDt,tipo:f.tipo,desc:f.desc,ref:f.ref,feito:false,responsavel:f.responsavel,recorrente:true,recorrencia:f.recorrencia};
-    const{error:e2}=await _sb.from('juridico_tarefas').upsert({id:nextId,data:nextRec});
-    if(!e2){tarefas.push(nextRec);showToast(`Concluído! Próximo reagendado para ${fmtDate(nextDt)} ↻`,'ok')}
+    const nid=uid(),ndt=nextDate(f.data,f.recorrencia),nr={...f,id:nid,data:ndt,feito:false};
+    const{error}=await _sb.from('juridico_tarefas').upsert({id:nid,data:nr});
+    if(!error){tarefas.push(nr);showToast(`Concluído! Próximo: ${fmtDate(ndt)} ↻`,'ok')}
     else showToast('Concluído! (erro ao reagendar)','ok');
-  }else{
-    showToast('Tarefa concluída ✓','ok');
-  }
-  render();
+  }else showToast('Tarefa concluída ✓','ok');
+  renderTarefas();
 }
-async function deleteTarefa(id){
+async function deletarTarefa(id){
   if(!confirm('Remover esta tarefa?'))return;
-  const{error}=await _sb.from('juridico_tarefas').delete().eq('id',id);
-  if(error){showToast('Erro ao remover','err');return}
+  await _sb.from('juridico_tarefas').delete().eq('id',id);
   tarefas=tarefas.filter(f=>f.id!==id);
-  showToast('Removido','ok');render();
+  showToast('Removido','ok');renderTarefas();
 }
 
-// MODAL
-function populateEquipeSel(){
-  document.getElementById('jur-resp').innerHTML='<option value="">— Selecione —</option>'+
-    equipe.map(p=>`<option value="${p.nome}">${p.nome}</option>`).join('');
+/* Modal Tarefa */
+function populateEquipeSels(){
+  const opts='<option value="">— Selecione —</option>'+equipe.map(p=>`<option value="${p.nome}">${p.nome}</option>`).join('');
+  document.getElementById('t-resp').innerHTML=opts;
+  document.getElementById('p-resp').innerHTML=opts;
 }
-function toggleRecorrencia(){
-  document.getElementById('jur-recorrencia-wrap').style.display=document.getElementById('jur-recorrente').checked?'block':'none';
+function abrirModalTarefa(){
+  populateEquipeSels();
+  document.getElementById('t-desc').value='';
+  document.getElementById('t-ref').value='';
+  document.getElementById('t-data').value=today();
+  document.getElementById('t-tipo').value='prazo';
+  document.getElementById('t-resp').value='';
+  document.getElementById('t-recorrente').checked=false;
+  document.getElementById('t-rec-wrap').style.display='none';
+  document.getElementById('modal-tarefa').classList.add('open');
 }
-function openModal(){
-  document.getElementById('jur-desc').value='';
-  document.getElementById('jur-ref').value='';
-  document.getElementById('jur-data').value=today();
-  document.getElementById('jur-tipo').value='prazo';
-  document.getElementById('jur-resp').value='';
-  document.getElementById('jur-recorrente').checked=false;
-  document.getElementById('jur-recorrencia-wrap').style.display='none';
-  document.getElementById('jur-recorrencia').value='mensal';
-  populateEquipeSel();
-  document.getElementById('modal-jur').classList.add('open');
-}
-function closeModal(){document.getElementById('modal-jur').classList.remove('open')}
-document.getElementById('modal-jur').addEventListener('click',e=>{if(e.target===document.getElementById('modal-jur'))closeModal()});
+function fecharModalTarefa(){document.getElementById('modal-tarefa').classList.remove('open')}
+document.getElementById('modal-tarefa').addEventListener('click',e=>{if(e.target===document.getElementById('modal-tarefa'))fecharModalTarefa()});
 
-async function saveTarefa(){
-  const resp=document.getElementById('jur-resp').value;
-  const data=document.getElementById('jur-data').value;
-  const desc=document.getElementById('jur-desc').value.trim();
-  const ref=document.getElementById('jur-ref').value.trim();
-  if(!resp){alert('Selecione o responsável');return}
-  if(!data||!desc){alert('Preencha data e descrição');return}
+async function salvarTarefa(){
+  const resp=document.getElementById('t-resp').value;
+  const data=document.getElementById('t-data').value;
+  const desc=document.getElementById('t-desc').value.trim();
+  const ref=document.getElementById('t-ref').value.trim();
+  if(!resp)return alert('Selecione o responsável');
+  if(!data||!desc)return alert('Preencha data e descrição');
   const id=uid();
-  const recorrente=document.getElementById('jur-recorrente').checked;
-  const recorrencia=recorrente?document.getElementById('jur-recorrencia').value:'';
-  const rec={id,data,tipo:document.getElementById('jur-tipo').value,desc,ref,feito:false,responsavel:resp,recorrente,recorrencia};
+  const recorrente=document.getElementById('t-recorrente').checked;
+  const recorrencia=recorrente?document.getElementById('t-recorrencia').value:'';
+  const rec={id,data,tipo:document.getElementById('t-tipo').value,desc,ref,feito:false,responsavel:resp,recorrente,recorrencia};
   const{error}=await _sb.from('juridico_tarefas').upsert({id,data:rec});
-  if(error){showToast('Erro ao salvar','err');return}
-  tarefas.push(rec);
-  showToast('Tarefa salva!','ok');
-  closeModal();render();
+  if(error)return showToast('Erro ao salvar','err');
+  tarefas.push(rec);showToast('Tarefa salva!','ok');fecharModalTarefa();renderTarefas();
+}
+
+/* ══════ PROCESSOS ══════ */
+function renderProcessos(){
+  const grid=document.getElementById('proc-grid');
+  const addCard=`<div class="proc-add-card" onclick="abrirModalProcesso(null)">
+    <div class="proc-add-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+    <div class="proc-add-label">Novo Processo / Caso</div>
+  </div>`;
+  if(!processos.length){grid.innerHTML=addCard;return;}
+  grid.innerHTML=processos.map(p=>procCardHTML(p)).join('')+addCard;
+}
+
+function procCardHTML(p){
+  const datas=p.datas||[];
+  const datasHTML=datas.slice(0,3).map(d=>`<div class="proc-data-item">
+    <div class="proc-data-dot"></div>
+    <span class="proc-data-label">${d.label||'—'}</span>
+    <span class="proc-data-val">${fmtDate(d.date)}</span>
+  </div>`).join('');
+  const valorStr=p.valor?` · <span style="font-size:9px;color:#94a3b8">R$ ${p.valor}</span>`:'';
+  return`<div class="proc-card" onclick="abrirModalProcesso('${p.id}')">
+    <div class="proc-card-top">
+      <div class="proc-title">${p.titulo||'(sem título)'}</div>
+      <div class="proc-badges">
+        ${TIPO_PROC_BADGE[p.tipo]||''}
+        ${COBR_BADGE[p.cobranca]||''}
+        ${STATUS_BADGE[p.status]||''}
+      </div>
+      ${p.cliente?`<div style="font-size:11px;color:#64748b;font-weight:600;display:flex;align-items:center;gap:5px"><span style="opacity:.5">👤</span>${p.cliente}</div>`:''}
+    </div>
+    <div class="proc-card-body">
+      ${p.notas?`<div class="proc-notas">${p.notas}</div>`:''}
+      ${datasHTML?`<div class="proc-datas">${datasHTML}</div>`:''}
+    </div>
+    <div class="proc-footer">
+      <span class="proc-resp">${p.responsavel?'👤 '+p.responsavel:''}</span>
+      <span style="font-size:9px;color:#94a3b8">Editar →</span>
+    </div>
+  </div>`;
+}
+
+/* Modal Processo */
+let _datasItems=[];
+
+function addDataItem(label='',date=''){
+  const idx=_datasItems.length;
+  _datasItems.push({label,date});
+  const row=document.createElement('div');
+  row.className='data-row';
+  row.id=`drow-${idx}`;
+  row.innerHTML=`<input class="data-inp" type="text" placeholder="Ex: Audiência, Vencimento..." value="${label}" oninput="_datasItems[${idx}].label=this.value"/>
+    <input class="data-inp" type="date" value="${date}" oninput="_datasItems[${idx}].date=this.value"/>
+    <button class="btn-del-data" onclick="removerData(${idx})">✕</button>`;
+  document.getElementById('p-datas-list').appendChild(row);
+}
+function removerData(idx){
+  const el=document.getElementById(`drow-${idx}`);
+  if(el)el.remove();
+  _datasItems[idx]=null;
+}
+
+function atualizarCampoValor(){
+  const cob=document.getElementById('p-cobranca').value;
+  const wrap=document.getElementById('campo-valor-wrap');
+  const lbl=document.getElementById('campo-valor-label');
+  if(cob==='pro_bono'){wrap.style.display='none';return}
+  wrap.style.display='block';
+  lbl.textContent=cob==='hora'?'Valor (R$/hora)':cob==='exito'?'% de êxito':'Valor (R$)';
+}
+
+function abrirModalProcesso(id){
+  _procAtivo=id;
+  populateEquipeSels();
+  _datasItems=[];
+  document.getElementById('p-datas-list').innerHTML='';
+  const btnDel=document.getElementById('btn-del-proc');
+
+  if(!id){
+    document.getElementById('proc-modal-title').textContent='Novo Processo / Caso';
+    document.getElementById('p-titulo').value='';
+    document.getElementById('p-cliente').value='';
+    document.getElementById('p-tipo').value='consultivo';
+    document.getElementById('p-cobranca').value='mensalidade';
+    document.getElementById('p-valor').value='';
+    document.getElementById('p-status').value='ativo';
+    document.getElementById('p-resp').value='';
+    document.getElementById('p-notas').value='';
+    btnDel.style.display='none';
+  } else {
+    const p=processos.find(x=>x.id===id);if(!p)return;
+    document.getElementById('proc-modal-title').textContent='Editar Processo / Caso';
+    document.getElementById('p-titulo').value=p.titulo||'';
+    document.getElementById('p-cliente').value=p.cliente||'';
+    document.getElementById('p-tipo').value=p.tipo||'consultivo';
+    document.getElementById('p-cobranca').value=p.cobranca||'mensalidade';
+    document.getElementById('p-valor').value=p.valor||'';
+    document.getElementById('p-status').value=p.status||'ativo';
+    document.getElementById('p-resp').value=p.responsavel||'';
+    document.getElementById('p-notas').value=p.notas||'';
+    (p.datas||[]).forEach(d=>addDataItem(d.label,d.date));
+    btnDel.style.display='block';
+  }
+  atualizarCampoValor();
+  document.getElementById('modal-processo').classList.add('open');
+}
+function fecharModalProcesso(){document.getElementById('modal-processo').classList.remove('open')}
+document.getElementById('modal-processo').addEventListener('click',e=>{if(e.target===document.getElementById('modal-processo'))fecharModalProcesso()});
+
+async function salvarProcesso(){
+  const titulo=document.getElementById('p-titulo').value.trim();
+  if(!titulo)return alert('Informe o título do processo');
+  const id=_procAtivo||uid();
+  const datas=_datasItems.filter(d=>d&&(d.label||d.date));
+  const rec={
+    id,titulo,
+    cliente:document.getElementById('p-cliente').value.trim(),
+    tipo:document.getElementById('p-tipo').value,
+    cobranca:document.getElementById('p-cobranca').value,
+    valor:document.getElementById('p-valor').value.trim(),
+    status:document.getElementById('p-status').value,
+    responsavel:document.getElementById('p-resp').value,
+    notas:document.getElementById('p-notas').value.trim(),
+    datas
+  };
+  const{error}=await _sb.from('juridico_processos').upsert({id,data:rec});
+  if(error)return showToast('Erro ao salvar','err');
+  if(_procAtivo){
+    const idx=processos.findIndex(p=>p.id===id);
+    if(idx!==-1)processos[idx]=rec; else processos.unshift(rec);
+  }else{
+    processos.unshift(rec);
+  }
+  showToast(_procAtivo?'Processo atualizado!':'Processo criado!','ok');
+  fecharModalProcesso();renderProcessos();
+}
+
+async function deletarProcesso(){
+  if(!_procAtivo)return;
+  if(!confirm('Excluir este processo permanentemente?'))return;
+  const{error}=await _sb.from('juridico_processos').delete().eq('id',_procAtivo);
+  if(error)return showToast('Erro ao excluir','err');
+  processos=processos.filter(p=>p.id!==_procAtivo);
+  showToast('Processo excluído','ok');fecharModalProcesso();renderProcessos();
 }
 
 loadAll();
