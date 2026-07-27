@@ -401,7 +401,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
       <input class="toolbar-search" id="func-search" placeholder="Buscar colaborador…" oninput="renderEquipe()">
     </div>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Nome</th><th>Sigla</th><th>Cargo</th><th>Salário</th><th>Entrada</th><th>Status</th><th>Contrato</th><th></th></tr></thead>
+      <thead><tr><th>Nome</th><th>Sigla</th><th>Cargo</th><th>Salário</th><th>Entrada</th><th>Aniversário</th><th>Status</th><th>Contrato</th><th></th></tr></thead>
       <tbody id="tbl-equipe"></tbody>
     </table></div>
   </div>
@@ -1997,10 +1997,11 @@ function renderEquipe(){
       <td style="font-size:12px">${f.cargo||'—'}</td>
       <td style="font-weight:700">${isSocio(f.cargo)?`<span style="font-size:10px;font-weight:800;background:rgba(201,150,60,0.12);border:1px solid rgba(201,150,60,0.2);color:var(--gold);border-radius:5px;padding:2px 8px;letter-spacing:0.5px">PRÓ LABORE</span>`:(f.salario?BRL(f.salario):'—')}</td>
       <td style="font-size:11px;color:var(--muted)">${f.data_entrada?fmtDate(f.data_entrada):'—'}</td>
+      <td>${fmtAniversario(f.nascimento)}</td>
       <td><span class="badge badge-${f.status||'ativo'}">${f.status==='inativo'?'Inativo':'Ativo'}</span></td>
       <td onclick="event.stopPropagation()">${contratoCell}</td>
       <td onclick="event.stopPropagation()"><button class="btn btn-danger btn-sm" onclick="deletarFunc('${f.id}')">×</button></td>
-    </tr>`;}).join(''):'<tr class="empty-row"><td colspan="8">Nenhum colaborador cadastrado</td></tr>';
+    </tr>`;}).join(''):'<tr class="empty-row"><td colspan="9">Nenhum colaborador cadastrado</td></tr>';
 }
 
 function isSocio(cargo){return (cargo||'').trim().toLowerCase()==='sócio'||(cargo||'').trim().toLowerCase()==='socio';}
@@ -2021,6 +2022,28 @@ function atualizarLabelSal(){
 function maskAdminCPF(el){let v=el.value.replace(/\D/g,'').slice(0,11);if(v.length>9)v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4');else if(v.length>6)v=v.replace(/(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3');else if(v.length>3)v=v.replace(/(\d{3})(\d{0,3})/,'$1.$2');el.value=v;}
 function maskAdminTel(el){let v=el.value.replace(/\D/g,'').slice(0,11);if(v.length>10)v=v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');else if(v.length>6)v=v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');else if(v.length>2)v=v.replace(/(\d{2})(\d{0,5})/,'($1) $2');el.value=v;}
 function maskAdminData(el){let v=el.value.replace(/\D/g,'').slice(0,8);if(v.length>4)v=v.replace(/(\d{2})(\d{2})(\d{0,4})/,'$1/$2/$3');else if(v.length>2)v=v.replace(/(\d{2})(\d{0,2})/,'$1/$2');el.value=v;}
+function fmtAniversario(nasc){
+  if(!nasc)return'<span style="color:rgba(255,255,255,0.18);font-style:italic;font-size:11px">—</span>';
+  // Suporte DD/MM/AAAA e YYYY-MM-DD
+  let d,m,y;
+  if(nasc.includes('/')){[d,m,y]=nasc.split('/').map(Number);}
+  else if(nasc.includes('-')){const p=nasc.split('-');y=+p[0];m=+p[1];d=+p[2];}
+  else return`<span style="font-size:11px;color:var(--muted)">${nasc}</span>`;
+  if(!d||!m)return`<span style="font-size:11px;color:var(--muted)">${nasc}</span>`;
+  const now=new Date();
+  const todayD=now.getDate(),todayM=now.getMonth()+1,todayY=now.getFullYear();
+  // Dias até próximo aniversário
+  let next=new Date(todayY,m-1,d);
+  if(next<new Date(todayY,todayM-1,todayD))next=new Date(todayY+1,m-1,d);
+  const diff=Math.round((next-new Date(todayY,todayM-1,todayD))/(864e5));
+  const isToday=d===todayD&&m===todayM;
+  const isSoon=diff>0&&diff<=7;
+  const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const label=`${String(d).padStart(2,'0')} ${MESES[m-1]}`;
+  if(isToday)return`<span style="font-size:11px;font-weight:800;color:#fcd34d">🎂 ${label} — Hoje!</span>`;
+  if(isSoon)return`<span style="font-size:11px;font-weight:700;color:#fbbf24">🎁 ${label} <span style="font-size:10px;opacity:.8">(em ${diff}d)</span></span>`;
+  return`<span style="font-size:11px;color:rgba(255,255,255,0.45)">${label}</span>`;
+}
 
 function abrirModalFunc(){
   document.getElementById('func-id').value='';
