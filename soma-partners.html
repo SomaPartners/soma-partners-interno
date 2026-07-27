@@ -113,6 +113,10 @@
     }
     .card-ferramentas .card-img { object-position: center 30%; }
     .card-ferramentas { cursor: default; }
+    .card-juridico .card-placeholder {
+      background: radial-gradient(ellipse at 50% 35%, rgba(109,40,217,0.22) 0%, rgba(8,10,20,1) 70%),
+        linear-gradient(135deg, #130d22 0%, #0a0c18 60%, #070810 100%);
+    }
     .card-admin .card-placeholder {
       background: radial-gradient(ellipse at 50% 30%, rgba(100,80,180,0.2) 0%, rgba(8,10,18,1) 65%),
         linear-gradient(135deg, #120f1e 0%, #0a0c16 60%, #080a10 100%);
@@ -379,14 +383,17 @@
       </div>
     </div>
 
-    <!-- EM BREVE 1 -->
-    <div class="card card-embreve card-extra">
+    <!-- JURÍDICO -->
+    <div class="card card-juridico card-extra" onclick="window.location.href='juridico.html'">
       <div class="card-placeholder"></div>
-      <div class="card-embreve-body">
-        <div class="card-embreve-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="card-embreve-label">Em breve</div>
+      <div class="card-tint"></div>
+      <div class="fu-live" id="jur-live" style="display:none">
+        <div class="fu-live-count" id="jur-live-count">0</div>
+        <div class="fu-live-label">pendentes</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-title">Jurídico</div>
+        <div class="card-subtitle">Tarefas &amp; Prazos Legais</div>
       </div>
     </div>
 
@@ -442,6 +449,24 @@ function logout(){
     if(pending.length){
       document.getElementById('fu-live-count').textContent = pending.length;
       document.getElementById('fu-live').style.display = 'flex';
+    }
+  }catch(e){}
+})();
+
+// ── Jurídico badge ──
+(async function(){
+  try{
+    const SUPA_URL='https://mdftseanzfganeiyotlf.supabase.co';
+    const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
+    const _sb2 = supabase.createClient(SUPA_URL, SUPA_KEY);
+    const pad = n => String(n).padStart(2,'0');
+    const d = new Date();
+    const todayStr = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    const {data} = await _sb2.from('juridico_tarefas').select('id,data');
+    const pending = (data||[]).map(r=>({...r.data})).filter(f=>!f.feito&&f.data&&f.data<=todayStr);
+    if(pending.length){
+      document.getElementById('jur-live-count').textContent = pending.length;
+      document.getElementById('jur-live').style.display = 'flex';
     }
   }catch(e){}
 })();
