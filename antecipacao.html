@@ -885,10 +885,7 @@ function generateReport(){
             <div style="font-size:13px;font-weight:800;color:${movCol}">${movPeriodo>=0?'+':''}${BRL(movPeriodo)}</div>
           </div>
         </div>
-        <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e5e7eb">
-          <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">Saldo de fechamento · ${tx.length} ${L.transactions}</div>
-          <div style="font-size:16px;font-weight:900;color:${fechCol}">${BRL(salFechamento)}</div>
-        </div>
+        <div style="margin-top:8px;font-size:10px;color:#9ca3af">${tx.length} ${L.transactions}</div>
       </div>`
     :kpiCard(L.currentBalance,BRL(sal),tx.length+' '+L.transactions,totCol);
   const kHtml=incKPI?(c.isBilling?`
