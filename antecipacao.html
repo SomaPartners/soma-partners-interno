@@ -751,6 +751,48 @@ const T = {
   }
 };
 
+// ── Term translation map (PT → EN) ─────────────────────────────────────────
+const TERM_MAP_EN = {
+  // Categories
+  'SALARIO':'SALARY','SALÁRIO':'SALARY',
+  'CONTAS':'BILLS',
+  'OUTROS':'OTHERS','OUTRO':'OTHER',
+  'ANTECIPAÇÃO DE SALDO':'BALANCE ADVANCE','ANTECIPACAO DE SALDO':'BALANCE ADVANCE',
+  'REFORMA':'RENOVATION',
+  'CARRO':'CAR',
+  'SERVICOS':'SERVICES','SERVIÇOS':'SERVICES',
+  'ALIMENTACAO':'FOOD','ALIMENTAÇÃO':'FOOD',
+  'SAUDE':'HEALTH','SAÚDE':'HEALTH',
+  'EDUCACAO':'EDUCATION','EDUCAÇÃO':'EDUCATION',
+  'LAZER':'LEISURE',
+  'VIAGEM':'TRAVEL',
+  'VESTUARIO':'CLOTHING','VESTUÁRIO':'CLOTHING',
+  'INVESTIMENTO':'INVESTMENT',
+  'IMPOSTO':'TAX','IMPOSTOS':'TAXES',
+  // Common descriptions
+  'FAXINEIRA':'HOUSEKEEPER','DIARISTA':'HOUSEKEEPER',
+  'ALUGUEL':'RENT','ALUGUEL APARTAMENTO':'APARTMENT RENT',
+  'MERCADO':'SUPERMARKET','SUPERMERCADO':'SUPERMARKET',
+  'GÁS':'GAS','GAS':'GAS',
+  'LUZ':'ELECTRICITY','ENERGIA':'ELECTRICITY',
+  'AGUA':'WATER','ÁGUA':'WATER',
+  'MEDICAÇÃO':'MEDICATION','MEDICAMENTO':'MEDICATION','FARMACIA':'PHARMACY','FARMÁCIA':'PHARMACY',
+  'GASOLINA':'GASOLINE','GASOLINA DO CARRO':'CAR GAS',
+  'INTERNET':'INTERNET',
+  'SEGURO':'INSURANCE',
+  'MANUTENÇÃO':'MAINTENANCE','MANUTENCAO':'MAINTENANCE',
+  'SALARIO HERTZ':'HERTZ SALARY',
+  'FEE SOMA':'SOMA FEE',
+  'CONDOMINIO':'CONDO','CONDOMÍNIO':'CONDO',
+};
+function translateTerm(s){
+  if(_rptLang!=='en'||!s) return s;
+  const k=String(s).toUpperCase().trim();
+  if(TERM_MAP_EN[k]) return TERM_MAP_EN[k];
+  // Word-by-word fallback for multi-word terms
+  return s.split(' ').map(w=>TERM_MAP_EN[w.toUpperCase()]||w).join(' ');
+}
+
 function setLang(l){
   _rptLang=l;
   document.getElementById('lang-pt').classList.toggle('active',l==='pt');
@@ -842,7 +884,7 @@ function generateReport(){
 
   // ── Chart data (re-computed for light-mode rendering) ────────────────────
   const cats2={};
-  tx.filter(t=>t.direction==='SAÍDA').forEach(t=>{const k=t.tipo||L.general;cats2[k]=(cats2[k]||0)+t.valor;});
+  tx.filter(t=>t.direction==='SAÍDA').forEach(t=>{const k=translateTerm(t.tipo||L.general);cats2[k]=(cats2[k]||0)+t.valor;});
   const topCats=Object.entries(cats2).sort((a,b)=>b[1]-a[1]).slice(0,10);
   const mes2={};
   tx.forEach(t=>{const m=getMes(t.date);if(!m)return;if(!mes2[m])mes2[m]={e:0,s:0};if(t.direction==='ENTRADA')mes2[m].e+=t.valor;else mes2[m].s+=t.valor;});
@@ -930,8 +972,8 @@ function generateReport(){
         <tbody>${tx.map((t,i)=>`
           <tr style="border-bottom:1px solid #f3f4f6;background:${i%2===0?'#fff':'#fafafa'}">
             <td style="padding:8px 10px;color:#6b7280;white-space:nowrap">${t.date}</td>
-            <td style="padding:8px 10px;color:#374151">${t.desc||'—'}</td>
-            <td style="padding:8px 10px"><span style="background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase">${t.tipo||L.general}</span></td>
+            <td style="padding:8px 10px;color:#374151">${translateTerm(t.desc)||'—'}</td>
+            <td style="padding:8px 10px"><span style="background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase">${translateTerm(t.tipo||L.general)}</span></td>
             <td style="padding:8px 10px"><span style="background:${t.direction==='ENTRADA'?'#d1fae5':'#fee2e2'};color:${t.direction==='ENTRADA'?'#065f46':'#991b1b'};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${t.direction==='ENTRADA'?L.entrada:L.saida}</span></td>
             <td style="padding:8px 10px;text-align:right;font-weight:700;color:${t.direction==='ENTRADA'?'#059669':'#dc2626'}">${t.direction==='ENTRADA'?'+':'−'} ${BRL(t.valor)}</td>
           </tr>`).join('')}
