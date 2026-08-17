@@ -857,14 +857,14 @@ function generateReport(){
   const salCol=sal>=0?'#10b981':'#ef4444';
   const totCol=totalSal>=0?'#059669':'#dc2626';
   const saldoCard=isFiltered
-    ?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:18px 20px;border-top:3px solid ${salCol}">
+    ?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:18px 20px;border-top:3px solid ${totCol}">
         <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.currentBalance}</div>
-        <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:3px">${period}</div>
-        <div style="font-size:20px;font-weight:900;letter-spacing:-.5px;color:${salCol}">${BRL(sal)}</div>
-        <div style="font-size:10px;color:#9ca3af;margin-top:3px">${tx.length} ${L.transactions}</div>
-        <div style="border-top:1px solid #e5e7eb;margin:12px 0"></div>
         <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:3px">Saldo total</div>
-        <div style="font-size:15px;font-weight:800;color:${totCol}">${BRL(totalSal)}</div>
+        <div style="font-size:20px;font-weight:900;letter-spacing:-.5px;color:${totCol}">${BRL(totalSal)}</div>
+        <div style="border-top:1px solid #e5e7eb;margin:12px 0"></div>
+        <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:3px">${period}</div>
+        <div style="font-size:15px;font-weight:800;color:${salCol}">${BRL(sal)}</div>
+        <div style="font-size:10px;color:#9ca3af;margin-top:3px">${tx.length} ${L.transactions}</div>
       </div>`
     :kpiCard(L.currentBalance,BRL(sal),tx.length+' '+L.transactions,salCol);
   const kHtml=incKPI?(c.isBilling?`
