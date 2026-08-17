@@ -759,10 +759,15 @@ const MMAP_D = {jan:0,fev:1,mar:2,abr:3,mai:4,jun:5,jul:6,ago:7,set:8,out:9,nov:
 
 function txToDate(d){
   const s=String(d).trim();
+  // DD-MonthName-YYYY or DD/MonthName/YYYY (e.g. 15-ago-2025)
   const m1=s.match(/(\d{1,2})[\/\-]([a-záéíóú]+)\.?\s*(\d{4})/i);
   if(m1){const mon=MMAP_D[m1[2].toLowerCase().slice(0,3)];if(mon!==undefined) return new Date(+m1[3],mon,+m1[1]);}
-  const m2=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  // DD/MM/YYYY or DD-MM-YYYY (numeric, any separator)
+  const m2=s.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
   if(m2) return new Date(+m2[3],+m2[2]-1,+m2[1]);
+  // YYYY-MM-DD (ISO)
+  const m3=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m3) return new Date(+m3[1],+m3[2]-1,+m3[3]);
   return null;
 }
 function toISO(d){return d.toISOString().slice(0,10);}
@@ -812,7 +817,7 @@ function generateReport(){
   const td=tv?new Date(tv+'T23:59:59'):null;
   if(fd||td){
     tx=tx.filter(t=>{
-      const d=txToDate(t.date); if(!d) return true;
+      const d=txToDate(t.date); if(!d) return false; // exclude unparse-able dates when filter is active
       if(fd&&d<fd) return false; if(td&&d>td) return false; return true;
     });
   }
