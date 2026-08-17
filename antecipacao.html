@@ -836,7 +836,9 @@ function generateReport(){
     const pSai=prior.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
     saldoIni=Math.round((pEnt-pSai)*100)/100;
   }
-  const sal=Math.round((saldoIni+ent-sai)*100)/100;
+  const movPeriodo=Math.round((ent-sai)*100)/100;
+  const salFechamento=Math.round((saldoIni+ent-sai)*100)/100;
+  const sal=salFechamento; // keep for compat (used as period closing balance)
 
   // ── Chart data (re-computed for light-mode rendering) ────────────────────
   const cats2={};
@@ -865,19 +867,30 @@ function generateReport(){
   const totalSal=c.saldo;
   const salCol=sal>=0?'#10b981':'#ef4444';
   const totCol=totalSal>=0?'#059669':'#dc2626';
+  const movCol=movPeriodo>=0?'#059669':'#dc2626';
+  const fechCol=salFechamento>=0?'#059669':'#dc2626';
   const saldoCard=isFiltered
     ?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:18px 20px;border-top:3px solid ${totCol}">
-        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.currentBalance}</div>
-        <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:3px">Saldo total</div>
-        <div style="font-size:20px;font-weight:900;letter-spacing:-.5px;color:${totCol}">${BRL(totalSal)}</div>
-        <div style="border-top:1px solid #e5e7eb;margin:12px 0"></div>
-        ${saldoIni?`<div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">Saldo inicial</div>
-        <div style="font-size:12px;font-weight:700;color:#6b7280;margin-bottom:8px">${BRL(saldoIni)}</div>`:''}
-        <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:3px">${period}</div>
-        <div style="font-size:15px;font-weight:800;color:${salCol}">${BRL(sal)}</div>
-        <div style="font-size:10px;color:#9ca3af;margin-top:3px">${tx.length} ${L.transactions}</div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:10px">${L.currentBalance}</div>
+        <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">Saldo total</div>
+        <div style="font-size:20px;font-weight:900;letter-spacing:-.5px;color:${totCol};margin-bottom:12px">${BRL(totalSal)}</div>
+        <div style="border-top:1px solid #e5e7eb;margin-bottom:12px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">Saldo inicial</div>
+            <div style="font-size:13px;font-weight:800;color:#6b7280">${BRL(saldoIni)}</div>
+          </div>
+          <div>
+            <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">Movimento (${period})</div>
+            <div style="font-size:13px;font-weight:800;color:${movCol}">${movPeriodo>=0?'+':''}${BRL(movPeriodo)}</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e5e7eb">
+          <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">Saldo de fechamento · ${tx.length} ${L.transactions}</div>
+          <div style="font-size:16px;font-weight:900;color:${fechCol}">${BRL(salFechamento)}</div>
+        </div>
       </div>`
-    :kpiCard(L.currentBalance,BRL(sal),tx.length+' '+L.transactions,salCol);
+    :kpiCard(L.currentBalance,BRL(sal),tx.length+' '+L.transactions,totCol);
   const kHtml=incKPI?(c.isBilling?`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
       ${kpiCard(L.openAmount,BRL(c.lastPeriodSaldo||sai),L.awaitingPayment,'#f59e0b')}
