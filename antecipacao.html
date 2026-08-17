@@ -214,6 +214,15 @@ th.r,td.r{text-align:right}
         <button class="qd" onclick="setQD('m-1',this)">Mês anterior</button>
         <button class="qd" onclick="setQD('y',this)">Este ano</button>
       </div>
+      <div class="dg" style="margin-bottom:18px">
+        <label style="display:flex;align-items:center;gap:6px">
+          Saldo inicial do período
+          <span style="font-size:9px;color:var(--muted);font-weight:500">(opcional — para a conta fechar certo)</span>
+        </label>
+        <input type="number" id="rpt-saldo-ini" placeholder="0,00" step="0.01"
+          style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:13px;color:#fff;outline:none;width:100%;transition:border .15s"
+          onfocus="this.style.borderColor='rgba(59,139,255,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+      </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div class="modal-sec" style="margin-bottom:0">Incluir no relatório</div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -781,6 +790,7 @@ function openRpt(idx){
   document.getElementById('rpt-cname').textContent=c.name;
   document.getElementById('rpt-from').value='';
   document.getElementById('rpt-to').value='';
+  document.getElementById('rpt-saldo-ini').value='';
   document.querySelectorAll('.qd').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.getElementById('rpt-modal').style.display='block';
 }
@@ -827,7 +837,8 @@ function generateReport(){
 
   const ent=tx.filter(t=>t.direction==='ENTRADA').reduce((s,t)=>s+t.valor,0);
   const sai=tx.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
-  const sal=Math.round((ent-sai)*100)/100;
+  const saldoIni=parseFloat(document.getElementById('rpt-saldo-ini').value)||0;
+  const sal=Math.round((saldoIni+ent-sai)*100)/100;
 
   // ── Chart data (re-computed for light-mode rendering) ────────────────────
   const cats2={};
@@ -862,6 +873,8 @@ function generateReport(){
         <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:3px">Saldo total</div>
         <div style="font-size:20px;font-weight:900;letter-spacing:-.5px;color:${totCol}">${BRL(totalSal)}</div>
         <div style="border-top:1px solid #e5e7eb;margin:12px 0"></div>
+        ${saldoIni?`<div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">Saldo inicial</div>
+        <div style="font-size:12px;font-weight:700;color:#6b7280;margin-bottom:8px">${BRL(saldoIni)}</div>`:''}
         <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:3px">${period}</div>
         <div style="font-size:15px;font-weight:800;color:${salCol}">${BRL(sal)}</div>
         <div style="font-size:10px;color:#9ca3af;margin-top:3px">${tx.length} ${L.transactions}</div>
