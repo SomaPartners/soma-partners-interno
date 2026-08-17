@@ -728,7 +728,7 @@ const T = {
     openAmount:'Em Aberto (Período Atual)', awaitingPayment:'Aguardando pagamento',
     totalCharged:'Total Cobrado (Histórico)', launches:'lançamentos',
     regime:'Regime', monthlyBilling:'Faturamento Mensal', paymentAtEnd:'Pagamento ao final de cada período',
-    currentBalance:'Saldo Atual', transactions:'transações',
+    currentBalance:'Saldo Atual', transactions:'transações', saldoTotal:'Saldo total', saldoInicial:'Saldo inicial', movimento:'Movimento',
     totalEntradas:'Total Entradas', anticipations:'antecipações',
     totalSaidas:'Total Saídas',
     expensesByCategory:'GASTOS POR CATEGORIA', monthlyFlow:'ENTRADAS × SAÍDAS POR MÊS',
@@ -742,7 +742,7 @@ const T = {
     openAmount:'Outstanding (Current Period)', awaitingPayment:'Awaiting client payment',
     totalCharged:'Total Charged (Historical)', launches:'entries',
     regime:'Billing Regime', monthlyBilling:'Monthly Billing', paymentAtEnd:'Payment at end of each period',
-    currentBalance:'Current Balance', transactions:'transactions',
+    currentBalance:'Current Balance', transactions:'transactions', saldoTotal:'Total balance', saldoInicial:'Opening balance', movimento:'Movement',
     totalEntradas:'Total Inflows', anticipations:'advances',
     totalSaidas:'Total Outflows',
     expensesByCategory:'EXPENSES BY CATEGORY', monthlyFlow:'INFLOWS × OUTFLOWS BY MONTH',
@@ -872,16 +872,16 @@ function generateReport(){
   const saldoCard=isFiltered
     ?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:18px 20px;border-top:3px solid ${totCol}">
         <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:10px">${L.currentBalance}</div>
-        <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">Saldo total</div>
+        <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">${L.saldoTotal}</div>
         <div style="font-size:20px;font-weight:900;letter-spacing:-.5px;color:${totCol};margin-bottom:12px">${BRL(totalSal)}</div>
         <div style="border-top:1px solid #e5e7eb;margin-bottom:12px"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div>
-            <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">Saldo inicial</div>
+            <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">${L.saldoInicial}</div>
             <div style="font-size:13px;font-weight:800;color:#6b7280">${BRL(saldoIni)}</div>
           </div>
           <div>
-            <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">Movimento (${period})</div>
+            <div style="font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:2px">${L.movimento} (${period})</div>
             <div style="font-size:13px;font-weight:800;color:${movCol}">${movPeriodo>=0?'+':''}${BRL(movPeriodo)}</div>
           </div>
         </div>
