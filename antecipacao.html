@@ -817,7 +817,7 @@ function generateReport(){
   const td=tv?new Date(tv+'T23:59:59'):null;
   if(fd||td){
     tx=tx.filter(t=>{
-      const d=txToDate(t.date); if(!d) return false; // exclude unparse-able dates when filter is active
+      const d=txToDate(t.date); if(!d) return true;
       if(fd&&d<fd) return false; if(td&&d>td) return false; return true;
     });
   }
