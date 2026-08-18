@@ -1048,11 +1048,13 @@ window.addEventListener('load',function(){${chartJs}
 <\/script>`:``;
 
   // ── Compose HTML ──────────────────────────────────────────────────────────
-  // shared decoration shapes for cover pages
+  // shared decoration shapes for cover pages (wrapped in clip container so nothing bleeds outside)
   const _shapes=`
-    <div style="position:absolute;bottom:-80px;right:-60px;width:360px;height:360px;background:#152b3c;transform:rotate(18deg);border-radius:20px"></div>
-    <div style="position:absolute;bottom:18px;right:18px;width:188px;height:305px;background:#0d1e2e;transform:rotate(-6deg);border-radius:12px;opacity:.82"></div>
-    <div style="position:absolute;bottom:-18px;right:152px;width:128px;height:236px;background:#1b3247;transform:rotate(10deg);border-radius:10px;opacity:.58"></div>`;
+    <div style="position:absolute;inset:0;overflow:hidden;clip-path:inset(0);pointer-events:none">
+      <div style="position:absolute;bottom:-80px;right:-60px;width:360px;height:360px;background:#152b3c;transform:rotate(18deg);border-radius:20px"></div>
+      <div style="position:absolute;bottom:18px;right:18px;width:188px;height:305px;background:#0d1e2e;transform:rotate(-6deg);border-radius:12px;opacity:.82"></div>
+      <div style="position:absolute;bottom:-18px;right:152px;width:128px;height:236px;background:#1b3247;transform:rotate(10deg);border-radius:10px;opacity:.58"></div>
+    </div>`;
   const _logo=`
     <div style="display:flex;align-items:center;gap:14px">
       <span style="font-size:18px;font-weight:300;color:#fff;letter-spacing:.3px">Soma</span>
@@ -1061,7 +1063,7 @@ window.addEventListener('load',function(){${chartJs}
     </div>`;
   // cover: logo + line + client name centred vertically (~42% from top)
   const coverPage=`
-<div style="width:100%;height:297mm;background:#0c1b2e;position:relative;overflow:hidden;page-break-after:always;break-after:page">
+<div style="width:100%;height:297mm;background:#0c1b2e;position:relative;overflow:hidden;clip-path:inset(0);page-break-after:always;break-after:page">
   ${_shapes}
   <div style="position:absolute;top:42%;left:56px;right:56px;z-index:2">
     ${_logo}
@@ -1072,7 +1074,7 @@ window.addEventListener('load',function(){${chartJs}
 </div>`;
   // back cover: logo top-left, contacts bottom-left
   const backCover=`
-<div style="width:100%;height:297mm;background:#0c1b2e;position:relative;overflow:hidden;page-break-before:always;break-before:page">
+<div style="width:100%;height:297mm;background:#0c1b2e;position:relative;overflow:hidden;clip-path:inset(0);page-break-before:always;break-before:page">
   ${_shapes}
   <div style="position:absolute;top:48px;left:56px;z-index:2">${_logo}</div>
   <div style="position:absolute;bottom:68px;left:56px;z-index:2">
