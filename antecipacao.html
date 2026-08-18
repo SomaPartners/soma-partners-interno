@@ -1048,37 +1048,40 @@ window.addEventListener('load',function(){${chartJs}
 <\/script>`:``;
 
   // ── Compose HTML ──────────────────────────────────────────────────────────
-  const coverShapes=`
-    <div style="position:absolute;bottom:-90px;right:-70px;width:380px;height:380px;background:#172d40;transform:rotate(18deg);border-radius:22px"></div>
-    <div style="position:absolute;bottom:30px;right:30px;width:200px;height:330px;background:#0e2035;transform:rotate(-6deg);border-radius:14px;opacity:.75"></div>
-    <div style="position:absolute;bottom:-30px;right:160px;width:140px;height:260px;background:#1a3349;transform:rotate(10deg);border-radius:10px;opacity:.5"></div>`;
-  const logoHtml=`
+  // shared decoration shapes for cover pages
+  const _shapes=`
+    <div style="position:absolute;bottom:-80px;right:-60px;width:360px;height:360px;background:#152b3c;transform:rotate(18deg);border-radius:20px"></div>
+    <div style="position:absolute;bottom:18px;right:18px;width:188px;height:305px;background:#0d1e2e;transform:rotate(-6deg);border-radius:12px;opacity:.82"></div>
+    <div style="position:absolute;bottom:-18px;right:152px;width:128px;height:236px;background:#1b3247;transform:rotate(10deg);border-radius:10px;opacity:.58"></div>`;
+  const _logo=`
     <div style="display:flex;align-items:center;gap:14px">
-      <span style="font-family:'Montserrat',sans-serif;font-size:20px;font-weight:300;color:#fff;letter-spacing:.3px">Soma</span>
-      <div style="width:1px;height:22px;background:rgba(255,255,255,0.35)"></div>
-      <span style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.65);text-transform:uppercase">Partners</span>
+      <span style="font-size:18px;font-weight:300;color:#fff;letter-spacing:.3px">Soma</span>
+      <div style="width:1px;height:20px;background:rgba(255,255,255,0.32)"></div>
+      <span style="font-size:9px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.58);text-transform:uppercase">Partners</span>
     </div>`;
+  // cover: logo + line + client name centred vertically (~42% from top)
   const coverPage=`
-  <div style="width:100%;height:297mm;background:#0c1b2e;position:relative;overflow:hidden;page-break-after:always;display:flex;flex-direction:column;padding:52px 56px">
-    ${coverShapes}
-    <div style="position:relative;z-index:2;margin-bottom:auto">${logoHtml}</div>
-    <div style="position:relative;z-index:2">
-      <div style="width:100%;height:1.5px;background:linear-gradient(90deg,#c9963c 60%,rgba(201,150,60,0.15));margin-bottom:24px"></div>
-      <div style="font-size:34px;font-weight:800;color:#fff;letter-spacing:-.5px;text-transform:uppercase;line-height:1.15">${c.name}</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase">${period}</div>
-    </div>
-  </div>`;
+<div style="width:100%;height:297mm;background:#0c1b2e;position:relative;overflow:hidden;page-break-after:always;break-after:page">
+  ${_shapes}
+  <div style="position:absolute;top:42%;left:56px;right:56px;z-index:2">
+    ${_logo}
+    <div style="height:1.5px;background:linear-gradient(90deg,#c9963c 65%,rgba(201,150,60,0.08));margin:26px 0 22px"></div>
+    <div style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-.5px;text-transform:uppercase;line-height:1.2">${c.name}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:10px;font-weight:500;letter-spacing:1.8px;text-transform:uppercase">${period}</div>
+  </div>
+</div>`;
+  // back cover: logo top-left, contacts bottom-left
   const backCover=`
-  <div style="width:100%;height:297mm;background:#0c1b2e;position:relative;overflow:hidden;page-break-before:always;display:flex;flex-direction:column;padding:52px 56px">
-    ${coverShapes}
-    <div style="position:relative;z-index:2;margin-bottom:auto">${logoHtml}</div>
-    <div style="position:relative;z-index:2">
-      <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">TELEFONE</div>
-      <div style="font-size:14px;font-weight:500;color:#fff;margin-bottom:28px">+55 11 96084-6592</div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">EMAIL</div>
-      <div style="font-size:14px;font-weight:500;color:#fff">atendimento@somapartners.co</div>
-    </div>
-  </div>`;
+<div style="width:100%;height:297mm;background:#0c1b2e;position:relative;overflow:hidden;page-break-before:always;break-before:page">
+  ${_shapes}
+  <div style="position:absolute;top:48px;left:56px;z-index:2">${_logo}</div>
+  <div style="position:absolute;bottom:68px;left:56px;z-index:2">
+    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">TELEFONE</div>
+    <div style="font-size:14px;font-weight:500;color:#fff;margin-bottom:26px">+55 11 96084-6592</div>
+    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">EMAIL</div>
+    <div style="font-size:14px;font-weight:500;color:#fff">atendimento@somapartners.co</div>
+  </div>
+</div>`;
   const html=`<!DOCTYPE html><html lang="${_rptLang}"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=794">
 <title>Relatório de Saldo - ${c.name} - ${new Date().toLocaleDateString('pt-BR')}</title>
@@ -1093,27 +1096,27 @@ body{font-family:'Montserrat',sans-serif;background:#fff;color:#111}
 }
 </style>
 </head><body>
-  ${coverPage}
-  <div style="padding:22mm 14mm 16mm">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #0b1e30;margin-bottom:28px">
-      <div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">Soma Partners</div>
-        <div style="font-size:26px;font-weight:900;letter-spacing:-.5px;color:#0b1e30">${c.name}</div>
-        <div style="font-size:12px;color:#6b7280;margin-top:6px">${c.isBilling?L.billing:L.antecipacao} &nbsp;·&nbsp; ${period}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">${L.generatedOn}</div>
-        <div style="font-size:12px;font-weight:700;color:#374151;margin-top:3px">${genDate}</div>
-      </div>
+${coverPage}
+<div style="padding:18mm 14mm 14mm;background:#fff">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #0b1e30;margin-bottom:28px">
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">Soma Partners</div>
+      <div style="font-size:26px;font-weight:900;letter-spacing:-.5px;color:#0b1e30">${c.name}</div>
+      <div style="font-size:12px;color:#6b7280;margin-top:6px">${c.isBilling?L.billing:L.antecipacao} &nbsp;·&nbsp; ${period}</div>
     </div>
-    ${kHtml}${chHtml}${tHtml}
-    <div style="margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between">
-      <div style="font-size:9px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase">Soma Partners · ${L.confidential}</div>
-      <div style="font-size:9px;color:#9ca3af">atendimento@somapartners.co</div>
+    <div style="text-align:right">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">${L.generatedOn}</div>
+      <div style="font-size:12px;font-weight:700;color:#374151;margin-top:3px">${genDate}</div>
     </div>
   </div>
-  ${backCover}
-  ${scriptTag}
+  ${kHtml}${chHtml}${tHtml}
+  <div style="margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between">
+    <div style="font-size:9px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase">Soma Partners · ${L.confidential}</div>
+    <div style="font-size:9px;color:#9ca3af">atendimento@somapartners.co</div>
+  </div>
+</div>
+${backCover}
+${scriptTag}
 </body></html>`;
 
   const win=window.open('','_blank','width=900,height=700,scrollbars=yes');
