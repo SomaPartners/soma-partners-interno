@@ -1054,9 +1054,14 @@ window.addEventListener('load',function(){${chartJs}
       <div style="width:1px;height:20px;background:rgba(255,255,255,0.32)"></div>
       <span style="font-size:9px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.58);text-transform:uppercase">Partners</span>
     </div>`;
-  // cover: background-image for shapes (never overflows), content positioned inside
+  const _shapes=`
+    <div style="position:absolute;bottom:60px;right:-55px;width:360px;height:360px;background:#152b3c;transform:rotate(18deg);border-radius:20px"></div>
+    <div style="position:absolute;bottom:18px;right:18px;width:188px;height:305px;background:#0d1e2e;transform:rotate(-6deg);border-radius:12px;opacity:.82"></div>
+    <div style="position:absolute;bottom:30px;right:152px;width:128px;height:236px;background:#1b3247;transform:rotate(10deg);border-radius:10px;opacity:.58"></div>`;
+  const _coverBase='width:100%;height:297mm;background-color:#0c1b2e;position:relative;overflow:hidden;break-inside:avoid';
   const coverPage=`
-<div style="width:100%;height:297mm;background:#0c1b2e url('data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 794 1122'%3E%3Crect x='494' y='842' width='360' height='360' rx='20' fill='%23152b3c' transform='rotate(18,674,1022)'/%3E%3Crect x='588' y='799' width='188' height='305' rx='12' fill='%230d1e2e' fill-opacity='.82' transform='rotate(-6,682,951)'/%3E%3Crect x='514' y='904' width='128' height='236' rx='10' fill='%231b3247' fill-opacity='.58' transform='rotate(10,578,1022)'/%3E%3C/svg%3E') no-repeat bottom right/100% 100%;position:relative;page-break-after:always;break-after:page">
+<div style="${_coverBase};page-break-after:always;break-after:page">
+  ${_shapes}
   <div style="position:absolute;top:42%;left:56px;right:56px">
     ${_logo}
     <div style="height:1.5px;background:linear-gradient(90deg,#c9963c 65%,rgba(201,150,60,0.08));margin:26px 0 22px"></div>
@@ -1065,7 +1070,8 @@ window.addEventListener('load',function(){${chartJs}
   </div>
 </div>`;
   const backCover=`
-<div style="width:100%;height:297mm;background:#0c1b2e url('data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 794 1122'%3E%3Crect x='494' y='842' width='360' height='360' rx='20' fill='%23152b3c' transform='rotate(18,674,1022)'/%3E%3Crect x='588' y='799' width='188' height='305' rx='12' fill='%230d1e2e' fill-opacity='.82' transform='rotate(-6,682,951)'/%3E%3Crect x='514' y='904' width='128' height='236' rx='10' fill='%231b3247' fill-opacity='.58' transform='rotate(10,578,1022)'/%3E%3C/svg%3E') no-repeat bottom right/100% 100%;position:relative;page-break-before:always;break-before:page">
+<div style="${_coverBase};page-break-before:always;break-before:page">
+  ${_shapes}
   <div style="position:absolute;top:48px;left:56px">${_logo}</div>
   <div style="position:absolute;bottom:68px;left:56px">
     <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">TELEFONE</div>
