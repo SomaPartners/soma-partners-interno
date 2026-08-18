@@ -887,7 +887,7 @@ function generateReport(){
       const mNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       return mNames[mon]+' '+day+', '+year;
     }
-    const mNames=['jan.','fev.','mar.','abr.','mai.','jun.','jul.','ago.','set.','out.','nov.','dez.'];
+    const mNames=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
     return day+'/'+mNames[mon]+'/'+year;
   }
   const ent=tx.filter(t=>t.direction==='ENTRADA').reduce((s,t)=>s+t.valor,0);
