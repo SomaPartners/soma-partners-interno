@@ -1054,10 +1054,12 @@ window.addEventListener('load',function(){${chartJs}
       <div style="width:1px;height:20px;background:rgba(255,255,255,0.32)"></div>
       <span style="font-size:9px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.58);text-transform:uppercase">Partners</span>
     </div>`;
+  // Shapes use clip-path (no transform:rotate) so they NEVER create composited layers
+  // that escape the containing block in Chrome print. All anchored bottom:0 — zero overflow.
   const _shapes=`
-    <div style="position:absolute;bottom:60px;right:-55px;width:360px;height:360px;background:#152b3c;transform:rotate(18deg);border-radius:20px"></div>
-    <div style="position:absolute;bottom:18px;right:18px;width:188px;height:305px;background:#0d1e2e;transform:rotate(-6deg);border-radius:12px;opacity:.82"></div>
-    <div style="position:absolute;bottom:30px;right:152px;width:128px;height:236px;background:#1b3247;transform:rotate(10deg);border-radius:10px;opacity:.58"></div>`;
+    <div style="position:absolute;bottom:0;right:0;width:230px;height:370px;background:#152b3c;clip-path:polygon(18% 0%,100% 0%,100% 100%,0% 100%);border-radius:0"></div>
+    <div style="position:absolute;bottom:0;right:28px;width:175px;height:300px;background:#0d1e2e;opacity:.88;clip-path:polygon(0% 6%,100% 0%,100% 100%,0% 100%)"></div>
+    <div style="position:absolute;bottom:0;right:155px;width:125px;height:230px;background:#1b3247;opacity:.65;clip-path:polygon(10% 0%,100% 0%,100% 100%,0% 100%)"></div>`;
   const _coverBase='width:100%;height:296mm;background-color:#0c1b2e;position:relative;overflow:hidden';
   const coverPage=`
 <div style="${_coverBase}">
