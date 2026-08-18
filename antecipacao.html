@@ -868,6 +868,28 @@ function generateReport(){
     });
   }
 
+  // Sort ascending by date; unparseable dates go to end
+  tx=tx.slice().sort((a,b)=>{
+    const da=txToDate(a.date),db=txToDate(b.date);
+    if(da&&db) return da-db;
+    if(da) return -1; if(db) return 1; return 0;
+  });
+  // Format date for display
+  const MMES_EN={jan:'Jan',fev:'Feb',mar:'Mar',abr:'Apr',mai:'May',jun:'Jun',jul:'Jul',ago:'Aug',set:'Sep',out:'Oct',nov:'Nov',dez:'Dec'};
+  const MMES_PT={jan:'jan.',fev:'fev.',mar:'mar.',abr:'abr.',mai:'mai.',jun:'jun.',jul:'jul.',ago:'ago.',set:'set.',out:'out.',nov:'nov.',dez:'dez.'};
+  function fmtTxDate(raw){
+    const d=txToDate(raw);
+    if(!d) return raw;
+    const day=String(d.getDate()).padStart(2,'0');
+    const mon=d.getMonth(); // 0-based
+    const year=d.getFullYear();
+    if(_rptLang==='en'){
+      const mNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return mNames[mon]+' '+day+', '+year;
+    }
+    const mNames=['jan.','fev.','mar.','abr.','mai.','jun.','jul.','ago.','set.','out.','nov.','dez.'];
+    return day+'/'+mNames[mon]+'/'+year;
+  }
   const ent=tx.filter(t=>t.direction==='ENTRADA').reduce((s,t)=>s+t.valor,0);
   const sai=tx.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
   // Auto saldo inicial: sum all transactions before filter start date
@@ -971,7 +993,7 @@ function generateReport(){
         </tr></thead>
         <tbody>${tx.map((t,i)=>`
           <tr style="border-bottom:1px solid #f3f4f6;background:${i%2===0?'#fff':'#fafafa'}">
-            <td style="padding:8px 10px;color:#6b7280;white-space:nowrap">${t.date}</td>
+            <td style="padding:8px 10px;color:#6b7280;white-space:nowrap">${fmtTxDate(t.date)}</td>
             <td style="padding:8px 10px;color:#374151">${translateTerm(t.desc)||'—'}</td>
             <td style="padding:8px 10px"><span style="background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase">${translateTerm(t.tipo||L.general)}</span></td>
             <td style="padding:8px 10px"><span style="background:${t.direction==='ENTRADA'?'#d1fae5':'#fee2e2'};color:${t.direction==='ENTRADA'?'#065f46':'#991b1b'};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${t.direction==='ENTRADA'?L.entrada:L.saida}</span></td>
