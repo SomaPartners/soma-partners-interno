@@ -1048,38 +1048,26 @@ window.addEventListener('load',function(){${chartJs}
 <\/script>`:``;
 
   // ── Compose HTML ──────────────────────────────────────────────────────────
-  // SVG shapes — viewBox clips natively, always reliable in print/PDF
-  // Coordinates for A4 at 96dpi: 794×1122 (matching 210mm×297mm)
-  const _shapes=`
-    <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"
-         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 794 1122" preserveAspectRatio="none">
-      <rect x="494" y="842" width="360" height="360" rx="20" fill="#152b3c"    transform="rotate(18,674,1022)"/>
-      <rect x="588" y="799" width="188" height="305" rx="12" fill="#0d1e2e" fill-opacity=".82" transform="rotate(-6,682,951)"/>
-      <rect x="514" y="904" width="128" height="236" rx="10" fill="#1b3247" fill-opacity=".58" transform="rotate(10,578,1022)"/>
-    </svg>`;
   const _logo=`
     <div style="display:flex;align-items:center;gap:14px">
       <span style="font-size:18px;font-weight:300;color:#fff;letter-spacing:.3px">Soma</span>
       <div style="width:1px;height:20px;background:rgba(255,255,255,0.32)"></div>
       <span style="font-size:9px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.58);text-transform:uppercase">Partners</span>
     </div>`;
-  // cover: logo + line + client name centred vertically (~42% from top)
+  // cover: background-image for shapes (never overflows), content positioned inside
   const coverPage=`
-<div style="width:100%;height:297mm;background:#0c1b2e;position:relative;overflow:hidden;page-break-after:always;break-after:page">
-  ${_shapes}
-  <div style="position:absolute;top:42%;left:56px;right:56px;z-index:2">
+<div style="width:100%;height:297mm;background:#0c1b2e url('data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 794 1122'%3E%3Crect x='494' y='842' width='360' height='360' rx='20' fill='%23152b3c' transform='rotate(18,674,1022)'/%3E%3Crect x='588' y='799' width='188' height='305' rx='12' fill='%230d1e2e' fill-opacity='.82' transform='rotate(-6,682,951)'/%3E%3Crect x='514' y='904' width='128' height='236' rx='10' fill='%231b3247' fill-opacity='.58' transform='rotate(10,578,1022)'/%3E%3C/svg%3E') no-repeat bottom right/100% 100%;position:relative;page-break-after:always;break-after:page">
+  <div style="position:absolute;top:42%;left:56px;right:56px">
     ${_logo}
     <div style="height:1.5px;background:linear-gradient(90deg,#c9963c 65%,rgba(201,150,60,0.08));margin:26px 0 22px"></div>
     <div style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-.5px;text-transform:uppercase;line-height:1.2">${c.name}</div>
     <div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:10px;font-weight:500;letter-spacing:1.8px;text-transform:uppercase">${period}</div>
   </div>
 </div>`;
-  // back cover: logo top-left, contacts bottom-left
   const backCover=`
-<div style="width:100%;height:297mm;background:#0c1b2e;position:relative;overflow:hidden;page-break-before:always;break-before:page">
-  ${_shapes}
-  <div style="position:absolute;top:48px;left:56px;z-index:2">${_logo}</div>
-  <div style="position:absolute;bottom:68px;left:56px;z-index:2">
+<div style="width:100%;height:297mm;background:#0c1b2e url('data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 794 1122'%3E%3Crect x='494' y='842' width='360' height='360' rx='20' fill='%23152b3c' transform='rotate(18,674,1022)'/%3E%3Crect x='588' y='799' width='188' height='305' rx='12' fill='%230d1e2e' fill-opacity='.82' transform='rotate(-6,682,951)'/%3E%3Crect x='514' y='904' width='128' height='236' rx='10' fill='%231b3247' fill-opacity='.58' transform='rotate(10,578,1022)'/%3E%3C/svg%3E') no-repeat bottom right/100% 100%;position:relative;page-break-before:always;break-before:page">
+  <div style="position:absolute;top:48px;left:56px">${_logo}</div>
+  <div style="position:absolute;bottom:68px;left:56px">
     <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">TELEFONE</div>
     <div style="font-size:14px;font-weight:500;color:#fff;margin-bottom:26px">+55 11 96084-6592</div>
     <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">EMAIL</div>
