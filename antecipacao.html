@@ -1057,10 +1057,10 @@ window.addEventListener('load',function(){${chartJs}
   // Shapes use clip-path (no transform:rotate) so they NEVER create composited layers
   // that escape the containing block in Chrome print. All anchored bottom:0 — zero overflow.
   const _shapes=`
-    <div style="position:absolute;bottom:0;right:0;width:230px;height:370px;background:#152b3c;clip-path:polygon(18% 0%,100% 0%,100% 100%,0% 100%);border-radius:0"></div>
-    <div style="position:absolute;bottom:0;right:28px;width:175px;height:300px;background:#0d1e2e;opacity:.88;clip-path:polygon(0% 6%,100% 0%,100% 100%,0% 100%)"></div>
-    <div style="position:absolute;bottom:0;right:155px;width:125px;height:230px;background:#1b3247;opacity:.65;clip-path:polygon(10% 0%,100% 0%,100% 100%,0% 100%)"></div>`;
-  const _coverBase='width:100%;height:296mm;background-color:#0c1b2e;position:relative;overflow:hidden';
+    <div style="position:absolute;bottom:0;right:0;width:230px;height:260px;background:#152b3c;clip-path:polygon(18% 0%,100% 0%,100% 100%,0% 100%)"></div>
+    <div style="position:absolute;bottom:0;right:28px;width:175px;height:210px;background:#0d1e2e;opacity:.88;clip-path:polygon(0% 6%,100% 0%,100% 100%,0% 100%)"></div>
+    <div style="position:absolute;bottom:0;right:155px;width:125px;height:160px;background:#1b3247;opacity:.65;clip-path:polygon(10% 0%,100% 0%,100% 100%,0% 100%)"></div>`;
+  const _coverBase='width:100%;height:209mm;background-color:#0c1b2e;position:relative;overflow:hidden';
   const coverPage=`
 <div style="${_coverBase}">
   ${_shapes}
@@ -1083,7 +1083,7 @@ window.addEventListener('load',function(){${chartJs}
   </div>
 </div>`;
   const html=`<!DOCTYPE html><html lang="${_rptLang}"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=794">
+<meta name="viewport" content="width=1123">
 <title>Relatório de Saldo - ${c.name} - ${new Date().toLocaleDateString('pt-BR')}</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -1091,13 +1091,13 @@ window.addEventListener('load',function(){${chartJs}
 html,body{width:100%;overflow-x:hidden}
 body{font-family:'Montserrat',sans-serif;background:#fff;color:#111}
 @media print{
-  @page{size:A4 portrait;margin:0}
+  @page{size:A4 landscape;margin:0}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
 </style>
 </head><body>
 ${coverPage}
-<div style="padding:18mm 14mm 14mm;background:#fff">
+<div style="padding:14mm 16mm 12mm;background:#fff">
   <div style="display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #0b1e30;margin-bottom:28px">
     <div>
       <div style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">Soma Partners</div>
@@ -1119,7 +1119,7 @@ ${backCover}
 ${scriptTag}
 </body></html>`;
 
-  const win=window.open('','_blank','width=900,height=700,scrollbars=yes');
+  const win=window.open('','_blank','width=1200,height=800,scrollbars=yes');
   win.document.write(html);
   win.document.close();
   // If no charts, trigger print after font load delay
