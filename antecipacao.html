@@ -953,12 +953,12 @@ function generateReport(){
       </div>`
     :kpiCard(L.currentBalance,BRL(sal),tx.length+' '+L.transactions,totCol);
   const kHtml=incKPI?(c.isBilling?`
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;break-inside:avoid;page-break-inside:avoid">
       ${kpiCard(L.openAmount,BRL(c.lastPeriodSaldo||sai),L.awaitingPayment,'#f59e0b')}
       ${kpiCard(L.totalCharged,BRL(sai),tx.length+' '+L.launches,'#ef4444')}
       ${kpiCard(L.regime,L.monthlyBilling,L.paymentAtEnd,'#3b8bff')}
     </div>`:`
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;break-inside:avoid;page-break-inside:avoid">
       ${saldoCard}
       ${kpiCard(L.totalEntradas,BRL(ent),tx.filter(t=>t.direction==='ENTRADA').length+' '+L.anticipations,'#10b981')}
       ${kpiCard(L.totalSaidas,BRL(sai),tx.filter(t=>t.direction==='SAÍDA').length+' '+L.launches,'#ef4444')}
@@ -968,7 +968,7 @@ function generateReport(){
   const showCat=incCat&&topCats.length>0;
   const showMes=incMes&&mKeys2.length>0;
   const chHtml=(showCat||showMes)?`
-    <div style="display:grid;grid-template-columns:${showCat&&showMes?'1fr 1fr':'1fr'};gap:14px;margin-bottom:28px">
+    <div style="display:grid;grid-template-columns:${showCat&&showMes?'1fr 1fr':'1fr'};gap:14px;margin-bottom:28px;break-inside:avoid;page-break-inside:avoid">
       ${showCat?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
         <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.expensesByCategory}</div>
         <div style="position:relative;height:${Math.max(160,topCats.length*34)}px"><canvas id="ch-cats-p"></canvas></div>
@@ -980,28 +980,39 @@ function generateReport(){
     </div>`:'';
 
   // ── Table HTML ────────────────────────────────────────────────────────────
-  const tHtml=incTbl?`
-    <div>
-      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.extractTitle} — ${tx.length} ${L.launches.toUpperCase()}</div>
+  const _tblHdr=`<thead><tr style="border-bottom:2px solid #e5e7eb">
+    <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;white-space:nowrap">${L.date}</th>
+    <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.description}</th>
+    <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.category}</th>
+    <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.type}</th>
+    <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.amount}</th>
+  </tr></thead>`;
+  const _tblRow=(t,i)=>`
+    <tr style="border-bottom:1px solid #f3f4f6;background:${i%2===0?'#fff':'#fafafa'}">
+      <td style="padding:8px 10px;color:#6b7280;white-space:nowrap">${fmtTxDate(t.date)}</td>
+      <td style="padding:8px 10px;color:#374151">${translateTerm(t.desc)||'—'}</td>
+      <td style="padding:8px 10px"><span style="background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase">${translateTerm(t.tipo||L.general)}</span></td>
+      <td style="padding:8px 10px"><span style="background:${t.direction==='ENTRADA'?'#d1fae5':'#fee2e2'};color:${t.direction==='ENTRADA'?'#065f46':'#991b1b'};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${t.direction==='ENTRADA'?L.entrada:L.saida}</span></td>
+      <td style="padding:8px 10px;text-align:right;font-weight:700;color:${t.direction==='ENTRADA'?'#059669':'#dc2626'}">${t.direction==='ENTRADA'?'+':'−'} ${BRL(t.valor)}</td>
+    </tr>`;
+  const ROWS_PER_PAGE=20;
+  const tHtml=incTbl?(()=>{
+    let out='';
+    for(let p=0;p<tx.length;p+=ROWS_PER_PAGE){
+      const chunk=tx.slice(p,p+ROWS_PER_PAGE);
+      const from=p+1,to=Math.min(p+ROWS_PER_PAGE,tx.length);
+      const isFirst=p===0;
+      const pageLabel=tx.length>ROWS_PER_PAGE?` (${from}–${to})`:'';
+      out+=`<div style="${isFirst?'':'page-break-before:always;break-before:page;padding-top:14mm;'}">
+      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.extractTitle} — ${tx.length} ${L.launches.toUpperCase()}${pageLabel}</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <thead><tr style="border-bottom:2px solid #e5e7eb">
-          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;white-space:nowrap">${L.date}</th>
-          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.description}</th>
-          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.category}</th>
-          <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.type}</th>
-          <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.amount}</th>
-        </tr></thead>
-        <tbody>${tx.map((t,i)=>`
-          <tr style="border-bottom:1px solid #f3f4f6;background:${i%2===0?'#fff':'#fafafa'}">
-            <td style="padding:8px 10px;color:#6b7280;white-space:nowrap">${fmtTxDate(t.date)}</td>
-            <td style="padding:8px 10px;color:#374151">${translateTerm(t.desc)||'—'}</td>
-            <td style="padding:8px 10px"><span style="background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase">${translateTerm(t.tipo||L.general)}</span></td>
-            <td style="padding:8px 10px"><span style="background:${t.direction==='ENTRADA'?'#d1fae5':'#fee2e2'};color:${t.direction==='ENTRADA'?'#065f46':'#991b1b'};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${t.direction==='ENTRADA'?L.entrada:L.saida}</span></td>
-            <td style="padding:8px 10px;text-align:right;font-weight:700;color:${t.direction==='ENTRADA'?'#059669':'#dc2626'}">${t.direction==='ENTRADA'?'+':'−'} ${BRL(t.valor)}</td>
-          </tr>`).join('')}
-        </tbody>
+        ${_tblHdr}
+        <tbody>${chunk.map(_tblRow).join('')}</tbody>
       </table>
-    </div>`:'';
+    </div>`;
+    }
+    return out;
+  })():'';
 
   // ── Chart init script (light-mode: dark labels on white background) ────────
   const brlFn=`function brl(v){return new Intl.NumberFormat('${locale}',{style:'currency',currency:'BRL'}).format(v);}`;
@@ -1043,7 +1054,7 @@ function generateReport(){
 <script>
 ${brlFn}
 window.addEventListener('load',function(){${chartJs}
-  setTimeout(function(){window.print();},600);
+  setTimeout(function(){window.print();},1800);
 });
 <\/script>`:``;
 
