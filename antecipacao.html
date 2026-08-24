@@ -1002,7 +1002,7 @@ function generateReport(){
       const chunk=tx.slice(p,p+ROWS_PER_PAGE);
       const from=p+1,to=Math.min(p+ROWS_PER_PAGE,tx.length);
       const pageLabel=tx.length>ROWS_PER_PAGE?` (${from}–${to})`:'';
-      out+=`<div style="page-break-before:always;break-before:page;padding-top:14mm">
+      out+=`<div class="rpt-page" style="width:1123px;height:794px;overflow:hidden;background:#fff;padding:53px 60px 45px;box-sizing:border-box">
       <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.extractTitle} — ${tx.length} ${L.launches.toUpperCase()}${pageLabel}</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
         ${_tblHdr}
@@ -1051,37 +1051,40 @@ function generateReport(){
   }});`;}
 
   const nCharts=(showCat?1:0)+(showMes?1:0);
-  const scriptTag=(showCat||showMes)?`
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>
+  const chartsCdn=(showCat||showMes)?'<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>':'';
+  const chartReadyCode=(showCat||showMes)?`function _chkDone(){if(++_nDone>=_nCharts){_c2i();_showBtn();}}
+window.addEventListener('load',function(){${chartJs}setTimeout(function(){if(_nDone<_nCharts){_c2i();_showBtn();}},5000);});`:`window.addEventListener('load',_showBtn);`;
+  const scriptTag=`${chartsCdn}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
 <script>
 ${brlFn}
-var _nDone=0;
-function _chkPrint(){
-  if(++_nDone>=${nCharts}){
-    // Convert all canvas elements to static <img> — canvas prints wrong in Chrome
-    document.querySelectorAll('canvas').forEach(function(cv){
-      var img=document.createElement('img');
-      img.src=cv.toDataURL('image/png');
-      img.style.cssText=cv.style.cssText||'';
-      img.style.width=cv.offsetWidth+'px';
-      img.style.height=cv.offsetHeight+'px';
-      img.style.display='block';
-      cv.parentNode.replaceChild(img,cv);
-    });
-    setTimeout(function(){window.print();},400);
-  }
+var _nDone=0,_nCharts=${nCharts},_cname=${JSON.stringify(c.name)};
+function _c2i(){document.querySelectorAll('canvas').forEach(function(cv){var img=document.createElement('img');img.src=cv.toDataURL('image/png');img.style.width=cv.offsetWidth+'px';img.style.height=cv.offsetHeight+'px';img.style.display='block';cv.parentNode.replaceChild(img,cv);});}
+async function _genPDF(){
+  var btn=document.getElementById('_pdfBtn');
+  if(btn){btn.disabled=true;btn.textContent='Gerando...';}
+  try{
+    var jsPDF=window.jspdf.jsPDF;
+    var pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    var pages=document.querySelectorAll('.rpt-page');
+    for(var i=0;i<pages.length;i++){
+      if(i>0)pdf.addPage();
+      var cv=await html2canvas(pages[i],{scale:2,useCORS:true,allowTaint:true,logging:false,width:1123,height:794,backgroundColor:null});
+      pdf.addImage(cv.toDataURL('image/jpeg',0.93),'JPEG',0,0,297,210);
+    }
+    pdf.save('Relat\u00f3rio - '+_cname+'.pdf');
+  }catch(e){alert('Erro: '+e.message);}
+  if(btn){btn.disabled=false;btn.textContent='Baixar PDF';}
 }
-window.addEventListener('load',function(){${chartJs}
-  setTimeout(function(){if(_nDone<${nCharts}){
-    document.querySelectorAll('canvas').forEach(function(cv){
-      var img=document.createElement('img');img.src=cv.toDataURL('image/png');
-      img.style.width=cv.offsetWidth+'px';img.style.height=cv.offsetHeight+'px';img.style.display='block';
-      cv.parentNode.replaceChild(img,cv);
-    });
-    window.print();
-  }},5000);
-});
-<\/script>`:``;
+function _showBtn(){
+  var b=document.createElement('button');
+  b.id='_pdfBtn';b.textContent='Baixar PDF';
+  b.style='position:fixed;top:16px;right:16px;z-index:9999;background:#c9963c;color:#fff;border:none;padding:10px 24px;font-size:14px;font-weight:700;border-radius:6px;cursor:pointer;font-family:Montserrat,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3)';
+  b.onclick=_genPDF;document.body.appendChild(b);
+}
+${chartReadyCode}
+<\/script>`;
 
   // ── Compose HTML ──────────────────────────────────────────────────────────
   const _logo=`
@@ -1096,7 +1099,7 @@ window.addEventListener('load',function(){${chartJs}
   const _shapesUrl='data:image/svg+xml;base64,'+btoa(_svg);
   const _coverBase=`width:100%;height:210mm;background-color:#0c1b2e;background-image:url('${_shapesUrl}');background-position:bottom right;background-repeat:no-repeat;background-size:300px 300px;position:relative`;
   const coverPage=`
-<div style="${_coverBase}">
+<div class="rpt-page" style="${_coverBase};width:1123px;height:794px;overflow:hidden">
   <div style="position:absolute;top:42%;left:56px;right:56px">
     ${_logo}
     <div style="height:1.5px;background:linear-gradient(90deg,#c9963c 65%,rgba(201,150,60,0.08));margin:26px 0 22px"></div>
@@ -1105,7 +1108,7 @@ window.addEventListener('load',function(){${chartJs}
   </div>
 </div>`;
   const backCover=`
-<div style="${_coverBase};page-break-before:always;break-before:page;page-break-after:avoid;break-after:avoid;height:209mm">
+<div class="rpt-page" style="${_coverBase};width:1123px;height:794px;overflow:hidden">
   <div style="position:absolute;top:48px;left:56px">${_logo}</div>
   <div style="position:absolute;bottom:68px;left:56px">
     <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">TELEFONE</div>
@@ -1129,7 +1132,7 @@ body{font-family:'Montserrat',sans-serif;background:#fff;color:#111}
 </style>
 </head><body>
 ${coverPage}
-<div style="padding:14mm 16mm 12mm;background:#fff">
+<div class="rpt-page" style="width:1123px;height:794px;overflow:hidden;background:#fff;padding:53px 60px 45px;box-sizing:border-box">
   <div style="display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #0b1e30;margin-bottom:28px">
     <div>
       <div style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">Soma Partners</div>
@@ -1141,21 +1144,15 @@ ${coverPage}
       <div style="font-size:12px;font-weight:700;color:#374151;margin-top:3px">${genDate}</div>
     </div>
   </div>
-  ${kHtml}${chHtml}${tHtml}
-  <div style="margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between">
-    <div style="font-size:9px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase">Soma Partners · ${L.confidential}</div>
-    <div style="font-size:9px;color:#9ca3af">atendimento@somapartners.co</div>
-  </div>
+  ${kHtml}${chHtml}
 </div>
-${backCover}
+${tHtml}${backCover}
 ${scriptTag}
 </body></html>`;
 
-  const win=window.open('','_blank','width=1200,height=800,scrollbars=yes');
+  const win=window.open('','_blank','width=1300,height=900,scrollbars=yes');
   win.document.write(html);
   win.document.close();
-  // If no charts, trigger print after font load delay
-  if(!showCat&&!showMes) setTimeout(()=>{if(!win.closed)win.print();},900);
   closeRpt();
 }
 
