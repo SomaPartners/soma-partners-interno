@@ -1052,7 +1052,7 @@ function generateReport(){
 
   const nCharts=(showCat?1:0)+(showMes?1:0);
   const chartsCdn=(showCat||showMes)?'<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>':'';
-  const chartReadyCode=(showCat||showMes)?`function _chkDone(){if(++_nDone>=_nCharts){_c2i();_showBtn();}}
+  const chartReadyCode=(showCat||showMes)?`function _chkPrint(){if(++_nDone>=_nCharts){_c2i();_showBtn();}}
 window.addEventListener('load',function(){${chartJs}setTimeout(function(){if(_nDone<_nCharts){_c2i();_showBtn();}},5000);});`:`window.addEventListener('load',_showBtn);`;
   const scriptTag=`${chartsCdn}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
