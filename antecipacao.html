@@ -1079,7 +1079,7 @@ async function _genPDF(){
       var dataUrl=await _capturePage(pages[i]);
       pdf.addImage(dataUrl,'JPEG',0,0,297,210);
     }
-    pdf.save('Relat\u00f3rio - '+_cname+'.pdf');
+    var _today=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');pdf.save('Relat\u00f3rio de Saldo - '+_cname+' - '+_today+'.pdf');
   }catch(e){alert('Erro: '+e.message);}
   if(btn){btn.disabled=false;btn.textContent='Baixar PDF';}
 }
