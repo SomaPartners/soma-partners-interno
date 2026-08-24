@@ -1588,23 +1588,23 @@ async function loadDemandas(force){
   try{
     const r=await fetch(_DEMANDAS_URL);
     const txt=await r.text();
-    const rows=txt.split('\n').map(l=>l.split(',').map(c=>c.replace(/^"|"$/g,'').trim()));
-    // find header row (DATA, DESCRIÇÃO...)
-    let hIdx=rows.findIndex(r=>r[0]&&r[0].toUpperCase().includes('DATA'));
+    const rows=txt.split('\n').map(function(l){return l.split(',').map(function(c){return c.replace(/^"|"$/g,'').trim();});});
+    var hIdx=rows.findIndex(function(r){return r[0]&&r[0].toUpperCase().includes('DATA');});
     if(hIdx<0)hIdx=0;
-    const data=rows.slice(hIdx+1).filter(r=>r.some(c=>c));
-    const tbody=document.getElementById('tbl-demandas');
-    tbody.innerHTML=data.map(r=>{
-      const [date,desc,area,status,comment]=r;
-      if(!desc&&!date)return'';
-      return\`<tr>
-        <td style="white-space:nowrap">\${date||'—'}</td>
-        <td style="max-width:320px">\${desc||'—'}</td>
-        <td>\${area||'—'}</td>
-        <td>\${_statusBadge(status)}</td>
-        <td style="color:var(--muted);font-size:11px">\${comment||'—'}</td>
-      </tr>\`;
-    }).join('');
+    const data=rows.slice(hIdx+1).filter(function(r){return r.some(function(c){return c;});});
+    var html='';
+    data.forEach(function(r){
+      var date=r[0]||'',desc=r[1]||'',area=r[2]||'',status=r[3]||'',comment=r[4]||'';
+      if(!desc&&!date)return;
+      html+='<tr>'
+        +'<td style="white-space:nowrap">'+(date||'&#8212;')+'</td>'
+        +'<td style="max-width:320px">'+(desc||'&#8212;')+'</td>'
+        +'<td>'+(area||'&#8212;')+'</td>'
+        +'<td>'+_statusBadge(status)+'</td>'
+        +'<td style="color:var(--muted);font-size:11px">'+(comment||'&#8212;')+'</td>'
+        +'</tr>';
+    });
+    document.getElementById('tbl-demandas').innerHTML=html;
     document.getElementById('demandas-loading').style.display='none';
     document.getElementById('demandas-wrap').style.display='block';
     _demandasLoaded=true;
