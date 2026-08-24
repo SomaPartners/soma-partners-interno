@@ -1065,9 +1065,11 @@ async function _capturePage(el){
   var cv=await html2canvas(el,{scale:2,useCORS:true,allowTaint:true,logging:false,width:1123,height:794,backgroundColor:'#ffffff',foreignObjectRendering:false,imageTimeout:0});
   return cv.toDataURL('image/jpeg',0.93);
 }
+var _isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 async function _genPDF(){
   var btn=document.getElementById('_pdfBtn');
   if(btn){btn.disabled=true;btn.textContent='Gerando...';}
+  if(_isSafari){window.print();if(btn){btn.disabled=false;btn.textContent='Baixar PDF';}return;}
   try{
     var jsPDF=window.jspdf.jsPDF;
     var pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
@@ -1132,6 +1134,9 @@ body{font-family:'Montserrat',sans-serif;background:#fff;color:#111}
 @media print{
   @page{size:A4 landscape;margin:0}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  #_pdfBtn{display:none!important}
+  .rpt-page{page-break-after:always;page-break-inside:avoid;width:297mm!important;height:210mm!important;overflow:hidden!important}
+  .rpt-page:last-of-type{page-break-after:avoid}
 }
 </style>
 </head><body>
