@@ -1154,9 +1154,9 @@ ${tHtml}${backCover}
 ${scriptTag}
 </body></html>`;
 
-  const win=window.open('','_blank','width=1300,height=900,scrollbars=yes');
-  win.document.write(html);
-  win.document.close();
+  const blob=new Blob([html],{type:'text/html'});
+  const blobUrl=URL.createObjectURL(blob);
+  window.open(blobUrl,'_blank','width=1300,height=900,scrollbars=yes');
   closeRpt();
 }
 
