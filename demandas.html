@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Demandas dos Clientes — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--blue:#3b8bff;--gold:#c9963c;--green:#10b981;--red:#ef4444;--orange:#f97316;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.4);--surface:rgba(255,255,255,0.04)}
+html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff;font-size:13px}
+
+/* NAV */
+.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-left{display:flex;align-items:center;gap:14px}
+.logo-soma{font-size:17px;font-weight:300}.logo-pipe{width:1px;height:20px;background:rgba(255,255,255,0.3)}.logo-partners{font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;opacity:.7}
+.nav-sep{width:1px;height:24px;background:var(--border)}.nav-title{font-size:13px;font-weight:800}
+.nav-right{display:flex;align-items:center;gap:12px}
+.btn-refresh{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .18s}
+.btn-refresh:hover{background:rgba(255,255,255,0.1);color:#fff}
+.btn-refresh.loading{opacity:.6;pointer-events:none}
+.btn-refresh svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none}
+.btn-refresh.loading svg{animation:spin .7s linear infinite}
+
+/* BREADCRUMB */
+.breadcrumb{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);cursor:pointer;padding:28px 40px 0;transition:color .15s}
+.breadcrumb:hover{color:#fff}
+.breadcrumb svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none}
+
+/* SUMMARY HEADER */
+.summary-hd{padding:32px 40px 24px;border-bottom:1px solid var(--border)}
+.summary-label{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.summary-title{font-size:26px;font-weight:900;letter-spacing:-.5px}
+.summary-sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* CLIENT CARDS GRID */
+.clients-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:28px 40px}
+.client-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.client-card:hover{background:rgba(255,255,255,0.07);border-color:rgba(59,139,255,0.3);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.25)}
+.client-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--acc,var(--gold))}
+.cc-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.cc-name{font-size:15px;font-weight:800;margin-bottom:16px;line-height:1.3}
+.cc-stats{display:flex;gap:16px;margin-top:4px;padding-top:16px;border-top:1px solid var(--border)}
+.cc-stat{display:flex;flex-direction:column;gap:3px}
+.cc-stat-v{font-size:18px;font-weight:800}
+.cc-stat-l{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.cc-arrow{position:absolute;bottom:20px;right:20px;opacity:.25;transition:opacity .2s}
+.client-card:hover .cc-arrow{opacity:.7}
+
+/* DETAIL — CLIENT HEADER */
+.client-header{padding:32px 40px 24px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.client-label{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.client-name{font-size:26px;font-weight:900;letter-spacing:-.5px}
+
+/* STATUS CARDS */
+.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;padding:24px 40px}
+.status-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden}
+.status-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--sc,var(--blue))}
+.status-card-v{font-size:28px;font-weight:900;letter-spacing:-.5px;color:var(--sc,#fff)}
+.status-card-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
+
+/* TABLE */
+.table-section{padding:0 40px 60px}
+.table-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.table-title{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap}
+.fb{padding:4px 11px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.45);font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
+.fb:hover{color:#fff}.fb.active{border-color:rgba(59,139,255,0.45);background:rgba(59,139,255,0.1);color:#fff}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid rgba(255,255,255,0.1)}
+thead th{padding:10px 14px;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left;white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background .12s}
+tbody tr:hover{background:rgba(255,255,255,0.03)}
+tbody td{padding:11px 14px;font-size:12px;color:rgba(255,255,255,.85)}
+
+/* STATUS BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
+.badge-done{background:rgba(16,185,129,0.14);color:#6ee7b7;border:1px solid rgba(16,185,129,0.2)}
+.badge-progress{background:rgba(249,115,22,0.12);color:#fdba74;border:1px solid rgba(249,115,22,0.2)}
+.badge-open{background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.15)}
+.badge-default{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1)}
+.area-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;background:rgba(201,150,60,0.1);color:rgba(201,150,60,0.85);border:1px solid rgba(201,150,60,0.15)}
+
+/* LOADING */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;color:var(--muted);font-size:12px;text-align:center}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.08);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+.load-msg{font-size:11px;color:var(--muted);max-width:280px;line-height:1.6}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* VIEWS */
+#view-loading,#view-list,#view-detail{display:none}
+#view-loading.active,#view-list.active,#view-detail.active{display:block}
+
+/* EMBED */
+body.embed .topnav{display:none}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="nav-left">
+    <span class="logo-soma">Soma</span>
+    <div class="logo-pipe"></div>
+    <span class="logo-partners">Partners</span>
+    <div class="nav-sep"></div>
+    <span class="nav-title">Demandas dos Clientes</span>
+  </div>
+  <div class="nav-right">
+    <button class="btn-refresh" id="btn-refresh" onclick="loadAll()">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Atualizar
+    </button>
+  </div>
+</nav>
+
+<!-- LOADING -->
+<div id="view-loading" class="active">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div class="load-msg">Carregando demandas dos clientes…</div>
+  </div>
+</div>
+
+<!-- LIST -->
+<div id="view-list">
+  <div class="summary-hd">
+    <div class="summary-label">Soma Partners</div>
+    <div class="summary-title">Demandas dos Clientes</div>
+    <div class="summary-sub" id="list-sub">—</div>
+  </div>
+  <div class="clients-grid" id="clients-grid"></div>
+</div>
+
+<!-- DETAIL -->
+<div id="view-detail">
+  <div class="breadcrumb" onclick="showList()">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Todos os clientes
+  </div>
+  <div class="client-header">
+    <div>
+      <div class="client-label">Soma Partners · Demandas</div>
+      <div class="client-name" id="detail-name">—</div>
+    </div>
+  </div>
+  <div class="status-grid" id="status-grid"></div>
+  <div class="table-section">
+    <div class="table-hd">
+      <div class="table-title" id="detail-count">—</div>
+      <div class="filter-row" id="filter-row"></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Data</th>
+          <th>Descrição</th>
+          <th>Área</th>
+          <th>Status</th>
+          <th>Comentário</th>
+        </tr></thead>
+        <tbody id="demands-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+const PUBHTML='https://docs.google.com/spreadsheets/d/e/2PACX-1vTw3bhacnZOSnWBDep3kHwk98nRq5LoYGysyPzbcvb2I8IeivPwEIsn3T651CyEmw8NkwwF9OJPJTsa/pubhtml';
+const CSVBASE='https://docs.google.com/spreadsheets/d/e/2PACX-1vTw3bhacnZOSnWBDep3kHwk98nRq5LoYGysyPzbcvb2I8IeivPwEIsn3T651CyEmw8NkwwF9OJPJTsa/pub?output=csv&gid=';
+const SKIP_TABS=['MODELO BASE','modelo base'];
+const PAL=['#3b8bff','#c9963c','#10b981','#8b5cf6','#ef4444','#f97316','#06b6d4','#ec4899','#84cc16','#6366f1'];
+
+let _tabs=[], _clients=[], _activeIdx=-1, _allDemands=[], _filter='TODOS';
+
+// ── Embed mode ──────────────────────────────────────────────────────────────
+if(new URLSearchParams(location.search).get('embed')==='1') document.body.classList.add('embed');
+
+// ── Views ───────────────────────────────────────────────────────────────────
+function showView(v){
+  ['loading','list','detail'].forEach(id=>document.getElementById('view-'+id).classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+}
+function showList(){ _activeIdx=-1; showView('list'); }
+
+// ── Tab discovery ────────────────────────────────────────────────────────────
+async function discoverTabs(){
+  try{
+    const html=await fetch(PUBHTML+'?_='+Date.now()).then(r=>r.text());
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    const tabs=[];
+    doc.querySelectorAll('[id^="sheet-button-"]').forEach(el=>{
+      const gid=el.id.replace('sheet-button-','');
+      const name=(el.querySelector('a')||el).textContent.trim();
+      if(gid&&name&&!SKIP_TABS.includes(name.toLowerCase())) tabs.push({gid,name});
+    });
+    if(tabs.length) return tabs;
+    // fallback gid regex
+    const found=[];
+    (html.match(/gid=(\d+)/g)||[]).forEach(m=>{
+      const gid=m.replace('gid=','');
+      if(!found.find(t=>t.gid===gid)) found.push({gid,name:'Cliente '+(found.length+1)});
+    });
+    if(found.length) return found;
+  }catch(e){}
+  return [];
+}
+
+// ── Parse demands CSV ────────────────────────────────────────────────────────
+function parseDemandsCSV(rows){
+  // Find header row (DATA)
+  let hIdx=-1;
+  for(let i=0;i<rows.length;i++){
+    const f=String(rows[i][0]||'').trim().toUpperCase();
+    if(f==='DATA'){hIdx=i;break;}
+  }
+  if(hIdx<0) return [];
+  const demands=[];
+  for(let i=hIdx+1;i<rows.length;i++){
+    const r=rows[i];
+    const date=String(r[0]||'').trim();
+    const desc=String(r[1]||'').trim();
+    if(!date&&!desc) continue;
+    // Find most recent non-empty STATUS (cols 3,5,7...)
+    let status='',comment='';
+    for(let c=3;c<r.length;c+=2){
+      const s=String(r[c]||'').trim();
+      const co=String(r[c+1]||'').trim();
+      if(s){status=s;comment=co;}
+    }
+    demands.push({date,desc,area:String(r[2]||'').trim(),status,comment});
+  }
+  return demands;
+}
+
+// ── Status badge ─────────────────────────────────────────────────────────────
+function statusBadge(s){
+  if(!s) return '<span class="badge badge-default">—</span>';
+  const k=s.toLowerCase();
+  let cls='badge-default';
+  if(k.includes('conclu')||k.includes('done')||k.includes('feito')) cls='badge-done';
+  else if(k.includes('andamento')||k.includes('progress')||k.includes('execu')) cls='badge-progress';
+  else if(k.includes('pendent')||k.includes('aberto')||k.includes('aguard')||k.includes('open')) cls='badge-open';
+  return '<span class="badge '+cls+'">'+s+'</span>';
+}
+
+// ── Load all clients ──────────────────────────────────────────────────────────
+async function loadAll(){
+  showView('loading');
+  document.getElementById('btn-refresh').classList.add('loading');
+  try{
+    _tabs=await discoverTabs();
+    if(!_tabs.length){
+      document.querySelector('.load-msg').textContent='Nenhuma aba encontrada. Verifique se a planilha está publicada.';
+      return;
+    }
+    _clients=[];
+    await Promise.all(_tabs.map(async tab=>{
+      try{
+        const url=CSVBASE+tab.gid+'&_='+Date.now();
+        const txt=await fetch(url).then(r=>r.text());
+        const rows=Papa.parse(txt).data;
+        const demands=parseDemandsCSV(rows);
+        _clients.push({gid:tab.gid,name:tab.name,demands});
+      }catch(e){
+        _clients.push({gid:tab.gid,name:tab.name,demands:[]});
+      }
+    }));
+    _clients.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+    renderList();
+  }catch(e){
+    document.querySelector('.load-msg').textContent='Erro ao carregar: '+e.message;
+  }
+  document.getElementById('btn-refresh').classList.remove('loading');
+}
+
+// ── Render client list ────────────────────────────────────────────────────────
+function renderList(){
+  const total=_clients.reduce((s,c)=>s+c.demands.length,0);
+  document.getElementById('list-sub').textContent=
+    _clients.length+' cliente'+(+_clients.length!==1?'s':'')+' · '+total+' demanda'+(total!==1?'s':'');
+  const grid=document.getElementById('clients-grid');
+  grid.innerHTML=_clients.map((c,i)=>{
+    const done=c.demands.filter(d=>d.status.toLowerCase().includes('conclu')).length;
+    const open=c.demands.length-done;
+    const col=PAL[i%PAL.length];
+    return '<div class="client-card" style="--acc:'+col+'" onclick="openClient('+i+')">'
+      +'<div class="cc-label">Demandas do Cliente</div>'
+      +'<div class="cc-name">'+c.name+'</div>'
+      +'<div class="cc-stats">'
+        +'<div class="cc-stat"><div class="cc-stat-v">'+c.demands.length+'</div><div class="cc-stat-l">Total</div></div>'
+        +'<div class="cc-stat"><div class="cc-stat-v" style="color:#6ee7b7">'+done+'</div><div class="cc-stat-l">Concluídas</div></div>'
+        +'<div class="cc-stat"><div class="cc-stat-v" style="color:#fca5a5">'+open+'</div><div class="cc-stat-l">Em aberto</div></div>'
+      +'</div>'
+      +'<svg class="cc-arrow" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"/></svg>'
+    +'</div>';
+  }).join('');
+  showView('list');
+}
+
+// ── Open client detail ────────────────────────────────────────────────────────
+function openClient(idx){
+  _activeIdx=idx;
+  const c=_clients[idx];
+  _allDemands=c.demands;
+  _filter='TODOS';
+  document.getElementById('detail-name').textContent=c.name;
+  // Status cards
+  const total=c.demands.length;
+  const done=c.demands.filter(d=>d.status.toLowerCase().includes('conclu')).length;
+  const prog=c.demands.filter(d=>d.status.toLowerCase().includes('andamento')||d.status.toLowerCase().includes('execu')).length;
+  const open=c.demands.filter(d=>d.status.toLowerCase().includes('pendent')||d.status.toLowerCase().includes('aguard')||d.status.toLowerCase().includes('aberto')).length;
+  document.getElementById('status-grid').innerHTML=
+    '<div class="status-card" style="--sc:'+PAL[0]+'">'
+      +'<div class="status-card-v">'+total+'</div><div class="status-card-l">Total de demandas</div></div>'
+    +'<div class="status-card" style="--sc:#10b981">'
+      +'<div class="status-card-v">'+done+'</div><div class="status-card-l">Concluídas</div></div>'
+    +'<div class="status-card" style="--sc:#f97316">'
+      +'<div class="status-card-v">'+prog+'</div><div class="status-card-l">Em andamento</div></div>'
+    +'<div class="status-card" style="--sc:#ef4444">'
+      +'<div class="status-card-v">'+open+'</div><div class="status-card-l">Pendentes</div></div>';
+  // Filters
+  const statuses=['TODOS',...new Set(c.demands.map(d=>d.status).filter(Boolean))];
+  document.getElementById('filter-row').innerHTML=statuses.map(s=>
+    '<button class="fb'+(s==='TODOS'?' active':'')+'" onclick="setFilter(\''+s+'\')">'+s+'</button>'
+  ).join('');
+  renderDemands();
+  showView('detail');
+}
+
+function setFilter(f){
+  _filter=f;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.toggle('active',b.textContent===f));
+  renderDemands();
+}
+
+function renderDemands(){
+  const data=_filter==='TODOS'?_allDemands:_allDemands.filter(d=>d.status===_filter);
+  document.getElementById('detail-count').textContent=
+    'Demandas'+(+_activeIdx>=0?' — '+_clients[_activeIdx].name:'')+' · '+data.length+' registro'+(data.length!==1?'s':'');
+  document.getElementById('demands-tbody').innerHTML=data.map(d=>
+    '<tr>'
+      +'<td style="white-space:nowrap;color:var(--muted)">'+( d.date||'—')+'</td>'
+      +'<td style="max-width:340px;line-height:1.5">'+( d.desc||'—')+'</td>'
+      +'<td>'+(d.area?'<span class="area-tag">'+d.area+'</span>':'—')+'</td>'
+      +'<td>'+statusBadge(d.status)+'</td>'
+      +'<td style="color:var(--muted);font-size:11px;max-width:240px;line-height:1.5">'+( d.comment||'—')+'</td>'
+    +'</tr>'
+  ).join('');
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>

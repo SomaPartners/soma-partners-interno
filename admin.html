@@ -770,24 +770,11 @@ body{display:flex;flex-direction:column;overflow:hidden}
     </table></div>
   </div>
 
-  <div class="section" id="section-cli-demandas">
-    <div class="tbl-header">
-      <div>
-        <div class="sec-title">Demandas dos Clientes</div>
-        <div class="sec-sub" style="margin-bottom:0">Solicitações e acompanhamento — atualizado via Google Sheets</div>
-      </div>
-      <button class="btn btn-primary" onclick="loadDemandas(true)">
-        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        Atualizar
-      </button>
-    </div>
-    <div id="demandas-loading" style="padding:40px;text-align:center;color:var(--muted);font-size:13px">Carregando...</div>
-    <div class="tbl-wrap" id="demandas-wrap" style="display:none">
-      <table class="tbl">
-        <thead><tr><th>Data</th><th>Descrição</th><th>Área</th><th>Status</th><th>Comentário</th></tr></thead>
-        <tbody id="tbl-demandas"></tbody>
-      </table>
-    </div>
+  <div class="section" id="section-cli-demandas" style="margin:-28px -32px;overflow:hidden">
+    <iframe src="demandas.html?embed=1"
+      style="width:100%;height:calc(100vh - 58px);border:none;display:block"
+      title="Demandas dos Clientes">
+    </iframe>
   </div>
 
 </div><!-- /main -->
@@ -1562,55 +1549,6 @@ function nav(sec,el){
   if(el) el.classList.add('active');
   document.getElementById('section-'+sec).classList.add('active');
   if(sec==='extrato') exLoadSaved();
-  if(sec==='cli-demandas') loadDemandas();
-}
-
-// ── DEMANDAS DOS CLIENTES ──
-const _DEMANDAS_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTw3bhacnZOSnWBDep3kHwk98nRq5LoYGysyPzbcvb2I8IeivPwEIsn3T651CyEmw8NkwwF9OJPJTsa/pub?output=csv';
-let _demandasLoaded=false;
-const _statusColor={
-  'concluído':'#10b981','concluido':'#10b981','done':'#10b981','feito':'#10b981',
-  'em andamento':'#f59e0b','andamento':'#f59e0b','em progresso':'#f59e0b',
-  'pendente':'#ef4444','aguardando':'#ef4444','aberto':'#ef4444','open':'#ef4444',
-  'cancelado':'#6b7280','cancelada':'#6b7280'
-};
-function _statusBadge(s){
-  if(!s)return'—';
-  const k=s.toLowerCase().trim();
-  const c=Object.keys(_statusColor).find(x=>k.includes(x));
-  const color=c?_statusColor[c]:'#6366f1';
-  return`<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:${color}22;color:${color}">${s}</span>`;
-}
-async function loadDemandas(force){
-  if(_demandasLoaded&&!force)return;
-  document.getElementById('demandas-loading').style.display='block';
-  document.getElementById('demandas-wrap').style.display='none';
-  try{
-    const r=await fetch(_DEMANDAS_URL);
-    const txt=await r.text();
-    const rows=txt.split('\n').map(function(l){return l.split(',').map(function(c){return c.replace(/^"|"$/g,'').trim();});});
-    var hIdx=rows.findIndex(function(r){return r[0]&&r[0].toUpperCase().includes('DATA');});
-    if(hIdx<0)hIdx=0;
-    const data=rows.slice(hIdx+1).filter(function(r){return r.some(function(c){return c;});});
-    var html='';
-    data.forEach(function(r){
-      var date=r[0]||'',desc=r[1]||'',area=r[2]||'',status=r[3]||'',comment=r[4]||'';
-      if(!desc&&!date)return;
-      html+='<tr>'
-        +'<td style="white-space:nowrap">'+(date||'&#8212;')+'</td>'
-        +'<td style="max-width:320px">'+(desc||'&#8212;')+'</td>'
-        +'<td>'+(area||'&#8212;')+'</td>'
-        +'<td>'+_statusBadge(status)+'</td>'
-        +'<td style="color:var(--muted);font-size:11px">'+(comment||'&#8212;')+'</td>'
-        +'</tr>';
-    });
-    document.getElementById('tbl-demandas').innerHTML=html;
-    document.getElementById('demandas-loading').style.display='none';
-    document.getElementById('demandas-wrap').style.display='block';
-    _demandasLoaded=true;
-  }catch(e){
-    document.getElementById('demandas-loading').textContent='Erro ao carregar: '+e.message;
-  }
 }
 
 // ── MODAL ──
