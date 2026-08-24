@@ -1022,7 +1022,7 @@ function generateReport(){
     datasets:[{data:${JSON.stringify(topCats.map(([,v])=>v))},
       backgroundColor:${JSON.stringify(catBg)},borderColor:${JSON.stringify(catBd)},borderWidth:1.5,borderRadius:5}]
   },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-    animation:{onComplete:_chkPrint},
+    animation:{duration:0},
     plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return' '+brl(c.parsed.x);}}}},
     scales:{
       x:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{color:'#6b7280',font:{family:'Montserrat',size:10},callback:function(v){return brl(v);}},border:{display:false}},
@@ -1038,7 +1038,7 @@ function generateReport(){
       {type:'line',label:${JSON.stringify(L.currentBalance)},data:${JSON.stringify(mSaldo2)},borderColor:'#3b8bff',backgroundColor:'rgba(59,139,255,0.07)',borderWidth:2,pointBackgroundColor:'#3b8bff',pointRadius:3,tension:.3,fill:true,yAxisID:'y2'}
     ]
   },options:{responsive:true,maintainAspectRatio:false,
-    animation:{onComplete:_chkPrint},
+    animation:{duration:0},
     plugins:{
       legend:{labels:{color:'#6b7280',font:{family:'Montserrat',size:10},boxWidth:10,padding:12}},
       tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+brl(c.parsed.y);}}}
@@ -1052,8 +1052,7 @@ function generateReport(){
 
   const nCharts=(showCat?1:0)+(showMes?1:0);
   const chartsCdn=(showCat||showMes)?'<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>':'';
-  const chartReadyCode=(showCat||showMes)?`function _chkPrint(){if(++_nDone>=_nCharts){_c2i();_showBtn();}}
-window.addEventListener('load',function(){${chartJs}setTimeout(function(){if(_nDone<_nCharts){_c2i();_showBtn();}},5000);});`:`window.addEventListener('load',_showBtn);`;
+  const chartReadyCode=(showCat||showMes)?`window.addEventListener('load',function(){${chartJs}setTimeout(function(){_c2i();_showBtn();},800);});`:`window.addEventListener('load',_showBtn);`;
   const scriptTag=`${chartsCdn}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
