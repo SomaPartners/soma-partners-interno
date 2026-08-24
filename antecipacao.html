@@ -1001,9 +1001,8 @@ function generateReport(){
     for(let p=0;p<tx.length;p+=ROWS_PER_PAGE){
       const chunk=tx.slice(p,p+ROWS_PER_PAGE);
       const from=p+1,to=Math.min(p+ROWS_PER_PAGE,tx.length);
-      const isFirst=p===0;
       const pageLabel=tx.length>ROWS_PER_PAGE?` (${from}–${to})`:'';
-      out+=`<div style="${isFirst?'':'page-break-before:always;break-before:page;padding-top:14mm;'}">
+      out+=`<div style="page-break-before:always;break-before:page;padding-top:14mm">
       <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.extractTitle} — ${tx.length} ${L.launches.toUpperCase()}${pageLabel}</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
         ${_tblHdr}
@@ -1085,7 +1084,7 @@ window.addEventListener('load',function(){${chartJs}
   </div>
 </div>`;
   const backCover=`
-<div style="${_coverBase};page-break-before:always;break-before:page">
+<div style="${_coverBase};page-break-before:always;break-before:page;page-break-after:avoid;break-after:avoid;height:209mm">
   <div style="position:absolute;top:48px;left:56px">${_logo}</div>
   <div style="position:absolute;bottom:68px;left:56px">
     <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">TELEFONE</div>
