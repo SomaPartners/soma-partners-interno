@@ -186,25 +186,15 @@ function showList(){ _activeIdx=-1; showView('list'); }
 
 // ── Tab discovery ────────────────────────────────────────────────────────────
 async function discoverTabs(){
-  try{
-    const html=await fetch(PUBHTML+'?_='+Date.now()).then(r=>r.text());
-    const doc=new DOMParser().parseFromString(html,'text/html');
-    const tabs=[];
-    doc.querySelectorAll('[id^="sheet-button-"]').forEach(el=>{
-      const gid=el.id.replace('sheet-button-','');
-      const name=(el.querySelector('a')||el).textContent.trim();
-      if(gid&&name&&!SKIP_TABS.includes(name.toLowerCase())) tabs.push({gid,name});
-    });
-    if(tabs.length) return tabs;
-    // fallback gid regex
-    const found=[];
-    (html.match(/gid=(\d+)/g)||[]).forEach(m=>{
-      const gid=m.replace('gid=','');
-      if(!found.find(t=>t.gid===gid)) found.push({gid,name:'Cliente '+(found.length+1)});
-    });
-    if(found.length) return found;
-  }catch(e){}
-  return [];
+  // Hardcoded gids (discovered from pubhtml; MODELO BASE skipped)
+  return [
+    {gid:'823749132',  name:'GOL DO RAYO'},
+    {gid:'2051786573', name:'ARTHUR E DUDA'},
+    {gid:'672998304',  name:'ROBERTA CORA'},
+    {gid:'777420258',  name:'LUCAS TYLTY'},
+    {gid:'1817470116', name:'RICHARD'},
+    {gid:'598956116',  name:'FAMILIA KLAUSS'}
+  ];
 }
 
 // ── Parse demands CSV ────────────────────────────────────────────────────────
