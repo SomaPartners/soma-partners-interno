@@ -1017,6 +1017,8 @@ function generateReport(){
     return out;
   })():'';
 
+  const brlFn=`function brl(v){return new Intl.NumberFormat('${locale}',{style:'currency',currency:'BRL'}).format(v);}`;
+  const nCharts=0;
   const chartReadyCode=`window.addEventListener('load',_showBtn);`;
   const chartsCdn='';
   const scriptTag=`${chartsCdn}
