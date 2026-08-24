@@ -964,18 +964,22 @@ function generateReport(){
       ${kpiCard(L.totalSaidas,BRL(sai),tx.filter(t=>t.direction==='SAÍDA').length+' '+L.launches,'#ef4444')}
     </div>`):''
 
-  // ── Charts HTML — canvas elements (re-rendered with light theme) ──────────
+  // ── Charts HTML — capture from main page canvases (already rendered) ──────
   const showCat=incCat&&topCats.length>0;
   const showMes=incMes&&mKeys2.length>0;
+  const _cvCats=showCat?document.getElementById('ch-cats'):null;
+  const _cvMes=showMes?document.getElementById('ch-mes'):null;
+  const catSrc=_cvCats?_cvCats.toDataURL('image/png'):'';
+  const mesSrc=_cvMes?_cvMes.toDataURL('image/png'):'';
   const chHtml=(showCat||showMes)?`
-    <div style="display:grid;grid-template-columns:${showCat&&showMes?'1fr 1fr':'1fr'};gap:14px;margin-bottom:28px;break-inside:avoid;page-break-inside:avoid">
-      ${showCat?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
+    <div style="display:grid;grid-template-columns:${showCat&&showMes?'1fr 1fr':'1fr'};gap:14px;margin-bottom:28px">
+      ${showCat&&catSrc?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
         <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.expensesByCategory}</div>
-        <div style="position:relative;height:${Math.max(160,topCats.length*34)}px"><canvas id="ch-cats-p"></canvas></div>
+        <div style="position:relative;height:${Math.max(160,topCats.length*34)}px"><img src="${catSrc}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
       </div>`:''}
-      ${showMes?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
+      ${showMes&&mesSrc?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
         <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.monthlyFlow}</div>
-        <div style="position:relative;height:220px"><canvas id="ch-mes-p"></canvas></div>
+        <div style="position:relative;height:220px"><img src="${mesSrc}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
       </div>`:''}
     </div>`:'';
 
@@ -1013,46 +1017,8 @@ function generateReport(){
     return out;
   })():'';
 
-  // ── Chart init script (light-mode: dark labels on white background) ────────
-  const brlFn=`function brl(v){return new Intl.NumberFormat('${locale}',{style:'currency',currency:'BRL'}).format(v);}`;
-  let chartJs='';
-  if(showCat){chartJs+=`
-  new Chart(document.getElementById('ch-cats-p'),{type:'bar',data:{
-    labels:${JSON.stringify(topCats.map(([k])=>k))},
-    datasets:[{data:${JSON.stringify(topCats.map(([,v])=>v))},
-      backgroundColor:${JSON.stringify(catBg)},borderColor:${JSON.stringify(catBd)},borderWidth:1.5,borderRadius:5}]
-  },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-    animation:{duration:0},
-    plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return' '+brl(c.parsed.x);}}}},
-    scales:{
-      x:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{color:'#6b7280',font:{family:'Montserrat',size:10},callback:function(v){return brl(v);}},border:{display:false}},
-      y:{grid:{display:false},ticks:{color:'#111',font:{family:'Montserrat',size:10,weight:'700'}},border:{display:false}}
-    }
-  }});`;}
-  if(showMes){chartJs+=`
-  new Chart(document.getElementById('ch-mes-p'),{data:{
-    labels:${JSON.stringify(mLbl2)},
-    datasets:[
-      {type:'bar',label:${JSON.stringify(L.totalEntradas)},data:${JSON.stringify(mEnt2)},backgroundColor:'rgba(16,185,129,0.25)',borderColor:'#10b981',borderWidth:1.5,borderRadius:4,yAxisID:'y'},
-      {type:'bar',label:${JSON.stringify(L.totalSaidas)},data:${JSON.stringify(mSai2)},backgroundColor:'rgba(239,68,68,0.2)',borderColor:'#ef4444',borderWidth:1.5,borderRadius:4,yAxisID:'y'},
-      {type:'line',label:${JSON.stringify(L.currentBalance)},data:${JSON.stringify(mSaldo2)},borderColor:'#3b8bff',backgroundColor:'rgba(59,139,255,0.07)',borderWidth:2,pointBackgroundColor:'#3b8bff',pointRadius:3,tension:.3,fill:true,yAxisID:'y2'}
-    ]
-  },options:{responsive:true,maintainAspectRatio:false,
-    animation:{duration:0},
-    plugins:{
-      legend:{labels:{color:'#6b7280',font:{family:'Montserrat',size:10},boxWidth:10,padding:12}},
-      tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+brl(c.parsed.y);}}}
-    },
-    scales:{
-      x:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{color:'#6b7280',font:{family:'Montserrat',size:10}},border:{display:false}},
-      y:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{color:'#6b7280',font:{family:'Montserrat',size:10},callback:function(v){return brl(v);}},border:{display:false}},
-      y2:{position:'right',grid:{display:false},ticks:{color:'rgba(59,139,255,0.75)',font:{family:'Montserrat',size:10},callback:function(v){return brl(v);}},border:{display:false}}
-    }
-  }});`;}
-
-  const nCharts=(showCat?1:0)+(showMes?1:0);
-  const chartsCdn=(showCat||showMes)?'<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>':'';
-  const chartReadyCode=(showCat||showMes)?`window.addEventListener('load',function(){${chartJs}setTimeout(function(){_c2i();_showBtn();},800);});`:`window.addEventListener('load',_showBtn);`;
+  const chartReadyCode=`window.addEventListener('load',_showBtn);`;
+  const chartsCdn='';
   const scriptTag=`${chartsCdn}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
