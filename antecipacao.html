@@ -647,6 +647,24 @@ function setFilter(f,idx){
 const PAL=['#3b8bff','#c9963c','#10b981','#8b5cf6','#ef4444','#f97316','#06b6d4','#ec4899','#84cc16','#6366f1'];
 const TK={color:'rgba(255,255,255,0.4)',font:{family:'Montserrat',size:10}};
 
+// Renders a Chart.js chart on a temporary canvas with white background, returns data URL
+function renderChartImg(cfg,w,h){
+  return new Promise(function(resolve){
+    var cv=document.createElement('canvas');
+    cv.width=w;cv.height=h;
+    cv.style.cssText='position:absolute;left:-9999px;top:-9999px';
+    var bg=cv.getContext('2d');bg.fillStyle='#fff';bg.fillRect(0,0,w,h);
+    document.body.appendChild(cv);
+    cfg.options=cfg.options||{};
+    cfg.options.animation={duration:0,onComplete:function(){
+      var url=cv.toDataURL('image/png');
+      try{this.destroy();}catch(e){}
+      try{document.body.removeChild(cv);}catch(e){}
+      resolve(url);
+    }};
+    new Chart(cv,cfg);
+  });
+}
 function buildChartCats(cats){
   const ctx=document.getElementById('ch-cats');
   if(!ctx) return;
@@ -848,7 +866,7 @@ function kpiCard(label,val,sub,color){
   </div>`;
 }
 
-function generateReport(){
+async function generateReport(){
   const c=_clients[_rptIdx]; if(!c) return;
   const L=T[_rptLang];
   const fv=document.getElementById('rpt-from').value;
@@ -964,18 +982,38 @@ function generateReport(){
       ${kpiCard(L.totalSaidas,BRL(sai),tx.filter(t=>t.direction==='SAÍDA').length+' '+L.launches,'#ef4444')}
     </div>`):''
 
-  // ── Charts HTML — capture from main page canvases (already rendered) ──────
+  // ── Charts HTML — light-theme renders ────────────────────────────────────
   const showCat=incCat&&topCats.length>0;
   const showMes=incMes&&mKeys2.length>0;
-  const _cvCats=showCat?document.getElementById('ch-cats'):null;
-  const _cvMes=showMes?document.getElementById('ch-mes'):null;
-  const catSrc=_cvCats?_cvCats.toDataURL('image/png'):'';
-  const mesSrc=_cvMes?_cvMes.toDataURL('image/png'):'';
+  const LTK={color:'#6b7280',font:{family:'Montserrat',size:10}};
+  const catH=Math.max(160,topCats.length*34);
+  const catSrc=showCat?await renderChartImg({type:'bar',data:{
+    labels:topCats.map(([k])=>k),
+    datasets:[{data:topCats.map(([,v])=>v),backgroundColor:catBg,borderColor:catBd,borderWidth:1.5,borderRadius:5}]
+  },options:{indexAxis:'y',responsive:false,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{enabled:false}},
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{...LTK,callback:function(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);}},border:{display:false}},
+      y:{grid:{display:false},ticks:{color:'#111',font:{family:'Montserrat',size:10,weight:'700'}},border:{display:false}}
+    }
+  }},600,catH):'';
+  const mesSrc=showMes?await renderChartImg({data:{labels:mLbl2,datasets:[
+    {type:'bar',label:'Entradas',data:mEnt2,backgroundColor:'rgba(16,185,129,0.25)',borderColor:'#10b981',borderWidth:1.5,borderRadius:4,yAxisID:'y'},
+    {type:'bar',label:'Saídas',data:mSai2,backgroundColor:'rgba(239,68,68,0.2)',borderColor:'#ef4444',borderWidth:1.5,borderRadius:4,yAxisID:'y'},
+    {type:'line',label:'Saldo acumulado',data:mSaldo2,borderColor:'#3b8bff',backgroundColor:'rgba(59,139,255,0.07)',borderWidth:2,pointBackgroundColor:'#3b8bff',pointRadius:3,tension:.3,fill:true,yAxisID:'y2'}
+  ]},options:{responsive:false,maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:'#6b7280',font:{family:'Montserrat',size:10},boxWidth:10,padding:12}},tooltip:{enabled:false}},
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,0.06)'},ticks:LTK,border:{display:false}},
+      y:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{...LTK,callback:function(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);}},border:{display:false}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'rgba(59,139,255,0.75)',font:{family:'Montserrat',size:10},callback:function(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);}},border:{display:false}}
+    }
+  }},700,220):'';
   const chHtml=(showCat||showMes)?`
     <div style="display:grid;grid-template-columns:${showCat&&showMes?'1fr 1fr':'1fr'};gap:14px;margin-bottom:28px">
       ${showCat&&catSrc?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
         <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.expensesByCategory}</div>
-        <div style="position:relative;height:${Math.max(160,topCats.length*34)}px"><img src="${catSrc}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
+        <div style="position:relative;height:${catH}px"><img src="${catSrc}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
       </div>`:''}
       ${showMes&&mesSrc?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
         <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.monthlyFlow}</div>
@@ -1019,7 +1057,7 @@ function generateReport(){
 
   const brlFn=`function brl(v){return new Intl.NumberFormat('${locale}',{style:'currency',currency:'BRL'}).format(v);}`;
   const nCharts=0;
-  const chartReadyCode=`window.addEventListener('load',_showBtn);`;
+  const chartReadyCode=`setTimeout(_showBtn,300);`;
   const chartsCdn='';
   const scriptTag=`${chartsCdn}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
