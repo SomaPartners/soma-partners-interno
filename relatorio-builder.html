@@ -111,6 +111,24 @@ if(new URLSearchParams(location.search).get('embed')==='1') document.body.classL
 
 function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+async function handleVideoUrlBlur(id){
+  syncFromDOM();
+  var b=_blocks.find(function(b){return b.id===id;});
+  if(!b) return;
+  var url=(b.url||'').trim();
+  // Only shorten long URLs that aren't already short
+  if(!url||url.length<60||url.startsWith('https://is.gd/')||url.startsWith('https://tinyurl.com/')){renderBlocks();return;}
+  var el=document.getElementById('b'+id+'_url');
+  if(el){el.value='Encurtando...';el.disabled=true;}
+  try{
+    var short=await fetch('https://is.gd/create.php?format=simple&url='+encodeURIComponent(url)).then(function(r){return r.text();});
+    short=(short||'').trim();
+    if(short.startsWith('http')){b.url=short;if(el)el.value=short;}
+  }catch(err){}
+  if(el)el.disabled=false;
+  renderBlocks();
+}
+
 function addBlock(type){
   var id=++_idCtr;
   if(type==='text') _blocks.push({id:id,type:'text',title:'',content:''});
@@ -214,8 +232,8 @@ function renderBlock(b,i){
       +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Studio A — Itaim Bibi"/></div>'
       +'<div class="field-row">'
       +'<div class="block-field"><label>URL do Vídeo</label>'
-      +'<input id="b'+b.id+'_url" value="'+xe(b.url)+'" placeholder="https://youtube.com/... ou drive.google.com/..." onblur="syncFromDOM();renderBlocks()"/>'
-      +'<p style="font-size:9px;color:var(--muted);margin-top:4px">QR code gerado ao sair do campo</p>'
+      +'<input id="b'+b.id+'_url" value="'+xe(b.url)+'" placeholder="https://youtube.com/... ou drive.google.com/..." onblur="handleVideoUrlBlur('+b.id+')"/>'
+      +'<p style="font-size:9px;color:var(--muted);margin-top:4px">Link longo? Encurtamos automaticamente ao sair do campo.</p>'
       +qrPrev+'</div>'
       +'<div class="block-field"><label>Detalhes / Descrição</label>'
       +'<textarea id="b'+b.id+'_desc" rows="6" placeholder="Ex:\nÁrea: 45m²\nAndar: 8º\nVagas: 1\nDisponível: imediato\n\nAmbiente moderno com vista panorâmica...">'+xe(b.desc)+'</textarea></div>'
