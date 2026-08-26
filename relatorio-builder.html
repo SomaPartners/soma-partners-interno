@@ -294,7 +294,7 @@ function buildHTML(){
 
   var contentPages=pages.map(function(pg,pi){
     return '<div class="rpt-page rpt-content">'
-      +'<div class="rpt-hd"><div class="rpt-hd-brand">SOMA <span>|</span> PARTNERS</div><div class="rpt-hd-title">'+xe(info.title)+'</div></div>'
+      +'<div class="rpt-hd"><img src="'+_LOGO_SRC+'" style="height:26px;width:auto"/><div class="rpt-hd-title">'+xe(info.title)+'</div></div>'
       +'<div class="rpt-body">'+pg.map(blockToHTML).join('')+'</div>'
       +'<div class="rpt-ft"><span>'+xe(info.client)+'</span><span style="flex:1"></span><span>'+xe(info.date)+'</span><span style="margin-left:20px;opacity:.4">Pag. '+(pi+2)+'</span></div>'
       +'</div>';
@@ -389,7 +389,7 @@ function buildHTML(){
     +'<style>'+css+'<\/style><\/head><body>'
     +'<button id="_pdfBtn" style="display:none;position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 24px;border-radius:8px;border:none;background:#c9963c;color:#0b1e30;font-weight:800;font-family:Montserrat,sans-serif;font-size:13px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3)" onclick="_genPDF()">Baixar PDF<\/button>'
     +'<div class="rpt-page rpt-cover">'
-    +'<div><div class="cov-brand">SOMA <span>|<\/span> PARTNERS<\/div>'
+    +'<div><img src="'+_LOGO_SRC+'" style="height:44px;width:auto"/>'
     +'<div class="cov-stripe"><\/div>'
     +'<div class="cov-type">'+xe(info.type)+'<\/div>'
     +'<div class="cov-title">'+xe(info.title)+'<\/div>'
