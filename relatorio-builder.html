@@ -134,7 +134,7 @@ function addBlock(type){
   if(type==='text') _blocks.push({id:id,type:'text',title:'',content:''});
   else if(type==='metrics') _blocks.push({id:id,type:'metrics',title:'',items:[{label:'',val:''}]});
   else if(type==='table') _blocks.push({id:id,type:'table',title:'',cols:['Coluna 1','Coluna 2','Coluna 3'],rows:[['','',''],['','','']]});
-  else if(type==='video') _blocks.push({id:id,type:'video',title:'',url:'',desc:''});
+  else if(type==='video') _blocks.push({id:id,type:'video',title:'',url:'',details:[{label:'Área',val:''},{label:'Andar',val:''},{label:'Vagas',val:''},{label:'Valor',val:''}],desc:''});
   else if(type==='pagebreak') _blocks.push({id:id,type:'pagebreak'});
   renderBlocks();
 }
@@ -151,6 +151,9 @@ function updateMetric(id,j,f,v){var b=_blocks.find(function(b){return b.id===id;
 function addRow(id){var b=_blocks.find(function(b){return b.id===id;});if(b){b.rows.push(b.cols.map(function(){return '';}));renderBlocks();}}
 function removeRow(id,ri){var b=_blocks.find(function(b){return b.id===id;});if(b){b.rows.splice(ri,1);renderBlocks();}}
 function updateCell(id,ri,ci,v){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.rows[ri])b.rows[ri][ci]=v;}
+function addVideoDetail(id){var b=_blocks.find(function(b){return b.id===id;});if(b&&(b.details||[]).length<6){b.details=b.details||[];b.details.push({label:'',val:''});renderBlocks();}}
+function removeVideoDetail(id,j){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.details){b.details.splice(j,1);renderBlocks();}}
+function updateVideoDetail(id,j,f,v){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.details&&b.details[j])b.details[j][f]=v;}
 
 function syncFromDOM(){
   _blocks.forEach(function(b){
@@ -222,21 +225,32 @@ function renderBlock(b,i){
       +'<input id="b'+b.id+'_cols" value="'+xe(b.cols.join(', '))+'" placeholder="Col 1, Col 2, Col 3" onblur="syncFromDOM();renderBlocks()"/></div>'
       +'<div class="block-field"><label>Linhas</label>'+rows
       +'<button class="btn-add-row" onclick="addRow('+b.id+')">+ Adicionar linha</button></div>';
-    } else if(b.type==='video'){
+  } else if(b.type==='video'){
     icon='▶';typeName='Vídeo + Detalhes';
+    var details=b.details||[];
+    var detailRows=details.map(function(det,j){
+      return '<div class="metric-row">'
+        +'<input placeholder="Ex: Área" value="'+xe(det.label)+'" oninput="updateVideoDetail('+b.id+','+j+',\'label\',this.value)"/>'
+        +'<input placeholder="Ex: 45m²" value="'+xe(det.val)+'" oninput="updateVideoDetail('+b.id+','+j+',\'val\',this.value)"/>'
+        +(details.length>1?'<button class="btn-sm btn-rm" onclick="removeVideoDetail('+b.id+','+j+')">×</button>':'<span></span>')
+        +'</div>';
+    }).join('');
     var qrPrev=b.url
-      ?'<img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&ecc=M&data='+encodeURIComponent(b.url)+'" style="width:50px;height:50px;border-radius:4px;margin-top:6px;display:block" alt="QR"/>'
-      :'<div style="width:50px;height:50px;background:rgba(255,255,255,.05);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--muted);margin-top:6px">QR</div>';
-    body='<div class="block-field"><label>Título</label>'
-      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Studio A — Itaim Bibi"/></div>'
-      +'<div class="field-row">'
-      +'<div class="block-field"><label>URL do Vídeo</label>'
-      +'<input id="b'+b.id+'_url" value="'+xe(b.url)+'" placeholder="https://youtube.com/... ou drive.google.com/..." onblur="handleVideoUrlBlur('+b.id+')"/>'
-      +'<p style="font-size:9px;color:var(--muted);margin-top:4px">Link longo? Encurtamos automaticamente ao sair do campo.</p>'
-      +qrPrev+'</div>'
-      +'<div class="block-field"><label>Detalhes / Descrição</label>'
-      +'<textarea id="b'+b.id+'_desc" rows="6" placeholder="Ex:\nÁrea: 45m²\nAndar: 8º\nVagas: 1\nDisponível: imediato\n\nAmbiente moderno com vista panorâmica...">'+xe(b.desc)+'</textarea></div>'
-      +'</div>';
+      ?'<img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&ecc=M&data='+encodeURIComponent(b.url)+'" style="width:56px;height:56px;border-radius:4px;margin-top:8px;display:block" alt="QR"/>'
+      :'<div style="width:56px;height:56px;background:rgba(255,255,255,.05);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);margin-top:8px">QR</div>';
+    body='<div class="field-row">'
+      +'<div class="block-field"><label>Título do Imóvel</label>'
+      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Studio 105 — Boa Viagem"/></div>'
+      +'<div class="block-field" style="max-width:220px"><label>URL do Vídeo</label>'
+      +'<input id="b'+b.id+'_url" value="'+xe(b.url)+'" placeholder="https://..." onblur="handleVideoUrlBlur('+b.id+')"/>'
+      +'<p style="font-size:9px;color:var(--muted);margin-top:3px">Links longos são encurtados automaticamente.</p>'
+      +qrPrev+'</div></div>'
+      +'<div class="block-field"><label>Informações do Imóvel (até 6 — aparecem como caixas no relatório)</label>'
+      +detailRows
+      +(details.length<6?'<button class="btn-add-row" onclick="addVideoDetail('+b.id+')">+ Adicionar informação</button>':'')
+      +'</div>'
+      +'<div class="block-field"><label>Observações</label>'
+      +'<textarea id="b'+b.id+'_desc" rows="2" placeholder="Ex: Canil aprovado. Vista panorâmica para o mar...">'+xe(b.desc)+'</textarea></div>';
   } else if(b.type==='pagebreak'){
     icon='—';typeName='Quebra de Página';
     body='<p style="color:var(--muted);font-size:11px">Força uma nova página no relatório a partir deste ponto.</p>';
@@ -273,17 +287,23 @@ function blockToHTML(b){
       +'</div></div>';
   }
   if(b.type==='video'){
-    var qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=220x220&ecc=M&bgcolor=ffffff&color=0b1e30&data='+encodeURIComponent(b.url||'');
+    var details=(b.details||[]).filter(function(d){return d.label||d.val;});
+    var qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=M&bgcolor=ffffff&color=0b1e30&data='+encodeURIComponent(b.url||'');
+    var detailBoxes=details.map(function(d){
+      return '<div class="rpt-det-box"><div class="rpt-det-lbl">'+xe(d.label)+'<\/div><div class="rpt-det-val">'+xe(d.val)+'<\/div><\/div>';
+    }).join('');
     return '<div class="rpt-block rpt-video">'
       +(b.title?'<h2 class="rpt-block-title">'+xe(b.title)+'<\/h2>':'')
       +'<div class="rpt-video-inner">'
-      +'<div class="rpt-qr-wrap"><img src="'+qrUrl+'" class="rpt-qr-img" crossorigin="anonymous"/><div class="rpt-qr-label">Escaneie para assistir<\/div><\/div>'
-      +'<div class="rpt-video-info">'
-      +'<div class="rpt-video-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#c9963c" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"\/><\/svg><\/div>'
-      +'<div class="rpt-video-cta">Assistir vídeo<\/div>'
-      +(b.desc?'<p class="rpt-video-desc">'+xe(b.desc)+'<\/p>':'')
-      +'<div class="rpt-video-url">'+xe(b.url||'')+'<\/div>'
-      +'<\/div><\/div><\/div>';
+      +'<div class="rpt-qr-col">'
+      +(b.url?'<img src="'+qrUrl+'" class="rpt-qr-img" crossorigin="anonymous"\/>':'')
+      +'<div class="rpt-qr-lbl">Escaneie para<br\/>assistir ao vídeo<\/div>'
+      +'<\/div>'
+      +'<div class="rpt-det-col">'
+      +(detailBoxes?'<div class="rpt-det-grid">'+detailBoxes+'<\/div>':'')
+      +(b.desc?'<p class="rpt-video-desc">'+xe(b.desc).replace(/\n/g,'<br\/>')+'<\/p>':'')
+      +'<\/div>'
+      +'<\/div><\/div>';
   }
   if(b.type==='table'){
     return '<div class="rpt-block">'
@@ -369,7 +389,18 @@ function buildHTML(){
     +'.bc-stripe{width:48px;height:3px;background:#c9963c;margin-bottom:24px}'
     +'.bc-contact{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}'
     +'.bc-legal{font-size:10px;color:rgba(255,255,255,.25);margin-top:20px}'
-    +'.rpt-video-inner{display:flex;align-items:flex-start;gap:32px}'+'.rpt-qr-wrap{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px}'+'.rpt-qr-img{width:140px;height:140px;border-radius:8px;border:2px solid rgba(0,0,0,.08)}'+'.rpt-qr-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(0,0,0,.35)}'+'.rpt-video-info{padding-top:8px}'+'.rpt-video-icon{margin-bottom:10px}'+'.rpt-video-cta{font-size:16px;font-weight:800;color:#0b1e30;margin-bottom:8px}'+'.rpt-video-desc{font-size:12px;color:#374151;line-height:1.6;margin-bottom:10px}'+'.rpt-video-url{font-size:10px;color:rgba(0,0,0,.35);word-break:break-all}'
+    +'.rpt-video{background:#f9fafb;border:1px solid rgba(0,0,0,.07);border-radius:14px;padding:20px 24px}'
+    +'.rpt-video-inner{display:flex;align-items:flex-start;gap:24px}'
+    +'.rpt-qr-col{flex-shrink:0;width:158px;display:flex;flex-direction:column;align-items:center;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:10px;padding:14px;text-align:center}'
+    +'.rpt-qr-img{width:130px;height:130px;display:block}'
+    +'.rpt-qr-lbl{font-size:8.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(0,0,0,.35);margin-top:10px;line-height:1.4}'
+    +'.rpt-det-col{flex:1;min-width:0}'
+    +'.rpt-det-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}'
+    +'.rpt-det-box{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;padding:10px 12px;position:relative;overflow:hidden}'
+    +'.rpt-det-box::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:#c9963c}'
+    +'.rpt-det-lbl{font-size:7.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(0,0,0,.35);margin-bottom:4px}'
+    +'.rpt-det-val{font-size:14px;font-weight:800;color:#0b1e30;letter-spacing:-.2px}'
+    +'.rpt-video-desc{font-size:11px;color:#555;line-height:1.6;margin-top:4px}'
     +'@media print{'
     +'@page{size:A4 landscape;margin:0}'
     +'*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
