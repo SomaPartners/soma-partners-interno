@@ -208,8 +208,7 @@ function renderBlock(b,i){
       +'<div class="block-field"><label>Métricas (máx. 4)</label>'+items
       +(b.items.length<4?'<button class="btn-add-row" onclick="addMetric('+b.id+')">+ Adicionar métrica</button>':'')
       +'</div>';
-  } else if(b.type==='video'){b.title=gv('title');b.url=gv('url');b.desc=gv('desc');}
-    else if(b.type==='table'){
+  } else if(b.type==='table'){
     icon='⊞';typeName='Tabela';
     var rows=b.rows.map(function(row,ri){
       return '<div class="tbl-row">'
