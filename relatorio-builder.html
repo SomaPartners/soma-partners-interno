@@ -96,6 +96,7 @@ body.embed .topnav{display:none}
     <button class="btn-add-block" onclick="addBlock('text')">+ Texto</button>
     <button class="btn-add-block" onclick="addBlock('metrics')">+ Métricas</button>
     <button class="btn-add-block" onclick="addBlock('table')">+ Tabela</button>
+    <button class="btn-add-block" onclick="addBlock('video')">+ Vídeo (QR Code)</button>
     <button class="btn-add-block" onclick="addBlock('pagebreak')">— Quebra de Página</button>
   </div>
   <button class="btn-generate" id="btn-generate" onclick="generateReport()">Gerar Relatório PDF</button>
@@ -115,6 +116,7 @@ function addBlock(type){
   if(type==='text') _blocks.push({id:id,type:'text',title:'',content:''});
   else if(type==='metrics') _blocks.push({id:id,type:'metrics',title:'',items:[{label:'',val:''}]});
   else if(type==='table') _blocks.push({id:id,type:'table',title:'',cols:['Coluna 1','Coluna 2','Coluna 3'],rows:[['','',''],['','','']]});
+  else if(type==='video') _blocks.push({id:id,type:'video',title:'',url:'',desc:''});
   else if(type==='pagebreak') _blocks.push({id:id,type:'pagebreak'});
   renderBlocks();
 }
@@ -137,6 +139,7 @@ function syncFromDOM(){
     var gv=function(s){var el=document.getElementById('b'+b.id+'_'+s);return el?el.value:'';};
     if(b.type==='text'){b.title=gv('title');b.content=gv('content');}
     else if(b.type==='metrics'){b.title=gv('title');}
+    else if(b.type==='video'){b.title=gv('title');b.url=gv('url');b.desc=gv('desc');}
     else if(b.type==='table'){
       b.title=gv('title');
       var colsEl=document.getElementById('b'+b.id+'_cols');
@@ -187,7 +190,8 @@ function renderBlock(b,i){
       +'<div class="block-field"><label>Métricas (máx. 4)</label>'+items
       +(b.items.length<4?'<button class="btn-add-row" onclick="addMetric('+b.id+')">+ Adicionar métrica</button>':'')
       +'</div>';
-  } else if(b.type==='table'){
+  } else if(b.type==='video'){b.title=gv('title');b.url=gv('url');b.desc=gv('desc');}
+    else if(b.type==='table'){
     icon='⊞';typeName='Tabela';
     var rows=b.rows.map(function(row,ri){
       return '<div class="tbl-row">'
@@ -201,6 +205,17 @@ function renderBlock(b,i){
       +'<input id="b'+b.id+'_cols" value="'+xe(b.cols.join(', '))+'" placeholder="Col 1, Col 2, Col 3" onblur="syncFromDOM();renderBlocks()"/></div>'
       +'<div class="block-field"><label>Linhas</label>'+rows
       +'<button class="btn-add-row" onclick="addRow('+b.id+')">+ Adicionar linha</button></div>';
+    } else if(b.type==='video'){
+    icon='▶';typeName='Vídeo (QR Code)';
+    var qrPrev=b.url?'<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&ecc=M&data='+encodeURIComponent(b.url)+'" style="width:60px;height:60px;border-radius:4px;display:block;margin-top:8px" alt="QR"/>':'<div style="width:60px;height:60px;background:rgba(255,255,255,.05);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);margin-top:8px">QR</div>';
+    body='<div class="field-row">'
+      +'<div class="block-field"><label>Título</label>'
+      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Tour pelo Studio"/></div>'
+      +'<div class="block-field"><label>URL do Vídeo</label>'
+      +'<input id="b'+b.id+'_url" value="'+xe(b.url)+'" placeholder="https://youtube.com/... ou drive.google.com/..." oninput="syncFromDOM();renderBlocks()"/>'
+      +qrPrev+'</div></div>'
+      +'<div class="block-field"><label>Descrição (opcional)</label>'
+      +'<textarea id="b'+b.id+'_desc" rows="2" placeholder="Ex: Vídeo completo do espaço com visita guiada...">'+xe(b.desc)+'</textarea></div>';
   } else if(b.type==='pagebreak'){
     icon='—';typeName='Quebra de Página';
     body='<p style="color:var(--muted);font-size:11px">Força uma nova página no relatório a partir deste ponto.</p>';
@@ -235,6 +250,19 @@ function blockToHTML(b){
       +'<div class="rpt-metrics n'+b.items.length+'">'
       +b.items.map(function(m){return '<div class="rpt-mc"><div class="rmc-v">'+xe(m.val)+'</div><div class="rmc-l">'+xe(m.label)+'</div></div>';}).join('')
       +'</div></div>';
+  }
+  if(b.type==='video'){
+    var qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=220x220&ecc=M&bgcolor=ffffff&color=0b1e30&data='+encodeURIComponent(b.url||'');
+    return '<div class="rpt-block rpt-video">'
+      +(b.title?'<h2 class="rpt-block-title">'+xe(b.title)+'<\/h2>':'')
+      +'<div class="rpt-video-inner">'
+      +'<div class="rpt-qr-wrap"><img src="'+qrUrl+'" class="rpt-qr-img" crossorigin="anonymous"/><div class="rpt-qr-label">Escaneie para assistir<\/div><\/div>'
+      +'<div class="rpt-video-info">'
+      +'<div class="rpt-video-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#c9963c" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"\/><\/svg><\/div>'
+      +'<div class="rpt-video-cta">Assistir vídeo<\/div>'
+      +(b.desc?'<p class="rpt-video-desc">'+xe(b.desc)+'<\/p>':'')
+      +'<div class="rpt-video-url">'+xe(b.url||'')+'<\/div>'
+      +'<\/div><\/div><\/div>';
   }
   if(b.type==='table'){
     return '<div class="rpt-block">'
@@ -320,6 +348,7 @@ function buildHTML(){
     +'.bc-stripe{width:48px;height:3px;background:#c9963c;margin-bottom:24px}'
     +'.bc-contact{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}'
     +'.bc-legal{font-size:10px;color:rgba(255,255,255,.25);margin-top:20px}'
+    +'.rpt-video-inner{display:flex;align-items:flex-start;gap:32px}'+'.rpt-qr-wrap{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px}'+'.rpt-qr-img{width:140px;height:140px;border-radius:8px;border:2px solid rgba(0,0,0,.08)}'+'.rpt-qr-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(0,0,0,.35)}'+'.rpt-video-info{padding-top:8px}'+'.rpt-video-icon{margin-bottom:10px}'+'.rpt-video-cta{font-size:16px;font-weight:800;color:#0b1e30;margin-bottom:8px}'+'.rpt-video-desc{font-size:12px;color:#374151;line-height:1.6;margin-bottom:10px}'+'.rpt-video-url{font-size:10px;color:rgba(0,0,0,.35);word-break:break-all}'
     +'@media print{'
     +'@page{size:A4 landscape;margin:0}'
     +'*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
