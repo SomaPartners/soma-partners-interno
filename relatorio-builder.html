@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Gerador de Relatórios — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--gold:#c9963c;--border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.4);--surface:rgba(255,255,255,0.04)}
+html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-serif;color:#fff;font-size:13px}
+.topnav{background:rgba(11,30,48,0.98);border-bottom:1px solid var(--border);padding:0 32px;height:56px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.logo-soma{font-size:17px;font-weight:300}.logo-pipe{width:1px;height:20px;background:rgba(255,255,255,0.3)}.logo-partners{font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;opacity:.7}
+.nav-sep{width:1px;height:24px;background:var(--border)}.nav-title{font-size:13px;font-weight:800}
+.builder-wrap{max-width:820px;margin:0 auto;padding:36px 40px 100px}
+.sec-label{font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;margin-top:32px}
+.sec-label:first-child{margin-top:0}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.field-row:last-child{margin-bottom:0}
+.field-group{display:flex;flex-direction:column;gap:6px}
+.field-group label{font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+.field-group input,.field-group textarea{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:12px;color:#fff;outline:none;transition:border-color .15s}
+.field-group input:focus,.field-group textarea:focus{border-color:rgba(201,150,60,.5)}
+.field-group textarea{resize:vertical;min-height:80px;line-height:1.5}
+.field-group input::placeholder,.field-group textarea::placeholder{color:rgba(255,255,255,.2)}
+.blocks-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.block-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.block-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02)}
+.block-type-badge{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:rgba(255,255,255,.7)}
+.block-icon{color:var(--gold);font-size:12px}
+.block-actions{display:flex;align-items:center;gap:5px}
+.block-body{padding:16px}
+.block-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.block-field:last-child{margin-bottom:0}
+.block-field label{font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+.block-field input,.block-field textarea{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 12px;font-family:'Montserrat',sans-serif;font-size:12px;color:#fff;outline:none;transition:border-color .15s}
+.block-field input:focus,.block-field textarea:focus{border-color:rgba(201,150,60,.4)}
+.block-field textarea{resize:vertical;min-height:80px;line-height:1.5}
+.block-field input::placeholder,.block-field textarea::placeholder{color:rgba(255,255,255,.2)}
+.metric-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center}
+.metric-row input{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:7px 10px;font-family:'Montserrat',sans-serif;font-size:12px;color:#fff;outline:none}
+.metric-row input:focus{border-color:rgba(201,150,60,.4)}
+.metric-row input::placeholder{color:rgba(255,255,255,.2)}
+.tbl-row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.tbl-row input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:7px 10px;font-family:'Montserrat',sans-serif;font-size:12px;color:#fff;outline:none}
+.tbl-row input:focus{border-color:rgba(201,150,60,.4)}
+.tbl-row input::placeholder{color:rgba(255,255,255,.2)}
+.add-block-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-add-block{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;border:1px dashed rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
+.btn-add-block:hover{border-color:rgba(201,150,60,.4);color:var(--gold);background:rgba(201,150,60,.05)}
+.btn-sm{padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
+.btn-sm:hover{background:rgba(255,255,255,.1);color:#fff}
+.btn-sm:disabled{opacity:.25;cursor:default;pointer-events:none}
+.btn-rm{border-color:rgba(239,68,68,.2);color:rgba(239,68,68,.6)}
+.btn-rm:hover{background:rgba(239,68,68,.1);color:#ef4444}
+.btn-add-row{margin-top:6px;display:inline-flex;padding:5px 12px;border-radius:6px;border:1px dashed rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.35);font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
+.btn-add-row:hover{color:var(--gold);border-color:rgba(201,150,60,.3)}
+.btn-generate{width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,#c9963c,#e6a83e);color:#0b1e30;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .2s;margin-top:24px;letter-spacing:.3px}
+.btn-generate:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(201,150,60,.35)}
+.btn-generate:disabled{opacity:.6;pointer-events:none;transform:none}
+.empty-blocks{padding:40px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed rgba(255,255,255,.08);border-radius:12px;margin-bottom:14px}
+body.embed .topnav{display:none}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="logo-soma">SOMA</div>
+  <div class="logo-pipe"></div>
+  <div class="logo-partners">PARTNERS</div>
+  <div class="nav-sep"></div>
+  <div class="nav-title">Gerador de Relatórios</div>
+</nav>
+<div class="builder-wrap">
+  <div class="sec-label">Identificação do Documento</div>
+  <div class="form-card">
+    <div class="field-row">
+      <div class="field-group"><label>Tipo de Documento</label>
+        <input id="doc-type" placeholder="Ex: PROPOSTA COMERCIAL, RELATÓRIO EXECUTIVO"/></div>
+      <div class="field-group"><label>Título</label>
+        <input id="doc-title" placeholder="Ex: Proposta de Serviços — Studio A"/></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label>Subtítulo</label>
+        <input id="doc-sub" placeholder="Ex: Pacote Premium · 2025"/></div>
+      <div class="field-group"><label>Nome do Cliente</label>
+        <input id="doc-client" placeholder="Ex: Maria Clara"/></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label>Data</label><input id="doc-date"/></div>
+      <div class="field-group"><label>Preparado por</label><input id="doc-author" value="Soma Partners"/></div>
+    </div>
+  </div>
+  <div class="sec-label" style="margin-top:28px">Conteúdo do Relatório</div>
+  <div id="blocks-container">
+    <div class="empty-blocks">Nenhum bloco ainda — adicione abaixo para começar.</div>
+  </div>
+  <div class="add-block-row">
+    <button class="btn-add-block" onclick="addBlock('text')">+ Texto</button>
+    <button class="btn-add-block" onclick="addBlock('metrics')">+ Métricas</button>
+    <button class="btn-add-block" onclick="addBlock('table')">+ Tabela</button>
+    <button class="btn-add-block" onclick="addBlock('pagebreak')">— Quebra de Página</button>
+  </div>
+  <button class="btn-generate" id="btn-generate" onclick="generateReport()">Gerar Relatório PDF</button>
+</div>
+<script>
+var _blocks=[];
+var _idCtr=0;
+var _isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+document.getElementById('doc-date').value=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+if(new URLSearchParams(location.search).get('embed')==='1') document.body.classList.add('embed');
+
+function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function addBlock(type){
+  var id=++_idCtr;
+  if(type==='text') _blocks.push({id:id,type:'text',title:'',content:''});
+  else if(type==='metrics') _blocks.push({id:id,type:'metrics',title:'',items:[{label:'',val:''}]});
+  else if(type==='table') _blocks.push({id:id,type:'table',title:'',cols:['Coluna 1','Coluna 2','Coluna 3'],rows:[['','',''],['','','']]});
+  else if(type==='pagebreak') _blocks.push({id:id,type:'pagebreak'});
+  renderBlocks();
+}
+function removeBlock(id){_blocks=_blocks.filter(function(b){return b.id!==id;});renderBlocks();}
+function moveBlock(id,dir){
+  var i=_blocks.findIndex(function(b){return b.id===id;});
+  if(dir===-1&&i>0){var t=_blocks[i-1];_blocks[i-1]=_blocks[i];_blocks[i]=t;}
+  else if(dir===1&&i<_blocks.length-1){var t=_blocks[i+1];_blocks[i+1]=_blocks[i];_blocks[i]=t;}
+  renderBlocks();
+}
+function addMetric(id){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.items.length<4)b.items.push({label:'',val:''});renderBlocks();}
+function removeMetric(id,j){var b=_blocks.find(function(b){return b.id===id;});if(b){b.items.splice(j,1);renderBlocks();}}
+function updateMetric(id,j,f,v){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.items[j])b.items[j][f]=v;}
+function addRow(id){var b=_blocks.find(function(b){return b.id===id;});if(b){b.rows.push(b.cols.map(function(){return '';}));renderBlocks();}}
+function removeRow(id,ri){var b=_blocks.find(function(b){return b.id===id;});if(b){b.rows.splice(ri,1);renderBlocks();}}
+function updateCell(id,ri,ci,v){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.rows[ri])b.rows[ri][ci]=v;}
+
+function syncFromDOM(){
+  _blocks.forEach(function(b){
+    var gv=function(s){var el=document.getElementById('b'+b.id+'_'+s);return el?el.value:'';};
+    if(b.type==='text'){b.title=gv('title');b.content=gv('content');}
+    else if(b.type==='metrics'){b.title=gv('title');}
+    else if(b.type==='table'){
+      b.title=gv('title');
+      var colsEl=document.getElementById('b'+b.id+'_cols');
+      if(colsEl){
+        var nc=colsEl.value.split(',').map(function(s){return s.trim();}).filter(Boolean);
+        if(nc.length){
+          b.cols=nc;
+          b.rows=b.rows.map(function(r){var nr=r.slice(0,nc.length);while(nr.length<nc.length)nr.push('');return nr;});
+        }
+      }
+      b.rows.forEach(function(row,ri){
+        row.forEach(function(_,ci){var el=document.getElementById('b'+b.id+'_r'+ri+'c'+ci);if(el)b.rows[ri][ci]=el.value;});
+      });
+    }
+  });
+}
+
+function renderBlocks(){
+  syncFromDOM();
+  var c=document.getElementById('blocks-container');
+  if(!_blocks.length){c.innerHTML='<div class="empty-blocks">Nenhum bloco ainda — adicione abaixo para começar.</div>';return;}
+  c.innerHTML='<div class="blocks-list">'+_blocks.map(function(b,i){return renderBlock(b,i);}).join('')+'</div>';
+}
+
+function renderBlock(b,i){
+  var isFirst=i===0,isLast=i===_blocks.length-1;
+  var upBtn='<button class="btn-sm"'+(isFirst?' disabled':'')+' onclick="moveBlock('+b.id+',-1)">↑</button>';
+  var dnBtn='<button class="btn-sm"'+(isLast?' disabled':'')+' onclick="moveBlock('+b.id+',1)">↓</button>';
+  var rmBtn='<button class="btn-sm btn-rm" onclick="removeBlock('+b.id+')">Remover</button>';
+  var icon='',typeName='',body='';
+  if(b.type==='text'){
+    icon='¶';typeName='Texto';
+    body='<div class="block-field"><label>Título da seção</label>'
+      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Sobre a Proposta"/></div>'
+      +'<div class="block-field"><label>Conteúdo</label>'
+      +'<textarea id="b'+b.id+'_content" rows="5" placeholder="Texto da seção...">'+xe(b.content)+'</textarea></div>';
+  } else if(b.type==='metrics'){
+    icon='◈';typeName='Métricas';
+    var items=b.items.map(function(item,j){
+      return '<div class="metric-row">'
+        +'<input placeholder="Label" value="'+xe(item.label)+'" oninput="updateMetric('+b.id+','+j+',\'label\',this.value)"/>'
+        +'<input placeholder="Valor" value="'+xe(item.val)+'" oninput="updateMetric('+b.id+','+j+',\'val\',this.value)"/>'
+        +(b.items.length>1?'<button class="btn-sm btn-rm" onclick="removeMetric('+b.id+','+j+')">×</button>':'<span></span>')
+        +'</div>';
+    }).join('');
+    body='<div class="block-field"><label>Título</label>'
+      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Principais Indicadores"/></div>'
+      +'<div class="block-field"><label>Métricas (máx. 4)</label>'+items
+      +(b.items.length<4?'<button class="btn-add-row" onclick="addMetric('+b.id+')">+ Adicionar métrica</button>':'')
+      +'</div>';
+  } else if(b.type==='table'){
+    icon='⊞';typeName='Tabela';
+    var rows=b.rows.map(function(row,ri){
+      return '<div class="tbl-row">'
+        +row.map(function(cell,ci){return '<input id="b'+b.id+'_r'+ri+'c'+ci+'" value="'+xe(cell)+'" placeholder="—" oninput="updateCell('+b.id+','+ri+','+ci+',this.value)"/>';}).join('')
+        +(b.rows.length>1?'<button class="btn-sm btn-rm" onclick="removeRow('+b.id+','+ri+')">×</button>':'')
+        +'</div>';
+    }).join('');
+    body='<div class="block-field"><label>Título</label>'
+      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Cronograma"/></div>'
+      +'<div class="block-field"><label>Colunas (separadas por vírgula)</label>'
+      +'<input id="b'+b.id+'_cols" value="'+xe(b.cols.join(', '))+'" placeholder="Col 1, Col 2, Col 3" onblur="syncFromDOM();renderBlocks()"/></div>'
+      +'<div class="block-field"><label>Linhas</label>'+rows
+      +'<button class="btn-add-row" onclick="addRow('+b.id+')">+ Adicionar linha</button></div>';
+  } else if(b.type==='pagebreak'){
+    icon='—';typeName='Quebra de Página';
+    body='<p style="color:var(--muted);font-size:11px">Força uma nova página no relatório a partir deste ponto.</p>';
+  }
+  return '<div class="block-card">'
+    +'<div class="block-header">'
+    +'<div class="block-type-badge"><span class="block-icon">'+icon+'</span>'+typeName+'</div>'
+    +'<div class="block-actions">'+upBtn+dnBtn+rmBtn+'</div>'
+    +'</div><div class="block-body">'+body+'</div></div>';
+}
+
+function getInfo(){
+  return {
+    type:(document.getElementById('doc-type').value||'RELATÓRIO').toUpperCase(),
+    title:document.getElementById('doc-title').value||'Sem Título',
+    sub:document.getElementById('doc-sub').value||'',
+    client:document.getElementById('doc-client').value||'',
+    date:document.getElementById('doc-date').value||'',
+    author:document.getElementById('doc-author').value||'Soma Partners'
+  };
+}
+
+function blockToHTML(b){
+  if(b.type==='text'){
+    return '<div class="rpt-block">'
+      +(b.title?'<h2 class="rpt-block-title">'+xe(b.title)+'</h2>':'')
+      +'<p class="rpt-text">'+xe(b.content).replace(/\n/g,'<br/>')+'</p></div>';
+  }
+  if(b.type==='metrics'){
+    return '<div class="rpt-block">'
+      +(b.title?'<h2 class="rpt-block-title">'+xe(b.title)+'</h2>':'')
+      +'<div class="rpt-metrics n'+b.items.length+'">'
+      +b.items.map(function(m){return '<div class="rpt-mc"><div class="rmc-v">'+xe(m.val)+'</div><div class="rmc-l">'+xe(m.label)+'</div></div>';}).join('')
+      +'</div></div>';
+  }
+  if(b.type==='table'){
+    return '<div class="rpt-block">'
+      +(b.title?'<h2 class="rpt-block-title">'+xe(b.title)+'</h2>':'')
+      +'<table class="rpt-tbl"><thead><tr>'
+      +b.cols.map(function(c){return '<th>'+xe(c)+'</th>';}).join('')
+      +'</tr></thead><tbody>'
+      +b.rows.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+xe(c)+'</td>';}).join('')+'</tr>';}).join('')
+      +'</tbody></table></div>';
+  }
+  return '';
+}
+
+function buildHTML(){
+  syncFromDOM();
+  var info=getInfo();
+  var today=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+  var fileName='Relatorio - '+(info.client||info.title)+' - '+today+'.pdf';
+  var yr=new Date().getFullYear();
+
+  // Group by pagebreaks
+  var pages=[],cur=[];
+  _blocks.forEach(function(b){
+    if(b.type==='pagebreak'){if(cur.length){pages.push(cur);cur=[];}}
+    else cur.push(b);
+  });
+  if(cur.length) pages.push(cur);
+  if(!pages.length) pages.push([]);
+
+  var contentPages=pages.map(function(pg,pi){
+    return '<div class="rpt-page rpt-content">'
+      +'<div class="rpt-hd"><div class="rpt-hd-brand">SOMA <span>|</span> PARTNERS</div><div class="rpt-hd-title">'+xe(info.title)+'</div></div>'
+      +'<div class="rpt-body">'+pg.map(blockToHTML).join('')+'</div>'
+      +'<div class="rpt-ft"><span>'+xe(info.client)+'</span><span style="flex:1"></span><span>'+xe(info.date)+'</span><span style="margin-left:20px;opacity:.4">Pag. '+(pi+2)+'</span></div>'
+      +'</div>';
+  }).join('');
+
+  var css='*{margin:0;padding:0;box-sizing:border-box}'
+    +'body{font-family:"Montserrat",sans-serif;background:#fff}'
+    +'.rpt-page{width:297mm;height:210mm;position:relative;overflow:hidden;page-break-after:always}'
+    +'.rpt-page:last-of-type{page-break-after:avoid}'
+    +'.rpt-cover{background:#0b1e30;display:flex;flex-direction:column;padding:48px 56px}'
+    +'.cov-brand{font-size:14px;font-weight:300;color:#fff;letter-spacing:1px}'
+    +'.cov-brand span{opacity:.4;margin:0 8px}'
+    +'.cov-stripe{width:60px;height:4px;background:#c9963c;margin:36px 0 28px}'
+    +'.cov-type{font-size:9px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:rgba(201,150,60,.8);margin-bottom:14px}'
+    +'.cov-title{font-size:38px;font-weight:900;color:#fff;line-height:1.1;letter-spacing:-.5px;max-width:520px}'
+    +'.cov-sub{font-size:14px;color:rgba(255,255,255,.45);margin-top:12px}'
+    +'.cov-footer{margin-top:auto;padding-top:36px;border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;align-items:flex-end}'
+    +'.cov-client-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:5px}'
+    +'.cov-client{font-size:16px;font-weight:800;color:#fff}'
+    +'.cov-date{font-size:12px;color:rgba(255,255,255,.4);text-align:right}'
+    +'.cov-author{font-size:10px;color:rgba(255,255,255,.25);margin-top:4px;text-align:right}'
+    +'.rpt-content{background:#fff;display:flex;flex-direction:column}'
+    +'.rpt-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:3px solid #c9963c;background:#0b1e30}'
+    +'.rpt-hd-brand{font-size:12px;font-weight:300;color:#fff;letter-spacing:1px}'
+    +'.rpt-hd-brand span{opacity:.4;margin:0 6px}'
+    +'.rpt-hd-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(201,150,60,.85)}'
+    +'.rpt-body{flex:1;padding:28px 40px;overflow:hidden}'
+    +'.rpt-ft{padding:10px 40px;border-top:1px solid rgba(0,0,0,.06);display:flex;align-items:center;font-size:9px;color:rgba(0,0,0,.3);font-weight:600;letter-spacing:.3px}'
+    +'.rpt-block{margin-bottom:24px}'
+    +'.rpt-block:last-child{margin-bottom:0}'
+    +'.rpt-block-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#0b1e30;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.07)}'
+    +'.rpt-text{font-size:12px;color:#374151;line-height:1.75}'
+    +'.rpt-metrics{display:grid;gap:14px}'
+    +'.rpt-metrics.n1{grid-template-columns:1fr}'
+    +'.rpt-metrics.n2{grid-template-columns:1fr 1fr}'
+    +'.rpt-metrics.n3{grid-template-columns:1fr 1fr 1fr}'
+    +'.rpt-metrics.n4{grid-template-columns:1fr 1fr 1fr 1fr}'
+    +'.rpt-mc{border:1px solid rgba(0,0,0,.07);border-radius:12px;padding:20px 24px;background:#f9fafb;position:relative;overflow:hidden}'
+    +'.rpt-mc::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:#c9963c}'
+    +'.rmc-v{font-size:30px;font-weight:900;color:#0b1e30;letter-spacing:-.5px}'
+    +'.rmc-l{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,.4);margin-top:6px}'
+    +'.rpt-tbl{width:100%;border-collapse:collapse;font-size:11px}'
+    +'.rpt-tbl thead tr{border-bottom:2px solid #0b1e30}'
+    +'.rpt-tbl thead th{padding:8px 12px;text-align:left;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#0b1e30}'
+    +'.rpt-tbl tbody tr{border-bottom:1px solid rgba(0,0,0,.04)}'
+    +'.rpt-tbl tbody tr:nth-child(even){background:rgba(0,0,0,.018)}'
+    +'.rpt-tbl tbody td{padding:10px 12px;color:#374151}'
+    +'.rpt-backcover{background:#0b1e30;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}'
+    +'.bc-brand{font-size:20px;font-weight:300;color:#fff;letter-spacing:2px;margin-bottom:20px}'
+    +'.bc-brand span{opacity:.4;margin:0 10px}'
+    +'.bc-stripe{width:48px;height:3px;background:#c9963c;margin-bottom:24px}'
+    +'.bc-contact{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}'
+    +'.bc-legal{font-size:10px;color:rgba(255,255,255,.25);margin-top:20px}'
+    +'@media print{'
+    +'@page{size:A4 landscape;margin:0}'
+    +'*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
+    +'#_pdfBtn{display:none!important}'
+    +'.rpt-page{page-break-after:always;page-break-inside:avoid;width:297mm!important;height:210mm!important;overflow:hidden!important}'
+    +'.rpt-page:last-of-type{page-break-after:avoid}'
+    +'}';
+
+  var jsFn='var _isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);'
+    +'var _fn='+JSON.stringify(fileName)+';'
+    +'function _showBtn(){var b=document.getElementById("_pdfBtn");if(b)b.style.display="block";}'
+    +'setTimeout(_showBtn,300);'
+    +'async function _genPDF(){'
+    +'var btn=document.getElementById("_pdfBtn");'
+    +'if(btn){btn.disabled=true;btn.textContent="Gerando...";}'
+    +'if(_isSafari){window.print();if(btn){btn.disabled=false;btn.textContent="Baixar PDF";}return;}'
+    +'try{'
+    +'await document.fonts.ready;'
+    +'var {jsPDF}=window.jspdf;'
+    +'var pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});'
+    +'var pages=document.querySelectorAll(".rpt-page");'
+    +'for(var i=0;i<pages.length;i++){'
+    +'var canvas=await html2canvas(pages[i],{scale:2,useCORS:true,allowTaint:false,logging:false,width:1122,height:794,windowWidth:1122});'
+    +'var img=canvas.toDataURL("image/jpeg",0.95);'
+    +'if(i>0)pdf.addPage();'
+    +'pdf.addImage(img,"JPEG",0,0,297,210);'
+    +'}'
+    +'pdf.save(_fn);'
+    +'}catch(err){alert("Erro ao gerar PDF: "+err.message);}'
+    +'if(btn){btn.disabled=false;btn.textContent="Baixar PDF";}'
+    +'}';
+
+  var html='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>'
+    +'<title>'+xe(info.title)+'</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>'
+    +'<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>'
+    +'<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>'
+    +'<style>'+css+'<\/style><\/head><body>'
+    +'<button id="_pdfBtn" style="display:none;position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 24px;border-radius:8px;border:none;background:#c9963c;color:#0b1e30;font-weight:800;font-family:Montserrat,sans-serif;font-size:13px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3)" onclick="_genPDF()">Baixar PDF<\/button>'
+    +'<div class="rpt-page rpt-cover">'
+    +'<div><div class="cov-brand">SOMA <span>|<\/span> PARTNERS<\/div>'
+    +'<div class="cov-stripe"><\/div>'
+    +'<div class="cov-type">'+xe(info.type)+'<\/div>'
+    +'<div class="cov-title">'+xe(info.title)+'<\/div>'
+    +(info.sub?'<div class="cov-sub">'+xe(info.sub)+'<\/div>':'')
+    +'<\/div>'
+    +'<div class="cov-footer">'
+    +'<div>'+(info.client?'<div class="cov-client-label">Preparado para<\/div><div class="cov-client">'+xe(info.client)+'<\/div>':'')+'<\/div>'
+    +'<div><div class="cov-date">'+xe(info.date)+'<\/div><div class="cov-author">'+xe(info.author)+'<\/div><\/div>'
+    +'<\/div><\/div>'
+    +contentPages
+    +'<div class="rpt-page rpt-backcover">'
+    +'<div class="bc-brand">SOMA <span>|<\/span> PARTNERS<\/div>'
+    +'<div class="bc-stripe"><\/div>'
+    +'<div class="bc-contact">atendimento@somapartners.co<\/div>'
+    +'<div class="bc-contact" style="opacity:.6">somapartners.co<\/div>'
+    +'<div class="bc-legal">&copy; '+yr+' Soma Partners &middot; Documento Confidencial<\/div>'
+    +'<\/div>'
+    +'<script>'+jsFn+'<\/script><\/body><\/html>';
+
+  return {html:html,fileName:fileName};
+}
+
+async function generateReport(){
+  syncFromDOM();
+  var btn=document.getElementById('btn-generate');
+  btn.disabled=true;btn.textContent='Abrindo...';
+  var r=buildHTML();
+  var blob=new Blob([r.html],{type:'text/html'});
+  var url=URL.createObjectURL(blob);
+  window.open(url,'_blank','width=1300,height=900,scrollbars=yes');
+  setTimeout(function(){btn.disabled=false;btn.textContent='Gerar Relatório PDF';},1500);
+}
+</script>
+</body>
+</html>
