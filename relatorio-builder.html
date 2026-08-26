@@ -206,16 +206,20 @@ function renderBlock(b,i){
       +'<div class="block-field"><label>Linhas</label>'+rows
       +'<button class="btn-add-row" onclick="addRow('+b.id+')">+ Adicionar linha</button></div>';
     } else if(b.type==='video'){
-    icon='▶';typeName='Vídeo (QR Code)';
-    var qrPrev=b.url?'<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&ecc=M&data='+encodeURIComponent(b.url)+'" style="width:60px;height:60px;border-radius:4px;display:block;margin-top:8px" alt="QR"/>':'<div style="width:60px;height:60px;background:rgba(255,255,255,.05);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);margin-top:8px">QR</div>';
-    body='<div class="field-row">'
-      +'<div class="block-field"><label>Título</label>'
-      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Tour pelo Studio"/></div>'
+    icon='▶';typeName='Vídeo + Detalhes';
+    var qrPrev=b.url
+      ?'<img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&ecc=M&data='+encodeURIComponent(b.url)+'" style="width:50px;height:50px;border-radius:4px;margin-top:6px;display:block" alt="QR"/>'
+      :'<div style="width:50px;height:50px;background:rgba(255,255,255,.05);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--muted);margin-top:6px">QR</div>';
+    body='<div class="block-field"><label>Título</label>'
+      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Studio A — Itaim Bibi"/></div>'
+      +'<div class="field-row">'
       +'<div class="block-field"><label>URL do Vídeo</label>'
-      +'<input id="b'+b.id+'_url" value="'+xe(b.url)+'" placeholder="https://youtube.com/... ou drive.google.com/..." oninput="syncFromDOM();renderBlocks()"/>'
-      +qrPrev+'</div></div>'
-      +'<div class="block-field"><label>Descrição (opcional)</label>'
-      +'<textarea id="b'+b.id+'_desc" rows="2" placeholder="Ex: Vídeo completo do espaço com visita guiada...">'+xe(b.desc)+'</textarea></div>';
+      +'<input id="b'+b.id+'_url" value="'+xe(b.url)+'" placeholder="https://youtube.com/... ou drive.google.com/..." onblur="syncFromDOM();renderBlocks()"/>'
+      +'<p style="font-size:9px;color:var(--muted);margin-top:4px">QR code gerado ao sair do campo</p>'
+      +qrPrev+'</div>'
+      +'<div class="block-field"><label>Detalhes / Descrição</label>'
+      +'<textarea id="b'+b.id+'_desc" rows="6" placeholder="Ex:\nÁrea: 45m²\nAndar: 8º\nVagas: 1\nDisponível: imediato\n\nAmbiente moderno com vista panorâmica...">'+xe(b.desc)+'</textarea></div>'
+      +'</div>';
   } else if(b.type==='pagebreak'){
     icon='—';typeName='Quebra de Página';
     body='<p style="color:var(--muted);font-size:11px">Força uma nova página no relatório a partir deste ponto.</p>';
