@@ -121,6 +121,27 @@ var _idCtr=0;
 var _photoStore={}; // session photo store keyed by block id — survives loadHistory
 var _isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 document.getElementById('doc-date').value=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+
+// Auto-restore from sessionStorage after a safe reload
+(function(){
+  var bk=sessionStorage.getItem('soma_safe_reload');
+  if(!bk)return;
+  sessionStorage.removeItem('soma_safe_reload');
+  try{
+    var data=JSON.parse(bk);
+    if(data.blocks){_blocks=data.blocks;_idCtr=_blocks.reduce(function(m,b){return Math.max(m,b.id);},0);}
+    if(data.info){
+      var fi=data.info;
+      document.getElementById('doc-type').value=fi.type||'';
+      document.getElementById('doc-title').value=fi.title||'';
+      document.getElementById('doc-sub').value=fi.sub||'';
+      document.getElementById('doc-client').value=fi.client||'';
+      document.getElementById('doc-date').value=fi.date||'';
+      document.getElementById('doc-author').value=fi.author||'';
+    }
+    renderBlocks();
+  }catch(e){}
+})();
 if(new URLSearchParams(location.search).get('embed')==='1') document.body.classList.add('embed');
 
 function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
