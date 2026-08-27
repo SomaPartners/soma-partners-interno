@@ -339,11 +339,17 @@ function buildHTML(){
   var fileName='Relatorio - '+(info.client||info.title)+' - '+today+'.pdf';
   var yr=new Date().getFullYear();
 
-  // Group by pagebreaks
+  // Group by pagebreaks; video blocks always get their own page
   var pages=[],cur=[];
   _blocks.forEach(function(b){
-    if(b.type==='pagebreak'){if(cur.length){pages.push(cur);cur=[];}}
-    else cur.push(b);
+    if(b.type==='pagebreak'){
+      if(cur.length){pages.push(cur);cur=[];}
+    } else if(b.type==='video'){
+      if(cur.length){pages.push(cur);cur=[];}
+      pages.push([b]);
+    } else {
+      cur.push(b);
+    }
   });
   if(cur.length) pages.push(cur);
   if(!pages.length) pages.push([]);
