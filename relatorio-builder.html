@@ -171,7 +171,8 @@ function updateVideoDetail(id,j,f,v){var b=_blocks.find(function(b){return b.id=
 
 function syncFromDOM(){
   _blocks.forEach(function(b){
-    var gv=function(s){var el=document.getElementById('b'+b.id+'_'+s);return el?el.value:'';};
+    // gv: reads from DOM if element exists, otherwise keeps current block value
+    var gv=function(s){var el=document.getElementById('b'+b.id+'_'+s);return el?el.value:b[s]||'';};
     if(b.type==='text'){b.title=gv('title');b.content=gv('content');}
     else if(b.type==='metrics'){b.title=gv('title');}
     else if(b.type==='video'){b.title=gv('title');b.url=gv('url');b.desc=gv('desc');}
