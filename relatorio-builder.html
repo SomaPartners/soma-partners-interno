@@ -417,7 +417,7 @@ function buildHTML(){
 
   var contentPages=pages.map(function(pg,pi){
     return '<div class="rpt-page rpt-content">'
-      +'<div class="rpt-hd"><img src="'+_LOGO_SRC+'" style="height:26px;width:auto"/><div class="rpt-hd-title">'+xe(info.title)+'</div></div>'
+      +'<div class="rpt-hd"><div class="rpt-hd-title">'+xe(info.title)+'</div></div>'
       +'<div class="rpt-body">'+pg.map(blockToHTML).join('')+'</div>'
       +'<div class="rpt-ft"><span>'+xe(info.client)+'</span><span style="flex:1"></span><span>'+xe(info.date)+'</span><span style="margin-left:20px;opacity:.4">Pag. '+(pi+2)+'</span></div>'
       +'</div>';
@@ -541,7 +541,7 @@ function buildHTML(){
     +'<\/div><\/div>'
     +contentPages
     +'<div class="rpt-page rpt-backcover">'
-    +'<img src="'+_LOGO_SRC+'" style="height:48px;width:auto;margin-bottom:20px"\/>' 
+    +'<img src="'+_LOGO_SRC+'" style="width:200px;height:auto;margin-bottom:20px"\/>' 
     +'<div class="bc-stripe"><\/div>'
     +'<div class="bc-contact">atendimento@somapartners.co<\/div>'
     +'<div class="bc-contact" style="opacity:.6">somapartners.co<\/div>'
