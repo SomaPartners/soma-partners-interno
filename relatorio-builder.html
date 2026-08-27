@@ -332,9 +332,10 @@ function blockToHTML(b){
     var rawDetails=(b.details||[]).filter(function(d){return d.label||d.val;});
     var photos=b.photos||[];
     var qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=M&bgcolor=ffffff&color=0b1e30&data='+encodeURIComponent(b.url||'');
-    // Pad to exactly 4 boxes for the 2x2 grid
-    var boxData=rawDetails.slice(0,4);
+    // Up to 6 boxes in a 2-column grid; pad to nearest even so rows look complete
+    var boxData=rawDetails.slice(0,6);
     while(boxData.length<4)boxData.push({label:'',val:''});
+    if(boxData.length===5)boxData.push({label:'',val:''});
     var detailBoxes=boxData.map(function(d){
       return '<div class="rpt-det-box'+(d.label||d.val?'':' rpt-det-empty')+'"><div class="rpt-det-lbl">'+xe(d.label)+'<\/div><div class="rpt-det-val">'+xe(d.val)+'<\/div><\/div>';
     }).join('');
