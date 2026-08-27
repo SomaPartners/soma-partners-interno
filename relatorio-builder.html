@@ -168,6 +168,7 @@ function updateCell(id,ri,ci,v){var b=_blocks.find(function(b){return b.id===id;
 function addVideoDetail(id){var b=_blocks.find(function(b){return b.id===id;});if(b&&(b.details||[]).length<6){b.details=b.details||[];b.details.push({label:'',val:''});renderBlocks();}}
 function removeVideoDetail(id,j){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.details){b.details.splice(j,1);renderBlocks();}}
 function updateVideoDetail(id,j,f,v){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.details&&b.details[j])b.details[j][f]=v;}
+function updateBlock(id,field,val){var b=_blocks.find(function(b){return b.id===id;});if(b)b[field]=val;}
 function addPhotos(id,input){
   var b=_blocks.find(function(b){return b.id===id;});
   if(!b)return;
@@ -276,7 +277,7 @@ function renderBlock(b,i){
     }).join('');
     body='<div class="field-row">'
       +'<div class="block-field"><label>Título do Imóvel</label>'
-      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Studio 105 — Boa Viagem"/></div>'
+      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Studio 105 — Boa Viagem" oninput="updateBlock('+b.id+',\'title\',this.value)"/></div>'
       +'<div class="block-field" style="max-width:220px"><label>URL do Vídeo</label>'
       +'<input id="b'+b.id+'_url" value="'+xe(b.url)+'" placeholder="https://..." onblur="handleVideoUrlBlur('+b.id+')"/>'
       +'<p style="font-size:9px;color:var(--muted);margin-top:3px">Links longos são encurtados automaticamente.</p>'
@@ -286,7 +287,7 @@ function renderBlock(b,i){
       +(details.length<6?'<button class="btn-add-row" onclick="addVideoDetail('+b.id+')">+ Adicionar informação</button>':'')
       +'</div>'
       +'<div class="block-field"><label>Observações</label>'
-      +'<textarea id="b'+b.id+'_desc" rows="2" placeholder="Ex: Canil aprovado. Vista panorâmica para o mar...">'+xe(b.desc)+'</textarea></div>'
+      +'<textarea id="b'+b.id+'_desc" rows="2" placeholder="Ex: Canil aprovado. Vista panorâmica para o mar..." oninput="updateBlock('+b.id+',\'desc\',this.value)">'+xe(b.desc)+'</textarea></div>'
       +'<div class="block-field"><label>Fotos (máx. 4 — aparecem na parte inferior da página)</label>'
       +'<div style="margin-bottom:8px">'+photoThumbs+'</div>'
       +(photos.length<4?'<label style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1px dashed rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.4);font-size:11px;font-weight:700;cursor:pointer">📷 Adicionar fotos<input type="file" accept="image/*" multiple style="display:none" onchange="addPhotos('+b.id+',this)"/></label>':'')
