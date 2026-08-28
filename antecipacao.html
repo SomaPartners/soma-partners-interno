@@ -279,7 +279,7 @@ function getMes(d){const m=String(d).match(/-([a-záéíóú]+)\.?/i);return m?m
 // ── Tab discovery ─────────────────────────────────────────────────────────
 async function discoverTabs(){
   try {
-    const html = await fetch(`${PUBHTML}?_=${Date.now()}`).then(r=>r.text());
+    const html = await fetch(`${PUBHTML}?_=${Date.now()}`,{signal:AbortSignal.timeout(15000)}).then(r=>r.text());
     const doc  = new DOMParser().parseFromString(html,'text/html');
     const tabs = [];
     doc.querySelectorAll('[id^="sheet-button-"]').forEach(el=>{
@@ -387,7 +387,7 @@ async function loadAll(){
 
     const results=await Promise.allSettled(tabs.map(async tab=>{
       const url=`${CSVBASE}&gid=${tab.gid}&_=${Date.now()}`;
-      const res=await fetch(url);
+      const res=await fetch(url,{signal:AbortSignal.timeout(20000)});
       if(!res.ok) throw new Error(`HTTP ${res.status}`);
       const csv=await res.text();
       if(!csv||csv.length<20) return null;
