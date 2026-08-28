@@ -172,7 +172,7 @@ function addBlock(type){
   else if(type==='metrics') _blocks.push({id:id,type:'metrics',title:'',items:[{label:'',val:''}]});
   else if(type==='table') _blocks.push({id:id,type:'table',title:'',cols:['Coluna 1','Coluna 2','Coluna 3'],rows:[['','',''],['','','']]});
   else if(type==='video') _blocks.push({id:id,type:'video',title:'',url:'',details:[{label:'Área',val:''},{label:'Valor',val:''},{label:'Condomínio',val:''},{label:'Endereço',val:''}],desc:'',photos:[]});
-  else if(type==='proposta') _blocks.push({id:id,type:'proposta',title:'Proposta Comercial',valor:'',desc:''});
+  else if(type==='proposta') _blocks.push({id:id,type:'proposta',title:'Proposta Comercial',valor:'',desc:'',instagram:''});
   else if(type==='pagebreak') _blocks.push({id:id,type:'pagebreak'});
   renderBlocks();
 }
@@ -215,7 +215,7 @@ function syncFromDOM(){
     if(b.type==='text'){b.title=gv('title');b.content=gv('content');}
     else if(b.type==='metrics'){b.title=gv('title');}
     else if(b.type==='video'){b.title=gv('title');b.url=gv('url');b.desc=gv('desc');}
-    else if(b.type==='proposta'){b.title=gv('title');b.valor=gv('valor');b.desc=gv('desc');}
+    else if(b.type==='proposta'){b.title=gv('title');b.valor=gv('valor');b.desc=gv('desc');b.instagram=gv('instagram');}
     else if(b.type==='table'){
       b.title=gv('title');
       var colsEl=document.getElementById('b'+b.id+'_cols');
@@ -325,7 +325,9 @@ function renderBlock(b,i){
       +'<div class="block-field" style="max-width:220px"><label>Valor</label>'
       +'<input id="b'+b.id+'_valor" value="'+xe(b.valor)+'" placeholder="Ex: R$ 266.000,00" oninput="updateBlock('+b.id+',\'valor\',this.value)"/></div></div>'
       +'<div class="block-field"><label>Descrição / Condições</label>'
-      +'<textarea id="b'+b.id+'_desc" rows="4" placeholder="Ex: Entrada de R$ 50.000,00 com saldo em 60 parcelas..." oninput="updateBlock('+b.id+',\'desc\',this.value)">'+xe(b.desc)+'</textarea></div>';
+      +'<textarea id="b'+b.id+'_desc" rows="4" placeholder="Ex: Entrada de R$ 50.000,00 com saldo em 60 parcelas..." oninput="updateBlock('+b.id+',\'desc\',this.value)">'+xe(b.desc)+'</textarea></div>'
+      +'<div class="block-field"><label>Instagram da empresa (gera QR Code na proposta)</label>'
+      +'<input id="b'+b.id+'_instagram" value="'+xe(b.instagram||'')+'" placeholder="https://instagram.com/somapartners" oninput="updateBlock('+b.id+',\'instagram\',this.value)"/></div>';
   } else if(b.type==='pagebreak'){
     icon='—';typeName='Quebra de Página';
     body='<p style="color:var(--muted);font-size:11px">Força uma nova página no relatório a partir deste ponto.</p>';
@@ -394,11 +396,14 @@ function blockToHTML(b){
       +'<\/div>';
   }
   if(b.type==='proposta'){
+    var igHandle=b.instagram?b.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//,'').replace(/\/$/,''):'';
+    var igQr=b.instagram?'<div class="rpt-prop-qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&ecc=M&bgcolor=0b1e30&color=c9963c&data='+encodeURIComponent(b.instagram)+'" width="110" height="110" style="border-radius:8px" alt="Instagram"\/>'+'<div class="rpt-prop-qr-label">@'+xe(igHandle)+'<\/div><\/div>':'';
     return '<div class="rpt-block rpt-proposta">'
       +'<div class="rpt-prop-stripe"><\/div>'
       +(b.title?'<div class="rpt-prop-label">'+xe(b.title)+'<\/div>':'')
       +(b.valor?'<div class="rpt-prop-valor">'+xe(b.valor)+'<\/div>':'')
       +(b.desc?'<div class="rpt-prop-desc">'+xe(b.desc).replace(/\n/g,'<br\/>')+'<\/div>':'')
+      +igQr
       +'<\/div>';
   }
   if(b.type==='table'){
@@ -513,7 +518,9 @@ function buildHTML(){
     +'.rpt-prop-stripe{width:60px;height:4px;background:#c9963c;border-radius:2px;margin-bottom:28px}'
     +'.rpt-prop-label{font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:rgba(201,150,60,.85);margin-bottom:20px}'
     +'.rpt-prop-valor{font-size:52px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1;margin-bottom:28px}'
-    +'.rpt-prop-desc{font-size:13px;color:rgba(255,255,255,.65);line-height:1.8;max-width:540px;white-space:pre-wrap}'
+    +'.rpt-prop-desc{font-size:13px;color:rgba(255,255,255,.65);line-height:1.8;max-width:540px;white-space:pre-wrap;margin-bottom:28px}'
+    +'.rpt-prop-qr{display:flex;flex-direction:column;align-items:center;margin-top:4px}'
+    +'.rpt-prop-qr-label{font-size:11px;color:rgba(201,150,60,.75);margin-top:8px;letter-spacing:.5px}'
     +'@media print{'
     +'@page{size:A4 landscape;margin:0}'
     +'*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
@@ -566,7 +573,7 @@ function buildHTML(){
     +'<\/div><\/div>'
     +contentPages
     +'<div class="rpt-page rpt-backcover">'
-    +'<img src="'+_LOGO_SRC+'" style="width:200px;height:auto;margin-bottom:20px"\/>' 
+    +'<img src="'+_LOGO_SRC+'" style="width:200px;height:auto;margin-bottom:20px"\/>'
     +'<div class="bc-stripe"><\/div>'
     +'<div class="bc-contact">atendimento@somapartners.co<\/div>'
     +'<div class="bc-contact" style="opacity:.6">somapartners.co<\/div>'
