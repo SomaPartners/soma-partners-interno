@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SOMA Partners — CRM Comercial</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f2f1ee;--surface:#fff;--navy:#0d1b2a;--navy2:#162236;
+  --gold:#c9963c;--gold2:rgba(201,150,60,.1);
+  --text:#111827;--text2:#374151;--text3:#6b7280;--text4:#9ca3af;
+  --border:rgba(0,0,0,.07);--r:10px;--sidebar:240px;
+}
+html,body{height:100%;font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+#app{display:flex;height:100vh;overflow:hidden}
+/* SIDEBAR */
+#sb{width:var(--sidebar);min-width:var(--sidebar);background:var(--navy);display:flex;flex-direction:column;overflow-y:auto;z-index:10}
+.sb-logo{padding:26px 22px 18px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sb-brand{font-size:14px;font-weight:800;color:#fff;letter-spacing:.5px}
+.sb-brand span{color:var(--gold)}
+.sb-sub{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.sb-sec{padding:18px 0 6px}
+.sb-sec-lbl{padding:0 18px 7px;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.22)}
+.sbi{display:flex;align-items:center;gap:9px;padding:8px 18px;cursor:pointer;color:rgba(255,255,255,.45);font-size:11.5px;font-weight:500;transition:all .12s;border-left:2px solid transparent}
+.sbi:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.04)}
+.sbi.on{color:#fff;background:rgba(201,150,60,.1);border-left-color:var(--gold)}
+.sbi .ic{font-size:13px;width:15px;text-align:center}
+.sb-bot{margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-user{display:flex;align-items:center;gap:9px}
+.sb-av{width:30px;height:30px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--navy);flex-shrink:0}
+.sb-uname{font-size:11px;font-weight:600;color:rgba(255,255,255,.8)}
+.sb-urole{font-size:9px;color:rgba(255,255,255,.28);margin-top:1px}
+/* MAIN */
+#mw{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#strip{background:var(--navy);padding:10px 26px;display:flex;align-items:center;gap:20px;flex-shrink:0;flex-wrap:wrap}
+.st-i{display:flex;flex-direction:column}
+.st-l{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.st-v{font-size:13px;font-weight:800;color:#fff;letter-spacing:-.2px}
+.st-v .pct{font-size:9px;font-weight:700;color:var(--gold);margin-left:5px}
+.st-sep{width:1px;background:rgba(255,255,255,.08);align-self:stretch}
+#topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 26px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tb-title{font-size:14px;font-weight:800;color:var(--text)}
+.tb-r{display:flex;align-items:center;gap:10px}
+select.resp-sel{border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-size:11px;font-family:inherit;color:var(--text2);background:var(--bg);cursor:pointer;font-weight:600;outline:none}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all .12s;letter-spacing:.2px}
+.btn-nv{background:var(--navy);color:#fff}.btn-nv:hover{background:var(--navy2)}
+.btn-gd{background:var(--gold);color:#fff}.btn-gd:hover{opacity:.9}
+.btn-ol{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-ol:hover{background:var(--bg)}
+.btn-sm{padding:4px 10px;font-size:10px}
+#content{flex:1;overflow-y:auto;padding:26px}
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:var(--surface);border-radius:var(--r);padding:18px 20px;border:1px solid var(--border);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold)}
+.kpi-l{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.kpi-v{font-size:24px;font-weight:900;color:var(--text);letter-spacing:-.5px;line-height:1}
+.kpi-v.gr{color:#166534}
+.kpi-s{font-size:10px;color:var(--text3);margin-top:5px}
+.up{color:#166534;font-weight:700}.dn{color:#991b1b;font-weight:700}
+/* PANELS */
+.panel{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
+.ph{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pt{font-size:12px;font-weight:700;color:var(--text)}
+.pb{padding:20px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+/* TABLES */
+table{width:100%;border-collapse:collapse}
+th{padding:9px 12px;text-align:left;font-size:8.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);background:var(--bg)}
+td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--text2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(0,0,0,.012);cursor:pointer}
+.tdn{font-weight:700;color:var(--text)}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.2px}
+.b-novo{background:#f3f4f6;color:#374151}
+.b-cont{background:#dbeafe;color:#1e40af}
+.b-conv{background:#ede9fe;color:#5b21b6}
+.b-qual{background:#d1fae5;color:#065f46}
+.b-rmk{background:#fef3c7;color:#92400e}
+.b-rre{background:#fed7aa;color:#9a3412}
+.b-prop{background:#fce7f3;color:#9d174d}
+.b-fech{background:#166534;color:#fff}
+.b-perd{background:#fef2f2;color:#991b1b}
+.tf{color:#6b7280;font-size:10px;font-weight:700}
+.tm{color:#d97706;font-size:10px;font-weight:700}
+.tq{color:#dc2626;font-size:10px;font-weight:700}
+/* METAS */
+.mc{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:22px;display:flex;flex-direction:column;gap:14px}
+.mc-hdr{display:flex;justify-content:space-between;align-items:flex-start}
+.mc-n{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3)}
+.mc-pct{font-size:30px;font-weight:900;color:var(--text);letter-spacing:-1px}
+.mc-pct.ok{color:#166534}
+.mc-vals{display:flex;gap:18px;margin-top:2px}
+.mc-val{font-size:10.5px;color:var(--text3)}
+.mc-val strong{color:var(--text);font-weight:700}
+.pbar{height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden}
+.pfill{height:100%;border-radius:3px;background:var(--gold)}
+.pfill.ok{background:#166534}
+/* KANBAN */
+.kb-wrap{display:flex;gap:10px;overflow-x:auto;padding-bottom:12px}
+.kb-col{min-width:190px;flex-shrink:0;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
+.kb-ch{padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.kb-cn{font-size:9.5px;font-weight:700;letter-spacing:.5px;color:var(--text2)}
+.kb-cnt{background:var(--gold2);color:var(--gold);font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px}
+.kb-cards{padding:8px;display:flex;flex-direction:column;gap:7px;min-height:80px}
+.kbc{background:var(--surface);border-radius:8px;border:1px solid var(--border);padding:10px;cursor:pointer;transition:box-shadow .12s}
+.kbc:hover{box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.kbc-n{font-size:11px;font-weight:700;color:var(--text)}
+.kbc-e{font-size:10px;color:var(--text3);margin-top:1px}
+.kbc-a{font-size:11px;font-weight:700;color:var(--gold);margin-top:7px}
+.kbc-ft{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
+/* ALERTS */
+.al-i{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
+.al-i:last-child{border-bottom:none}
+.al-d{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.al-d.r{background:#dc2626}.al-d.a{background:#d97706}.al-d.b{background:#2563eb}
+.al-txt{font-size:11px;color:var(--text2);line-height:1.5}
+.al-txt strong{color:var(--text);font-weight:700}
+.al-sub{font-size:9.5px;color:var(--text4);margin-top:2px}
+/* DIA */
+.di-i{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.di-i:last-child{border-bottom:none}
+.di-ic{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--bg);flex-shrink:0}
+.di-t{font-size:11.5px;font-weight:600;color:var(--text)}
+.di-s{font-size:10px;color:var(--text3);margin-top:1px}
+.di-tm{font-size:10px;font-weight:700;color:var(--gold);margin-left:auto;white-space:nowrap}
+/* REUNIÃO CARD */
+.rc{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:16px 18px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:box-shadow .12s}
+.rc:hover{box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.rc-db{min-width:48px;text-align:center;border-radius:7px;padding:7px;flex-shrink:0}
+.rc-day{font-size:20px;font-weight:900;line-height:1}
+.rc-mo{font-size:8.5px;font-weight:700;text-transform:uppercase;color:var(--text3)}
+.rc-i{flex:1}
+.rc-n{font-size:12.5px;font-weight:700;color:var(--text)}
+.rc-e{font-size:10.5px;color:var(--text3);margin-top:1px}
+.rc-m{display:flex;gap:12px;margin-top:7px}
+.rc-mi{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3)}
+/* ATIVIDADE */
+.av-i{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
+.av-i:last-child{border-bottom:none}
+.av-ic{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--bg);flex-shrink:0}
+.av-t{font-size:12px;font-weight:600;color:var(--text)}
+.av-s{font-size:10px;color:var(--text3);margin-top:1px}
+.av-o{font-size:10.5px;color:var(--text2);margin-top:3px;font-style:italic}
+/* TEAM */
+.j-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.jc0{background:#0d4f3c}.jc1{background:#1a3a6b}.jc2{background:#5b1a8a}.jc3{background:#8a3a1a}
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.md{background:var(--surface);border-radius:12px;width:100%;max-width:660px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.25)}
+.md-h{padding:20px 22px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.md-t{font-size:14px;font-weight:800;color:var(--text)}
+.md-x{width:26px;height:26px;border-radius:5px;border:none;background:var(--bg);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.md-b{padding:22px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.md-f{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+/* FORM */
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.ff{display:flex;flex-direction:column;gap:4px}
+.ff label{font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3)}
+.ff input,.ff select,.ff textarea{border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:12px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;transition:border-color .12s}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--gold);background:#fff}
+.ff textarea{resize:vertical;min-height:72px}
+.ff-full{grid-column:span 2}
+/* PILLS */
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{padding:5px 11px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid var(--border);cursor:pointer;background:var(--surface);color:var(--text2);transition:all .12s}
+.pill.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.pill:hover:not(.on){background:var(--bg)}
+/* FUNNEL */
+.funnl{display:flex;gap:2px;margin:14px 0}
+.fn-s{flex:1;text-align:center;padding:14px 6px;background:var(--bg);font-size:9.5px;color:var(--text3)}
+.fn-s:first-child{border-radius:var(--r) 0 0 var(--r)}
+.fn-s:last-child{border-radius:0 var(--r) var(--r) 0}
+.fn-s.on{background:var(--gold2);color:var(--gold)}
+.fn-n{font-size:20px;font-weight:800;color:var(--text);display:block;margin-bottom:3px}
+/* MISC */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:3px}
+.ph-hdr{margin-bottom:20px}
+.ph-hdr h1{font-size:19px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.ph-hdr p{font-size:11.5px;color:var(--text3);margin-top:3px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.empty-s{padding:44px;text-align:center;color:var(--text3);font-size:12px}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="sb">
+  <div class="sb-logo">
+    <div class="sb-brand">SOMA <span>PARTNERS</span></div>
+    <div class="sb-sub">CRM Comercial</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-sec-lbl">Principal</div>
+    <div class="sbi on" onclick="nav('dashboard')"><span class="ic">◆</span>Dashboard</div>
+    <div class="sbi" onclick="nav('leads')"><span class="ic">👤</span>Leads</div>
+    <div class="sbi" onclick="nav('pipeline')"><span class="ic">▦</span>Pipeline</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-sec-lbl">Gestão</div>
+    <div class="sbi" onclick="nav('reunioes')"><span class="ic">📅</span>Reuniões</div>
+    <div class="sbi" onclick="nav('atividades')"><span class="ic">⚡</span>Atividades</div>
+    <div class="sbi" onclick="nav('social')"><span class="ic">📸</span>Social</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-sec-lbl">Estratégia</div>
+    <div class="sbi" onclick="nav('metas')"><span class="ic">🎯</span>Metas</div>
+    <div class="sbi" onclick="nav('time')"><span class="ic">👥</span>Time</div>
+    <div class="sbi" onclick="nav('parceiros')"><span class="ic">🤝</span>Parceiros</div>
+    <div class="sbi" onclick="nav('config')"><span class="ic">⚙️</span>Configurações</div>
+  </div>
+  <div class="sb-bot">
+    <div class="sb-user">
+      <div class="sb-av">G</div>
+      <div><div class="sb-uname">Gui</div><div class="sb-urole">Comercial Junior</div></div>
+    </div>
+  </div>
+</div>
+<div id="mw">
+  <div id="strip">
+    <div class="st-i"><div class="st-l">AUM Captado</div><div class="st-v">R$ 340.000 <span class="pct">34%</span></div></div>
+    <div class="st-sep"></div>
+    <div class="st-i"><div class="st-l">Pipeline AUM</div><div class="st-v">R$ 2.080.000</div></div>
+    <div class="st-sep"></div>
+    <div class="st-i"><div class="st-l">AUM Ponderado</div><div class="st-v">R$ 630.000</div></div>
+    <div class="st-sep"></div>
+    <div class="st-i"><div class="st-l">Leads Ativos</div><div class="st-v">24</div></div>
+    <div class="st-sep"></div>
+    <div class="st-i"><div class="st-l">Reuniões / mês</div><div class="st-v">8</div></div>
+    <div class="st-sep"></div>
+    <div class="st-i"><div class="st-l">Leads Instagram</div><div class="st-v">8 <span class="pct">de 20</span></div></div>
+  </div>
+  <div id="topbar">
+    <div class="tb-title" id="tbt">Dashboard</div>
+    <div class="tb-r">
+      <span style="font-size:11px;color:var(--text3);font-weight:600">Responsável:</span>
+      <select class="resp-sel" onchange="setResp(this.value)">
+        <option value="todos">Todos</option>
+        <option value="Gui">Gui</option>
+        <option value="Ana">Ana</option>
+        <option value="Pedro">Pedro</option>
+        <option value="Lara">Lara</option>
+      </select>
+      <button class="btn btn-gd" onclick="openM('lead')">+ Novo Lead</button>
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
+</div>
+<!-- MODAL -->
+<div id="mo" class="mo" style="display:none" onclick="if(event.target===this)closeM()">
+<div class="md">
+  <div class="md-h">
+    <div class="md-t" id="mo-t">Novo Lead</div>
+    <button class="md-x" onclick="closeM()">✕</button>
+  </div>
+  <div class="md-b" id="mo-b"></div>
+  <div class="md-f" id="mo-f">
+    <button class="btn btn-ol" onclick="closeM()">Cancelar</button>
+    <button class="btn btn-nv" onclick="saveM()">Salvar</button>
+  </div>
+</div>
+</div>
+<script>
+var _v='dashboard',_resp='todos',_ltab='todos',_mt=null,_eid=null;
+var JRS=['Gui','Ana','Pedro','Lara'];
+var JC=['jc0','jc1','jc2','jc3'];
+var JI=['G','A','P','L'];
+var MES=['','jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+var LEADS=[
+ {id:1,nome:'Ricardo Almeida',empresa:'Almeida Ventures',cargo:'CEO',wa:'(81) 99801-2345',email:'ricardo@almeidaventures.com',instagram:'@ricardoalmeida',resp:'Gui',origem:'Indicação',tipo:'Wealth',aum:300000,prob:70,status:'Reunião realizada',temp:'Quente',proximo:'2026-09-15',acao:'Enviar proposta de alocação',obs:'Perfil arrojado. Interesse em carteira diversificada.'},
+ {id:2,nome:'Fernanda Lima',empresa:'Lima Group',cargo:'CFO',wa:'(81) 98765-4321',email:'fernanda@limagroup.com.br',instagram:'@fernandalima',resp:'Ana',origem:'Instagram',tipo:'Wealth',aum:150000,prob:50,status:'Em conversa',temp:'Morno',proximo:'2026-09-12',acao:'Follow-up por WhatsApp',obs:'Veio pelo Instagram, interesse em previdência.'},
+ {id:3,nome:'Carlos Mendonça',empresa:'Mendonça e Filhos',cargo:'Sócio',wa:'(81) 99123-4567',email:'carlos@mendonca.com',instagram:'',resp:'Pedro',origem:'Networking',tipo:'Consórcio',aum:80000,prob:40,status:'Qualificado',temp:'Morno',proximo:'2026-09-10',acao:'Agendar reunião de consórcio',obs:'Interesse em consórcio imobiliário.'},
+ {id:4,nome:'Beatriz Nogueira',empresa:'BN Investimentos',cargo:'Diretora',wa:'(81) 99654-3210',email:'beatriz@bninvest.com',instagram:'@beatriznogueira',resp:'Lara',origem:'Indicação',tipo:'Projetos Consultivos',aum:200000,prob:60,status:'Reunião marcada',temp:'Quente',proximo:'2026-09-11',acao:'Preparar reunião consultiva',obs:'Empresa familiar, quer estruturar governança.'},
+ {id:5,nome:'Paulo Saraiva',empresa:'Saraiva Tech',cargo:'Fundador',wa:'(81) 98901-2345',email:'paulo@saraivatech.io',instagram:'@paulosaraiva',resp:'Gui',origem:'LinkedIn',tipo:'Wealth',aum:500000,prob:30,status:'Contato realizado',temp:'Frio',proximo:'2026-09-20',acao:'Recontato em 2 semanas',obs:'Fundador de startup, perfil jovem.'},
+ {id:6,nome:'Marcia Duarte',empresa:'Grupo Duarte',cargo:'Presidente',wa:'(81) 99234-5678',email:'marcia@grupoduarte.com.br',instagram:'@marciaduarte',resp:'Ana',origem:'Cliente',tipo:'Seguro',aum:120000,prob:65,status:'Reunião marcada',temp:'Quente',proximo:'2026-09-13',acao:'Reunião de seguros agendada',obs:'Interesse em seguro de vida empresarial.'},
+ {id:7,nome:'Thiago Fonseca',empresa:'Fonseca e Associados',cargo:'Socio-Diretor',wa:'(81) 99345-6789',email:'thiago@fonsecaadv.com',instagram:'',resp:'Pedro',origem:'Evento',tipo:'Wealth',aum:250000,prob:55,status:'Em conversa',temp:'Morno',proximo:'2026-09-14',acao:'Enviar material de apresentação',obs:'Advogado, alto patrimônio, conservador.'},
+ {id:8,nome:'Camila Andrade',empresa:'Andrade Saude',cargo:'CEO',wa:'(81) 99456-7890',email:'camila@andradesaude.com',instagram:'@camilaandrade',resp:'Lara',origem:'Instagram',tipo:'Consórcio',aum:90000,prob:45,status:'Qualificado',temp:'Morno',proximo:'2026-09-12',acao:'Propor reunião de consórcio',obs:'Veio pelo Instagram, quer consórcio de carro.'},
+ {id:9,nome:'Roberto Matos',empresa:'Matos Construtora',cargo:'Diretor',wa:'(81) 99567-8901',email:'roberto@matosconstrutora.com.br',instagram:'',resp:'Gui',origem:'Parceiro',tipo:'Estruturação Patrimonial',aum:400000,prob:40,status:'Em conversa',temp:'Morno',proximo:'2026-09-15',acao:'Retomar conversa sobre holding',obs:'Construtora familiar, quer holding patrimonial.'},
+ {id:10,nome:'Juliana Costa',empresa:'Costa Educacao',cargo:'Fundadora',wa:'(81) 99678-9012',email:'juliana@costaeducacao.com',instagram:'@julianacosta',resp:'Ana',origem:'Instagram',tipo:'Wealth',aum:80000,prob:30,status:'Novo',temp:'Frio',proximo:'2026-09-18',acao:'Primeiro contato via WhatsApp',obs:'Interesse em previdência privada.'},
+ {id:11,nome:'Alexandre Braga',empresa:'Braga e Braga',cargo:'Socio',wa:'(81) 99789-0123',email:'alexandre@bragaebraga.com',instagram:'',resp:'Pedro',origem:'Indicação',tipo:'Seguro',aum:110000,prob:50,status:'Reunião realizada',temp:'Quente',proximo:'2026-09-11',acao:'Fechar proposta de seguro empresarial',obs:'Escritório de advocacia, seguro empresarial.'},
+ {id:12,nome:'Sofia Machado',empresa:'Machado Fashion',cargo:'CEO',wa:'(81) 99890-1234',email:'sofia@machadofashion.com.br',instagram:'@sofiamachado',resp:'Lara',origem:'Instagram',tipo:'Projetos Consultivos',aum:180000,prob:60,status:'Qualificado',temp:'Quente',proximo:'2026-09-13',acao:'Propor projeto consultivo',obs:'Empresaria fashion, quer reorganizar gestão financeira.'},
+];
+var REUNIOES=[
+ {id:1,data:'2026-09-11',hora:'10:00',prospect:'Beatriz Nogueira',empresa:'BN Investimentos',resp:'Lara',tipo:'Projetos',objetivo:'Apresentar soluções consultivas para governança familiar',aum:200000,status:'Agendada',resultado:'',proximo:''},
+ {id:2,data:'2026-09-13',hora:'14:30',prospect:'Marcia Duarte',empresa:'Grupo Duarte',resp:'Ana',tipo:'Consórcio e Seguros',objetivo:'Propor seguro de vida e patrimonial',aum:120000,status:'Agendada',resultado:'',proximo:''},
+ {id:3,data:'2026-09-15',hora:'09:00',prospect:'Ricardo Almeida',empresa:'Almeida Ventures',resp:'Gui',tipo:'Wealth',objetivo:'Apresentar proposta de alocação definitiva',aum:300000,status:'Agendada',resultado:'',proximo:''},
+ {id:4,data:'2026-09-03',hora:'11:00',prospect:'Carlos Mendonça',empresa:'Mendonça e Filhos',resp:'Pedro',tipo:'Consórcio e Seguros',objetivo:'Explorar interesse em consórcio imobiliário',aum:80000,status:'Realizada',resultado:'Interesse confirmado. Vai pesquisar mais e retornar.',proximo:'Follow-up em 10 dias'},
+ {id:5,data:'2026-09-02',hora:'16:00',prospect:'Alexandre Braga',empresa:'Braga e Braga',resp:'Pedro',tipo:'Consórcio e Seguros',objetivo:'Fechar proposta de seguro empresarial',aum:110000,status:'Realizada',resultado:'Positivo. Vai aprovar com socios ate dia 12.',proximo:'Ligar para confirmar aprovação'},
+ {id:6,data:'2026-08-28',hora:'14:00',prospect:'Paulo Saraiva',empresa:'Saraiva Tech',resp:'Gui',tipo:'Wealth',objetivo:'Apresentação geral da SOMA',aum:500000,status:'Realizada',resultado:'Pouco interesse no momento. Fundador ocupado com rodada.',proximo:'Recontato em 45 dias'},
+];
+
+var ATIVIDADES=[
+ {id:1,data:'2026-09-08',lead:'Ricardo Almeida',resp:'Gui',tipo:'WhatsApp',resultado:'Confirmou disponibilidade para reunião dia 15',obs:'Muito receptivo',proximo:'Enviar agenda',pdata:'2026-09-09'},
+ {id:2,data:'2026-09-07',lead:'Beatriz Nogueira',resp:'Lara',tipo:'LinkedIn',resultado:'Conexão aceita e DM enviada',obs:'Interessada em projetos consultivos',proximo:'Confirmar reunião via WhatsApp',pdata:'2026-09-08'},
+ {id:3,data:'2026-09-06',lead:'Marcia Duarte',resp:'Ana',tipo:'WhatsApp',resultado:'Confirmou reunião do dia 13',obs:'Perguntou sobre formato da proposta',proximo:'Preparar proposta antes da reunião',pdata:'2026-09-12'},
+ {id:4,data:'2026-09-05',lead:'Juliana Costa',resp:'Ana',tipo:'Instagram DM',resultado:'Respondeu ao DM, pediu mais informações',obs:'Lead nova',proximo:'Enviar material por WhatsApp',pdata:'2026-09-09'},
+ {id:5,data:'2026-09-04',lead:'Sofia Machado',resp:'Lara',tipo:'Ligação',resultado:'Sem resposta, deixou recado',obs:'Tentou 2x',proximo:'Tentar novamente',pdata:'2026-09-05'},
+ {id:6,data:'2026-09-03',lead:'Carlos Mendonça',resp:'Pedro',tipo:'Reunião',resultado:'Reunião realizada com sucesso',obs:'Ver detalhes em Reuniões',proximo:'Follow-up em 10 dias',pdata:'2026-09-13'},
+ {id:7,data:'2026-09-02',lead:'Thiago Fonseca',resp:'Pedro',tipo:'Email',resultado:'Enviou material de apresentação',obs:'Aguardando resposta',proximo:'Follow-up por WhatsApp',pdata:'2026-09-07'},
+ {id:8,data:'2026-09-01',lead:'Camila Andrade',resp:'Lara',tipo:'Instagram DM',resultado:'Lead qualificada, interesse confirmado',obs:'Engajamento alto',proximo:'Propor reunião',pdata:'2026-09-08'},
+ {id:9,data:'2026-08-30',lead:'Roberto Matos',resp:'Gui',tipo:'Ligação',resultado:'Conversa produtiva sobre holding',obs:'Pediu proposta',proximo:'Enviar proposta consultiva',pdata:'2026-09-10'},
+ {id:10,data:'2026-08-29',lead:'Alexandre Braga',resp:'Pedro',tipo:'Reunião',resultado:'Reunião de fechamento realizada',obs:'Aprovação pendente',proximo:'Ligar dia 12',pdata:'2026-09-12'},
+];
+function f$$(n){return'R$ '+Number(n).toLocaleString('pt-BR')}
+function fd(s){if(!s)return'--';var p=s.split('-');return p[2]+'/'+p[1]}
+function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function sb(s){var m={'Novo':'b-novo','Contato realizado':'b-cont','Em conversa':'b-conv','Qualificado':'b-qual','Reunião marcada':'b-rmk','Reunião realizada':'b-rre','Proposta':'b-prop','Fechado':'b-fech','Perdido':'b-perd'};return'<span class="badge '+(m[s]||'b-novo')+'">'+xe(s)+'</span>'}
+function tb(t){return t==='Quente'?'<span class="tq">Quente</span>':t==='Morno'?'<span class="tm">Morno</span>':'<span class="tf">Frio</span>'}
+function av(name,size){size=size||26;var i=JRS.indexOf(name);if(i<0)i=0;return'<div class="j-av '+JC[i]+'" style="width:'+size+'px;height:'+size+'px;font-size:'+(size*.38)+'px">'+JI[i]+'</div>'}
+function gl(){return _resp==='todos'?LEADS:LEADS.filter(function(l){return l.resp===_resp})}
+function gr(){return _resp==='todos'?REUNIOES:REUNIOES.filter(function(r){return r.resp===_resp})}
+function ga(){return _resp==='todos'?ATIVIDADES:ATIVIDADES.filter(function(a){return a.resp===_resp})}
+
+function nav(v){
+  _v=v;
+  document.querySelectorAll('.sbi').forEach(function(e){e.classList.remove('on')});
+  var map={dashboard:0,leads:1,pipeline:2,reunioes:3,atividades:4,social:5,metas:6,time:7,parceiros:8,config:9};
+  var items=document.querySelectorAll('.sbi');
+  if(map[v]!==undefined&&items[map[v]])items[map[v]].classList.add('on');
+  var names={dashboard:'Dashboard',leads:'Leads',pipeline:'Pipeline',reunioes:'Reuniões',atividades:'Atividades',social:'Social Instagram',metas:'Metas',time:'Time',parceiros:'Parceiros',config:'Configurações'};
+  document.getElementById('tbt').textContent=names[v]||v;
+  render();
+}
+function setResp(v){_resp=v;render()}
+function render(){
+  var fns={dashboard:rDash,leads:rLeads,pipeline:rPipe,reunioes:rReunioes,atividades:rAtv,social:rSocial,metas:rMetas,time:rTime,parceiros:rParceiros,config:rConfig};
+  document.getElementById('content').innerHTML=(fns[_v]||rDash)();
+}
+
+function rDash(){
+  var ls=gl(),rs=gr();
+  var quentes=ls.filter(function(l){return l.temp==='Quente'}).length;
+  var fut=rs.filter(function(r){return r.status==='Agendada'}).length;
+  var cs=rs.filter(function(r){return r.tipo==='Consórcio e Seguros'}).length;
+  var ig=ls.filter(function(l){return l.origem==='Instagram'}).length;
+  var pond=ls.reduce(function(s,l){return s+l.aum*(l.prob/100)},0);
+  return'<div class="ph-hdr"><h1>Bom dia, '+(_resp==='todos'?'time':_resp)+'!</h1><p>Quarta-feira, 09 de setembro de 2026</p></div>'
+  +'<div class="kpi-grid">'
+  +'<div class="kpi"><div class="kpi-l">AUM Captado</div><div class="kpi-v gr">R$ 340.000</div><div class="kpi-s">Meta R$ 1M - <span class="up">34%</span> concluido</div></div>'
+  +'<div class="kpi"><div class="kpi-l">Pipeline AUM</div><div class="kpi-v">'+f$$(ls.reduce(function(s,l){return s+l.aum},0))+'</div><div class="kpi-s">Ponderado: <strong>'+f$$(Math.round(pond))+'</strong></div></div>'
+  +'<div class="kpi"><div class="kpi-l">Leads Ativos</div><div class="kpi-v">'+ls.filter(function(l){return l.status!=='Fechado'&&l.status!=='Perdido'}).length+'</div><div class="kpi-s"><span class="up">'+quentes+'</span> quentes</div></div>'
+  +'<div class="kpi"><div class="kpi-l">Reuniões Futuras</div><div class="kpi-v">'+fut+'</div><div class="kpi-s">C&amp;S: '+cs+' - Instagram leads: '+ig+'</div></div>'
+  +'</div>'
+  +'<div class="g2" style="gap:14px">'
+  +'<div class="panel"><div class="ph"><div class="pt">Meu Dia</div></div><div class="pb">'
+  +'<div class="di-i"><div class="di-ic">📅</div><div><div class="di-t">Reunião: Beatriz Nogueira</div><div class="di-s">BN Investimentos - Projetos Consultivos</div></div><div class="di-tm">Amanhã 10h</div></div>'
+  +'<div class="di-i"><div class="di-ic">⚡</div><div><div class="di-t">Follow-up: Ricardo Almeida</div><div class="di-s">Enviar agenda da reunião do dia 15</div></div><div class="di-tm">Hoje</div></div>'
+  +'<div class="di-i"><div class="di-ic">💬</div><div><div class="di-t">WhatsApp: Juliana Costa</div><div class="di-s">Enviar material sobre previdência privada</div></div><div class="di-tm">Hoje</div></div>'
+  +'<div class="di-i"><div class="di-ic">🔥</div><div><div class="di-t">Lead quente: Beatriz Nogueira</div><div class="di-s">Preparar material consultivo para reunião</div></div><div class="di-tm">Prioritário</div></div>'
+  +'<div class="di-i"><div class="di-ic">📞</div><div><div class="di-t">Ligar: Sofia Machado</div><div class="di-s">Tentativas anteriores sem resposta</div></div><div class="di-tm">Pendente</div></div>'
+  +'</div></div>'
+  +'<div class="panel"><div class="ph"><div class="pt">Alertas</div></div><div class="pb">'
+  +'<div class="al-i"><div class="al-d r"></div><div><div class="al-txt"><strong>Paulo Saraiva</strong> sem contato há 7 dias. Frio.</div><div class="al-sub">Último: 02/09 - Próx. ação: 20/09</div></div></div>'
+  +'<div class="al-i"><div class="al-d r"></div><div><div class="al-txt"><strong>Roberto Matos</strong> 10 dias sem atividade. AUM alto.</div><div class="al-sub">Último: 30/08 - Enviar proposta consultiva</div></div></div>'
+  +'<div class="al-i"><div class="al-d a"></div><div><div class="al-txt"><strong>Thiago Fonseca</strong> aguarda resposta de e-mail há 5 dias.</div><div class="al-sub">Follow-up: 14/09</div></div></div>'
+  +'<div class="al-i"><div class="al-d a"></div><div><div class="al-txt"><strong>Carlos Mendonça</strong> reunião sem próximos passos.</div><div class="al-sub">Follow-up: 13/09</div></div></div>'
+  +'<div class="al-i"><div class="al-d b"></div><div><div class="al-txt"><strong>Meta C&amp;S</strong> 4 de 10 reuniões. Ritmo abaixo do esperado.</div><div class="al-sub">Necessário: 1 reunião/semana</div></div></div>'
+  +'</div></div></div>'
+  +'<div class="panel" style="margin-top:14px"><div class="ph"><div class="pt">Leads Quentes</div><button class="btn btn-ol btn-sm" onclick="nav(\'leads\')">Ver todos</button></div>'
+  +'<table><thead><tr><th>Nome</th><th>Empresa</th><th>Resp.</th><th>AUM</th><th>Status</th><th>Temp.</th><th>Próxima Ação</th></tr></thead><tbody>'
+  +LEADS.filter(function(l){return l.temp==='Quente'&&(_resp==='todos'||l.resp===_resp)}).map(function(l){
+    return'<tr onclick="detL('+l.id+')">'
+    +'<td class="tdn">'+xe(l.nome)+'</td><td>'+xe(l.empresa)+'</td>'
+    +'<td>'+xe(l.resp)+'</td>'
+    +'<td style="font-weight:700;color:var(--gold)">'+f$$(l.aum)+'</td>'
+    +'<td>'+sb(l.status)+'</td><td>'+tb(l.temp)+'</td>'
+    +'<td style="font-size:10.5px">'+xe(l.acao)+'</td></tr>';
+  }).join('')+'</tbody></table></div>';
+}
+function rLeads(){
+  var ls=gl();
+  if(_ltab!=='todos'){
+    if(_ltab==='Quente')ls=ls.filter(function(l){return l.temp==='Quente'});
+    else if(_ltab==='Morno')ls=ls.filter(function(l){return l.temp==='Morno'});
+    else if(_ltab==='Frio')ls=ls.filter(function(l){return l.temp==='Frio'});
+    else if(_ltab==='Instagram')ls=ls.filter(function(l){return l.origem==='Instagram'});
+    else ls=ls.filter(function(l){return l.tipo===_ltab});
+  }
+  var tabs=[{k:'todos',l:'Todos'},{k:'Quente',l:'Quentes'},{k:'Morno',l:'Mornos'},{k:'Frio',l:'Frios'},{k:'Wealth',l:'Wealth'},{k:'Consórcio',l:'Consórcio'},{k:'Seguro',l:'Seguro'},{k:'Instagram',l:'Instagram'}];
+  return'<div class="toolbar"><div class="pills">'+tabs.map(function(t){return'<div class="pill'+((_ltab===t.k)?' on':'')+'" onclick="setLT(\''+t.k+'\')">'+t.l+'</div>'}).join('')+'</div><button class="btn btn-gd" onclick="openM(\'lead\')">+ Novo Lead</button></div>'
+  +'<div class="panel"><table><thead><tr><th>Nome / Empresa</th><th>Resp.</th><th>Tipo</th><th>Origem</th><th>AUM</th><th>Prob.</th><th>AUM Pond.</th><th>Status</th><th>Temp.</th><th>Próx. Contato</th></tr></thead><tbody>'
+  +(ls.length?ls.map(function(l){
+    return'<tr onclick="detL('+l.id+')">'
+    +'<td><div class="tdn">'+xe(l.nome)+'</div><div style="font-size:9.5px;color:var(--text3)">'+xe(l.empresa)+'</div></td>'
+    +'<td style="font-size:10.5px;font-weight:600">'+xe(l.resp)+'</td>'
+    +'<td style="font-size:10.5px">'+xe(l.tipo)+'</td><td style="font-size:10.5px">'+xe(l.origem)+'</td>'
+    +'<td style="font-weight:700;color:var(--gold)">'+f$$(l.aum)+'</td>'
+    +'<td style="font-weight:700">'+l.prob+'%</td>'
+    +'<td style="font-weight:600">'+f$$(Math.round(l.aum*l.prob/100))+'</td>'
+    +'<td>'+sb(l.status)+'</td><td>'+tb(l.temp)+'</td>'
+    +'<td style="font-size:10.5px;font-weight:600">'+fd(l.proximo)+'</td></tr>';
+  }).join(''):'<tr><td colspan="10" class="empty-s">Nenhum lead encontrado.</td></tr>')
+  +'</tbody></table></div>';
+}
+function setLT(t){_ltab=t;render()}
+
+function rPipe(){
+  var ls=gl();
+  var stages=['Novo','Contato realizado','Em conversa','Qualificado','Reunião marcada','Reunião realizada','Proposta'];
+  var tot=ls.reduce(function(s,l){return s+l.aum},0);
+  var pond=ls.reduce(function(s,l){return s+l.aum*(l.prob/100)},0);
+  return'<div class="g3" style="margin-bottom:14px">'
+  +'<div class="kpi"><div class="kpi-l">AUM Potencial</div><div class="kpi-v">'+f$$(tot)+'</div></div>'
+  +'<div class="kpi"><div class="kpi-l">AUM Ponderado</div><div class="kpi-v">'+f$$(Math.round(pond))+'</div></div>'
+  +'<div class="kpi"><div class="kpi-l">Leads no Pipeline</div><div class="kpi-v">'+ls.filter(function(l){return l.status!=='Fechado'&&l.status!=='Perdido'}).length+'</div></div>'
+  +'</div>'
+  +'<div class="kb-wrap">'+stages.map(function(st){
+    var cards=ls.filter(function(l){return l.status===st});
+    return'<div class="kb-col"><div class="kb-ch"><div class="kb-cn">'+xe(st)+'</div><div class="kb-cnt">'+cards.length+'</div></div>'
+    +'<div class="kb-cards">'+(cards.length?cards.map(function(l){
+      return'<div class="kbc" onclick="detL('+l.id+')">'
+      +'<div class="kbc-n">'+xe(l.nome)+'</div>'
+      +'<div class="kbc-e">'+xe(l.empresa)+'</div>'
+      +'<div class="kbc-a">'+f$$(l.aum)+'</div>'
+      +'<div class="kbc-ft"><span style="font-size:9.5px;color:var(--text3)">'+xe(l.resp)+'</span>'+tb(l.temp)+'</div>'
+      +'</div>';
+    }).join(''):'<div style="padding:12px;font-size:9.5px;color:var(--text4);text-align:center">Vazio</div>')+'</div></div>';
+  }).join('')+'</div>';
+}
+function rReunioes(){
+  var rs=gr();
+  var MES=['','jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return'<div class="toolbar"><div class="pills"><div class="pill on">Todas ('+rs.length+')</div></div><button class="btn btn-gd" onclick="openM(\'reuniao\')">+ Nova Reunião</button></div>'
+  +'<div style="display:flex;flex-direction:column;gap:9px">'+rs.map(function(r){
+    var past=r.status==='Realizada';
+    var dm=r.data.split('-');
+    return'<div class="rc" style="'+(past?'opacity:.75':'')+'"><div class="rc-db" style="background:'+(past?'var(--bg)':'var(--gold2)')+';border:1px solid '+(past?'var(--border)':'rgba(201,150,60,.2)')+'"><div class="rc-day" style="color:'+(past?'var(--text)':'var(--gold)')+'">'+dm[2]+'</div><div class="rc-mo">'+MES[parseInt(dm[1])]+'</div></div>'
+    +'<div class="rc-i"><div style="display:flex;align-items:center;justify-content:space-between"><div class="rc-n">'+xe(r.prospect)+'</div><span class="badge '+(past?'b-rre':'b-rmk')+'">'+xe(r.status)+'</span></div>'
+    +'<div class="rc-e">'+xe(r.empresa)+' - '+xe(r.tipo)+'</div>'
+    +'<div class="rc-m"><div class="rc-mi">'+r.hora+'</div><div class="rc-mi">'+xe(r.resp)+'</div><div class="rc-mi">'+f$$(r.aum)+'</div></div>'
+    +(r.resultado?'<div style="margin-top:7px;font-size:10.5px;color:var(--text2);font-style:italic">'+xe(r.resultado)+'</div>':'')
+    +(r.proximo?'<div style="margin-top:3px;font-size:10px;color:var(--gold);font-weight:600">'+xe(r.proximo)+'</div>':'')
+    +'</div></div>';
+  }).join('')+'</div>';
+}
+
+function rAtv(){
+  var as=ga();
+  var icons={WhatsApp:'💬',Ligação:'📞',Email:'📧',LinkedIn:'💼','Instagram DM':'📸',Reunião:'📅','Follow-up':'🔁',Outro:'📌'};
+  return'<div class="toolbar"><div style="font-size:11.5px;color:var(--text3)">'+as.length+' atividades</div><button class="btn btn-gd" onclick="openM(\'ativ\')">+ Nova Atividade</button></div>'
+  +'<div class="panel"><div class="pb">'+as.map(function(a){
+    return'<div class="av-i"><div class="av-ic">'+(icons[a.tipo]||'📌')+'</div>'
+    +'<div style="flex:1"><div class="av-t">'+xe(a.tipo)+' -- '+xe(a.lead)+'</div>'
+    +'<div class="av-s">'+xe(a.resultado)+'</div>'
+    +(a.obs?'<div class="av-o">'+xe(a.obs)+'</div>':'')
+    +'<div style="font-size:9.5px;color:var(--text4);margin-top:3px">'+xe(a.resp)+' - '+fd(a.data)+'</div></div>'
+    +'<div style="text-align:right;flex-shrink:0"><div style="font-size:9px;color:var(--text3)">Próx. passo</div>'
+    +'<div style="font-size:10px;font-weight:700;color:var(--gold);margin-top:2px">'+fd(a.pdata)+'</div></div></div>';
+  }).join('')+'</div></div>';
+}
+
+function rSocial(){
+  var ig=LEADS.filter(function(l){return l.origem==='Instagram'&&(_resp==='todos'||l.resp===_resp)});
+  var qual=ig.filter(function(l){return['Qualificado','Reunião marcada','Reunião realizada','Proposta','Fechado'].indexOf(l.status)>-1}).length;
+  var reun=ig.filter(function(l){return['Reunião marcada','Reunião realizada'].indexOf(l.status)>-1}).length;
+  var aum=ig.reduce(function(s,l){return s+l.aum},0);
+  return'<div class="kpi-grid">'
+  +'<div class="kpi"><div class="kpi-l">Leads Gerados</div><div class="kpi-v">'+ig.length+'</div><div class="kpi-s">Meta: 20 qualificados</div></div>'
+  +'<div class="kpi"><div class="kpi-l">Leads Qualificados</div><div class="kpi-v '+(qual>=20?'gr':'')+'">'+qual+'</div><div class="kpi-s"><span class="up">'+Math.round(qual/20*100)+'%</span> da meta</div></div>'
+  +'<div class="kpi"><div class="kpi-l">Reuniões Geradas</div><div class="kpi-v">'+reun+'</div><div class="kpi-s">Conversão: '+(ig.length?Math.round(reun/ig.length*100):0)+'%</div></div>'
+  +'<div class="kpi"><div class="kpi-l">AUM Potencial</div><div class="kpi-v">'+f$$(aum)+'</div></div></div>'
+  +'<div class="panel"><div class="ph"><div class="pt">Funil Instagram</div></div><div class="pb">'
+  +'<div class="funnl">'
+  +[['Interações','~200'],['Contatos','~40'],['Leads',''+ig.length],['Qualificados',''+qual],['Reuniões',''+reun],['Clientes','1']].map(function(s,i){
+    return'<div class="fn-s'+(i===2||i===3?' on':'')+'"><span class="fn-n">'+s[1]+'</span>'+xe(s[0])+'</div>';
+  }).join('')+'</div></div></div>'
+  +'<div class="panel" style="margin-top:14px"><div class="ph"><div class="pt">Leads do Instagram</div></div>'
+  +'<table><thead><tr><th>Nome</th><th>Empresa</th><th>Instagram</th><th>Resp.</th><th>AUM</th><th>Status</th><th>Temp.</th></tr></thead><tbody>'
+  +ig.map(function(l){return'<tr onclick="detL('+l.id+')">'
+    +'<td class="tdn">'+xe(l.nome)+'</td><td>'+xe(l.empresa)+'</td>'
+    +'<td style="font-size:10.5px;color:var(--gold)">'+xe(l.instagram||'--')+'</td>'
+    +'<td>'+xe(l.resp)+'</td><td style="font-weight:700;color:var(--gold)">'+f$$(l.aum)+'</td>'
+    +'<td>'+sb(l.status)+'</td><td>'+tb(l.temp)+'</td></tr>'}).join('')
+  +'</tbody></table></div>';
+}
+function rMetas(){
+  var ls=gl(),rs=gr();
+  var cs=rs.filter(function(r){return r.tipo==='Consórcio e Seguros'&&r.status==='Realizada'}).length;
+  var pr=rs.filter(function(r){return r.tipo==='Projetos'&&r.status==='Realizada'}).length;
+  var ig=ls.filter(function(l){return l.origem==='Instagram'&&['Qualificado','Reunião marcada','Reunião realizada','Proposta','Fechado'].indexOf(l.status)>-1}).length;
+  var ms=[
+    {n:'AUM Captado',d:'Novos ativos sob gestão até 31/12/2026',real:'R$ 340.000',meta:'R$ 1.000.000',pct:34,falta:'R$ 660.000',proj:'R$ 680.000 projetado para dez.'},
+    {n:'Reuniões C&amp;S',d:'Consórcio e Seguros - prospecção',real:cs+' reuniões',meta:'10 reuniões',pct:Math.round(cs/10*100),falta:(10-cs)+' reuniões',proj:cs+3+' projetadas'},
+    {n:'Reuniões Projetos',d:'Projetos Consultivos SOMA',real:pr+' reuniões',meta:'5 reuniões',pct:Math.round(pr/5*100),falta:(5-pr)+' reuniões',proj:pr+2+' projetadas'},
+    {n:'Leads Instagram',d:'Leads qualificados pelo Instagram',real:ig+' leads',meta:'20 leads',pct:Math.round(ig/20*100),falta:(20-ig)+' leads',proj:ig+6+' projetados'},
+  ];
+  return'<div class="g2" style="gap:14px">'+ms.map(function(m){
+    var ok=m.pct>=100;
+    return'<div class="mc"><div class="mc-hdr"><div><div class="mc-n">'+m.n+'</div><div style="font-size:10.5px;color:var(--text3);margin-top:3px">'+m.d+'</div></div><div class="mc-pct'+(ok?' ok':'')+'">'+m.pct+'%</div></div>'
+    +'<div class="pbar"><div class="pfill'+(ok?' ok':'')+'" style="width:'+Math.min(m.pct,100)+'%"></div></div>'
+    +'<div class="mc-vals"><div class="mc-val">Realizado: <strong>'+m.real+'</strong></div><div class="mc-val">Meta: <strong>'+m.meta+'</strong></div><div class="mc-val">Falta: <strong>'+m.falta+'</strong></div></div>'
+    +'<div style="font-size:9.5px;color:var(--text3);border-top:1px solid var(--border);padding-top:11px">'+m.proj+'</div></div>';
+  }).join('')+'</div>'
+  +'<div class="panel" style="margin-top:14px"><div class="ph"><div class="pt">AUM Captado por Responsável</div></div><div class="pb">'
+  +['Gui','Ana','Pedro','Lara'].map(function(j,i){var v=[100000,80000,90000,70000][i],p=Math.round(v/250000*100);
+    return'<div style="margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><span style="font-size:11.5px;font-weight:700">'+xe(j)+'</span><div style="font-size:11px;font-weight:700">'+f$$(v)+' de R$ 250.000 ('+p+'%)</div></div><div class="pbar"><div class="pfill" style="width:'+p+'%"></div></div></div>';
+  }).join('')+'</div></div>';
+}
+
+function rTime(){
+  var data=[
+    {j:'Gui',pr:5,ct:18,fu:12,re:3,ql:4,cs:1,pj:1,pip:950000,po:285000,cap:100000,ig:3},
+    {j:'Ana',pr:4,ct:14,fu:9,re:2,ql:3,cs:2,pj:0,pip:350000,po:162000,cap:80000,ig:3},
+    {j:'Pedro',pr:6,ct:22,fu:15,re:4,ql:5,cs:3,pj:1,pip:440000,po:121000,cap:90000,ig:0},
+    {j:'Lara',pr:5,ct:16,fu:11,re:2,ql:4,cs:1,pj:1,pip:470000,po:152000,cap:70000,ig:2},
+  ];
+  var cols=['Prospects','Contatos','Follow-ups','Reuniões','Qualif.','C&S','Proj.','Pipeline','Pond.','Captado','Social'];
+  var keys=['pr','ct','fu','re','ql','cs','pj','pip','po','cap','ig'];
+  var money={pip:1,po:1,cap:1};
+  return'<div class="panel"><div class="ph"><div class="pt">Desempenho Individual - Setembro 2026</div></div>'
+  +'<div style="overflow-x:auto"><table><thead><tr><th>Junior</th>'+cols.map(function(c){return'<th style="text-align:right">'+c+'</th>'}).join('')+'</tr></thead><tbody>'
+  +data.map(function(d){return'<tr><td><span style="font-weight:700;font-size:11.5px">'+xe(d.j)+'</span></td>'
+    +keys.map(function(k){var v=d[k],s=money[k]?f$$(v):v;return'<td style="text-align:right;font-weight:700;color:'+(k==='cap'?'var(--gold)':'var(--text)')+'">'+s+'</td>'}).join('')+'</tr>'}).join('')
+  +'</tbody></table></div></div>'
+  +'<div class="g2" style="margin-top:14px;gap:14px">'
+  +'<div class="panel"><div class="ph"><div class="pt">Ranking - AUM Captado</div></div><div class="pb">'
+  +[{j:'Gui',v:100000},{j:'Pedro',v:90000},{j:'Ana',v:80000},{j:'Lara',v:70000}].map(function(d,r){
+    return'<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">'
+    +'<div style="font-size:15px;font-weight:900;color:'+(r===0?'var(--gold)':'var(--text3)')+';width:22px">'+(r+1)+'</div>'
+    +'<div style="flex:1;font-size:11.5px;font-weight:700">'+xe(d.j)+'</div>'
+    +'<div style="font-size:12px;font-weight:800;color:var(--gold)">'+f$$(d.v)+'</div></div>';
+  }).join('')+'</div></div>'
+  +'<div class="panel"><div class="ph"><div class="pt">Ranking - Reuniões</div></div><div class="pb">'
+  +[{j:'Pedro',v:4},{j:'Gui',v:3},{j:'Ana',v:2},{j:'Lara',v:2}].map(function(d,r){
+    return'<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">'
+    +'<div style="font-size:15px;font-weight:900;color:'+(r===0?'var(--gold)':'var(--text3)')+';width:22px">'+(r+1)+'</div>'
+    +'<div style="flex:1;font-size:11.5px;font-weight:700">'+xe(d.j)+'</div>'
+    +'<div style="font-size:12px;font-weight:800">'+d.v+' reuniões</div></div>';
+  }).join('')+'</div></div></div>';
+}
+
+function rParceiros(){return'<div class="panel"><div class="pb" style="text-align:center;padding:60px"><div style="font-size:32px;margin-bottom:12px">🤝</div><div style="font-size:13px;color:var(--text3)">Área de Parceiros em desenvolvimento.</div></div></div>'}
+function rConfig(){
+  return'<div class="panel"><div class="ph"><div class="pt">Configurações</div></div><div class="pb">'
+  +'<div class="fr"><div class="ff"><label>Meta AUM</label><input value="1000000"/></div><div class="ff"><label>Prazo</label><input value="31/12/2026"/></div></div>'
+  +'<div class="fr" style="margin-top:12px"><div class="ff"><label>Meta C&amp;S (reuniões)</label><input value="10"/></div><div class="ff"><label>Meta Projetos</label><input value="5"/></div></div>'
+  +'<div class="fr" style="margin-top:12px"><div class="ff"><label>Meta Instagram</label><input value="20"/></div><div class="ff"><label>Meta por Junior (AUM)</label><input value="250000"/></div></div>'
+  +'<div style="margin-top:18px"><button class="btn btn-nv">Salvar</button></div></div></div>';
+}
+function openM(type,id){
+  _mt=type;_eid=id||null;
+  var titles={lead:'Novo Lead',reuniao:'Nova Reunião',ativ:'Nova Atividade'};
+  document.getElementById('mo-t').textContent=titles[type]||'';
+  document.getElementById('mo-b').innerHTML=mBody(type,id);
+  document.getElementById('mo-f').innerHTML='<button class="btn btn-ol" onclick="closeM()">Cancelar</button><button class="btn btn-nv" onclick="saveM()">Salvar</button>';
+  document.getElementById('mo').style.display='flex';
+}
+function closeM(){document.getElementById('mo').style.display='none'}
+
+function mBody(type,id){
+  if(type==='lead'){
+    var l=id?LEADS.find(function(x){return x.id===id}):null;
+    var gv=function(f){return l?xe(l[f]||''):''};
+    var sS=['Novo','Contato realizado','Em conversa','Qualificado','Reunião marcada','Reunião realizada','Proposta','Fechado','Perdido'];
+    var sO=['Indicação','Cliente','Instagram','LinkedIn','Networking','Evento','Outbound','Parceiro','Outro'];
+    var sT=['Wealth','Consórcio','Seguro','Jurídico','Executive Office','Estruturação Patrimonial','Outro'];
+    return'<div class="fr"><div class="ff ff-full"><label>Nome completo</label><input id="fn" value="'+gv('nome')+'" placeholder="Nome do prospect"/></div></div>'
+    +'<div class="fr"><div class="ff"><label>Empresa</label><input id="fe" value="'+gv('empresa')+'" placeholder="Empresa"/></div><div class="ff"><label>Cargo</label><input id="fc" value="'+gv('cargo')+'" placeholder="Cargo"/></div></div>'
+    +'<div class="fr"><div class="ff"><label>WhatsApp</label><input id="fw" value="'+gv('wa')+'" placeholder="(81) 99999-9999"/></div><div class="ff"><label>Email</label><input id="fml" value="'+gv('email')+'" placeholder="email@empresa.com"/></div></div>'
+    +'<div class="fr"><div class="ff"><label>Instagram</label><input id="fig" value="'+gv('instagram')+'" placeholder="@perfil"/></div><div class="ff"><label>LinkedIn</label><input id="fli" value="'+gv('linkedin')+'" placeholder="in/perfil"/></div></div>'
+    +'<div class="fr3"><div class="ff"><label>Responsável</label><select id="frp">'+JRS.map(function(j){return'<option'+(l&&l.resp===j?' selected':'')+'>'+j+'</option>'}).join('')+'</select></div>'
+    +'<div class="ff"><label>Origem</label><select id="for">'+sO.map(function(o){return'<option'+(l&&l.origem===o?' selected':'')+'>'+o+'</option>'}).join('')+'</select></div>'
+    +'<div class="ff"><label>Tipo</label><select id="ftp">'+sT.map(function(t){return'<option'+(l&&l.tipo===t?' selected':'')+'>'+t+'</option>'}).join('')+'</select></div></div>'
+    +'<div class="fr3"><div class="ff"><label>AUM Estimado (R$)</label><input id="fau" type="number" value="'+(l?l.aum:'')+'" placeholder="150000"/></div>'
+    +'<div class="ff"><label>Probabilidade (%)</label><input id="fpr" type="number" value="'+(l?l.prob:50)+'" placeholder="50"/></div>'
+    +'<div class="ff"><label>Status</label><select id="fst">'+sS.map(function(s){return'<option'+(l&&l.status===s?' selected':'')+'>'+s+'</option>'}).join('')+'</select></div></div>'
+    +'<div class="fr"><div class="ff"><label>Temperatura</label><select id="ftm"><option'+(l&&l.temp==='Frio'?' selected':'')+'>Frio</option><option'+(l&&l.temp==='Morno'?' selected':'')+'>Morno</option><option'+((!l||l.temp==='Quente')?' selected':'')+'>Quente</option></select></div>'
+    +'<div class="ff"><label>Próximo Contato</label><input id="fpx" type="date" value="'+(l?l.proximo:'')+'"/></div></div>'
+    +'<div class="ff"><label>Próxima Ação</label><input id="fac" value="'+gv('acao')+'" placeholder="O que fazer a seguir?"/></div>'
+    +'<div class="ff"><label>Observações</label><textarea id="fob" placeholder="Contexto, dores, observações...">'+gv('obs')+'</textarea></div>';
+  }
+  if(type==='reuniao'){
+    return'<div class="fr"><div class="ff"><label>Prospect</label><select id="rld">'+LEADS.map(function(l){return'<option value="'+l.id+'">'+xe(l.nome)+' -- '+xe(l.empresa)+'</option>'}).join('')+'</select></div>'
+    +'<div class="ff"><label>Responsável</label><select id="rrp">'+JRS.map(function(j){return'<option>'+j+'</option>'}).join('')+'</select></div></div>'
+    +'<div class="fr"><div class="ff"><label>Data</label><input id="rdt" type="date"/></div><div class="ff"><label>Horário</label><input id="rhr" type="time" value="10:00"/></div></div>'
+    +'<div class="fr"><div class="ff"><label>Tipo</label><select id="rtp"><option>Wealth</option><option>Consórcio e Seguros</option><option>Projetos</option><option>Outro</option></select></div>'
+    +'<div class="ff"><label>AUM Potencial (R$)</label><input id="rau" type="number" placeholder="100000"/></div></div>'
+    +'<div class="ff"><label>Objetivo</label><input id="rob" placeholder="Qual o objetivo desta reunião?"/></div>'
+    +'<div class="ff"><label>Contexto</label><textarea id="rct" placeholder="O que sabemos? Histórico, dores..."></textarea></div>';
+  }
+  if(type==='ativ'){
+    return'<div class="fr"><div class="ff"><label>Lead</label><select id="ald">'+LEADS.map(function(l){return'<option>'+xe(l.nome)+'</option>'}).join('')+'</select></div>'
+    +'<div class="ff"><label>Responsável</label><select id="arp">'+JRS.map(function(j){return'<option>'+j+'</option>'}).join('')+'</select></div></div>'
+    +'<div class="fr"><div class="ff"><label>Tipo</label><select id="atp"><option>WhatsApp</option><option>Ligação</option><option>Email</option><option>LinkedIn</option><option>Instagram DM</option><option>Reunião</option><option>Follow-up</option><option>Outro</option></select></div>'
+    +'<div class="ff"><label>Data</label><input id="adt" type="date"/></div></div>'
+    +'<div class="ff"><label>Resultado</label><input id="are" placeholder="O que aconteceu?"/></div>'
+    +'<div class="ff"><label>Observações</label><textarea id="aob" placeholder="Detalhes adicionais..."></textarea></div>'
+    +'<div class="fr"><div class="ff"><label>Próximo Passo</label><input id="apx" placeholder="O que fazer a seguir?"/></div>'
+    +'<div class="ff"><label>Data do Próx. Passo</label><input id="apd" type="date"/></div></div>';
+  }
+  return '';
+}
+
+function saveM(){
+  if(_mt==='lead'){
+    var nm=document.getElementById('fn').value;
+    if(!nm){alert('Informe o nome.');return}
+    var obj={id:_eid||Date.now(),nome:nm,empresa:document.getElementById('fe').value,cargo:document.getElementById('fc').value,wa:document.getElementById('fw').value,email:document.getElementById('fml').value,instagram:document.getElementById('fig').value,resp:document.getElementById('frp').value,origem:document.getElementById('for').value,tipo:document.getElementById('ftp').value,aum:parseInt(document.getElementById('fau').value)||0,prob:parseInt(document.getElementById('fpr').value)||50,status:document.getElementById('fst').value,temp:document.getElementById('ftm').value,proximo:document.getElementById('fpx').value,acao:document.getElementById('fac').value,obs:document.getElementById('fob').value};
+    if(_eid){var i=LEADS.findIndex(function(l){return l.id===_eid});if(i>-1)LEADS[i]=obj}else LEADS.push(obj);
+  } else if(_mt==='reuniao'){
+    var lid=parseInt(document.getElementById('rld').value);var ld=LEADS.find(function(l){return l.id===lid});
+    REUNIOES.unshift({id:Date.now(),data:document.getElementById('rdt').value,hora:document.getElementById('rhr').value,prospect:ld?ld.nome:'',empresa:ld?ld.empresa:'',resp:document.getElementById('rrp').value,tipo:document.getElementById('rtp').value,objetivo:document.getElementById('rob').value,aum:parseInt(document.getElementById('rau').value)||0,status:'Agendada',resultado:'',proximo:''});
+  } else if(_mt==='ativ'){
+    ATIVIDADES.unshift({id:Date.now(),data:document.getElementById('adt').value||new Date().toISOString().slice(0,10),lead:document.getElementById('ald').value,resp:document.getElementById('arp').value,tipo:document.getElementById('atp').value,resultado:document.getElementById('are').value,obs:document.getElementById('aob').value,proximo:document.getElementById('apx').value,pdata:document.getElementById('apd').value});
+  }
+  closeM();render();
+}
+
+function detL(id){
+  var l=LEADS.find(function(x){return x.id===id});if(!l)return;
+  document.getElementById('mo-t').textContent=xe(l.nome)+' -- '+xe(l.empresa);
+  document.getElementById('mo-b').innerHTML=
+    '<div class="fr" style="margin-bottom:12px"><div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Cargo</div><div style="font-size:12px;font-weight:600">'+xe(l.cargo)+'</div></div>'
+    +'<div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Responsável</div><div style="font-size:12px;font-weight:600">'+xe(l.resp)+'</div></div></div>'
+    +'<div class="fr" style="margin-bottom:12px"><div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">WhatsApp</div><div style="font-size:12px">'+xe(l.wa)+'</div></div>'
+    +'<div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Email</div><div style="font-size:12px">'+xe(l.email)+'</div></div></div>'
+    +'<div class="fr" style="margin-bottom:12px"><div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Status</div>'+sb(l.status)+' '+tb(l.temp)+'</div>'
+    +'<div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Tipo / Origem</div><div style="font-size:12px;font-weight:600">'+xe(l.tipo)+' - '+xe(l.origem)+'</div></div></div>'
+    +'<div class="fr" style="margin-bottom:12px"><div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">AUM Estimado</div><div style="font-size:20px;font-weight:900;color:var(--gold)">'+f$$(l.aum)+'</div></div>'
+    +'<div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">AUM Ponderado</div><div style="font-size:20px;font-weight:900">'+f$$(Math.round(l.aum*l.prob/100))+'</div><div style="font-size:10px;color:var(--text3)">'+l.prob+'% de probabilidade</div></div></div>'
+    +'<div style="border-top:1px solid var(--border);padding-top:14px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Próxima Ação</div>'
+    +'<div style="font-size:12px;font-weight:600;color:var(--gold)">'+xe(l.acao)+'</div>'
+    +'<div style="font-size:10px;color:var(--text3);margin-top:3px">Próximo contato: '+fd(l.proximo)+'</div></div>'
+    +(l.obs?'<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:12px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Observações</div><div style="font-size:11.5px;color:var(--text2);line-height:1.6">'+xe(l.obs)+'</div></div>':'');
+  document.getElementById('mo-f').innerHTML='<button class="btn btn-ol" onclick="closeM()">Fechar</button><button class="btn btn-ol" onclick="openM(\'lead\','+l.id+')">Editar</button><button class="btn btn-gd" onclick="openM(\'ativ\')">+ Atividade</button>';
+  document.getElementById('mo').style.display='flex';
+}
+
+render();
+</script>
+</body>
+</html>
