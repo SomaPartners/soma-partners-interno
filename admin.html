@@ -5559,7 +5559,7 @@ function cliTab(t){
 }
 
 function parseCSV(text){
-  var lines = text.trim().split('\n');
+  var lines = text.trim().split(/\r?\n/);
   var result = [];
   for(var i=0;i<lines.length;i++){
     var cols = [];
@@ -5588,13 +5588,20 @@ function renderCliTable(){
   if(!wrap) return;
   if(_cliTab==='clientes'){
     if(!_cliData){ wrap.innerHTML='<div style="color:rgba(255,255,255,0.4);padding:40px;text-align:center">Carregando clientes...</div>'; loadCliData(); return; }
-    var rows = _cliData.filter(function(r,i){ return i>1 && r.join('').trim(); });
-    // headers from row 1 (index 1)
-    var hdr = _cliData[1] || [];
-    if(!rows.length){ wrap.innerHTML='<div style="color:rgba(255,255,255,0.4);padding:60px;text-align:center;font-size:13px">Nenhum cliente cadastrado ainda.<br><span style="font-size:11px;margin-top:8px;display:block">Adicione dados na planilha Google Sheets e eles aparecerão aqui automaticamente.</span></div>'; return; }
-    // Group by Projeto
+    // Find header row (first row with 'Família' or 'Familia')
+    var hdrIdx = 0;
+    for(var i=0;i<_cliData.length;i++){ if(_cliData[i].join('').toLowerCase().indexOf('fam')>-1 && _cliData[i].length>3){ hdrIdx=i; break; } }
+    var hdr = _cliData[hdrIdx].map(function(h){ return h.trim().toLowerCase(); });
+    var rows = _cliData.filter(function(r,i){ return i>hdrIdx && r.join('').trim(); });
+    if(!rows.length){ wrap.innerHTML='<div style="color:rgba(255,255,255,0.4);padding:60px;text-align:center;font-size:13px">Nenhum cliente cadastrado ainda.<br><span style="font-size:11px;margin-top:8px;display:block">Adicione dados na planilha e eles aparecerão aqui automaticamente.</span></div>'; return; }
+    // Map columns by header name
+    function ci(names){ for(var k=0;k<names.length;k++){ for(var j=0;j<hdr.length;j++){ if(hdr[j].indexOf(names[k])>-1) return j; } } return -1; }
+    var iProj=ci(['servi','projeto','proj']); var iFam=ci(['famil']); var iNome=ci(['nome']); var iCPF=ci(['cpf']);
+    var iEmail=ci(['email']); var iTel=ci(['tel','whats','fone']); var iCid=ci(['cidad']); var iUF=ci(['uf','estado']);
+    var iEC=ci(['civil']); var iPat=ci(['patrim']); var iRen=ci(['renda']);
+    // Group by Projeto/Serviço
     var projs = {};
-    rows.forEach(function(r){ var p=r[0]||'Sem Projeto'; if(!projs[p])projs[p]=[]; projs[p].push(r); });
+    rows.forEach(function(r){ var p=(iProj>=0?r[iProj]:r[0])||'Sem Projeto'; p=p.trim(); if(!p)p='Sem Projeto'; if(!projs[p])projs[p]=[]; projs[p].push(r); });
     var out = '';
     Object.keys(projs).forEach(function(proj){
       out += '<div style="margin-bottom:20px"><div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);padding:8px 0 6px;border-bottom:1px solid rgba(201,150,60,0.2);margin-bottom:8px">'+proj+'</div>';
@@ -5604,8 +5611,10 @@ function renderCliTable(){
       });
       out += '</tr></thead><tbody>';
       projs[proj].forEach(function(r){
+        function gv(i){ return i>=0&&i<r.length ? (r[i]||'').trim() : ''; }
+        var cid = gv(iCid); var uf = gv(iUF);
         out += '<tr style="border-bottom:1px solid var(--border)">';
-        [r[1],r[2],r[3],r[6],r[7],((r[11]||'')+(r[12]?'/'+r[12]:'')),r[14],fmtBRL(r[15]),fmtBRL(r[16])].forEach(function(v){
+        [gv(iFam),gv(iNome),gv(iCPF),gv(iEmail),gv(iTel),(cid+(uf?'/'+uf:'')),gv(iEC),fmtBRL(gv(iPat)),fmtBRL(gv(iRen))].forEach(function(v){
           out += '<td style="font-size:11px;padding:7px 8px;color:rgba(255,255,255,0.85)">'+((v||'--').replace(/&/g,'&amp;').replace(/</g,'&lt;'))+'</td>';
         });
         out += '</tr>';
