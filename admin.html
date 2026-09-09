@@ -275,6 +275,10 @@ body{display:flex;flex-direction:column;overflow:hidden}
     <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     <span>Demandas</span>
   </div>
+  <div class="nav-item" data-sec="cli-info" onclick="nav('cli-info',this)">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span>Informações</span>
+  </div>
 
   <div class="sidebar-section">Comercial</div>
   <div class="nav-item" data-sec="crm" onclick="nav('crm',this)">
@@ -789,7 +793,18 @@ body{display:flex;flex-direction:column;overflow:hidden}
     </iframe>
   </div>
 
-  <div class="section" id="section-crm" style="margin:-28px -32px;overflow:hidden">
+  <div class="section" id="section-cli-info">
+    <div id="cli-info-root">
+      <div style="display:flex;gap:12px;margin-bottom:18px">
+        <button class="btn btn-nv" id="tab-cli" onclick="cliTab('clientes')">Clientes</button>
+        <button class="btn btn-ol" id="tab-acc" onclick="cliTab('acessos')">Acessos</button>
+        <div id="cli-status" style="margin-left:auto;font-size:11px;color:rgba(255,255,255,0.4);align-self:center"></div>
+      </div>
+      <div id="cli-table-wrap"></div>
+    </div>
+  </div>
+
+    <div class="section" id="section-crm" style="margin:-28px -32px;overflow:hidden">
     <iframe src="crm.html"
       style="width:100%;height:calc(100vh - 58px);border:none;display:block"
       title="CRM Comercial">
@@ -5527,6 +5542,132 @@ function hexToRgb(hex){
   return`${r},${g},${b}`;
 }
 
+
+// ── INFORMAÇÕES DOS CLIENTES ────────────────────────────────────────────────
+var CLI_CSV   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMHSv3aYajQN0Bu1opFbvFMq3HCkqXtGn0D6v0o4a96ZUTfZJdes1N6ikjDW4a0092IfPVJXHDaXxy/pub?gid=1333358224&single=true&output=csv&_=';
+var ACC_CSV   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMHSv3aYajQN0Bu1opFbvFMq3HCkqXtGn0D6v0o4a96ZUTfZJdes1N6ikjDW4a0092IfPVJXHDaXxy/pub?gid=1116473549&single=true&output=csv&_=';
+var _cliTab   = 'clientes';
+var _cliData  = null;
+var _accData  = null;
+
+function cliTab(t){
+  _cliTab = t;
+  document.getElementById('tab-cli').className = t==='clientes' ? 'btn btn-nv' : 'btn btn-ol';
+  document.getElementById('tab-acc').className = t==='acessos'  ? 'btn btn-nv' : 'btn btn-ol';
+  renderCliTable();
+}
+
+function parseCSV(text){
+  var lines = text.trim().split('\n');
+  var result = [];
+  for(var i=0;i<lines.length;i++){
+    var cols = [];
+    var cur = '';
+    var inq = false;
+    for(var j=0;j<lines[i].length;j++){
+      var ch = lines[i][j];
+      if(ch==='"'){ inq=!inq; }
+      else if(ch===','&&!inq){ cols.push(cur); cur=''; }
+      else { cur+=ch; }
+    }
+    cols.push(cur);
+    result.push(cols);
+  }
+  return result;
+}
+
+function fmtBRL(v){
+  var n=parseFloat(String(v).replace(/[^0-9.,]/g,'').replace(',','.'));
+  if(isNaN(n))return v||'--';
+  return 'R$ '+n.toLocaleString('pt-BR');
+}
+
+function renderCliTable(){
+  var wrap = document.getElementById('cli-table-wrap');
+  if(!wrap) return;
+  if(_cliTab==='clientes'){
+    if(!_cliData){ wrap.innerHTML='<div style="color:rgba(255,255,255,0.4);padding:40px;text-align:center">Carregando clientes...</div>'; loadCliData(); return; }
+    var rows = _cliData.filter(function(r,i){ return i>1 && r.join('').trim(); });
+    // headers from row 1 (index 1)
+    var hdr = _cliData[1] || [];
+    if(!rows.length){ wrap.innerHTML='<div style="color:rgba(255,255,255,0.4);padding:60px;text-align:center;font-size:13px">Nenhum cliente cadastrado ainda.<br><span style="font-size:11px;margin-top:8px;display:block">Adicione dados na planilha Google Sheets e eles aparecerão aqui automaticamente.</span></div>'; return; }
+    // Group by Projeto
+    var projs = {};
+    rows.forEach(function(r){ var p=r[0]||'Sem Projeto'; if(!projs[p])projs[p]=[]; projs[p].push(r); });
+    var out = '';
+    Object.keys(projs).forEach(function(proj){
+      out += '<div style="margin-bottom:20px"><div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);padding:8px 0 6px;border-bottom:1px solid rgba(201,150,60,0.2);margin-bottom:8px">'+proj+'</div>';
+      out += '<table style="width:100%;border-collapse:collapse"><thead><tr>';
+      ['Família','Nome Completo','CPF','Email','Telefone','Cidade/UF','Estado Civil','Patrimônio','Renda Mensal'].forEach(function(h){
+        out += '<th style="text-align:left;font-size:9.5px;font-weight:700;color:rgba(255,255,255,0.5);padding:5px 8px;border-bottom:1px solid var(--border)">'+h+'</th>';
+      });
+      out += '</tr></thead><tbody>';
+      projs[proj].forEach(function(r){
+        out += '<tr style="border-bottom:1px solid var(--border)">';
+        [r[1],r[2],r[3],r[6],r[7],((r[11]||'')+(r[12]?'/'+r[12]:'')),r[14],fmtBRL(r[15]),fmtBRL(r[16])].forEach(function(v){
+          out += '<td style="font-size:11px;padding:7px 8px;color:rgba(255,255,255,0.85)">'+((v||'--').replace(/&/g,'&amp;').replace(/</g,'&lt;'))+'</td>';
+        });
+        out += '</tr>';
+      });
+      out += '</tbody></table></div>';
+    });
+    wrap.innerHTML = out;
+  } else {
+    if(!_accData){ wrap.innerHTML='<div style="color:rgba(255,255,255,0.4);padding:40px;text-align:center">Carregando acessos...</div>'; loadAccData(); return; }
+    var rows = _accData.filter(function(r,i){ return i>2 && r.join('').trim(); });
+    if(!rows.length){ wrap.innerHTML='<div style="color:rgba(255,255,255,0.4);padding:60px;text-align:center;font-size:13px">Nenhum acesso cadastrado ainda.</div>'; return; }
+    var out = '<table style="width:100%;border-collapse:collapse"><thead><tr>';
+    ['Cliente','Projeto','Conta / Serviço','Login','Senha','Site','Status'].forEach(function(h){
+      out += '<th style="text-align:left;font-size:9.5px;font-weight:700;color:rgba(255,255,255,0.5);padding:5px 8px;border-bottom:1px solid var(--border)">'+h+'</th>';
+    });
+    out += '</tr></thead><tbody>';
+    rows.forEach(function(r){
+      var status = r[6]||'';
+      var sc = status.toLowerCase().indexOf('ativo')>-1&&status.toLowerCase().indexOf('in')<0 ? 'color:#4ade80' : 'color:rgba(255,255,255,0.4)';
+      out += '<tr style="border-bottom:1px solid var(--border)">';
+      [r[0],r[1],r[2],r[3]].forEach(function(v){
+        out += '<td style="font-size:11px;padding:7px 8px;color:rgba(255,255,255,0.85)">'+((v||'--').replace(/&/g,'&amp;').replace(/</g,'&lt;'))+'</td>';
+      });
+      // Senha — mostrar/ocultar
+      var sid = 'pw'+Math.random().toString(36).slice(2,7);
+      out += '<td style="font-size:11px;padding:7px 8px"><span id="'+sid+'" style="filter:blur(4px);cursor:pointer;color:rgba(255,255,255,0.85)" onclick="this.style.filter=this.style.filter?'':' blur(4px)'">'+((r[4]||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'))+'</span></td>';
+      // Site
+      var site = r[5]||'';
+      out += '<td style="font-size:11px;padding:7px 8px">'+(site?'<a href="'+site+'" target="_blank" style="color:var(--gold);text-decoration:none">abrir ↗</a>':'--')+'</td>';
+      out += '<td style="font-size:11px;padding:7px 8px;'+sc+'">'+((status||'--').replace(/&/g,'&amp;'))+'</td>';
+      out += '</tr>';
+    });
+    out += '</tbody></table>';
+    wrap.innerHTML = out;
+  }
+}
+
+function loadCliData(){
+  fetch(CLI_CSV+Date.now(),{signal:AbortSignal.timeout(15000)}).then(function(r){return r.text()}).then(function(t){
+    _cliData = parseCSV(t);
+    document.getElementById('cli-status').textContent='Atualizado agora';
+    renderCliTable();
+  }).catch(function(){ document.getElementById('cli-status').textContent='Erro ao carregar'; });
+}
+function loadAccData(){
+  fetch(ACC_CSV+Date.now(),{signal:AbortSignal.timeout(15000)}).then(function(r){return r.text()}).then(function(t){
+    _accData = parseCSV(t);
+    renderCliTable();
+  }).catch(function(){});
+}
+
+// Hook into nav
+var _origNav = typeof nav === 'function' ? nav : null;
+document.addEventListener('DOMContentLoaded', function(){
+  var origNav = window.nav;
+  window.nav = function(sec, el){
+    origNav(sec, el);
+    if(sec==='cli-info'){
+      _cliData = null; _accData = null;
+      setTimeout(function(){ cliTab('clientes'); }, 50);
+    }
+  };
+});
 </script>
 </body>
 </html>
