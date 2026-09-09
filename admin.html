@@ -5631,7 +5631,7 @@ function renderCliTable(){
       });
       // Senha — mostrar/ocultar
       var sid = 'pw'+Math.random().toString(36).slice(2,7);
-      out += '<td style="font-size:11px;padding:7px 8px"><span id="'+sid+'" style="filter:blur(4px);cursor:pointer;color:rgba(255,255,255,0.85)" onclick="this.style.filter=this.style.filter?'':' blur(4px)'">'+((r[4]||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'))+'</span></td>';
+      out += '<td style="font-size:11px;padding:7px 8px"><span id="'+sid+'" style="filter:blur(4px);cursor:pointer;color:rgba(255,255,255,0.85)" onclick="this.style.filter=this.style.filter?\'\':\'blur(4px)\'">'+((r[4]||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'))+'</span></td>';
       // Site
       var site = r[5]||'';
       out += '<td style="font-size:11px;padding:7px 8px">'+(site?'<a href="'+site+'" target="_blank" style="color:var(--gold);text-decoration:none">abrir ↗</a>':'--')+'</td>';
