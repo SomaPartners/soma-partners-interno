@@ -1590,6 +1590,7 @@ function nav(sec,el){
   if(el) el.classList.add('active');
   document.getElementById('section-'+sec).classList.add('active');
   if(sec==='extrato') exLoadSaved();
+  if(sec==='cli-info'){ _cliData=null; _accData=null; setTimeout(function(){ if(typeof cliTab==='function') cliTab('clientes'); },50); }
 }
 
 // ── MODAL ──
@@ -5656,18 +5657,7 @@ function loadAccData(){
   }).catch(function(){});
 }
 
-// Hook into nav
-var _origNav = typeof nav === 'function' ? nav : null;
-document.addEventListener('DOMContentLoaded', function(){
-  var origNav = window.nav;
-  window.nav = function(sec, el){
-    origNav(sec, el);
-    if(sec==='cli-info'){
-      _cliData = null; _accData = null;
-      setTimeout(function(){ cliTab('clientes'); }, 50);
-    }
-  };
-});
+
 </script>
 </body>
 </html>
