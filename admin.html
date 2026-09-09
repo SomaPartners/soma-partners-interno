@@ -5559,21 +5559,26 @@ function cliTab(t){
 }
 
 function parseCSV(text){
-  var lines = text.trim().split(/\r?\n/);
-  var result = [];
-  for(var i=0;i<lines.length;i++){
-    var cols = [];
-    var cur = '';
-    var inq = false;
-    for(var j=0;j<lines[i].length;j++){
-      var ch = lines[i][j];
-      if(ch==='"'){ inq=!inq; }
-      else if(ch===','&&!inq){ cols.push(cur); cur=''; }
+  // RFC 4180 compliant parser - handles quoted fields with embedded newlines
+  var result=[], row=[], cur='', inq=false;
+  text = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  for(var i=0;i<text.length;i++){
+    var ch=text[i];
+    if(inq){
+      if(ch==='"'&&text[i+1]==='"'){ cur+='"'; i++; }
+      else if(ch==='"'){ inq=false; }
       else { cur+=ch; }
+    } else {
+      if(ch==='"'){ inq=true; }
+      else if(ch===','){ row.push(cur.trim()); cur=''; }
+      else if(ch==='\n'){
+        row.push(cur.trim()); cur='';
+        if(row.some(function(c){return c.length>0;})) result.push(row);
+        row=[];
+      } else { cur+=ch; }
     }
-    cols.push(cur);
-    result.push(cols);
   }
+  if(cur.trim()||row.length){ row.push(cur.trim()); if(row.some(function(c){return c.length>0;})) result.push(row); }
   return result;
 }
 
