@@ -59,6 +59,10 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .status-card-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
 
 /* TABLE */
+.pg-btn{padding:5px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,.6);font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
+.pg-btn:hover:not([disabled]){border-color:rgba(201,150,60,.5);color:#c9963c}
+.pg-btn[disabled]{opacity:.25;cursor:default}
+/* TABLE */
 .table-section{padding:0 40px 60px}
 .table-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .table-title{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
@@ -66,7 +70,7 @@ html,body{min-height:100%;background:var(--navy);font-family:'Montserrat',sans-s
 .fb{padding:4px 11px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.45);font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .15s}
 .fb:hover{color:#fff}.fb.active{border-color:rgba(59,139,255,0.45);background:rgba(59,139,255,0.1);color:#fff}
 .table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
 thead tr{border-bottom:1px solid rgba(255,255,255,0.1)}
 thead th{padding:10px 14px;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left;white-space:nowrap}
 tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background .12s}
@@ -156,6 +160,14 @@ body.embed .topnav{display:none}
     </div>
     <div class="table-wrap">
       <table>
+        <colgroup>
+          <col style="width:90px">
+          <col style="width:32%">
+          <col style="width:90px">
+          <col style="width:70px">
+          <col style="width:110px">
+          <col>
+        </colgroup>
         <thead><tr>
           <th>Data</th>
           <th>Descrição</th>
@@ -167,6 +179,7 @@ body.embed .topnav{display:none}
         <tbody id="demands-tbody"></tbody>
       </table>
     </div>
+    <div id="pagination-bar" style="display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 0 8px"></div>
   </div>
 </div>
 
@@ -177,7 +190,8 @@ const CSVBASE='https://docs.google.com/spreadsheets/d/e/2PACX-1vTw3bhacnZOSnWBDe
 const SKIP_TABS=['MODELO BASE','modelo base'];
 const PAL=['#3b8bff','#c9963c','#10b981','#8b5cf6','#ef4444','#f97316','#06b6d4','#ec4899','#84cc16','#6366f1'];
 
-let _tabs=[], _clients=[], _activeIdx=-1, _allDemands=[], _filter='TODOS';
+let _tabs=[], _clients=[], _activeIdx=-1, _allDemands=[], _filter='TODOS', _page=0;
+const PAGE_SIZE=15;
 
 // ── Embed mode ──────────────────────────────────────────────────────────────
 if(new URLSearchParams(location.search).get('embed')==='1') document.body.classList.add('embed');
@@ -300,6 +314,7 @@ function openClient(idx){
   _activeIdx=idx;
   const c=_clients[idx];
   _allDemands=c.demands;
+  _page=0;
   _filter='TODOS';
   document.getElementById('detail-name').textContent=c.name;
   // Status cards
@@ -327,24 +342,37 @@ function openClient(idx){
 
 function setFilter(f){
   _filter=f;
+  _page=0;
   document.querySelectorAll('.fb').forEach(b=>b.classList.toggle('active',b.textContent===f));
   renderDemands();
 }
 
 function renderDemands(){
   const data=_filter==='TODOS'?_allDemands:_allDemands.filter(d=>d.status===_filter);
+  const total=data.length;
+  const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  if(_page>=pages) _page=pages-1;
+  const slice=data.slice(_page*PAGE_SIZE,(_page+1)*PAGE_SIZE);
+  const from=total?_page*PAGE_SIZE+1:0, to=Math.min((_page+1)*PAGE_SIZE,total);
   document.getElementById('detail-count').textContent=
-    'Demandas'+(+_activeIdx>=0?' — '+_clients[_activeIdx].name:'')+' · '+data.length+' registro'+(data.length!==1?'s':'');
-  document.getElementById('demands-tbody').innerHTML=data.map(d=>
+    'Demandas'+(+_activeIdx>=0?' — '+_clients[_activeIdx].name:'')+' · '+total+' registro'+(total!==1?'s':'');
+  document.getElementById('demands-tbody').innerHTML=slice.map(d=>
     '<tr>'
       +'<td style="white-space:nowrap;color:var(--muted)">'+( d.date||'—')+'</td>'
-      +'<td style="max-width:300px;line-height:1.5">'+( d.desc||'—')+'</td>'
+      +'<td style="line-height:1.5">'+( d.desc||'—')+'</td>'
       +'<td>'+(d.area?'<span class="area-tag">'+d.area+'</span>':'—')+'</td>'
       +'<td style="color:var(--muted);font-size:11px;white-space:nowrap">'+( d.resp||'—')+'</td>'
       +'<td>'+statusBadge(d.status)+'</td>'
-      +'<td style="color:var(--muted);font-size:11px;max-width:220px;line-height:1.5">'+( d.comment||'—')+'</td>'
+      +'<td style="color:var(--muted);font-size:11px;line-height:1.5">'+( d.comment||'—')+'</td>'
     +'</tr>'
   ).join('');
+  // Pagination bar
+  const pg=document.getElementById('pagination-bar');
+  if(pages<=1){pg.innerHTML='';return;}
+  pg.innerHTML=
+    '<button class="pg-btn" onclick="_page=Math.max(0,_page-1);renderDemands()" '+((_page===0)?'disabled':'')+'>‹ Anterior</button>'
+    +'<span style="font-size:10px;color:var(--muted);font-weight:600">'+from+'–'+to+' de '+total+'</span>'
+    +'<button class="pg-btn" onclick="_page=Math.min('+pages+'-1,_page+1);renderDemands()" '+((_page>=pages-1)?'disabled':'')+'>Próximo ›</button>';
 }
 
 // ── Gerar Relatório ──────────────────────────────────────────────────────────
