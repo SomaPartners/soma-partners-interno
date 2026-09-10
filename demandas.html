@@ -416,7 +416,7 @@ function gerarRelatorio(){
   const donutSvg=donut([done,prog,nreal],['#059669','#d97706','#dc2626'],180);
 
   // Table rows
-  const PAGE_ROWS=20;
+  const PAGE_ROWS=13;
   const chunks=[];
   for(let i=0;i<all.length;i+=PAGE_ROWS) chunks.push(all.slice(i,i+PAGE_ROWS));
   if(!chunks.length) chunks.push([]);
