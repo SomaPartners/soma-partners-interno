@@ -297,7 +297,7 @@ function renderList(){
     _clients.length+' cliente'+(+_clients.length!==1?'s':'')+' · '+total+' demanda'+(total!==1?'s':'');
   const grid=document.getElementById('clients-grid');
   grid.innerHTML=_clients.map((c,i)=>{
-    const done=c.demands.filter(d=>d.status.toLowerCase().includes('conclu')).length;
+    const done=c.demands.filter(d=>(d.status||'').toLowerCase().includes('conclu')).length;
     const open=c.demands.length-done;
     const col=PAL[i%PAL.length];
     return '<div class="client-card" style="--acc:'+col+'" onclick="openClient('+i+')">'
@@ -324,9 +324,9 @@ function openClient(idx){
   document.getElementById('detail-name').textContent=c.name;
   // Status cards
   const total=c.demands.length;
-  const done=c.demands.filter(d=>d.status.toLowerCase().includes('conclu')).length;
-  const prog=c.demands.filter(d=>d.status.toLowerCase().includes('andamento')||d.status.toLowerCase().includes('execu')).length;
-  const open=c.demands.filter(d=>d.status.toLowerCase().includes('pendent')||d.status.toLowerCase().includes('aguard')||d.status.toLowerCase().includes('aberto')).length;
+  const done=c.demands.filter(d=>(d.status||'').toLowerCase().includes('conclu')).length;
+  const prog=c.demands.filter(d=>(d.status||'').toLowerCase().includes('andamento')||(d.status||'').toLowerCase().includes('execu')).length;
+  const open=c.demands.filter(d=>(d.status||'').toLowerCase().includes('pendent')||(d.status||'').toLowerCase().includes('aguard')||(d.status||'').toLowerCase().includes('aberto')).length;
   document.getElementById('status-grid').innerHTML=
     '<div class="status-card" style="--sc:'+PAL[0]+'">'
       +'<div class="status-card-v">'+total+'</div><div class="status-card-l">Total de demandas</div></div>'
@@ -376,7 +376,7 @@ function renderDemands(){
   if(pages<=1){pg.innerHTML='';return;}
   pg.innerHTML=
     '<button class="pg-btn" onclick="_page=Math.max(0,_page-1);renderDemands()" '+((_page===0)?'disabled':'')+'>‹ Anterior</button>'
-    +'<span style="font-size:10px;color:var(--muted);font-weight:600">'+from+'–'+to+' '+T.of+' '+total+'</span>'
+    +'<span style="font-size:10px;color:var(--muted);font-weight:600">'+from+'–'+to+' de '+total+'</span>'
     +'<button class="pg-btn" onclick="_page=Math.min('+pages+'-1,_page+1);renderDemands()" '+((_page>=pages-1)?'disabled':'')+'>Próximo ›</button>';
 }
 
