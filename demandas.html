@@ -225,16 +225,21 @@ function parseDemandsCSV(rows){
     if(f==='DATA'){hIdx=i;break;}
   }
   if(hIdx<0) return [];
+  // Detect column layout from header
+  const hdr=rows[hIdx].map(h=>String(h||'').trim().toUpperCase());
+  const respIdx=hdr.findIndex(h=>h.includes('RESPONS'));
+  // STATUS/COMMENT pairs start right after ÁREA (col 2)
+  // If RESPONSÁVEL column exists, status pairs start after it; otherwise from col 3
+  const statusStart=respIdx>=0?respIdx+1:3;
   const demands=[];
   for(let i=hIdx+1;i<rows.length;i++){
     const r=rows[i];
     const date=String(r[0]||'').trim();
     const desc=String(r[1]||'').trim();
     if(!date&&!desc) continue;
-    // Responsável col 3; STATUS/COMENTÁRIO pairs from col 4
-    const resp=String(r[3]||'').trim();
+    const resp=respIdx>=0?String(r[respIdx]||'').trim():'';
     let status='',comment='';
-    for(let c=4;c<r.length;c+=2){
+    for(let c=statusStart;c<r.length;c+=2){
       const s=String(r[c]||'').trim();
       const co=String(r[c+1]||'').trim();
       if(s){status=s;comment=co;}
