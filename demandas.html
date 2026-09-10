@@ -143,6 +143,10 @@ body.embed .topnav{display:none}
       <div class="client-label">Soma Partners · Demandas</div>
       <div class="client-name" id="detail-name">—</div>
     </div>
+    <button onclick="gerarRelatorio()" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:#c9963c;border:none;border-radius:8px;color:#0b1e30;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:.5px">
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Gerar Relatório
+    </button>
   </div>
   <div class="status-grid" id="status-grid"></div>
   <div class="table-section">
@@ -338,6 +342,99 @@ function renderDemands(){
       +'<td style="color:var(--muted);font-size:11px;max-width:240px;line-height:1.5">'+( d.comment||'—')+'</td>'
     +'</tr>'
   ).join('');
+}
+
+// ── Gerar Relatório ──────────────────────────────────────────────────────────
+function gerarRelatorio(){
+  const c=_clients[_activeIdx];
+  if(!c) return;
+  const demands=_filter==='TODOS'?_allDemands:_allDemands.filter(d=>d.status===_filter);
+  const done=demands.filter(d=>d.status.toLowerCase().includes('conclu')).length;
+  const prog=demands.filter(d=>d.status.toLowerCase().includes('andamento')||d.status.toLowerCase().includes('execu')).length;
+  const open=demands.filter(d=>d.status.toLowerCase().includes('pendent')||d.status.toLowerCase().includes('aguard')||d.status.toLowerCase().includes('aberto')).length;
+  const today=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+
+  const rows=demands.map(d=>{
+    const sk=d.status.toLowerCase();
+    const sc=sk.includes('conclu')?'#1a7a4a':sk.includes('andamento')||sk.includes('execu')?'#b45309':sk.includes('pendent')||sk.includes('aguard')||sk.includes('aberto')?'#991b1b':'#555';
+    const bg=sk.includes('conclu')?'#d4efdf':sk.includes('andamento')||sk.includes('execu')?'#fef3c7':sk.includes('pendent')||sk.includes('aguard')||sk.includes('aberto')?'#fee2e2':'#f3f4f6';
+    return `<tr>
+      <td style="white-space:nowrap;color:#777;font-size:11px;padding:10px 12px;border-bottom:1px solid #eee;vertical-align:top">${d.date||'—'}</td>
+      <td style="font-size:12px;line-height:1.5;padding:10px 12px;border-bottom:1px solid #eee;vertical-align:top;max-width:320px">${d.desc||'—'}</td>
+      <td style="font-size:11px;padding:10px 12px;border-bottom:1px solid #eee;vertical-align:top;white-space:nowrap">${d.area?`<span style="background:#eef2ff;color:#3730a3;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700">${d.area}</span>`:'—'}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;vertical-align:top;white-space:nowrap">${d.status?`<span style="background:${bg};color:${sc};border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700">${d.status}</span>`:'—'}</td>
+      <td style="font-size:11px;color:#666;padding:10px 12px;border-bottom:1px solid #eee;vertical-align:top;max-width:220px;line-height:1.4">${d.comment||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
+  <title>Demandas — ${c.name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Montserrat',sans-serif;background:#f8f8f6;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    @page{size:A4 portrait;margin:0}
+    @media print{body{background:#fff}.no-print{display:none}button{display:none}}
+  </style>
+  </head><body>
+  <!-- Botão imprimir -->
+  <div class="no-print" style="position:fixed;top:16px;right:20px;z-index:99;display:flex;gap:8px">
+    <button onclick="window.print()" style="background:#c9963c;color:#0b1e30;border:none;padding:10px 22px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer">
+      Imprimir / Salvar PDF
+    </button>
+    <button onclick="window.close()" style="background:#eee;color:#333;border:none;padding:10px 16px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;cursor:pointer">
+      Fechar
+    </button>
+  </div>
+
+  <div style="width:210mm;min-height:297mm;margin:0 auto;background:#fff">
+    <!-- Header -->
+    <div style="background:#0b1e30;padding:36px 40px 28px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:3px;color:rgba(201,150,60,.7);text-transform:uppercase;margin-bottom:6px">Soma Partners</div>
+          <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px">Relatório de Demandas</div>
+          <div style="font-size:14px;font-weight:700;color:#c9963c;margin-top:4px">${c.name}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:9px;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:1px;text-transform:uppercase">Gerado em</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;margin-top:3px">${today}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:2px solid #c9963c">
+      ${[['Total',demands.length,'#0b1e30'],['Concluídas',done,'#1a7a4a'],['Em Andamento',prog,'#b45309'],['Pendentes',open,'#991b1b']].map(([l,v,c])=>
+        `<div style="padding:20px 24px;border-right:1px solid #eee">
+          <div style="font-size:28px;font-weight:900;color:${c}">${v}</div>
+          <div style="font-size:9px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-top:4px">${l}</div>
+        </div>`).join('')}
+    </div>
+
+    <!-- Tabela -->
+    <div style="padding:28px 40px">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#0b1e30">
+            ${['Data','Descrição','Área','Status','Comentário'].map(h=>
+              `<th style="text-align:left;padding:10px 12px;font-size:9px;font-weight:800;color:rgba(255,255,255,.7);letter-spacing:1px;text-transform:uppercase">${h}</th>`
+            ).join('')}
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div style="margin:0 40px;padding:16px 0;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:9px;color:#bbb;font-weight:600">SOMA PARTNERS · WEALTH MANAGEMENT</div>
+      <div style="font-size:9px;color:#bbb">Documento gerado em ${today}</div>
+    </div>
+  </div>
+  </body></html>`);
+  w.document.close();
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
