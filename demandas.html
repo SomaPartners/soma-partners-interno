@@ -194,6 +194,55 @@ body.embed .topnav{display:none}
   </div>
 </div>
 
+
+<!-- ALL DEMANDS VIEW -->
+<div id="view-all">
+  <div class="breadcrumb" onclick="showList()">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Todos os clientes
+  </div>
+  <div class="client-header">
+    <div>
+      <div class="client-label">Soma Partners · Demandas</div>
+      <div class="client-name">Todas as Demandas</div>
+    </div>
+  </div>
+  <div class="status-grid" id="all-status-grid"></div>
+  <div class="table-section">
+    <div class="table-hd">
+      <div class="table-title" id="all-count">—</div>
+      <div class="all-filter-bar">
+        <select class="all-client-sel" id="all-client-sel" onchange="setAllClient(this.value)"></select>
+        <div class="filter-row" id="all-status-filter"></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <colgroup>
+          <col style="width:82px">
+          <col style="width:13%">
+          <col style="width:26%">
+          <col style="width:88px">
+          <col style="width:62px">
+          <col style="width:104px">
+          <col style="width:auto">
+        </colgroup>
+        <thead><tr>
+          <th>Data</th>
+          <th>Cliente</th>
+          <th>Descrição</th>
+          <th>Área</th>
+          <th>Resp.</th>
+          <th>Status</th>
+          <th>Comentário</th>
+        </tr></thead>
+        <tbody id="all-tbody"></tbody>
+      </table>
+    </div>
+    <div id="all-pagination-bar" style="display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 0 8px"></div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
 const PUBHTML='https://docs.google.com/spreadsheets/d/e/2PACX-1vTw3bhacnZOSnWBDep3kHwk98nRq5LoYGysyPzbcvb2I8IeivPwEIsn3T651CyEmw8NkwwF9OJPJTsa/pubhtml';
@@ -216,7 +265,16 @@ function showList(){ _activeIdx=-1; showView('list'); }
 
 // ── Tab discovery ────────────────────────────────────────────────────────────
 async function discoverTabs(){
-  // Hardcoded gids (discovered from pubhtml; MODELO BASE skipped)
+  try{
+    const txt=await fetch(PUBHTML+'?_='+Date.now()).then(r=>r.text());
+    // Google Sheets pubhtml has tab buttons: <li id="sheet-button-GID" ...>NAME</li>
+    const matches=[...txt.matchAll(/id="sheet-button-(\d+)"[^>]*>([^<]+)</g)];
+    const tabs=matches
+      .map(m=>({gid:m[1],name:m[2].trim()}))
+      .filter(t=>t.name&&!SKIP_TABS.some(s=>t.name.toUpperCase()===s.toUpperCase()));
+    if(tabs.length) return tabs;
+  }catch(e){}
+  // Fallback to hardcoded
   return [
     {gid:'823749132',  name:'GOL DO RAYO'},
     {gid:'2051786573', name:'ARTHUR E DUDA'},
@@ -656,55 +714,6 @@ async function _genPDF(){
   if(btn){btn.disabled=false;btn.textContent=T.dl;}
 }
 <\/script>
-
-<!-- ALL DEMANDS VIEW -->
-<div id="view-all">
-  <div class="breadcrumb" onclick="showList()">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    Todos os clientes
-  </div>
-  <div class="client-header">
-    <div>
-      <div class="client-label">Soma Partners · Demandas</div>
-      <div class="client-name">Todas as Demandas</div>
-    </div>
-  </div>
-  <div class="status-grid" id="all-status-grid"></div>
-  <div class="table-section">
-    <div class="table-hd">
-      <div class="table-title" id="all-count">—</div>
-      <div class="all-filter-bar">
-        <select class="all-client-sel" id="all-client-sel" onchange="setAllClient(this.value)"></select>
-        <div class="filter-row" id="all-status-filter"></div>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <colgroup>
-          <col style="width:82px">
-          <col style="width:13%">
-          <col style="width:26%">
-          <col style="width:88px">
-          <col style="width:62px">
-          <col style="width:104px">
-          <col style="width:auto">
-        </colgroup>
-        <thead><tr>
-          <th>Data</th>
-          <th>Cliente</th>
-          <th>Descrição</th>
-          <th>Área</th>
-          <th>Resp.</th>
-          <th>Status</th>
-          <th>Comentário</th>
-        </tr></thead>
-        <tbody id="all-tbody"></tbody>
-      </table>
-    </div>
-    <div id="all-pagination-bar" style="display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 0 8px"></div>
-  </div>
-</div>
-
 
 <!-- Modal Gerar Relatório -->
 <div id="modal-rel" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center">
