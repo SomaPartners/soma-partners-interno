@@ -218,10 +218,12 @@ body.embed .topnav{display:none}
   <div class="table-section">
     <div class="table-hd">
       <div class="table-title" id="all-count">—</div>
-      <div class="all-filter-bar">
-        <select class="all-client-sel" id="all-client-sel" onchange="setAllClient(this.value)"></select>
-        <div class="filter-row" id="all-status-filter"></div>
-      </div>
+      <button id="all-clear-btn" onclick="clearAllFilters()" style="display:none;padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;cursor:pointer" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.5)'">✕ Limpar filtros</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <select class="all-client-sel" id="all-client-sel" onchange="setAllClient(this.value)" style="flex-shrink:0"></select>
+      <div style="width:1px;height:20px;background:rgba(255,255,255,.1);flex-shrink:0"></div>
+      <div id="all-status-filter" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
     </div>
     <div class="table-wrap">
       <table>
@@ -886,16 +888,42 @@ function openAllView(){
 }
 
 function _getAllFiltered(){
+  const cf=_allViewClientFilter, sf=_allViewStatusFilter;
   return _buildAggregated().filter(d=>{
-    const cOk=_allViewClientFilter==='TODOS'||d.clientName===_allViewClientFilter;
-    const sOk=_allViewStatusFilter==='TODOS'||d.status===_allViewStatusFilter;
+    const cOk=cf==='TODOS'||(d.clientName||'').trim()===cf.trim();
+    const sOk=sf==='TODOS'||(d.status||'').trim()===sf.trim();
     return cOk&&sOk;
   });
+}
+
+function clearAllFilters(){
+  _allViewClientFilter='TODOS';
+  _allViewStatusFilter='TODOS';
+  _allViewPage=0;
+  document.getElementById('all-client-sel').value='TODOS';
+  document.querySelectorAll('#all-status-filter .fb').forEach(b=>b.classList.toggle('active',b.dataset.val==='TODOS'));
+  _updateClearBtn();
+  renderAllView();
+}
+
+function _updateClearBtn(){
+  const btn=document.getElementById('all-clear-btn');
+  if(btn) btn.style.display=(_allViewClientFilter!=='TODOS'||_allViewStatusFilter!=='TODOS')?'block':'none';
 }
 
 function setAllClient(f){
   _allViewClientFilter=f;
   _allViewPage=0;
+  // Rebuild status buttons to only show statuses relevant to this client
+  const agg=_buildAggregated();
+  const relevant=f==='TODOS'?agg:agg.filter(d=>d.clientName===f);
+  const statuses=['TODOS',...new Set(relevant.map(d=>d.status).filter(Boolean))];
+  document.getElementById('all-status-filter').innerHTML=statuses.map(s=>
+    '<button class="fb'+(s===_allViewStatusFilter?' active':'')+'" data-val="'+s.replace(/"/g,'&quot;')+'" onclick="setAllStatus(this.dataset.val)">'+s+'</button>'
+  ).join('');
+  // Reset status filter if it no longer exists in the new set
+  if(!statuses.includes(_allViewStatusFilter)) _allViewStatusFilter='TODOS';
+  _updateClearBtn();
   renderAllView();
 }
 
@@ -903,6 +931,7 @@ function setAllStatus(f){
   _allViewStatusFilter=f;
   _allViewPage=0;
   document.querySelectorAll('#all-status-filter .fb').forEach(b=>b.classList.toggle('active',b.dataset.val===f));
+  _updateClearBtn();
   renderAllView();
 }
 
