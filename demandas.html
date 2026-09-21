@@ -85,6 +85,11 @@ tbody td{padding:11px 14px;font-size:12px;color:rgba(255,255,255,.85);overflow:h
 .badge-default{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1)}
 .area-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;background:rgba(201,150,60,0.1);color:rgba(201,150,60,0.85);border:1px solid rgba(201,150,60,0.15)}
 
+.client-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;background:rgba(59,139,255,0.1);color:rgba(59,139,255,0.85);border:1px solid rgba(59,139,255,0.2);white-space:nowrap}
+.all-filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.all-client-sel{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.75);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;padding:5px 10px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+.all-client-sel:hover{border-color:rgba(59,139,255,0.3);color:#fff}
+.all-client-sel option{background:#1a2d3f;color:#fff}
 /* LOADING */
 .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;color:var(--muted);font-size:12px;text-align:center}
 .spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.08);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
@@ -92,8 +97,8 @@ tbody td{padding:11px 14px;font-size:12px;color:rgba(255,255,255,.85);overflow:h
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* VIEWS */
-#view-loading,#view-list,#view-detail{display:none}
-#view-loading.active,#view-list.active,#view-detail.active{display:block}
+#view-loading,#view-list,#view-detail,#view-all{display:none}
+#view-loading.active,#view-list.active,#view-detail.active,#view-all.active{display:block}
 
 /* EMBED */
 body.embed .topnav{display:none}
@@ -128,10 +133,16 @@ body.embed .topnav{display:none}
 
 <!-- LIST -->
 <div id="view-list">
-  <div class="summary-hd">
-    <div class="summary-label">Soma Partners</div>
-    <div class="summary-title">Demandas dos Clientes</div>
-    <div class="summary-sub" id="list-sub">—</div>
+  <div class="summary-hd" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div>
+      <div class="summary-label">Soma Partners</div>
+      <div class="summary-title">Demandas dos Clientes</div>
+      <div class="summary-sub" id="list-sub">—</div>
+    </div>
+    <button onclick="openAllView()" style="margin-top:4px;display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.65);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:all .18s" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.65)'">
+      <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Ver todas as demandas
+    </button>
   </div>
   <div class="clients-grid" id="clients-grid"></div>
 </div>
@@ -198,7 +209,7 @@ if(new URLSearchParams(location.search).get('embed')==='1') document.body.classL
 
 // ── Views ───────────────────────────────────────────────────────────────────
 function showView(v){
-  ['loading','list','detail'].forEach(id=>document.getElementById('view-'+id).classList.remove('active'));
+  ['loading','list','detail','all'].forEach(id=>document.getElementById('view-'+id).classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
 }
 function showList(){ _activeIdx=-1; showView('list'); }
@@ -646,6 +657,55 @@ async function _genPDF(){
 }
 <\/script>
 
+<!-- ALL DEMANDS VIEW -->
+<div id="view-all">
+  <div class="breadcrumb" onclick="showList()">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Todos os clientes
+  </div>
+  <div class="client-header">
+    <div>
+      <div class="client-label">Soma Partners · Demandas</div>
+      <div class="client-name">Todas as Demandas</div>
+    </div>
+  </div>
+  <div class="status-grid" id="all-status-grid"></div>
+  <div class="table-section">
+    <div class="table-hd">
+      <div class="table-title" id="all-count">—</div>
+      <div class="all-filter-bar">
+        <select class="all-client-sel" id="all-client-sel" onchange="setAllClient(this.value)"></select>
+        <div class="filter-row" id="all-status-filter"></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <colgroup>
+          <col style="width:82px">
+          <col style="width:13%">
+          <col style="width:26%">
+          <col style="width:88px">
+          <col style="width:62px">
+          <col style="width:104px">
+          <col style="width:auto">
+        </colgroup>
+        <thead><tr>
+          <th>Data</th>
+          <th>Cliente</th>
+          <th>Descrição</th>
+          <th>Área</th>
+          <th>Resp.</th>
+          <th>Status</th>
+          <th>Comentário</th>
+        </tr></thead>
+        <tbody id="all-tbody"></tbody>
+      </table>
+    </div>
+    <div id="all-pagination-bar" style="display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 0 8px"></div>
+  </div>
+</div>
+
+
 <!-- Modal Gerar Relatório -->
 <div id="modal-rel" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center">
   <div style="background:#1a2d3f;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:32px;width:380px;max-width:90vw;font-family:'Montserrat',sans-serif">
@@ -686,6 +746,97 @@ async function _genPDF(){
   const w=window.open('','_blank','width=1200,height=850');
   w.document.write(html);
   w.document.close();
+}
+
+
+// ── All-demands view ──────────────────────────────────────────────────────────
+var _allViewPage=0, _allViewClientFilter='TODOS', _allViewStatusFilter='TODOS';
+
+function _buildAggregated(){
+  const agg=[];
+  _clients.forEach(c=>{c.demands.forEach(d=>agg.push(Object.assign({},d,{clientName:c.name})));});
+  return agg;
+}
+
+function openAllView(){
+  _allViewPage=0;
+  _allViewClientFilter='TODOS';
+  _allViewStatusFilter='TODOS';
+  const agg=_buildAggregated();
+  // KPI cards
+  const tot=agg.length;
+  const dn=agg.filter(d=>(d.status||'').toLowerCase().includes('conclu')).length;
+  const pr=agg.filter(d=>{const s=(d.status||'').toLowerCase();return s.includes('andamento')||s.includes('execu');}).length;
+  const op=agg.filter(d=>{const s=(d.status||'').toLowerCase();return s.includes('pendent')||s.includes('aguard')||s.includes('aberto');}).length;
+  document.getElementById('all-status-grid').innerHTML=
+    '<div class="status-card" style="--sc:'+PAL[0]+'">'
+      +'<div class="status-card-v">'+tot+'</div><div class="status-card-l">Total de demandas</div></div>'
+    +'<div class="status-card" style="--sc:#10b981">'
+      +'<div class="status-card-v">'+dn+'</div><div class="status-card-l">Concluídas</div></div>'
+    +'<div class="status-card" style="--sc:#f97316">'
+      +'<div class="status-card-v">'+pr+'</div><div class="status-card-l">Em andamento</div></div>'
+    +'<div class="status-card" style="--sc:#ef4444">'
+      +'<div class="status-card-v">'+op+'</div><div class="status-card-l">Pendentes</div></div>';
+  // Client select
+  const sel=document.getElementById('all-client-sel');
+  sel.innerHTML='<option value="TODOS">Todos os clientes</option>'
+    +_clients.map(c=>'<option value="'+c.name.replace(/"/g,'&quot;')+'">'+c.name+'</option>').join('');
+  sel.value='TODOS';
+  // Status filters
+  const statuses=['TODOS',...new Set(agg.map(d=>d.status).filter(Boolean))];
+  document.getElementById('all-status-filter').innerHTML=statuses.map(s=>
+    '<button class="fb'+(s==='TODOS'?' active':'')+'" data-val="'+s.replace(/"/g,'&quot;')+'" onclick="setAllStatus(this.dataset.val)">'+s+'</button>'
+  ).join('');
+  renderAllView();
+  showView('all');
+}
+
+function _getAllFiltered(){
+  return _buildAggregated().filter(d=>{
+    const cOk=_allViewClientFilter==='TODOS'||d.clientName===_allViewClientFilter;
+    const sOk=_allViewStatusFilter==='TODOS'||d.status===_allViewStatusFilter;
+    return cOk&&sOk;
+  });
+}
+
+function setAllClient(f){
+  _allViewClientFilter=f;
+  _allViewPage=0;
+  renderAllView();
+}
+
+function setAllStatus(f){
+  _allViewStatusFilter=f;
+  _allViewPage=0;
+  document.querySelectorAll('#all-status-filter .fb').forEach(b=>b.classList.toggle('active',b.dataset.val===f));
+  renderAllView();
+}
+
+function renderAllView(){
+  const data=_getAllFiltered();
+  const total=data.length;
+  const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  if(_allViewPage>=pages) _allViewPage=pages-1;
+  const slice=data.slice(_allViewPage*PAGE_SIZE,(_allViewPage+1)*PAGE_SIZE);
+  const from=total?_allViewPage*PAGE_SIZE+1:0, to=Math.min((_allViewPage+1)*PAGE_SIZE,total);
+  document.getElementById('all-count').textContent='Todas as demandas · '+total+' registro'+(total!==1?'s':'');
+  document.getElementById('all-tbody').innerHTML=slice.map(d=>
+    '<tr>'
+      +'<td style="white-space:nowrap;color:var(--muted)">'+( d.date||'—')+'</td>'
+      +'<td><span class="client-tag">'+d.clientName+'</span></td>'
+      +'<td style="line-height:1.5">'+( d.desc||'—')+'</td>'
+      +'<td>'+(d.area?'<span class="area-tag">'+d.area+'</span>':'—')+'</td>'
+      +'<td style="color:var(--muted);font-size:11px;white-space:nowrap">'+( d.resp||'—')+'</td>'
+      +'<td>'+statusBadge(d.status)+'</td>'
+      +'<td style="color:var(--muted);font-size:11px;line-height:1.5">'+( d.comment||'—')+'</td>'
+    +'</tr>'
+  ).join('');
+  const pg=document.getElementById('all-pagination-bar');
+  if(pages<=1){pg.innerHTML='';return;}
+  pg.innerHTML=
+    '<button class="pg-btn" onclick="_allViewPage=Math.max(0,_allViewPage-1);renderAllView()" '+((_allViewPage===0)?'disabled':'')+'>‹ Anterior</button>'
+    +'<span style="font-size:10px;color:var(--muted);font-weight:600">'+from+'–'+to+' de '+total+'</span>'
+    +'<button class="pg-btn" onclick="_allViewPage=Math.min('+pages+'-1,_allViewPage+1);renderAllView()" '+((_allViewPage>=pages-1)?'disabled':'')+'>Próximo ›</button>';
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
