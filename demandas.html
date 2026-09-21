@@ -120,6 +120,9 @@ body.embed .topnav{display:none}
       <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
       Atualizar
     </button>
+    <button class="btn-refresh" onclick="abrirConfig()" title="Configurar clientes" style="padding:6px 10px">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
   </div>
 </nav>
 
@@ -264,25 +267,80 @@ function showView(v){
 function showList(){ _activeIdx=-1; showView('list'); }
 
 // ── Tab discovery ────────────────────────────────────────────────────────────
+const LS_KEY='soma_demandas_tabs';
+const DEFAULT_TABS=[
+  {gid:'823749132',  name:'GOL DO RAYO'},
+  {gid:'2051786573', name:'ARTHUR E DUDA'},
+  {gid:'672998304',  name:'ROBERTA CORA'},
+  {gid:'777420258',  name:'LUCAS TYLTY'},
+  {gid:'1817470116', name:'RICHARD'},
+  {gid:'598956116',  name:'FAMILIA KLAUSS'}
+];
+
+function getStoredTabs(){
+  try{const s=localStorage.getItem(LS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}
+}
+function setStoredTabs(tabs){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(tabs));}catch(e){}
+}
+
 async function discoverTabs(){
+  // 1. Check localStorage first
+  const stored=getStoredTabs();
+  if(stored&&stored.length) return stored;
+  // 2. Try PUBHTML auto-discovery
   try{
-    const txt=await fetch(PUBHTML+'?_='+Date.now()).then(r=>r.text());
-    // Google Sheets pubhtml has tab buttons: <li id="sheet-button-GID" ...>NAME</li>
-    const matches=[...txt.matchAll(/id="sheet-button-(\d+)"[^>]*>([^<]+)</g)];
-    const tabs=matches
-      .map(m=>({gid:m[1],name:m[2].trim()}))
-      .filter(t=>t.name&&!SKIP_TABS.some(s=>t.name.toUpperCase()===s.toUpperCase()));
-    if(tabs.length) return tabs;
-  }catch(e){}
-  // Fallback to hardcoded
-  return [
-    {gid:'823749132',  name:'GOL DO RAYO'},
-    {gid:'2051786573', name:'ARTHUR E DUDA'},
-    {gid:'672998304',  name:'ROBERTA CORA'},
-    {gid:'777420258',  name:'LUCAS TYLTY'},
-    {gid:'1817470116', name:'RICHARD'},
-    {gid:'598956116',  name:'FAMILIA KLAUSS'}
-  ];
+    const resp=await fetch(PUBHTML+'?_='+Date.now());
+    if(resp.ok){
+      const txt=await resp.text();
+      let tabs=[];
+      // Pattern A: id="sheet-button-GID">NAME
+      const pA=[...txt.matchAll(/id="sheet-button-(\d+)"[^>]*>\s*([^<\s][^<]*?)\s*</gi)];
+      if(pA.length) tabs=pA.map(m=>({gid:m[1],name:m[2].trim()}));
+      // Pattern B: href gid param with link text
+      if(!tabs.length){
+        const pB=[...txt.matchAll(/gid=(\d+)[^>]*>\s*([A-Za-zÀ-ÖØ-öø-ÿ][^<
+]{1,50}?)\s*<\/a>/gi)];
+        tabs=pB.map(m=>({gid:m[1],name:m[2].trim()}));
+      }
+      tabs=tabs.filter(t=>t.name&&!SKIP_TABS.some(s=>t.name.toUpperCase()===s.toUpperCase()));
+      if(tabs.length){setStoredTabs(tabs);return tabs;}
+    }
+  }catch(e){console.warn('[tabs] PUBHTML fetch failed:',e.message);}
+  // 3. Hardcoded fallback
+  return DEFAULT_TABS;
+}
+
+// ── Config modal ────────────────────────────────────────────────────────────
+function abrirConfig(){
+  const rows=document.getElementById('config-rows');
+  const current=getStoredTabs()||(_clients.length?_clients.map(c=>({gid:c.gid,name:c.name})):DEFAULT_TABS);
+  rows.innerHTML='';
+  current.forEach(t=>addConfigRow(t.name,t.gid));
+  document.getElementById('modal-config').style.display='flex';
+}
+function fecharConfig(){
+  document.getElementById('modal-config').style.display='none';
+}
+function addConfigRow(name,gid){
+  const div=document.createElement('div');
+  div.style.cssText='display:flex;gap:8px;align-items:center';
+  div.innerHTML=
+    '<input placeholder="Nome do cliente" value="'+(name||'')+'" style="flex:1.8;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;color:#fff;font-family:Montserrat,sans-serif;font-size:11px;outline:none">'
+    +'<input placeholder="GID (número)" value="'+(gid||'')+'" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;color:#fff;font-family:Montserrat,sans-serif;font-size:11px;outline:none">'
+    +'<button onclick="this.closest('div').remove()" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);border-radius:6px;color:#fca5a5;font-size:14px;line-height:1;padding:6px 10px;cursor:pointer">×</button>';
+  document.getElementById('config-rows').appendChild(div);
+}
+function salvarConfig(){
+  const rows=[...document.getElementById('config-rows').children];
+  const tabs=rows.map(r=>{
+    const inputs=r.querySelectorAll('input');
+    return {name:inputs[0].value.trim(),gid:inputs[1].value.trim()};
+  }).filter(t=>t.name&&t.gid);
+  if(!tabs.length) return;
+  setStoredTabs(tabs);
+  fecharConfig();
+  loadAll();
 }
 
 // ── Parse demands CSV ────────────────────────────────────────────────────────
@@ -887,5 +945,26 @@ loadAll();
     </div>
   </div>
 </div>
+
+<!-- Config Modal -->
+<div id="modal-config" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center">
+  <div style="background:#1a2d3f;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:28px;width:480px;max-width:94vw;max-height:85vh;overflow-y:auto;font-family:'Montserrat',sans-serif">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="font-size:13px;font-weight:800;color:#fff">Configurar Clientes</div>
+      <button onclick="fecharConfig()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px">×</button>
+    </div>
+    <div style="font-size:10px;color:rgba(255,255,255,.35);margin-bottom:18px;line-height:1.5">
+      Adicione cada cliente com seu nome e o GID da aba na planilha.<br>
+      O GID aparece na URL ao clicar na aba: <code style="color:#c9963c">…pub?output=csv&gid=<b>NÚMERO</b></code>
+    </div>
+    <div id="config-rows" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
+    <button onclick="addConfigRow()" style="width:100%;padding:9px;border-radius:8px;border:1px dashed rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.4);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:18px;transition:all .15s" onmouseover="this.style.borderColor='rgba(201,150,60,.5)';this.style.color='#c9963c'" onmouseout="this.style.borderColor='rgba(255,255,255,.2)';this.style.color='rgba(255,255,255,.4)'">+ Adicionar cliente</button>
+    <div style="display:flex;gap:10px">
+      <button onclick="fecharConfig()" style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer">Cancelar</button>
+      <button onclick="salvarConfig()" style="flex:2;padding:10px;border-radius:8px;border:none;background:#c9963c;color:#0b1e30;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;cursor:pointer">Salvar e Recarregar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
