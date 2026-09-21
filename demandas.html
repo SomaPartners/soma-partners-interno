@@ -299,8 +299,7 @@ async function discoverTabs(){
       if(pA.length) tabs=pA.map(m=>({gid:m[1],name:m[2].trim()}));
       // Pattern B: href gid param with link text
       if(!tabs.length){
-        const pB=[...txt.matchAll(/gid=(\d+)[^>]*>\s*([A-Za-zÀ-ÖØ-öø-ÿ][^<
-]{1,50}?)\s*<\/a>/gi)];
+        const pB=[...txt.matchAll(/gid=(\d+)[^>]*>([^<]{2,60})<\/a>/gi)];
         tabs=pB.map(m=>({gid:m[1],name:m[2].trim()}));
       }
       tabs=tabs.filter(t=>t.name&&!SKIP_TABS.some(s=>t.name.toUpperCase()===s.toUpperCase()));
@@ -328,7 +327,7 @@ function addConfigRow(name,gid){
   div.innerHTML=
     '<input placeholder="Nome do cliente" value="'+(name||'')+'" style="flex:1.8;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;color:#fff;font-family:Montserrat,sans-serif;font-size:11px;outline:none">'
     +'<input placeholder="GID (número)" value="'+(gid||'')+'" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;color:#fff;font-family:Montserrat,sans-serif;font-size:11px;outline:none">'
-    +'<button onclick="this.closest('div').remove()" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);border-radius:6px;color:#fca5a5;font-size:14px;line-height:1;padding:6px 10px;cursor:pointer">×</button>';
+    +'<button onclick="this.parentNode.remove()" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);border-radius:6px;color:#fca5a5;font-size:14px;line-height:1;padding:6px 10px;cursor:pointer">×</button>';
   document.getElementById('config-rows').appendChild(div);
 }
 function salvarConfig(){
