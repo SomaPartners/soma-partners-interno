@@ -1364,21 +1364,115 @@ body{font-family:'Montserrat',sans-serif;background:#fff;color:#111}
 }
 </style>
 </head><body>
-${coverPage}
-<div class="rpt-page" style="width:1123px;height:794px;overflow:hidden;background:#fff;padding:53px 60px 45px;box-sizing:border-box">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #0b1e30;margin-bottom:28px">
-    <div>
-      <div style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">Soma Partners</div>
-      <div style="font-size:26px;font-weight:900;letter-spacing:-.5px;color:#0b1e30">${c.name}</div>
-      <div style="font-size:12px;color:#6b7280;margin-top:6px">${c.isBilling?L.billing:L.antecipacao} &nbsp;·&nbsp; ${period}</div>
+${(()=>{
+  // ── Overview page — premium two-panel layout ──────────────────────────
+  const _svg2='<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><polygon points="111.4,40 300,40 300,300 70,300" fill="#152b3c"/><polygon points="97,102.6 272,90 272,300 97,300" fill="#0d1e2e" opacity="0.88"/><polygon points="32.5,140 145,140 145,300 20,300" fill="#1b3247" opacity="0.65"/></svg>';
+  const _shapesUrl2='data:image/svg+xml;base64,'+btoa(_svg2);
+
+  // Key figures for left panel
+  const mainVal=c.isBilling?BRL(c.lastPeriodSaldo||sai):BRL(Math.abs(sal));
+  const mainLabel=c.isBilling?L.openAmount:(sal>=0?L.currentBalance:L.currentBalance);
+  const mainColor=c.isBilling?'#f59e0b':(sal>=0?'#10b981':'#ef4444');
+  const topCat=topCats[0];
+  const txCount=tx.length;
+  const catCountUniq=new Set(tx.map(t=>t.tipo).filter(Boolean)).size;
+
+  // Stat row helper
+  const statRow=(label,val,color='#fff')=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+      <span style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:600">${label}</span>
+      <span style="font-size:11px;font-weight:800;color:${color}">${val}</span>
+    </div>`;
+
+  // Top category bar for left panel
+  const topCatBars=(topCats.slice(0,4).map(([k,v],i)=>{
+    const pct=sai>0?((v/sai)*100):0;
+    const opacity=[1,0.75,0.55,0.38][i];
+    return `<div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:9px;color:rgba(255,255,255,${opacity+0.1});font-weight:700;text-transform:uppercase;letter-spacing:.5px">${k}</span>
+        <span style="font-size:9px;color:rgba(255,255,255,${opacity+0.15});font-weight:800">${pct.toFixed(0)}%</span>
+      </div>
+      <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px">
+        <div style="width:${pct.toFixed(1)}%;height:100%;background:#c9963c;opacity:${opacity};border-radius:2px"></div>
+      </div>
+    </div>`;
+  })).join('');
+
+  // Chart section on right — category chart
+  const rightCatBlock=showCat&&catSrc?`
+    <div style="background:#f8faff;border:1px solid #e8ecf2;border-radius:12px;padding:18px 20px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <div style="width:3px;height:14px;background:#c9963c;border-radius:2px"></div>
+        <span style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#6b7280">${L.expensesByCategory}</span>
+      </div>
+      <div style="position:relative;height:${catH}px"><img src="${catSrc}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
+    </div>`:'';
+
+  const rightMesBlock=showMes&&mesSrc?`
+    <div style="background:#f8faff;border:1px solid #e8ecf2;border-radius:12px;padding:18px 20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <div style="width:3px;height:14px;background:#0b1e30;border-radius:2px"></div>
+        <span style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#6b7280">${L.monthlyFlow}</span>
+      </div>
+      <div style="position:relative;height:200px"><img src="${mesSrc}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
+    </div>`:'';
+
+  // If no charts, show a big metric in right panel instead
+  const rightContent=(rightCatBlock||rightMesBlock)?`${rightCatBlock}${rightMesBlock}`:`
+    <div style="height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px">
+      <div style="text-align:center;padding:40px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#9ca3af;margin-bottom:14px">Total de Saídas</div>
+        <div style="font-size:56px;font-weight:900;color:#0b1e30;letter-spacing:-2px">${BRL(sai)}</div>
+        <div style="font-size:13px;color:#9ca3af;margin-top:8px">${txCount} lançamentos</div>
+      </div>
+    </div>`;
+
+  return `<div class="rpt-page" style="width:1123px;height:794px;overflow:hidden;background:#fff;display:flex;box-sizing:border-box">
+    <!-- LEFT PANEL — dark navy -->
+    <div style="width:340px;flex-shrink:0;background:#0b1e30;background-image:url('${_shapesUrl2}');background-position:bottom right;background-repeat:no-repeat;background-size:220px 220px;padding:44px 32px;display:flex;flex-direction:column;box-sizing:border-box">
+      <!-- Logo -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+        <span style="font-size:15px;font-weight:300;color:#fff;letter-spacing:.3px">Soma</span>
+        <div style="width:1px;height:16px;background:rgba(255,255,255,0.25)"></div>
+        <span style="font-size:8px;font-weight:700;letter-spacing:4px;color:rgba(255,255,255,0.45);text-transform:uppercase">Partners</span>
+      </div>
+      <!-- Client name -->
+      <div style="margin-bottom:24px">
+        <div style="font-size:8px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:8px">${c.isBilling?'Faturamento Mensal':'Antecipação de Saldos'}</div>
+        <div style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;letter-spacing:-.3px">${c.name}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:6px;font-weight:500">${period}</div>
+      </div>
+      <!-- Divider -->
+      <div style="height:1px;background:linear-gradient(90deg,#c9963c,rgba(201,150,60,0.1));margin-bottom:24px"></div>
+      <!-- Main metric -->
+      <div style="margin-bottom:28px">
+        <div style="font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:8px">${c.isBilling?'EM ABERTO (PERÍODO ATUAL)':'SALDO ATUAL'}</div>
+        <div style="font-size:34px;font-weight:900;color:${mainColor};letter-spacing:-1px;line-height:1">${mainVal}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:6px">${txCount} lançamentos · ${catCountUniq} categorias</div>
+      </div>
+      <!-- Stat rows -->
+      <div style="margin-bottom:20px">
+        ${c.isBilling
+          ? statRow('Total cobrado (histórico)',BRL(sai),'rgba(255,255,255,0.85)')
+          : statRow('Total entradas',BRL(ent),'#6ee7b7')+statRow('Total saídas',BRL(sai),'#fca5a5')}
+      </div>
+      <!-- Top categories mini bars -->
+      ${topCats.length>0?`<div>
+        <div style="font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px">Top Categorias</div>
+        ${topCatBars}
+      </div>`:''}
+      <!-- Footer -->
+      <div style="margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08)">
+        <div style="font-size:8px;color:rgba(255,255,255,0.3);font-weight:600">Gerado em ${genDate}</div>
+      </div>
     </div>
-    <div style="text-align:right">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">${L.generatedOn}</div>
-      <div style="font-size:12px;font-weight:700;color:#374151;margin-top:3px">${genDate}</div>
+    <!-- RIGHT PANEL — charts -->
+    <div style="flex:1;padding:36px 40px;overflow:hidden;box-sizing:border-box">
+      ${rightContent}
     </div>
-  </div>
-  ${kHtml}${chHtml}
-</div>
+  </div>`;
+})()}
 ${tHtml}${personPages}${backCover}
 ${scriptTag}
 </body></html>`;
