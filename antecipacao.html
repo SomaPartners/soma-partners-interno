@@ -301,35 +301,60 @@ async function discoverTabs(){
 }
 
 // ── CSV parse ─────────────────────────────────────────────────────────────
+const SKIP_TABS_ANT=['MODELO BASE','BASE','TEMPLATE','MODELO'];
+function stripAcc(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'');}
+
 function processSheet(rows){
   let clientName='', headerIdx=-1, saldoCol=-1;
+  let valorCol=4, dirCol=3, hasDir=true; // defaults for conventional format
 
-  // Scan row 0 for client name and SALDO column position
-  (rows[0]||[]).forEach((c,i)=>{
-    const v=String(c||'').trim();
-    if(!clientName&&v) clientName=v;
-    if(v.toUpperCase()==='SALDO') saldoCol=i;
-  });
-
-  // Find first DATA header row
-  for(let i=0;i<rows.length;i++){
-    const f=(rows[i][0]||'').trim();
+  // Scan pre-header rows for client name and SALDO column
+  for(let i=0;i<Math.min(rows.length,6);i++){
+    const row=rows[i];
+    row.forEach((c,j)=>{
+      const v=String(c||'').trim();
+      if(v.toUpperCase()==='SALDO') saldoCol=j;
+    });
+    const f=(row[0]||'').trim();
     if(f.toUpperCase()==='DATA'){
       headerIdx=i;
-      // Fallback: find SALDO col from header row
-      if(saldoCol<0) rows[i].forEach((c,j)=>{
-        if(String(c||'').trim().toUpperCase()==='SALDO') saldoCol=j;
-      });
       break;
     }
-    if(f&&!clientName) clientName=f;
+    if(f&&!clientName&&f.length>2) clientName=f;
+  }
+  if(headerIdx<0){
+    // Search deeper for DATA header
+    for(let i=0;i<rows.length;i++){
+      const f=(rows[i][0]||'').trim();
+      if(f.toUpperCase()==='DATA'){headerIdx=i;break;}
+      if(f&&!clientName&&f.length>2) clientName=f;
+    }
   }
   if(headerIdx<0) return null;
+
+  // Parse header row to detect column layout
+  const hdr=rows[headerIdx].map(c=>stripAcc(String(c||'').trim().toUpperCase()));
+  if(saldoCol<0) saldoCol=hdr.findIndex(h=>h==='SALDO');
+
+  // Find VALOR column (explicit label wins)
+  const vIdx=hdr.findIndex(h=>h==='VALOR');
+  if(vIdx>=0) valorCol=vIdx;
+
+  // Detect if there's a RESPONSAVEL column — if so, no direction column
+  const respIdx=hdr.findIndex(h=>h.includes('RESPONS'));
+  if(respIdx>=0){
+    hasDir=false; // format: DATA, CARACT, TIPO, RESPONSAVEL, DESC, VALOR
+    dirCol=-1;
+  } else {
+    // Find direction column: look for ENTRADA/SAIDA header or use index 3 default
+    const dIdx=hdr.findIndex(h=>h==='ENTRADA'||h==='SAIDA'||h.includes('ENTRAD')||h.includes('DIREC'));
+    if(dIdx>=0) dirCol=dIdx;
+  }
 
   const tx=[];
   let lastPeriodSaldo=null;
 
-  // Capture saldo from first header row itself (GOL DO RAYO pattern)
+  // Capture saldo from header row itself (GOL DO RAYO pattern)
   if(saldoCol>=0){
     const v=parseVal(rows[headerIdx][saldoCol]);
     if(v) lastPeriodSaldo=v;
@@ -347,16 +372,17 @@ function processSheet(rows){
 
     const desc=(row[1]||'').trim();
     const tipo=(row[2]||'').trim();
-    const dirRaw=(row[3]||'').trim().toUpperCase()
-      .normalize('NFD').replace(/[̀-ͯ]/g,''); // strip accents for comparison
-    const val=parseVal(row[4]);
+    const val=parseVal(row[valorCol]);
 
     // Skip zero-value rows
     if(!val) continue;
 
-    // Direction: explicit ENTRADA wins; everything else is SAÍDA
-    // (handles blank, "SAIDA" without accent, lowercase, etc.)
-    const direction = dirRaw.startsWith('EN') ? 'ENTRADA' : 'SAÍDA';
+    // Direction: use dir column if available; otherwise all SAÍDA
+    let direction='SAÍDA';
+    if(hasDir&&dirCol>=0){
+      const dirRaw=stripAcc((row[dirCol]||'').trim().toUpperCase());
+      if(dirRaw.startsWith('EN')) direction='ENTRADA';
+    }
     tx.push({date,desc,tipo,direction,valor:val});
   }
   if(!tx.length) return null;
@@ -406,6 +432,7 @@ async function loadAll(){
 
     _clients=results
       .filter(r=>r.status==='fulfilled'&&r.value)
+      .filter(r=>!SKIP_TABS_ANT.some(s=>r.value.name.toUpperCase().trim()===s))
       .map(r=>r.value);
 
     if(!_clients.length){
