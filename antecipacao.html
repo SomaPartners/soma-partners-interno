@@ -1014,6 +1014,35 @@ async function generateReport(){
   const showCat=incCat&&topCats.length>0;
   const showMes=incMes&&mKeys2.length>0;
   const LTK={color:'#6b7280',font:{family:'Montserrat',size:10}};
+
+  // Donut chart for categories (used in overview right panel)
+  const donutSrc=showCat?await renderChartImg({type:'doughnut',data:{
+    labels:topCats.map(([k])=>k),
+    datasets:[{data:topCats.map(([,v])=>v),
+      backgroundColor:catBg.map(c=>c.replace('55','cc')),
+      borderColor:catBd,borderWidth:2,hoverOffset:0}]
+  },options:{responsive:false,maintainAspectRatio:false,cutout:'58%',
+    plugins:{legend:{display:false},tooltip:{enabled:false}},
+    animation:{duration:0}
+  }},260,260):'';
+
+  // Simple monthly saídas bar (clean, single axis, no saldo line)
+  const mesSrcSimple=showMes?await renderChartImg({type:'bar',data:{
+    labels:mLbl2,
+    datasets:[{data:mSai2,backgroundColor:'rgba(201,150,60,0.25)',borderColor:'#c9963c',borderWidth:2,borderRadius:6}]
+  },options:{responsive:false,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{enabled:false}},
+    scales:{
+      x:{grid:{display:false},ticks:{...LTK},border:{display:false}},
+      y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{...LTK,callback:function(v){
+        if(v>=1000000) return 'R$'+(v/1000000).toFixed(1)+'M';
+        if(v>=1000) return 'R$'+(v/1000).toFixed(0)+'k';
+        return 'R$'+v;
+      }},border:{display:false}}
+    }
+  }},440,170):'';
+
+  // Legacy catSrc (for table pages fallback)
   const catH=Math.max(160,topCats.length*34);
   const catSrc=showCat?await renderChartImg({type:'bar',data:{
     labels:topCats.map(([k])=>k),
@@ -1037,17 +1066,7 @@ async function generateReport(){
       y2:{position:'right',grid:{display:false},ticks:{color:'rgba(59,139,255,0.75)',font:{family:'Montserrat',size:10},callback:function(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);}},border:{display:false}}
     }
   }},700,220):'';
-  const chHtml=(showCat||showMes)?`
-    <div style="display:grid;grid-template-columns:${showCat&&showMes?'1fr 1fr':'1fr'};gap:14px;margin-bottom:28px">
-      ${showCat&&catSrc?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
-        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.expensesByCategory}</div>
-        <div style="position:relative;height:${catH}px"><img src="${catSrc}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
-      </div>`:''}
-      ${showMes&&mesSrc?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:11px;padding:16px 18px">
-        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">${L.monthlyFlow}</div>
-        <div style="position:relative;height:220px"><img src="${mesSrc}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
-      </div>`:''}
-    </div>`:'';
+  const chHtml=''; // not used in new overview layout
 
   // ── Table HTML ────────────────────────────────────────────────────────────
   const _tblHdr=`<thead><tr style="border-bottom:2px solid #e5e7eb">
@@ -1399,33 +1418,48 @@ ${(()=>{
     </div>`;
   })).join('');
 
-  // Chart section on right — category chart
-  const rightCatBlock=showCat&&catSrc?`
-    <div style="background:#f8faff;border:1px solid #e8ecf2;border-radius:12px;padding:18px 20px;margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-        <div style="width:3px;height:14px;background:#c9963c;border-radius:2px"></div>
-        <span style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#6b7280">${L.expensesByCategory}</span>
+  // ── Right panel: donut + category legend + monthly bar ──────────────────
+  // Category legend rows (for donut)
+  const catLegend=topCats.slice(0,6).map(([k,v],i)=>{
+    const pct=sai>0?((v/sai)*100):0;
+    const col=catBd[i%catBd.length];
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6">
+      <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
+      <div style="flex:1;font-size:10px;font-weight:700;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${k}</div>
+      <div style="text-align:right;flex-shrink:0">
+        <span style="font-size:10px;font-weight:900;color:#0b1e30">${BRL(v)}</span>
+        <span style="font-size:9px;color:#9ca3af;margin-left:5px">${pct.toFixed(1)}%</span>
       </div>
-      <div style="position:relative;height:${catH}px"><img src="${catSrc}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
-    </div>`:'';
+    </div>`;
+  }).join('');
 
-  const rightMesBlock=showMes&&mesSrc?`
-    <div style="background:#f8faff;border:1px solid #e8ecf2;border-radius:12px;padding:18px 20px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-        <div style="width:3px;height:14px;background:#0b1e30;border-radius:2px"></div>
-        <span style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#6b7280">${L.monthlyFlow}</span>
+  const rightContent=`
+    <div style="display:flex;flex-direction:column;gap:16px;height:100%">
+      <!-- Category section: donut + legend side by side -->
+      <div style="background:#f8faff;border:1px solid #e8ecf2;border-radius:12px;padding:18px 20px;flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <div style="width:3px;height:13px;background:#c9963c;border-radius:2px"></div>
+          <span style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#6b7280">Distribuição por Categoria</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:20px">
+          ${donutSrc?`<div style="position:relative;flex-shrink:0">
+            <img src="${donutSrc}" style="width:200px;height:200px;display:block">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none">
+              <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">Total</div>
+              <div style="font-size:14px;font-weight:900;color:#0b1e30;white-space:nowrap">${BRL(sai)}</div>
+            </div>
+          </div>`:''}
+          <div style="flex:1;min-width:0">${catLegend}</div>
+        </div>
       </div>
-      <div style="position:relative;height:200px"><img src="${mesSrc}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
-    </div>`:'';
-
-  // If no charts, show a big metric in right panel instead
-  const rightContent=(rightCatBlock||rightMesBlock)?`${rightCatBlock}${rightMesBlock}`:`
-    <div style="height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px">
-      <div style="text-align:center;padding:40px">
-        <div style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#9ca3af;margin-bottom:14px">Total de Saídas</div>
-        <div style="font-size:56px;font-weight:900;color:#0b1e30;letter-spacing:-2px">${BRL(sai)}</div>
-        <div style="font-size:13px;color:#9ca3af;margin-top:8px">${txCount} lançamentos</div>
-      </div>
+      <!-- Monthly saídas bar -->
+      ${showMes&&mesSrcSimple?`<div style="background:#f8faff;border:1px solid #e8ecf2;border-radius:12px;padding:16px 20px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:3px;height:13px;background:#0b1e30;border-radius:2px"></div>
+          <span style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#6b7280">Saídas por Mês</span>
+        </div>
+        <div style="position:relative;height:170px"><img src="${mesSrcSimple}" style="width:100%;height:100%;object-fit:contain;display:block"></div>
+      </div>`:''}
     </div>`;
 
   return `<div class="rpt-page" style="width:1123px;height:794px;overflow:hidden;background:#fff;display:flex;box-sizing:border-box">
