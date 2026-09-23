@@ -1083,7 +1083,7 @@ async function generateReport(){
     return out;
   })():'';
 
-  // ── Per-person pages (only when RESPONSÁVEL column exists) ─────────────
+  // ── Per-person summary pages (one per RESPONSÁVEL, visual/graphic) ────────
   const personMap=new Map();
   tx.forEach(t=>{
     const p=t.resp&&t.resp.trim()?t.resp.trim():'';
@@ -1091,74 +1091,188 @@ async function generateReport(){
     if(!personMap.has(p)) personMap.set(p,[]);
     personMap.get(p).push(t);
   });
-  const totalSaidas=tx.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
-  const PERSON_ROWS=22;
-  const _personTblHdr=`<thead><tr style="border-bottom:2px solid #e5e7eb">
-    <th style="padding:7px 9px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;white-space:nowrap">${L.date}</th>
-    <th style="padding:7px 9px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.description}</th>
-    <th style="padding:7px 9px;text-align:left;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.category}</th>
-    <th style="padding:7px 9px;text-align:right;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af">${L.amount}</th>
-  </tr></thead>`;
-  const _personRow=(t,i)=>`
-    <tr style="border-bottom:1px solid #f3f4f6;background:${i%2===0?'#fff':'#fafafa'}">
-      <td style="padding:7px 9px;color:#6b7280;white-space:nowrap;font-size:10px">${fmtTxDate(t.date)}</td>
-      <td style="padding:7px 9px;color:#374151;font-size:10px">${translateTerm(t.desc)||'—'}</td>
-      <td style="padding:7px 9px;font-size:10px"><span style="background:#fef3c7;color:#92400e;border-radius:4px;padding:2px 6px;font-size:9px;font-weight:700;text-transform:uppercase">${translateTerm(t.tipo||L.general)}</span></td>
-      <td style="padding:7px 9px;text-align:right;font-weight:700;font-size:10px;color:#dc2626">− ${BRL(t.valor)}</td>
-    </tr>`;
-  const personPages=(personMap.size>0)?(()=>{
+  const totalSaidasAll=tx.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
+  const avatarColors=['#0b1e30','#c9963c','#10b981','#3b82f6','#8b5cf6','#ef4444'];
+  const personPages=await(async()=>{
+    if(!personMap.size) return '';
     let out='';
     const sortedPersons=[...personMap.entries()].sort((a,b)=>{
-      const sa=a[1].reduce((s,t)=>s+t.valor,0);
-      const sb=b[1].reduce((s,t)=>s+t.valor,0);
-      return sb-sa;
+      return b[1].reduce((s,t)=>s+t.valor,0)-a[1].reduce((s,t)=>s+t.valor,0);
     });
-    sortedPersons.forEach(([person,ptx],pi)=>{
-      const pSai=ptx.reduce((s,t)=>s+t.valor,0);
-      const pPct=totalSaidas>0?((pSai/totalSaidas)*100).toFixed(1):'0.0';
-      const initials=person.split(/\s+/).map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
-      // avatar colors cycling
-      const avatarColors=['#0b1e30','#c9963c','#10b981','#3b82f6','#8b5cf6','#ef4444'];
-      const avColor=avatarColors[pi%avatarColors.length];
-      // KPI header row
-      const headerBlock=`
-      <div style="display:flex;align-items:center;gap:20px;padding-bottom:18px;border-bottom:3px solid #0b1e30;margin-bottom:20px">
-        <div style="width:54px;height:54px;border-radius:50%;background:${avColor};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <span style="font-size:18px;font-weight:900;color:#fff;letter-spacing:1px">${initials}</span>
+    // ── Build all-persons summary page first ────────────────────────────────
+    const allPersonStats=sortedPersons.map(([name,ptx],pi)=>{
+      const tot=ptx.reduce((s,t)=>s+t.valor,0);
+      const pct=totalSaidasAll>0?((tot/totalSaidasAll)*100):0;
+      const initials=name.split(/\s+/).map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+      const color=avatarColors[pi%avatarColors.length];
+      return {name,tot,pct,count:ptx.length,initials,color};
+    });
+    // Donut chart for summary page
+    const donutSrc=await renderChartImg({type:'doughnut',data:{
+      labels:allPersonStats.map(p=>p.name),
+      datasets:[{data:allPersonStats.map(p=>p.tot),
+        backgroundColor:allPersonStats.map(p=>p.color+'cc'),
+        borderColor:allPersonStats.map(p=>p.color),
+        borderWidth:2,hoverOffset:4}]
+    },options:{responsive:false,maintainAspectRatio:false,cutout:'62%',
+      plugins:{legend:{display:false},tooltip:{enabled:false}}
+    }},320,320);
+
+    // Row cards for the summary table
+    const personRows=allPersonStats.map(ps=>`
+      <div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid #f3f4f6">
+        <div style="width:36px;height:36px;border-radius:50%;background:${ps.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="font-size:12px;font-weight:900;color:#fff">${ps.initials}</span>
         </div>
-        <div style="flex:1">
-          <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9963c;margin-bottom:4px">Responsável</div>
-          <div style="font-size:22px;font-weight:900;color:#0b1e30;line-height:1">${person}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:800;color:#0b1e30;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ps.name}</div>
+          <div style="margin-top:4px;height:7px;background:#f3f4f6;border-radius:4px;overflow:hidden">
+            <div style="width:${ps.pct.toFixed(1)}%;height:100%;background:${ps.color};border-radius:4px"></div>
+          </div>
         </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ca3af;margin-bottom:4px">Total de Saídas</div>
-          <div style="font-size:26px;font-weight:900;color:#dc2626">${BRL(pSai)}</div>
-          <div style="font-size:10px;color:#9ca3af;margin-top:2px">${pPct}% do total de saídas · ${ptx.length} lançamentos</div>
+        <div style="text-align:right;flex-shrink:0;min-width:140px">
+          <div style="font-size:13px;font-weight:900;color:#dc2626">${BRL(ps.tot)}</div>
+          <div style="font-size:9px;color:#9ca3af;margin-top:1px">${ps.pct.toFixed(1)}% · ${ps.count} lanç.</div>
+        </div>
+      </div>`).join('');
+
+    out+=`<div class="rpt-page" style="width:1123px;height:794px;overflow:hidden;background:#fff;padding:48px 56px 40px;box-sizing:border-box">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:18px;border-bottom:3px solid #0b1e30;margin-bottom:28px">
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#c9963c;margin-bottom:6px">Gastos por Responsável</div>
+          <div style="font-size:24px;font-weight:900;color:#0b1e30">${c.name}</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:4px">${period} · ${sortedPersons.length} responsáveis · ${tx.length} lançamentos</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">Total de Saídas</div>
+          <div style="font-size:26px;font-weight:900;color:#dc2626;margin-top:4px">${BRL(totalSaidasAll)}</div>
         </div>
       </div>
-      <div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
-        <div style="flex:1;height:10px;background:#e5e7eb;border-radius:5px;overflow:hidden">
-          <div style="width:${pPct}%;height:100%;background:${avColor};border-radius:5px"></div>
+      <div style="display:grid;grid-template-columns:320px 1fr;gap:36px;align-items:start">
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <div style="position:relative;width:320px;height:320px">
+            <img src="${donutSrc}" style="width:320px;height:320px;display:block">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center">
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">Total</div>
+              <div style="font-size:18px;font-weight:900;color:#0b1e30">${BRL(totalSaidasAll)}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px">
+            ${allPersonStats.map(ps=>`<div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:50%;background:${ps.color}"></div><span style="font-size:9px;color:#6b7280;font-weight:600">${ps.name.split(' ')[0]}</span></div>`).join('')}
+          </div>
         </div>
-        <div style="font-size:11px;font-weight:800;color:${avColor};white-space:nowrap">${pPct}%</div>
+        <div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:12px">Ranking de Gastos</div>
+          ${personRows}
+        </div>
+      </div>
+    </div>`;
+
+    // ── Individual page per person ──────────────────────────────────────────
+    for(let pi=0;pi<sortedPersons.length;pi++){
+      const [person,ptx]=sortedPersons[pi];
+      const pSai=ptx.reduce((s,t)=>s+t.valor,0);
+      const pPct=totalSaidasAll>0?((pSai/totalSaidasAll)*100):0;
+      const avColor=avatarColors[pi%avatarColors.length];
+      const initials=person.split(/\s+/).map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+
+      // Category breakdown for this person
+      const pCatMap=new Map();
+      ptx.forEach(t=>{const k=t.tipo&&t.tipo.trim()?t.tipo.trim():'Outros';pCatMap.set(k,(pCatMap.get(k)||0)+t.valor);});
+      const pCats=[...pCatMap.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+      // Month breakdown
+      const pMonMap=new Map();
+      ptx.forEach(t=>{
+        const parts=t.date.split(/[\/\-]/);
+        let m='';
+        if(parts.length>=3){
+          // handle dd/mm/yyyy or yyyy-mm-dd
+          if(parts[0].length===4) m=parts[0]+'-'+parts[1];
+          else m=parts[2]+'-'+parts[1];
+        }
+        if(m) pMonMap.set(m,(pMonMap.get(m)||0)+t.valor);
+      });
+      const pMonKeys=[...pMonMap.keys()].sort();
+      const MON_PT=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      const pMonLbl=pMonKeys.map(k=>{const[y,m]=k.split('-');return (MON_PT[parseInt(m,10)-1]||m)+' '+y.slice(2);});
+      const pMonVals=pMonKeys.map(k=>pMonMap.get(k));
+
+      // Render bar chart for categories
+      const pCatH=Math.max(140,pCats.length*36);
+      const pCatSrc=pCats.length>0?await renderChartImg({type:'bar',data:{
+        labels:pCats.map(([k])=>k),
+        datasets:[{data:pCats.map(([,v])=>v),
+          backgroundColor:avColor+'55',borderColor:avColor,borderWidth:2,borderRadius:6}]
+      },options:{indexAxis:'y',responsive:false,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{enabled:false}},
+        scales:{
+          x:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{color:'#6b7280',font:{family:'Montserrat',size:10},callback:v=>BRL(v)},border:{display:false}},
+          y:{grid:{display:false},ticks:{color:'#111',font:{family:'Montserrat',size:10,weight:'700'}},border:{display:false}}
+        }
+      }},520,pCatH):'';
+
+      // Render line/bar chart for monthly evolution
+      const pMesSrc=pMonKeys.length>1?await renderChartImg({type:'bar',data:{
+        labels:pMonLbl,
+        datasets:[{data:pMonVals,backgroundColor:avColor+'44',borderColor:avColor,borderWidth:2,borderRadius:4}]
+      },options:{responsive:false,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{enabled:false}},
+        scales:{
+          x:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{color:'#6b7280',font:{family:'Montserrat',size:10}},border:{display:false}},
+          y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{color:'#6b7280',font:{family:'Montserrat',size:10},callback:v=>BRL(v)},border:{display:false}}
+        }
+      }},440,160):'';
+
+      // Top 3 categories as pills
+      const topPills=pCats.slice(0,3).map(([k,v])=>`
+        <div style="background:#f8faff;border:1px solid ${avColor}33;border-radius:10px;padding:12px 16px;text-align:center">
+          <div style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:${avColor};margin-bottom:4px">${k}</div>
+          <div style="font-size:14px;font-weight:900;color:#0b1e30">${BRL(v)}</div>
+          <div style="font-size:9px;color:#9ca3af;margin-top:2px">${pSai>0?((v/pSai)*100).toFixed(1):'0.0'}%</div>
+        </div>`).join('');
+
+      out+=`<div class="rpt-page" style="width:1123px;height:794px;overflow:hidden;background:#fff;padding:40px 52px 36px;box-sizing:border-box">
+        <!-- Header -->
+        <div style="display:flex;align-items:center;gap:18px;padding-bottom:18px;border-bottom:3px solid #0b1e30;margin-bottom:22px">
+          <div style="width:58px;height:58px;border-radius:50%;background:${avColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px ${avColor}44">
+            <span style="font-size:20px;font-weight:900;color:#fff">${initials}</span>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#9ca3af;margin-bottom:3px">Responsável · ${pi+1} de ${sortedPersons.length}</div>
+            <div style="font-size:24px;font-weight:900;color:#0b1e30;line-height:1.1">${person}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9ca3af">Total Gasto</div>
+            <div style="font-size:28px;font-weight:900;color:#dc2626;line-height:1.1;margin-top:3px">${BRL(pSai)}</div>
+            <div style="font-size:10px;color:#9ca3af;margin-top:3px">${pPct.toFixed(1)}% do total · ${ptx.length} lançamento${ptx.length!==1?'s':''}</div>
+          </div>
+        </div>
+        <!-- Progress bar -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <div style="font-size:9px;font-weight:700;color:#9ca3af;white-space:nowrap">Participação no total</div>
+          <div style="flex:1;height:8px;background:#f3f4f6;border-radius:4px;overflow:hidden">
+            <div style="width:${Math.min(pPct,100).toFixed(1)}%;height:100%;background:${avColor};border-radius:4px"></div>
+          </div>
+          <div style="font-size:11px;font-weight:900;color:${avColor};white-space:nowrap">${pPct.toFixed(1)}%</div>
+        </div>
+        <!-- KPI pills -->
+        ${pCats.length>0?`<div style="display:grid;grid-template-columns:repeat(${Math.min(pCats.slice(0,3).length,3)},1fr);gap:10px;margin-bottom:20px">${topPills}</div>`:''}
+        <!-- Charts row -->
+        <div style="display:grid;grid-template-columns:${pMesSrc?'1fr 1fr':'1fr'};gap:18px;align-items:start">
+          ${pCatSrc?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px">
+            <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:10px">Gastos por Categoria</div>
+            <div style="position:relative;height:${pCatH}px"><img src="${pCatSrc}" style="width:100%;height:100%;object-fit:contain"></div>
+          </div>`:''}
+          ${pMesSrc?`<div style="background:#f8faff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px">
+            <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:10px">Evolução Mensal</div>
+            <div style="position:relative;height:160px"><img src="${pMesSrc}" style="width:100%;height:100%;object-fit:contain"></div>
+          </div>`:''}
+        </div>
       </div>`;
-      // Paginate transactions for this person
-      for(let p=0;p<ptx.length;p+=PERSON_ROWS){
-        const chunk=ptx.slice(p,p+PERSON_ROWS);
-        const from=p+1,to=Math.min(p+PERSON_ROWS,ptx.length);
-        const pageLabel=ptx.length>PERSON_ROWS?` (${from}–${to} de ${ptx.length})`:`${ptx.length} lançamento${ptx.length!==1?'s':''}`;
-        out+=`<div class="rpt-page" style="width:1123px;height:794px;overflow:hidden;background:#fff;padding:48px 56px 40px;box-sizing:border-box">
-        ${p===0?headerBlock:`<div style="padding-bottom:14px;border-bottom:2px solid #e5e7eb;margin-bottom:16px"><div style="font-size:18px;font-weight:900;color:#0b1e30">${person}</div><div style="font-size:9px;color:#9ca3af;font-weight:600;margin-top:2px">${BRL(pSai)} · continuação</div></div>`}
-        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin-bottom:10px">Lançamentos — ${pageLabel}</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          ${_personTblHdr}
-          <tbody>${chunk.map(_personRow).join('')}</tbody>
-        </table>
-      </div>`;
-      }
-    });
+    }
     return out;
-  })():'';
+  })();
 
   const brlFn=`function brl(v){return new Intl.NumberFormat('${locale}',{style:'currency',currency:'BRL'}).format(v);}`;
   const nCharts=0;
