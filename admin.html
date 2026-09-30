@@ -815,151 +815,208 @@ body{display:flex;flex-direction:column;overflow:hidden}
       </div>
       <div id="mc-content" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
     </div>
-    <div id="mc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center">
-      <div style="background:#132030;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:28px;width:400px;max-width:90vw">
-        <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:18px" id="mc-modal-title">Adicionar Cliente</div>
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div>
-            <label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:5px">Nome do cliente *</label>
-            <input id="mc-f-nome" placeholder="Ex: Joao Silva" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;font-size:12px;color:#fff;font-family:inherit;outline:none"/>
-          </div>
-          <div>
-            <label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:5px">Status</label>
-            <select id="mc-f-status" onchange="mcStatusChange()" style="width:100%;background:#132030;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;font-size:12px;color:#fff;font-family:inherit;outline:none">
-              <option value="Reuniao marcada">Reuniao marcada</option>
-              <option value="Reuniao realizada">Reuniao realizada</option>
-              <option value="Captado">Captado</option>
-            </select>
-          </div>
-          <div id="mc-f-valor-wrap" style="display:none">
-            <label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:5px">Valor aportado (R$)</label>
-            <input id="mc-f-valor" type="number" placeholder="Ex: 250000" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;font-size:12px;color:#fff;font-family:inherit;outline:none"/>
-          </div>
-          <div>
-            <label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:5px">Data</label>
-            <input id="mc-f-data" type="date" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;font-size:12px;color:#fff;font-family:inherit;outline:none"/>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
-          <button onclick="mcCloseModal()" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:8px 16px;border-radius:8px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer">Cancelar</button>
-          <button onclick="mcSaveCliente()" style="background:var(--gold);border:none;color:#0b1e30;padding:8px 18px;border-radius:8px;font-size:11px;font-weight:800;font-family:inherit;cursor:pointer">Salvar</button>
-        </div>
-      </div>
-    </div>
     <script>
-    var _mcCache=null,_mcAt=null,_mcKey=null;
+    var _mcCache=null,_mcAt=null;
     var _MC_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSsgVh5XJN_Lb1XXLsdlbr2_SMIAu9MfVDMm-YAPfW7WDkm4e1C8PGmrURpbKGuS4eaG5y638r92fFo/pub?output=csv';
-    function mcGetClis(label){try{return JSON.parse(localStorage.getItem('mc_'+label)||'[]');}catch(e){return[];}}
-    function mcSetClis(label,arr){try{localStorage.setItem('mc_'+label,JSON.stringify(arr));}catch(e){}}
+
     function mcParseCsv(txt){
       var rows=[];
       txt.split('\n').forEach(function(line){
         var cols=[],cur='',inQ=false;
-        for(var i=0;i<line.length;i++){var c=line[i];if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){cols.push(cur.trim());cur='';}else cur+=c;}
-        cols.push(cur.trim());rows.push(cols);
+        for(var i=0;i<line.length;i++){
+          var c=line[i];
+          if(c==='"'){inQ=!inQ;}
+          else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
+          else cur+=c;
+        }
+        cols.push(cur.trim());
+        rows.push(cols);
       });
       return rows;
     }
-    function mcNorm(s){return(s||'').toUpperCase().replace(/\s/g,'').replace(/[ÀÁÂÃÄ]/g,'A').replace(/[ÈÉÊË]/g,'E').replace(/[ÌÍÎÏ]/g,'I').replace(/[ÒÓÔÕÖ]/g,'O').replace(/[ÙÚÛÜ]/g,'U').replace(/Ç/g,'C');}
-    function mcExtract(rows){
-      var hi=-1,cA=-1,cC=-1,cP=-1,cI=-1;
-      rows.forEach(function(r,i){r.forEach(function(c,j){var u=mcNorm(c);if(u==='AUM'){hi=i;cA=j;}if(u.indexOf('CONS')===0)cC=j;if(u.indexOf('PROJ')===0)cP=j;if(u.indexOf('INST')===0)cI=j;});});
-      var gv=function(frag,col){if(col<0)return'0';for(var i=hi+1;i<rows.length;i++){if(mcNorm(rows[i][0]||'').indexOf(frag)>-1)return rows[i][col]||'0';}return'0';};
-      var pn=function(s){return parseFloat((s||'0').replace(/\./g,'').replace(',','.'))||0;};
-      return[
-        {label:'AUM',desc:'Valor aportado — ativos sob gestao',metaRaw:pn(gv('APORTADO',cA)),isMoney:true},
-        {label:'Reuniao de Consorcio',desc:'Reunioes realizadas este mes',metaRaw:pn(gv('REUNI',cC)),isMoney:false},
-        {label:'Reuniao de Projetos',desc:'Reunioes de projetos este mes',metaRaw:pn(gv('REUNI',cP)),isMoney:false},
-        {label:'Leads do Instagram',desc:'Leads gerados pelo Instagram',metaRaw:pn(gv('LEADS',cI)),isMoney:false}
-      ];
+
+    function mcNorm(s){
+      return(s||'').toUpperCase()
+        .replace(/\s/g,'')
+        .replace(/[ÀÁÂÃÄ]/g,'A').replace(/[ÈÉÊË]/g,'E')
+        .replace(/[ÌÍÎÏ]/g,'I').replace(/[ÒÓÔÕÖ]/g,'O')
+        .replace(/[ÙÚÛÜ]/g,'U').replace(/Ç/g,'C');
     }
+
+    function mcParseN(s){
+      return parseFloat((s||'0').replace(/[^\d,]/g,'').replace(',','.'))||0;
+    }
+
+    // Find row index where first non-empty cell matches keyword
+    function mcFindSection(rows, kw){
+      for(var i=0;i<rows.length;i++){
+        var u=mcNorm(rows[i][0]||rows[i][1]||'');
+        if(u.indexOf(kw)>-1) return i;
+      }
+      return -1;
+    }
+
+    // After a section header, find the column-header row (has "NOME")
+    // Then read data rows until an empty row or next section header
+    function mcReadSection(rows, startIdx){
+      var hdrIdx=-1;
+      for(var i=startIdx+1;i<Math.min(startIdx+5,rows.length);i++){
+        var joined=rows[i].join('').toUpperCase();
+        if(joined.indexOf('NOME')>-1){hdrIdx=i;break;}
+      }
+      if(hdrIdx<0)return{cols:[],rows:[]};
+      var cols=rows[hdrIdx];
+      var data=[];
+      for(var i=hdrIdx+1;i<rows.length;i++){
+        var r=rows[i];
+        var first=(r[0]||r[1]||r[2]||'').trim();
+        if(!first)break; // empty row = end of section
+        // skip if looks like another section header (all caps, short)
+        if(!r[1]&&mcNorm(r[0]).length>2&&mcNorm(r[0]).length<25&&r.slice(1).join('').trim()==='')break;
+        data.push(r);
+      }
+      return{cols:cols,rows:data};
+    }
+
+    function mcExtract(rows){
+      var iAUM=mcFindSection(rows,'AUM');
+      var iCS=mcFindSection(rows,'CONSORCIO');
+      var iPR=mcFindSection(rows,'PROJETO');
+      var iIG=mcFindSection(rows,'INSTAGRAM');
+      var iMB=mcFindSection(rows,'METASBASE');
+
+      // Targets from METAS BASE
+      var metaAUM=1000000,metaCS=10,metaPR=5,metaIG=20;
+      if(iMB>=0){
+        // find AUM col
+        var mbHdr=-1,cA=-1,cC=-1,cP=-1,cI=-1;
+        for(var i=iMB;i<Math.min(iMB+5,rows.length);i++){
+          rows[i].forEach(function(c,j){var u=mcNorm(c);if(u==='AUM'){mbHdr=i;cA=j;}if(u.indexOf('CONS')===0)cC=j;if(u.indexOf('PROJ')===0)cP=j;if(u.indexOf('INST')===0)cI=j;});
+        }
+        if(mbHdr>=0){
+          var gv=function(frag,col){if(col<0)return'0';for(var i=mbHdr+1;i<rows.length;i++){if(mcNorm(rows[i][0]||'').indexOf(frag)>-1)return rows[i][col]||'0';}return'0';};
+          metaAUM=mcParseN(gv('APORTADO',cA))||1000000;
+          metaCS=mcParseN(gv('REUNI',cC))||10;
+          metaPR=mcParseN(gv('REUNI',cP))||5;
+          metaIG=mcParseN(gv('LEADS',cI))||20;
+        }
+      }
+
+      var secAUM=iAUM>=0?mcReadSection(rows,iAUM):{cols:[],rows:[]};
+      var secCS =iCS>=0?mcReadSection(rows,iCS):{cols:[],rows:[]};
+      var secPR =iPR>=0?mcReadSection(rows,iPR):{cols:[],rows:[]};
+      var secIG =iIG>=0?mcReadSection(rows,iIG):{cols:[],rows:[]};
+
+      // Colindex helpers
+      function ci(cols,kw){for(var j=0;j<cols.length;j++){if(mcNorm(cols[j]).indexOf(kw)>-1)return j;}return-1;}
+
+      // AUM realizado = sum of VALOR APORTADO
+      var aumReal=0;
+      var cValAUM=ci(secAUM.cols,'VALOR');
+      secAUM.rows.forEach(function(r){aumReal+=mcParseN(r[cValAUM]||'0');});
+
+      return{
+        metaAUM:metaAUM,metaCS:metaCS,metaPR:metaPR,metaIG:metaIG,
+        secAUM:secAUM,secCS:secCS,secPR:secPR,secIG:secIG,
+        aumReal:aumReal,
+        csReal:secCS.rows.length,
+        prReal:secPR.rows.length,
+        igReal:secIG.rows.length
+      };
+    }
+
     function mcLoad(force){
       if(!force&&_mcCache&&_mcAt&&(Date.now()-_mcAt<300000)){mcRender(_mcCache);return;}
       document.getElementById('mc-updated').textContent='Buscando planilha...';
       document.getElementById('mc-content').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:12px">Carregando...</div>';
-      fetch(_MC_URL+'&_t='+Date.now()).then(function(r){return r.text();}).then(function(t){_mcCache=mcExtract(mcParseCsv(t));_mcAt=Date.now();mcRender(_mcCache);}).catch(function(){document.getElementById('mc-content').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,100,100,.6);font-size:12px">Erro ao carregar planilha.</div>';});
+      fetch(_MC_URL+'&_t='+Date.now())
+        .then(function(r){return r.text();})
+        .then(function(t){_mcCache=mcExtract(mcParseCsv(t));_mcAt=Date.now();mcRender(_mcCache);})
+        .catch(function(){document.getElementById('mc-content').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,100,100,.6);font-size:12px">Erro ao carregar planilha.</div>';});
     }
+
     function mcFmt$(v){return'R$ '+Math.round(v).toLocaleString('pt-BR');}
-    function mcFmtD(s){if(!s)return'';var p=s.split('-');return p[2]+'/'+p[1];}
-    function mcDot(s){if(s==='Captado')return'#22c55e';if(s==='Reuniao realizada')return'var(--gold)';return'rgba(255,255,255,.3)';}
-    function mcRender(items){
+
+    function mcStatusDot(s){
+      var u=(s||'').toUpperCase();
+      if(u==='QUENTE')return'#ef4444';
+      if(u==='MORNO')return'var(--gold)';
+      if(u==='FRIO')return'#60a5fa';
+      if(u.indexOf('CAPTADO')>-1||u.indexOf('FECHADO')>-1)return'#22c55e';
+      return'rgba(255,255,255,.3)';
+    }
+
+    function mcMakeClientes(sec,extraColIdx){
+      if(!sec.rows.length)return'<div style="font-size:10.5px;color:rgba(255,255,255,.2);font-style:italic;margin-top:10px">Nenhum registro ainda.</div>';
+      var cNome=0,cData=-1,cStatus=-1,cFup=-1,cExtra=-1;
+      sec.cols.forEach(function(c,j){
+        var u=mcNorm(c);
+        if(u.indexOf('NOME')>-1)cNome=j;
+        if(u.indexOf('DATA')>-1)cData=j;
+        if(u.indexOf('STATUS')>-1)cStatus=j;
+        if(u.indexOf('FUP')>-1||u.indexOf('FOLLOW')>-1)cFup=j;
+        if(extraColIdx&&u.indexOf(extraColIdx)>-1)cExtra=j;
+      });
+      return'<div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.06);padding-top:12px;display:flex;flex-direction:column;gap:10px">'
+        +sec.rows.map(function(r){
+          var nome=r[cNome]||'';
+          var data=r[cData]||'';
+          var status=r[cStatus]||'';
+          var fup=cFup>=0?r[cFup]:'';
+          var extra=cExtra>=0?r[cExtra]:'';
+          var dot=mcStatusDot(status);
+          return'<div style="display:flex;align-items:flex-start;gap:10px">'
+            +'<div style="width:7px;height:7px;border-radius:50%;background:'+dot+';flex-shrink:0;margin-top:4px"></div>'
+            +'<div style="flex:1;min-width:0">'
+            +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+            +'<span style="font-size:12px;font-weight:700;color:#fff">'+nome+'</span>'
+            +(status?'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5)">'+status+'</span>':'')
+            +(extra?'<span style="font-size:9px;color:rgba(255,255,255,.35)">'+extra+'</span>':'')
+            +'</div>'
+            +(data?'<div style="font-size:9.5px;color:rgba(255,255,255,.3);margin-top:2px">'+data+'</div>':'')
+            +(fup?'<div style="font-size:9.5px;color:rgba(201,150,60,.6);margin-top:3px">&#128337; '+fup+'</div>':'')
+            +'</div></div>';
+        }).join('')
+        +'</div>';
+    }
+
+    function mcCard(label,desc,real,meta,isMoney,sec,extraKey){
+      var rFmt=isMoney?mcFmt$(real):real+'';
+      var mFmt=isMoney?mcFmt$(meta):meta+'';
+      var pct=meta>0?Math.min(100,Math.round(real/meta*100)):0;
+      var ok=pct>=100;
+      var bar=ok?'#22c55e':'var(--gold)';
+      var pc=ok?'#22c55e':pct>=50?'var(--gold)':'rgba(255,255,255,.35)';
+      var falta=isMoney?mcFmt$(Math.max(0,meta-real)):Math.max(0,meta-real)+'';
+      return'<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:22px 24px;position:relative;overflow:hidden">'
+        +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+bar+'"></div>'
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">'
+        +'<div><div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:6px">'+label+'</div>'
+        +'<div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1">'+rFmt+'<span style="font-size:12px;opacity:.3;font-weight:600"> / '+mFmt+'</span></div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">'+desc+'</div></div>'
+        +'<div style="font-size:26px;font-weight:900;color:'+pc+';letter-spacing:-1px;line-height:1;flex-shrink:0;margin-left:14px">'+pct+'<span style="font-size:13px">%</span></div>'
+        +'</div>'
+        +'<div style="height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;margin-bottom:10px">'
+        +'<div style="height:100%;border-radius:3px;background:'+bar+';width:'+pct+'%;transition:width .6s"></div></div>'
+        +'<div style="display:flex;gap:18px;margin-bottom:4px">'
+        +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Realizado: <strong style="color:rgba(255,255,255,.7)">'+rFmt+'</strong></div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Meta: <strong style="color:rgba(255,255,255,.7)">'+mFmt+'</strong></div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Falta: <strong style="color:'+(ok?'#22c55e':'rgba(255,255,255,.7)')+'">'+falta+'</strong></div>'
+        +'</div>'
+        +mcMakeClientes(sec,extraKey||null)
+        +'</div>';
+    }
+
+    function mcRender(d){
       var now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-      document.getElementById('mc-updated').textContent='Planilha · '+now;
-      var html=items.map(function(m){
-        var clis=mcGetClis(m.label);
-        var real=0;
-        if(m.isMoney){clis.forEach(function(c){if(c.status==='Captado')real+=parseFloat(c.valor)||0;});}
-        else{real=clis.filter(function(c){return c.status==='Reuniao realizada'||c.status==='Captado';}).length;}
-        var rFmt=m.isMoney?mcFmt$(real):real+'';
-        var mFmt=m.isMoney?mcFmt$(m.metaRaw):m.metaRaw+'';
-        var pct=m.metaRaw>0?Math.min(100,Math.round(real/m.metaRaw*100)):0;
-        var ok=pct>=100;
-        var bar=ok?'#22c55e':'var(--gold)';
-        var pc=ok?'#22c55e':pct>=50?'var(--gold)':'rgba(255,255,255,.35)';
-        var falta=m.isMoney?mcFmt$(Math.max(0,m.metaRaw-real)):Math.max(0,m.metaRaw-real)+'';
-        var sl=m.label.replace(/['"]/g,'');
-        var lista='';
-        if(clis.length){
-          lista='<div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.06);padding-top:12px;display:flex;flex-direction:column;gap:8px">';
-          clis.forEach(function(c,ci){
-            lista+='<div style="display:flex;align-items:center;gap:10px">'
-              +'<div style="width:7px;height:7px;border-radius:50%;background:'+mcDot(c.status)+';flex-shrink:0"></div>'
-              +'<div style="flex:1;min-width:0"><div style="font-size:11.5px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.nome+'</div>'
-              +'<div style="font-size:9.5px;color:rgba(255,255,255,.3)">'+c.status+(c.data?' &middot; '+mcFmtD(c.data):'')+(c.valor&&c.status==='Captado'?' &middot; '+mcFmt$(parseFloat(c.valor)):'')+'</div></div>'
-              +'<button onclick="mcRem(\''+sl+'\','+ci+')" style="background:transparent;border:none;color:rgba(255,100,100,.4);font-size:16px;cursor:pointer;padding:0;line-height:1">&times;</button></div>';
-          });
-          lista+='</div>';
-        }
-        return'<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:22px 24px;position:relative;overflow:hidden">'
-          +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+bar+'"></div>'
-          +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">'
-          +'<div style="flex:1;min-width:0"><div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:6px">'+m.label+'</div>'
-          +'<div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1">'+rFmt+'<span style="font-size:12px;opacity:.3;font-weight:600"> / '+mFmt+'</span></div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">'+m.desc+'</div></div>'
-          +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;margin-left:14px">'
-          +'<div style="font-size:26px;font-weight:900;color:'+pc+';letter-spacing:-1px;line-height:1">'+pct+'<span style="font-size:13px">%</span></div>'
-          +'<button onclick="mcOpen(\''+sl+'\')" style="background:rgba(201,150,60,.12);border:1px solid rgba(201,150,60,.25);color:var(--gold);padding:5px 11px;border-radius:6px;font-size:10px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap">+ Cliente</button>'
-          +'</div></div>'
-          +'<div style="height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;margin-bottom:10px">'
-          +'<div style="height:100%;border-radius:3px;background:'+bar+';width:'+pct+'%;transition:width .6s"></div></div>'
-          +'<div style="display:flex;gap:18px">'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Realizado: <strong style="color:rgba(255,255,255,.7)">'+rFmt+'</strong></div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Meta: <strong style="color:rgba(255,255,255,.7)">'+mFmt+'</strong></div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Falta: <strong style="color:'+(ok?'#22c55e':'rgba(255,255,255,.7)')+'">'+falta+'</strong></div>'
-          +'</div>'+lista+'</div>';
-      }).join('');
+      document.getElementById('mc-updated').textContent='Planilha · atualizado '+now;
+      var html=
+        mcCard('AUM','Valor aportado — ativos sob gestao',d.aumReal,d.metaAUM,true,d.secAUM,'VALOR')
+        +mcCard('Reuniao de Consorcio','Reunioes realizadas este mes',d.csReal,d.metaCS,false,d.secCS,'FUP')
+        +mcCard('Reuniao de Projetos','Reunioes de projetos este mes',d.prReal,d.metaPR,false,d.secPR,'PRODUTO')
+        +mcCard('Leads do Instagram','Leads gerados pelo Instagram',d.igReal,d.metaIG,false,d.secIG,'INSTAGRAM');
       document.getElementById('mc-content').innerHTML=html;
     }
-    function mcStatusChange(){
-      var s=document.getElementById('mc-f-status').value;
-      document.getElementById('mc-f-valor-wrap').style.display=(_mcKey==='AUM'&&s==='Captado')?'block':'none';
-    }
-    function mcOpen(label){
-      _mcKey=label;
-      document.getElementById('mc-modal-title').textContent='Adicionar — '+label;
-      document.getElementById('mc-f-nome').value='';
-      document.getElementById('mc-f-status').value='Reuniao marcada';
-      document.getElementById('mc-f-valor').value='';
-      document.getElementById('mc-f-data').value=new Date().toISOString().slice(0,10);
-      document.getElementById('mc-f-valor-wrap').style.display='none';
-      document.getElementById('mc-modal').style.display='flex';
-      setTimeout(function(){document.getElementById('mc-f-nome').focus();},60);
-    }
-    function mcCloseModal(){document.getElementById('mc-modal').style.display='none';}
-    function mcSaveCliente(){
-      var nome=document.getElementById('mc-f-nome').value.trim();
-      if(!nome){document.getElementById('mc-f-nome').focus();return;}
-      var s=document.getElementById('mc-f-status').value;
-      var entry={nome:nome,status:s,data:document.getElementById('mc-f-data').value,valor:document.getElementById('mc-f-valor').value||''};
-      var arr=mcGetClis(_mcKey);arr.push(entry);mcSetClis(_mcKey,arr);
-      mcCloseModal();if(_mcCache)mcRender(_mcCache);
-    }
-    function mcRem(label,idx){
-      if(!confirm('Remover este registro?'))return;
-      var arr=mcGetClis(label);arr.splice(idx,1);mcSetClis(label,arr);
-      if(_mcCache)mcRender(_mcCache);
-    }
-    document.getElementById('mc-modal').addEventListener('click',function(e){if(e.target===this)mcCloseModal();});
     </script>
   </div>
 
