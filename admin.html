@@ -811,137 +811,158 @@ body{display:flex;flex-direction:column;overflow:hidden}
           <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-.3px">Metas Comerciais</div>
           <div id="mc-updated" style="font-size:10px;color:rgba(255,255,255,.3);margin-top:3px">Carregando da planilha...</div>
         </div>
-        <button onclick="mcLoad(true)" style="background:rgba(201,150,60,.15);border:1px solid rgba(201,150,60,.3);color:var(--gold);padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;letter-spacing:.3px">↺ Atualizar</button>
+        <button onclick="mcLoad(true)" style="background:rgba(201,150,60,.15);border:1px solid rgba(201,150,60,.3);color:var(--gold);padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;letter-spacing:.3px">&#8635; Atualizar</button>
       </div>
       <div id="mc-content" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
     </div>
+    <div id="mc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center">
+      <div style="background:#132030;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:28px;width:400px;max-width:90vw">
+        <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:18px" id="mc-modal-title">Adicionar Cliente</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:5px">Nome do cliente *</label>
+            <input id="mc-f-nome" placeholder="Ex: Joao Silva" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;font-size:12px;color:#fff;font-family:inherit;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:5px">Status</label>
+            <select id="mc-f-status" onchange="mcStatusChange()" style="width:100%;background:#132030;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;font-size:12px;color:#fff;font-family:inherit;outline:none">
+              <option value="Reuniao marcada">Reuniao marcada</option>
+              <option value="Reuniao realizada">Reuniao realizada</option>
+              <option value="Captado">Captado</option>
+            </select>
+          </div>
+          <div id="mc-f-valor-wrap" style="display:none">
+            <label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:5px">Valor aportado (R$)</label>
+            <input id="mc-f-valor" type="number" placeholder="Ex: 250000" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;font-size:12px;color:#fff;font-family:inherit;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:5px">Data</label>
+            <input id="mc-f-data" type="date" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;font-size:12px;color:#fff;font-family:inherit;outline:none"/>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+          <button onclick="mcCloseModal()" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:8px 16px;border-radius:8px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer">Cancelar</button>
+          <button onclick="mcSaveCliente()" style="background:var(--gold);border:none;color:#0b1e30;padding:8px 18px;border-radius:8px;font-size:11px;font-weight:800;font-family:inherit;cursor:pointer">Salvar</button>
+        </div>
+      </div>
+    </div>
     <script>
-    var _mcCache=null,_mcAt=null;
+    var _mcCache=null,_mcAt=null,_mcKey=null;
     var _MC_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSsgVh5XJN_Lb1XXLsdlbr2_SMIAu9MfVDMm-YAPfW7WDkm4e1C8PGmrURpbKGuS4eaG5y638r92fFo/pub?output=csv';
+    function mcGetClis(label){try{return JSON.parse(localStorage.getItem('mc_'+label)||'[]');}catch(e){return[];}}
+    function mcSetClis(label,arr){try{localStorage.setItem('mc_'+label,JSON.stringify(arr));}catch(e){}}
     function mcParseCsv(txt){
       var rows=[];
       txt.split('\n').forEach(function(line){
         var cols=[],cur='',inQ=false;
-        for(var i=0;i<line.length;i++){
-          var c=line[i];
-          if(c==='"'){inQ=!inQ;}
-          else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
-          else cur+=c;
-        }
-        cols.push(cur.trim());
-        rows.push(cols);
+        for(var i=0;i<line.length;i++){var c=line[i];if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){cols.push(cur.trim());cur='';}else cur+=c;}
+        cols.push(cur.trim());rows.push(cols);
       });
       return rows;
     }
+    function mcNorm(s){return(s||'').toUpperCase().replace(/\s/g,'').replace(/[ÀÁÂÃÄ]/g,'A').replace(/[ÈÉÊË]/g,'E').replace(/[ÌÍÎÏ]/g,'I').replace(/[ÒÓÔÕÖ]/g,'O').replace(/[ÙÚÛÜ]/g,'U').replace(/Ç/g,'C');}
     function mcExtract(rows){
-      var hdrIdx=-1,colAUM=-1,colCS=-1,colProj=-1,colIG=-1;
-      rows.forEach(function(r,i){
-        r.forEach(function(c,j){
-          var u=(c||'').toUpperCase().replace(/[\s\u00C0-\u00FF]/g,function(x){
-            return {' ':'','Ã':'A','Ç':'C','Ê':'E','Ô':'O','Ó':'O','Á':'A','É':'E','Í':'I','Ú':'U','Õ':'O','Â':'A','À':'A'}[x]||x;
-          });
-          if(u==='AUM'){hdrIdx=i;colAUM=j;}
-          if(u.indexOf('CONS')===0){colCS=j;}
-          if(u.indexOf('PROJ')===0){colProj=j;}
-          if(u.indexOf('INST')===0){colIG=j;}
-        });
-      });
-      var getVal=function(rowKeyFrag,col){
-        if(col<0)return null;
-        for(var i=hdrIdx+1;i<rows.length;i++){
-          var k=(rows[i][0]||'').toUpperCase();
-          if(k.indexOf(rowKeyFrag)>-1)return rows[i][col]||'0';
-        }
-        return '0';
-      };
-      var parseN=function(s){return parseFloat((s||'0').replace(/\./g,'').replace(',','.'))||0;};
-      var fmtBR=function(v,prefix){
-        if(prefix)return'R$ '+Math.round(v).toLocaleString('pt-BR');
-        return Math.round(v)+'';
-      };
-      return [
-        {
-          label:'AUM',desc:'Valor aportado (ativos sob gestão)',
-          metaRaw:parseN(getVal('APORTADO',colAUM)),
-          metaFmt:fmtBR(parseN(getVal('APORTADO',colAUM)),true),
-          realizadoRaw:0,realizadoFmt:'R$ 0',
-          isMoney:true
-        },
-        {
-          label:'Reunião de Consórcio',desc:'Reuniões marcadas este mês',
-          metaRaw:parseN(getVal('REUNI',colCS)),
-          metaFmt:parseN(getVal('REUNI',colCS))+'',
-          realizadoRaw:2,realizadoFmt:'2',
-          isMoney:false
-        },
-        {
-          label:'Reunião de Projetos',desc:'Reuniões de projetos este mês',
-          metaRaw:parseN(getVal('REUNI',colProj)),
-          metaFmt:parseN(getVal('REUNI',colProj))+'',
-          realizadoRaw:0,realizadoFmt:'0',
-          isMoney:false
-        },
-        {
-          label:'Leads do Instagram',desc:'Leads gerados pelo Instagram',
-          metaRaw:parseN(getVal('LEADS',colIG)),
-          metaFmt:parseN(getVal('LEADS',colIG))+'',
-          realizadoRaw:0,realizadoFmt:'0',
-          isMoney:false
-        }
+      var hi=-1,cA=-1,cC=-1,cP=-1,cI=-1;
+      rows.forEach(function(r,i){r.forEach(function(c,j){var u=mcNorm(c);if(u==='AUM'){hi=i;cA=j;}if(u.indexOf('CONS')===0)cC=j;if(u.indexOf('PROJ')===0)cP=j;if(u.indexOf('INST')===0)cI=j;});});
+      var gv=function(frag,col){if(col<0)return'0';for(var i=hi+1;i<rows.length;i++){if(mcNorm(rows[i][0]||'').indexOf(frag)>-1)return rows[i][col]||'0';}return'0';};
+      var pn=function(s){return parseFloat((s||'0').replace(/\./g,'').replace(',','.'))||0;};
+      return[
+        {label:'AUM',desc:'Valor aportado — ativos sob gestao',metaRaw:pn(gv('APORTADO',cA)),isMoney:true},
+        {label:'Reuniao de Consorcio',desc:'Reunioes realizadas este mes',metaRaw:pn(gv('REUNI',cC)),isMoney:false},
+        {label:'Reuniao de Projetos',desc:'Reunioes de projetos este mes',metaRaw:pn(gv('REUNI',cP)),isMoney:false},
+        {label:'Leads do Instagram',desc:'Leads gerados pelo Instagram',metaRaw:pn(gv('LEADS',cI)),isMoney:false}
       ];
     }
     function mcLoad(force){
-      if(!force&&_mcCache&&_mcAt&&(Date.now()-_mcAt<5*60*1000)){mcRender(_mcCache);return;}
+      if(!force&&_mcCache&&_mcAt&&(Date.now()-_mcAt<300000)){mcRender(_mcCache);return;}
       document.getElementById('mc-updated').textContent='Buscando planilha...';
-      document.getElementById('mc-content').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:12px">⟳ Carregando...</div>';
-      fetch(_MC_URL+'&_t='+Date.now())
-        .then(function(r){return r.text();})
-        .then(function(txt){
-          _mcCache=mcExtract(mcParseCsv(txt));
-          _mcAt=Date.now();
-          mcRender(_mcCache);
-        })
-        .catch(function(e){
-          document.getElementById('mc-content').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,100,100,.6);font-size:12px">Erro ao carregar planilha. Verifique a conexão.</div>';
-          document.getElementById('mc-updated').textContent='Erro na última tentativa';
-        });
+      document.getElementById('mc-content').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:12px">Carregando...</div>';
+      fetch(_MC_URL+'&_t='+Date.now()).then(function(r){return r.text();}).then(function(t){_mcCache=mcExtract(mcParseCsv(t));_mcAt=Date.now();mcRender(_mcCache);}).catch(function(){document.getElementById('mc-content').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,100,100,.6);font-size:12px">Erro ao carregar planilha.</div>';});
     }
+    function mcFmt$(v){return'R$ '+Math.round(v).toLocaleString('pt-BR');}
+    function mcFmtD(s){if(!s)return'';var p=s.split('-');return p[2]+'/'+p[1];}
+    function mcDot(s){if(s==='Captado')return'#22c55e';if(s==='Reuniao realizada')return'var(--gold)';return'rgba(255,255,255,.3)';}
     function mcRender(items){
       var now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-      document.getElementById('mc-updated').textContent='Planilha · atualizado às '+now;
+      document.getElementById('mc-updated').textContent='Planilha · '+now;
       var html=items.map(function(m){
-        var pct=m.metaRaw>0?Math.min(100,Math.round(m.realizadoRaw/m.metaRaw*100)):0;
+        var clis=mcGetClis(m.label);
+        var real=0;
+        if(m.isMoney){clis.forEach(function(c){if(c.status==='Captado')real+=parseFloat(c.valor)||0;});}
+        else{real=clis.filter(function(c){return c.status==='Reuniao realizada'||c.status==='Captado';}).length;}
+        var rFmt=m.isMoney?mcFmt$(real):real+'';
+        var mFmt=m.isMoney?mcFmt$(m.metaRaw):m.metaRaw+'';
+        var pct=m.metaRaw>0?Math.min(100,Math.round(real/m.metaRaw*100)):0;
         var ok=pct>=100;
-        var barColor=ok?'#22c55e':'var(--gold)';
-        var pctColor=ok?'#22c55e':pct>=50?'var(--gold)':'rgba(255,255,255,.35)';
-        var falta=m.isMoney
-          ?'R$ '+Math.max(0,m.metaRaw-m.realizadoRaw).toLocaleString('pt-BR')
-          :Math.max(0,m.metaRaw-m.realizadoRaw)+'';
+        var bar=ok?'#22c55e':'var(--gold)';
+        var pc=ok?'#22c55e':pct>=50?'var(--gold)':'rgba(255,255,255,.35)';
+        var falta=m.isMoney?mcFmt$(Math.max(0,m.metaRaw-real)):Math.max(0,m.metaRaw-real)+'';
+        var sl=m.label.replace(/['"]/g,'');
+        var lista='';
+        if(clis.length){
+          lista='<div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.06);padding-top:12px;display:flex;flex-direction:column;gap:8px">';
+          clis.forEach(function(c,ci){
+            lista+='<div style="display:flex;align-items:center;gap:10px">'
+              +'<div style="width:7px;height:7px;border-radius:50%;background:'+mcDot(c.status)+';flex-shrink:0"></div>'
+              +'<div style="flex:1;min-width:0"><div style="font-size:11.5px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.nome+'</div>'
+              +'<div style="font-size:9.5px;color:rgba(255,255,255,.3)">'+c.status+(c.data?' &middot; '+mcFmtD(c.data):'')+(c.valor&&c.status==='Captado'?' &middot; '+mcFmt$(parseFloat(c.valor)):'')+'</div></div>'
+              +'<button onclick="mcRem(\''+sl+'\','+ci+')" style="background:transparent;border:none;color:rgba(255,100,100,.4);font-size:16px;cursor:pointer;padding:0;line-height:1">&times;</button></div>';
+          });
+          lista+='</div>';
+        }
         return'<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:22px 24px;position:relative;overflow:hidden">'
-          +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+barColor+'"></div>'
+          +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+bar+'"></div>'
           +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">'
-          +'<div>'
-          +'<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:6px">'+m.label+'</div>'
-          +'<div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1">'+m.realizadoFmt+'<span style="font-size:13px;opacity:.3;font-weight:600"> / '+m.metaFmt+'</span></div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">'+m.desc+'</div>'
-          +'</div>'
-          +'<div style="font-size:28px;font-weight:900;color:'+pctColor+';letter-spacing:-1px;line-height:1">'+pct+'<span style="font-size:14px">%</span></div>'
-          +'</div>'
+          +'<div style="flex:1;min-width:0"><div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:6px">'+m.label+'</div>'
+          +'<div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1">'+rFmt+'<span style="font-size:12px;opacity:.3;font-weight:600"> / '+mFmt+'</span></div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">'+m.desc+'</div></div>'
+          +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;margin-left:14px">'
+          +'<div style="font-size:26px;font-weight:900;color:'+pc+';letter-spacing:-1px;line-height:1">'+pct+'<span style="font-size:13px">%</span></div>'
+          +'<button onclick="mcOpen(\''+sl+'\')" style="background:rgba(201,150,60,.12);border:1px solid rgba(201,150,60,.25);color:var(--gold);padding:5px 11px;border-radius:6px;font-size:10px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap">+ Cliente</button>'
+          +'</div></div>'
           +'<div style="height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;margin-bottom:10px">'
-          +'<div style="height:100%;border-radius:3px;background:'+barColor+';width:'+pct+'%;transition:width .6s"></div>'
-          +'</div>'
+          +'<div style="height:100%;border-radius:3px;background:'+bar+';width:'+pct+'%;transition:width .6s"></div></div>'
           +'<div style="display:flex;gap:18px">'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Realizado: <strong style="color:rgba(255,255,255,.7)">'+m.realizadoFmt+'</strong></div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Meta: <strong style="color:rgba(255,255,255,.7)">'+m.metaFmt+'</strong></div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Realizado: <strong style="color:rgba(255,255,255,.7)">'+rFmt+'</strong></div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Meta: <strong style="color:rgba(255,255,255,.7)">'+mFmt+'</strong></div>'
           +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Falta: <strong style="color:'+(ok?'#22c55e':'rgba(255,255,255,.7)')+'">'+falta+'</strong></div>'
-          +'</div>'
-          +'</div>';
+          +'</div>'+lista+'</div>';
       }).join('');
       document.getElementById('mc-content').innerHTML=html;
     }
-    // auto-load on first open is handled by nav() in main script
+    function mcStatusChange(){
+      var s=document.getElementById('mc-f-status').value;
+      document.getElementById('mc-f-valor-wrap').style.display=(_mcKey==='AUM'&&s==='Captado')?'block':'none';
+    }
+    function mcOpen(label){
+      _mcKey=label;
+      document.getElementById('mc-modal-title').textContent='Adicionar — '+label;
+      document.getElementById('mc-f-nome').value='';
+      document.getElementById('mc-f-status').value='Reuniao marcada';
+      document.getElementById('mc-f-valor').value='';
+      document.getElementById('mc-f-data').value=new Date().toISOString().slice(0,10);
+      document.getElementById('mc-f-valor-wrap').style.display='none';
+      document.getElementById('mc-modal').style.display='flex';
+      setTimeout(function(){document.getElementById('mc-f-nome').focus();},60);
+    }
+    function mcCloseModal(){document.getElementById('mc-modal').style.display='none';}
+    function mcSaveCliente(){
+      var nome=document.getElementById('mc-f-nome').value.trim();
+      if(!nome){document.getElementById('mc-f-nome').focus();return;}
+      var s=document.getElementById('mc-f-status').value;
+      var entry={nome:nome,status:s,data:document.getElementById('mc-f-data').value,valor:document.getElementById('mc-f-valor').value||''};
+      var arr=mcGetClis(_mcKey);arr.push(entry);mcSetClis(_mcKey,arr);
+      mcCloseModal();if(_mcCache)mcRender(_mcCache);
+    }
+    function mcRem(label,idx){
+      if(!confirm('Remover este registro?'))return;
+      var arr=mcGetClis(label);arr.splice(idx,1);mcSetClis(label,arr);
+      if(_mcCache)mcRender(_mcCache);
+    }
+    document.getElementById('mc-modal').addEventListener('click',function(e){if(e.target===this)mcCloseModal();});
     </script>
   </div>
+
 
   <div class="section" id="section-tools-relatorio" style="margin:-28px -32px;overflow:hidden">
     <iframe src="relatorio-builder.html?embed=1"
