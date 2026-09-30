@@ -110,6 +110,7 @@ body.embed .topnav{display:none}
     <button class="btn-add-block" onclick="addBlock('table')">+ Tabela</button>
     <button class="btn-add-block" onclick="addBlock('video')">+ Vídeo (QR Code)</button>
     <button class="btn-add-block" onclick="addBlock('proposta')">+ Proposta</button>
+    <button class="btn-add-block" onclick="addBlock('metas')">+ Metas</button>
     <button class="btn-add-block" onclick="addBlock('pagebreak')">— Quebra de Página</button>
   </div>
   <button class="btn-generate" id="btn-generate" onclick="generateReport()">Gerar Relatório PDF</button>
@@ -186,6 +187,12 @@ function addBlock(type){
   else if(type==='table') _blocks.push({id:id,type:'table',title:'',cols:['Coluna 1','Coluna 2','Coluna 3'],rows:[['','',''],['','','']]});
   else if(type==='video') _blocks.push({id:id,type:'video',title:'',url:'',details:[{label:'Área',val:''},{label:'Valor',val:''},{label:'Condomínio',val:''},{label:'Endereço',val:''}],desc:'',photos:[]});
   else if(type==='proposta') _blocks.push({id:id,type:'proposta',title:'Proposta Comercial',valor:'',desc:'',instagram:''});
+  else if(type==='metas') _blocks.push({id:id,type:'metas',title:'Acompanhamento de Metas',items:[
+    {label:'AUM',realizado:'',meta:'',cumprida:false,reuniaoData:'',reuniaoNome:''},
+    {label:'Reunião de Consórcio',realizado:'',meta:'',cumprida:false,reuniaoData:'',reuniaoNome:''},
+    {label:'Reunião de Projetos',realizado:'',meta:'',cumprida:false,reuniaoData:'',reuniaoNome:''},
+    {label:'Leads do Instagram',realizado:'',meta:'',cumprida:false,reuniaoData:'',reuniaoNome:''}
+  ]});
   else if(type==='pagebreak') _blocks.push({id:id,type:'pagebreak'});
   renderBlocks();
 }
@@ -206,6 +213,9 @@ function addVideoDetail(id){var b=_blocks.find(function(b){return b.id===id;});i
 function removeVideoDetail(id,j){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.details){b.details.splice(j,1);renderBlocks();}}
 function updateVideoDetail(id,j,f,v){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.details&&b.details[j])b.details[j][f]=v;}
 function updateBlock(id,field,val){var b=_blocks.find(function(b){return b.id===id;});if(b)b[field]=val;}
+function updateMetaItem(id,j,f,v){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.items[j]){b.items[j][f]=(f==='cumprida')?v:v;}if(f==='cumprida')renderBlocks();}
+function addMetaItem(id){var b=_blocks.find(function(b){return b.id===id;});if(b)b.items.push({label:'',realizado:'',meta:'',cumprida:false,reuniaoData:'',reuniaoNome:''});renderBlocks();}
+function removeMetaItem(id,j){var b=_blocks.find(function(b){return b.id===id;});if(b&&b.items.length>1){b.items.splice(j,1);renderBlocks();}}
 function addPhotos(id,input){
   var b=_blocks.find(function(b){return b.id===id;});
   if(!b)return;
@@ -341,6 +351,36 @@ function renderBlock(b,i){
       +'<textarea id="b'+b.id+'_desc" rows="4" placeholder="Ex: Entrada de R$ 50.000,00 com saldo em 60 parcelas..." oninput="updateBlock('+b.id+',\'desc\',this.value)">'+xe(b.desc)+'</textarea></div>'
       +'<div class="block-field"><label>Instagram da empresa (gera QR Code na proposta)</label>'
       +'<input id="b'+b.id+'_instagram" value="'+xe(b.instagram||'')+'" placeholder="https://instagram.com/somapartners" oninput="updateBlock('+b.id+',\'instagram\',this.value)"/></div>';
+  } else if(b.type==='metas'){
+    icon='◎';typeName='Metas';
+    var metaRows=b.items.map(function(item,j){
+      var cumprida=!!item.cumprida;
+      var meetingFields=cumprida
+        ?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;padding:10px 12px;background:rgba(22,163,74,.07);border:1px solid rgba(22,163,74,.18);border-radius:8px">'
+          +'<div><label style="font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(22,163,74,.8);display:block;margin-bottom:4px">📅 Data da reunião</label>'
+          +'<input type="date" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;color:#fff;outline:none;width:100%" value="'+xe(item.reuniaoData||'')+'" oninput="updateMetaItem('+b.id+','+j+','reuniaoData',this.value)"/></div>'
+          +'<div><label style="font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(22,163,74,.8);display:block;margin-bottom:4px">👤 Nome da pessoa</label>'
+          +'<input placeholder="Ex: João Silva" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;color:#fff;outline:none;width:100%" value="'+xe(item.reuniaoNome||'')+'" oninput="updateMetaItem('+b.id+','+j+','reuniaoNome',this.value)"/></div>'
+          +'</div>'
+        :'';
+      return '<div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;background:rgba(255,255,255,.02)">'
+        +'<div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;align-items:center">'
+        +'<input placeholder="Indicador (ex: AUM)" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;color:#fff;outline:none" value="'+xe(item.label)+'" oninput="updateMetaItem('+b.id+','+j+','label',this.value)"/>'
+        +'<input placeholder="Realizado" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;color:#fff;outline:none" value="'+xe(item.realizado)+'" oninput="updateMetaItem('+b.id+','+j+','realizado',this.value)"/>'
+        +'<input placeholder="Meta" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;color:#fff;outline:none" value="'+xe(item.meta)+'" oninput="updateMetaItem('+b.id+','+j+','meta',this.value)"/>'
+        +'<div style="display:flex;gap:4px;align-items:center">'
+        +'<label title="Meta cumprida" style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:10px;color:'+(cumprida?'#16a34a':'rgba(255,255,255,.3)')+'"><input type="checkbox"'+(cumprida?' checked':'')+' onchange="updateMetaItem('+b.id+','+j+','cumprida',this.checked)" style="accent-color:#16a34a;width:14px;height:14px"/> ✓</label>'
+        +(b.items.length>1?'<button class="btn-sm btn-rm" onclick="removeMetaItem('+b.id+','+j+')">×</button>':'')
+        +'</div>'
+        +'</div>'
+        +meetingFields
+        +'</div>';
+    }).join('');
+    body='<div class="block-field"><label>Título</label>'
+      +'<input id="b'+b.id+'_title" value="'+xe(b.title)+'" placeholder="Ex: Acompanhamento de Metas"/></div>'
+      +'<div class="block-field"><label style="display:flex;justify-content:space-between">Indicadores <span style="opacity:.5;font-weight:400">realizado / meta / ✓ cumprida</span></label>'
+      +metaRows
+      +'<button class="btn-add-row" onclick="addMetaItem('+b.id+')">+ Adicionar indicador</button></div>';
   } else if(b.type==='pagebreak'){
     icon='—';typeName='Quebra de Página';
     body='<p style="color:var(--muted);font-size:11px">Força uma nova página no relatório a partir deste ponto.</p>';
@@ -418,6 +458,34 @@ function blockToHTML(b){
       +(b.desc?'<div class="rpt-prop-desc">'+xe(b.desc).replace(/\n/g,'<br\/>')+'<\/div>':'')
       +igQr
       +'<\/div>';
+  }
+  if(b.type==='metas'){
+    var n=Math.min(b.items.length,4);
+    var cols=n<=2?n:(n===3?3:4);
+    var mcards=b.items.map(function(m){
+      var rv=parseFloat((m.realizado||'0').replace(/[^0-9.,]/g,'').replace(',','.'));
+      var mv=parseFloat((m.meta||'0').replace(/[^0-9.,]/g,'').replace(',','.'));
+      var pct=(mv>0&&rv>=0)?Math.min(100,Math.round(rv/mv*100)):0;
+      var cumprida=!!m.cumprida;
+      var meetingBadge=cumprida&&(m.reuniaoData||m.reuniaoNome)
+        ?'<div style="margin-top:10px;padding:8px 10px;background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2);border-radius:6px;font-size:9px;color:#15803d;line-height:1.5">'
+          +(m.reuniaoData?'<div><span style="font-weight:800">📅 Reunião:</span> '+xe(new Date(m.reuniaoData+'T00:00').toLocaleDateString('pt-BR'))+'</div>':'')
+          +(m.reuniaoNome?'<div><span style="font-weight:800">👤 Responsável:</span> '+xe(m.reuniaoNome)+'</div>':'')
+          +'</div>'
+        :'';
+      return '<div style="border:1px solid rgba(0,0,0,.07);border-radius:12px;padding:18px 20px 14px;background:#f9fafb;position:relative;overflow:hidden">'
+        +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+(cumprida?'#16a34a':'#c9963c')+'"></div>'
+        +'<div style="font-size:'+(n<=2?'28':'22')+'px;font-weight:900;color:#0b1e30;letter-spacing:-.5px;line-height:1.1">'+xe(m.realizado||'—')+'<span style="font-size:13px;opacity:.35;font-weight:700"> /'+xe(m.meta)+'</span></div>'
+        +'<div style="font-size:8.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,.38);margin-top:4px">'+xe(m.label)+'</div>'
+        +'<div style="margin-top:8px"><div style="height:5px;background:rgba(0,0,0,.07);border-radius:3px;overflow:hidden"><div style="height:5px;background:'+(cumprida?'linear-gradient(90deg,#16a34a,#22c55e)':'linear-gradient(90deg,#c9963c,#e8b55a)')+';border-radius:3px;width:'+pct+'%"></div></div>'
+        +'<div style="font-size:8px;font-weight:700;color:rgba(0,0,0,.3);margin-top:3px;display:flex;justify-content:space-between"><span style="color:'+(cumprida?'#16a34a':pct>=50?'#c9963c':'rgba(0,0,0,.35)')+'">'+pct+'%</span><span>Meta: '+xe(m.meta)+'</span></div></div>'
+        +meetingBadge
+        +'</div>';
+    }).join('');
+    return '<div class="rpt-block">'
+      +(b.title?'<h2 class="rpt-block-title">'+xe(b.title)+'</h2>':'')
+      +'<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:14px">'+mcards+'</div>'
+      +'</div>';
   }
   if(b.type==='table'){
     return '<div class="rpt-block">'
