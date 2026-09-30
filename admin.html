@@ -1108,18 +1108,17 @@ body{display:flex;flex-direction:column;overflow:hidden}
           +'</div></div>';
       }
 
-      // Distribute into pages: AUM (has clients) alone on p1, other 3 together on p2
       var p1=contentPage('AUM — Ativos sob Gestão',
         metaCard('AUM','Valor aportado',d.aumReal,d.metaAUM,true,d.secAUM));
 
-      var p2=contentPage('Metas Operacionais',
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
-        +metaCard('Reunião de Consórcio','Reuniões realizadas',d.csReal,d.metaCS,false,d.secCS)
-        +metaCard('Reunião de Projetos','Reuniões de projetos',d.prReal,d.metaPR,false,d.secPR)
-        +'</div>'
-        +'<div style="margin-top:12px">'
-        +metaCard('Leads do Instagram','Leads captados',d.igReal,d.metaIG,false,d.secIG)
-        +'</div>');
+      var p2=contentPage('Reunião de Consórcio',
+        metaCard('Reunião de Consórcio','Reuniões realizadas',d.csReal,d.metaCS,false,d.secCS));
+
+      var p3=contentPage('Reunião de Projetos',
+        metaCard('Reunião de Projetos','Reuniões de projetos',d.prReal,d.metaPR,false,d.secPR));
+
+      var p4=contentPage('Leads do Instagram',
+        metaCard('Leads do Instagram','Leads captados',d.igReal,d.metaIG,false,d.secIG));
 
       var css='*{margin:0;padding:0;box-sizing:border-box}'
         +'body{font-family:"Montserrat",sans-serif;background:#fff}'
@@ -1200,7 +1199,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
         +'<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>'
         +'<style>'+css+'<\/style><\/head><body>'
         +'<button id="_pdfBtn" style="position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 24px;border-radius:8px;border:none;background:#c9963c;color:#0b1e30;font-weight:800;font-family:Montserrat,sans-serif;font-size:13px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3)" onclick="_genPDF()">Baixar PDF<\/button>'
-        +cover+p1+p2+backcover
+        +cover+p1+p2+p3+p4+backcover
         +'<script>'+jsFn+'<\/script><\/body><\/html>';
 
       var w=window.open('','_blank','width=1200,height=900');
