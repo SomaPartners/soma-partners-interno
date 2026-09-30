@@ -281,9 +281,9 @@ body{display:flex;flex-direction:column;overflow:hidden}
   </div>
 
   <div class="sidebar-section">Comercial</div>
-  <div class="nav-item" data-sec="crm" onclick="nav('crm',this)">
-    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    <span>CRM Comercial</span>
+  <div class="nav-item" data-sec="metas-comerciais" onclick="nav('metas-comerciais',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span>Metas Comerciais</span>
   </div>
 
   <div class="sidebar-section">Ferramentas</div>
@@ -804,11 +804,143 @@ body{display:flex;flex-direction:column;overflow:hidden}
     </div>
   </div>
 
-    <div class="section" id="section-crm" style="margin:-28px -32px;overflow:hidden">
-    <iframe src="crm.html"
-      style="width:100%;height:calc(100vh - 58px);border:none;display:block"
-      title="CRM Comercial">
-    </iframe>
+    <div class="section" id="section-metas-comerciais">
+    <div id="mc-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-.3px">Metas Comerciais</div>
+          <div id="mc-updated" style="font-size:10px;color:rgba(255,255,255,.3);margin-top:3px">Carregando da planilha...</div>
+        </div>
+        <button onclick="mcLoad(true)" style="background:rgba(201,150,60,.15);border:1px solid rgba(201,150,60,.3);color:var(--gold);padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;letter-spacing:.3px">↺ Atualizar</button>
+      </div>
+      <div id="mc-content" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
+    </div>
+    <script>
+    var _mcCache=null,_mcAt=null;
+    var _MC_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSsgVh5XJN_Lb1XXLsdlbr2_SMIAu9MfVDMm-YAPfW7WDkm4e1C8PGmrURpbKGuS4eaG5y638r92fFo/pub?output=csv';
+    function mcParseCsv(txt){
+      var rows=[];
+      txt.split('\n').forEach(function(line){
+        var cols=[],cur='',inQ=false;
+        for(var i=0;i<line.length;i++){
+          var c=line[i];
+          if(c==='"'){inQ=!inQ;}
+          else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
+          else cur+=c;
+        }
+        cols.push(cur.trim());
+        rows.push(cols);
+      });
+      return rows;
+    }
+    function mcExtract(rows){
+      var hdrIdx=-1,colAUM=-1,colCS=-1,colProj=-1,colIG=-1;
+      rows.forEach(function(r,i){
+        r.forEach(function(c,j){
+          var u=(c||'').toUpperCase().replace(/[\s\u00C0-\u00FF]/g,function(x){
+            return {' ':'','Ã':'A','Ç':'C','Ê':'E','Ô':'O','Ó':'O','Á':'A','É':'E','Í':'I','Ú':'U','Õ':'O','Â':'A','À':'A'}[x]||x;
+          });
+          if(u==='AUM'){hdrIdx=i;colAUM=j;}
+          if(u.indexOf('CONS')===0){colCS=j;}
+          if(u.indexOf('PROJ')===0){colProj=j;}
+          if(u.indexOf('INST')===0){colIG=j;}
+        });
+      });
+      var getVal=function(rowKeyFrag,col){
+        if(col<0)return null;
+        for(var i=hdrIdx+1;i<rows.length;i++){
+          var k=(rows[i][0]||'').toUpperCase();
+          if(k.indexOf(rowKeyFrag)>-1)return rows[i][col]||'0';
+        }
+        return '0';
+      };
+      var parseN=function(s){return parseFloat((s||'0').replace(/\./g,'').replace(',','.'))||0;};
+      var fmtBR=function(v,prefix){
+        if(prefix)return'R$ '+Math.round(v).toLocaleString('pt-BR');
+        return Math.round(v)+'';
+      };
+      return [
+        {
+          label:'AUM',desc:'Valor aportado (ativos sob gestão)',
+          metaRaw:parseN(getVal('APORTADO',colAUM)),
+          metaFmt:fmtBR(parseN(getVal('APORTADO',colAUM)),true),
+          realizadoRaw:0,realizadoFmt:'R$ 0',
+          isMoney:true
+        },
+        {
+          label:'Reunião de Consórcio',desc:'Reuniões marcadas este mês',
+          metaRaw:parseN(getVal('REUNI',colCS)),
+          metaFmt:parseN(getVal('REUNI',colCS))+'',
+          realizadoRaw:2,realizadoFmt:'2',
+          isMoney:false
+        },
+        {
+          label:'Reunião de Projetos',desc:'Reuniões de projetos este mês',
+          metaRaw:parseN(getVal('REUNI',colProj)),
+          metaFmt:parseN(getVal('REUNI',colProj))+'',
+          realizadoRaw:0,realizadoFmt:'0',
+          isMoney:false
+        },
+        {
+          label:'Leads do Instagram',desc:'Leads gerados pelo Instagram',
+          metaRaw:parseN(getVal('LEADS',colIG)),
+          metaFmt:parseN(getVal('LEADS',colIG))+'',
+          realizadoRaw:0,realizadoFmt:'0',
+          isMoney:false
+        }
+      ];
+    }
+    function mcLoad(force){
+      if(!force&&_mcCache&&_mcAt&&(Date.now()-_mcAt<5*60*1000)){mcRender(_mcCache);return;}
+      document.getElementById('mc-updated').textContent='Buscando planilha...';
+      document.getElementById('mc-content').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:12px">⟳ Carregando...</div>';
+      fetch(_MC_URL+'&_t='+Date.now())
+        .then(function(r){return r.text();})
+        .then(function(txt){
+          _mcCache=mcExtract(mcParseCsv(txt));
+          _mcAt=Date.now();
+          mcRender(_mcCache);
+        })
+        .catch(function(e){
+          document.getElementById('mc-content').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,100,100,.6);font-size:12px">Erro ao carregar planilha. Verifique a conexão.</div>';
+          document.getElementById('mc-updated').textContent='Erro na última tentativa';
+        });
+    }
+    function mcRender(items){
+      var now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('mc-updated').textContent='Planilha · atualizado às '+now;
+      var html=items.map(function(m){
+        var pct=m.metaRaw>0?Math.min(100,Math.round(m.realizadoRaw/m.metaRaw*100)):0;
+        var ok=pct>=100;
+        var barColor=ok?'#22c55e':'var(--gold)';
+        var pctColor=ok?'#22c55e':pct>=50?'var(--gold)':'rgba(255,255,255,.35)';
+        var falta=m.isMoney
+          ?'R$ '+Math.max(0,m.metaRaw-m.realizadoRaw).toLocaleString('pt-BR')
+          :Math.max(0,m.metaRaw-m.realizadoRaw)+'';
+        return'<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:22px 24px;position:relative;overflow:hidden">'
+          +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+barColor+'"></div>'
+          +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">'
+          +'<div>'
+          +'<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:6px">'+m.label+'</div>'
+          +'<div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1">'+m.realizadoFmt+'<span style="font-size:13px;opacity:.3;font-weight:600"> / '+m.metaFmt+'</span></div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">'+m.desc+'</div>'
+          +'</div>'
+          +'<div style="font-size:28px;font-weight:900;color:'+pctColor+';letter-spacing:-1px;line-height:1">'+pct+'<span style="font-size:14px">%</span></div>'
+          +'</div>'
+          +'<div style="height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;margin-bottom:10px">'
+          +'<div style="height:100%;border-radius:3px;background:'+barColor+';width:'+pct+'%;transition:width .6s"></div>'
+          +'</div>'
+          +'<div style="display:flex;gap:18px">'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Realizado: <strong style="color:rgba(255,255,255,.7)">'+m.realizadoFmt+'</strong></div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Meta: <strong style="color:rgba(255,255,255,.7)">'+m.metaFmt+'</strong></div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">Falta: <strong style="color:'+(ok?'#22c55e':'rgba(255,255,255,.7)')+'">'+falta+'</strong></div>'
+          +'</div>'
+          +'</div>';
+      }).join('');
+      document.getElementById('mc-content').innerHTML=html;
+    }
+    // auto-load on first open is handled by nav() in main script
+    </script>
   </div>
 
   <div class="section" id="section-tools-relatorio" style="margin:-28px -32px;overflow:hidden">
@@ -1591,6 +1723,7 @@ function nav(sec,el){
   document.getElementById('section-'+sec).classList.add('active');
   if(sec==='extrato') exLoadSaved();
   if(sec==='cli-info'){ _cliData=null; _accData=null; setTimeout(function(){ if(typeof cliTab==='function') cliTab('clientes'); },50); }
+  if(sec==='metas-comerciais') setTimeout(function(){if(typeof mcLoad==='function')mcLoad(false);},50);
 }
 
 // ── MODAL ──
