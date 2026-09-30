@@ -1035,7 +1035,8 @@ body{display:flex;flex-direction:column;overflow:hidden}
         var pct=meta>0?Math.min(100,Math.round(real/meta*100)):0;
         var ok=pct>=100;
         var bar=ok?'#22c55e':'#c9963c';
-        var falta=isMoney?fmtMoney(Math.max(0,meta-real)):Math.max(0,meta-real)+'';
+        var pc=ok?'#22c55e':'#c9963c';
+        var nClientes=tab.rows.length;
 
         var cNome=colIdx(tab.cols,'NOME');
         var cData=colIdx(tab.cols,'DATA');
@@ -1056,26 +1057,39 @@ body{display:flex;flex-direction:column;overflow:hidden}
               +(cFup>=0?'<td style="color:#c9963c">'+xe(r[cFup]||'')+'</td>':'')
               +'</tr>';
           }).join('');
-          tRows='<table class="rpt-tbl" style="margin-top:10px"><thead><tr>'+ths+'</tr></thead><tbody>'+tbody+'</tbody></table>';
+          tRows='<table class="rpt-tbl" style="margin-top:14px"><thead><tr>'+ths+'</tr></thead><tbody>'+tbody+'</tbody></table>';
         } else {
-          tRows='<div style="font-size:9.5px;color:#aaa;margin-top:8px;font-style:italic">Nenhum registro.</div>';
+          tRows='<div style="font-size:9.5px;color:#aaa;margin-top:10px;font-style:italic">Nenhum registro.</div>';
         }
 
-        return'<div style="background:#f9fafb;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:16px 18px;position:relative;overflow:hidden;page-break-inside:avoid">'
-          +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+bar+'"></div>'
-          +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">'
-          +'<div><div style="font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,.4);margin-bottom:3px">'+xe(label)+'</div>'
-          +'<div style="font-size:9px;color:#999">'+xe(desc)+'</div></div>'
-          +'<div style="text-align:right;flex-shrink:0;margin-left:12px">'
-          +'<div style="font-size:20px;font-weight:900;color:#0b1e30;line-height:1">'+rFmt+'</div>'
-          +'<div style="font-size:9px;color:#aaa">meta: '+mFmt+'</div></div></div>'
-          +'<div style="height:5px;background:rgba(0,0,0,.07);border-radius:3px;overflow:hidden;margin-bottom:6px">'
-          +'<div style="height:100%;border-radius:3px;background:'+bar+';width:'+pct+'%"></div></div>'
-          +'<div style="display:flex;gap:14px;font-size:8.5px;color:#888;margin-bottom:8px">'
-          +'<span>Realizado: <strong style="color:#0b1e30">'+rFmt+'</strong></span>'
-          +'<span>Meta: <strong style="color:#0b1e30">'+mFmt+'</strong></span>'
-          +(ok?'<span style="color:#22c55e;font-weight:800">✓ Meta atingida!</span>':'<span>Falta: <strong style="color:#0b1e30">'+falta+'</strong></span>')
+        // Prominent KPI row: realizado big | meta big | nClientes
+        var kpiRow='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-bottom:14px">'
+          +'<div style="padding:0 20px 0 0;border-right:1px solid rgba(0,0,0,.07)">'
+          +'<div style="font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,.35);margin-bottom:6px">Realizado</div>'
+          +'<div style="font-size:34px;font-weight:900;color:#0b1e30;line-height:1;letter-spacing:-.5px">'+rFmt+'</div>'
           +'</div>'
+          +'<div style="padding:0 20px;border-right:1px solid rgba(0,0,0,.07);text-align:center">'
+          +'<div style="font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,.35);margin-bottom:6px">Meta</div>'
+          +'<div style="font-size:34px;font-weight:900;color:rgba(0,0,0,.2);line-height:1;letter-spacing:-.5px">'+mFmt+'</div>'
+          +'</div>'
+          +'<div style="padding:0 0 0 20px;text-align:right">'
+          +'<div style="font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,.35);margin-bottom:6px">Clientes</div>'
+          +'<div style="font-size:34px;font-weight:900;color:#0b1e30;line-height:1;letter-spacing:-.5px">'+nClientes+'</div>'
+          +'</div>'
+          +'</div>';
+
+        var progressRow='<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">'
+          +'<div style="flex:1;height:6px;background:rgba(0,0,0,.07);border-radius:3px;overflow:hidden">'
+          +'<div style="height:100%;border-radius:3px;background:'+bar+';width:'+pct+'%"></div></div>'
+          +'<div style="font-size:18px;font-weight:900;color:'+pc+';letter-spacing:-1px;flex-shrink:0">'+pct+'<span style="font-size:11px">%</span></div>'
+          +(ok?'<div style="font-size:9px;font-weight:800;color:#22c55e;flex-shrink:0">✓ Atingida</div>':'')
+          +'</div>';
+
+        return'<div style="background:#f9fafb;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:18px 22px;position:relative;overflow:hidden">'
+          +'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+bar+'"></div>'
+          +'<div style="font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.35);margin-bottom:12px">'+xe(label)+'</div>'
+          +kpiRow
+          +progressRow
           +tRows
           +'</div>';
       }
