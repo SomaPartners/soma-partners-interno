@@ -266,6 +266,8 @@ tr:hover td{background:rgba(0,0,0,.012);cursor:pointer}
 </div>
 <script>
 var _v='dashboard',_resp='todos',_ltab='todos',_mt=null,_eid=null;
+var _SHEET_CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vSsgVh5XJN_Lb1XXLsdlbr2_SMIAu9MfVDMm-YAPfW7WDkm4e1C8PGmrURpbKGuS4eaG5y638r92fFo/pub?output=csv';
+var _metasCache=null,_metasAt=null;
 var JRS=['Gui','Ana','Pedro','Lara'];
 var JC=['jc0','jc1','jc2','jc3'];
 var JI=['G','A','P','L'];
@@ -478,28 +480,98 @@ function rSocial(){
     +'<td>'+sb(l.status)+'</td><td>'+tb(l.temp)+'</td></tr>'}).join('')
   +'</tbody></table></div>';
 }
+function parseCsv(txt){
+  var rows=[];
+  txt.split('\n').forEach(function(line){
+    var cols=[],cur='',inQ=false;
+    for(var i=0;i<line.length;i++){
+      var c=line[i];
+      if(c==='"'){inQ=!inQ;}
+      else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
+      else cur+=c;
+    }
+    cols.push(cur.trim());
+    rows.push(cols);
+  });
+  return rows;
+}
+function extractMetas(rows){
+  // Find header row with AUM, CONSÓRCIOS etc
+  var hdrIdx=-1,aum=-1,cs=-1,proj=-1,ig=-1;
+  rows.forEach(function(r,i){
+    r.forEach(function(c,j){
+      var u=c.toUpperCase().replace(/[^A-Z]/g,'');
+      if(u==='AUM')   {hdrIdx=i;aum=j;}
+      if(u==='CONSORCIOS'||u==='CONSRCIOS'){cs=j;}
+      if(u==='PROJETOS'){proj=j;}
+      if(u==='INSTAGRAM'){ig=j;}
+    });
+  });
+  var get=function(rowKey,colIdx){
+    if(colIdx<0)return null;
+    for(var i=hdrIdx+1;i<rows.length;i++){
+      var k=rows[i][0]||'';
+      if(k.toUpperCase().indexOf(rowKey)>-1)return rows[i][colIdx]||'0';
+    }
+    return '0';
+  };
+  var parseN=function(s){return parseFloat((s||'0').replace(/[^0-9.,]/g,'').replace('.','').replace(',','.'))||0;};
+  return {
+    metaAUM:      parseN(get('VALOR APORTADO',aum)),
+    metaCS:       parseN(get('REUNI',cs)),
+    metaProj:     parseN(get('REUNI',proj)),
+    metaIG:       parseN(get('LEADS',ig)),
+    _raw:rows
+  };
+}
+function loadMetas(cb){
+  if(_metasCache&&_metasAt&&(Date.now()-_metasAt<5*60*1000)){cb(_metasCache);return;}
+  fetch(_SHEET_CSV+'&_t='+Date.now())
+    .then(function(r){return r.text();})
+    .then(function(txt){
+      _metasCache=extractMetas(parseCsv(txt));
+      _metasAt=Date.now();
+      cb(_metasCache);
+    })
+    .catch(function(){cb(_metasCache||{metaAUM:1000000,metaCS:10,metaProj:5,metaIG:20});});
+}
 function rMetas(){
-  var ls=gl(),rs=gr();
-  var cs=rs.filter(function(r){return r.tipo==='Consórcio e Seguros'&&r.status==='Realizada'}).length;
-  var pr=rs.filter(function(r){return r.tipo==='Projetos'&&r.status==='Realizada'}).length;
-  var ig=ls.filter(function(l){return l.origem==='Instagram'&&['Qualificado','Reunião marcada','Reunião realizada','Proposta','Fechado'].indexOf(l.status)>-1}).length;
-  var ms=[
-    {n:'AUM Captado',d:'Novos ativos sob gestão até 31/12/2026',real:'R$ 340.000',meta:'R$ 1.000.000',pct:34,falta:'R$ 660.000',proj:'R$ 680.000 projetado para dez.'},
-    {n:'Reuniões C&amp;S',d:'Consórcio e Seguros - prospecção',real:cs+' reuniões',meta:'10 reuniões',pct:Math.round(cs/10*100),falta:(10-cs)+' reuniões',proj:cs+3+' projetadas'},
-    {n:'Reuniões Projetos',d:'Projetos Consultivos SOMA',real:pr+' reuniões',meta:'5 reuniões',pct:Math.round(pr/5*100),falta:(5-pr)+' reuniões',proj:pr+2+' projetadas'},
-    {n:'Leads Instagram',d:'Leads qualificados pelo Instagram',real:ig+' leads',meta:'20 leads',pct:Math.round(ig/20*100),falta:(20-ig)+' leads',proj:ig+6+' projetados'},
-  ];
-  return'<div class="g2" style="gap:14px">'+ms.map(function(m){
-    var ok=m.pct>=100;
-    return'<div class="mc"><div class="mc-hdr"><div><div class="mc-n">'+m.n+'</div><div style="font-size:10.5px;color:var(--text3);margin-top:3px">'+m.d+'</div></div><div class="mc-pct'+(ok?' ok':'')+'">'+m.pct+'%</div></div>'
-    +'<div class="pbar"><div class="pfill'+(ok?' ok':'')+'" style="width:'+Math.min(m.pct,100)+'%"></div></div>'
-    +'<div class="mc-vals"><div class="mc-val">Realizado: <strong>'+m.real+'</strong></div><div class="mc-val">Meta: <strong>'+m.meta+'</strong></div><div class="mc-val">Falta: <strong>'+m.falta+'</strong></div></div>'
-    +'<div style="font-size:9.5px;color:var(--text3);border-top:1px solid var(--border);padding-top:11px">'+m.proj+'</div></div>';
-  }).join('')+'</div>'
-  +'<div class="panel" style="margin-top:14px"><div class="ph"><div class="pt">AUM Captado por Responsável</div></div><div class="pb">'
-  +['Gui','Ana','Pedro','Lara'].map(function(j,i){var v=[100000,80000,90000,70000][i],p=Math.round(v/250000*100);
-    return'<div style="margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><span style="font-size:11.5px;font-weight:700">'+xe(j)+'</span><div style="font-size:11px;font-weight:700">'+f$$(v)+' de R$ 250.000 ('+p+'%)</div></div><div class="pbar"><div class="pfill" style="width:'+p+'%"></div></div></div>';
-  }).join('')+'</div></div>';
+  var el=document.getElementById('content');
+  el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;min-height:200px;gap:10px;color:var(--text3)"><span style="font-size:14px">⟳</span> Carregando metas da planilha...</div>';
+  loadMetas(function(m){
+    var ls=gl(),rs=gr();
+    var csR=rs.filter(function(r){return r.tipo==='Consórcio e Seguros'&&r.status==='Realizada'}).length;
+    var prR=rs.filter(function(r){return r.tipo==='Projetos'&&r.status==='Realizada'}).length;
+    var igR=ls.filter(function(l){return l.origem==='Instagram'&&['Qualificado','Reunião marcada','Reunião realizada','Proposta','Fechado'].indexOf(l.status)>-1}).length;
+    var aumR=340000; // realizado AUM (do pipeline CRM)
+    var pctAUM=m.metaAUM>0?Math.min(100,Math.round(aumR/m.metaAUM*100)):0;
+    var pctCS =m.metaCS>0 ?Math.min(100,Math.round(csR/m.metaCS*100)):0;
+    var pctPR =m.metaProj>0?Math.min(100,Math.round(prR/m.metaProj*100)):0;
+    var pctIG =m.metaIG>0 ?Math.min(100,Math.round(igR/m.metaIG*100)):0;
+    var ms=[
+      {n:'AUM Captado',d:'Novos ativos sob gestão até 31/12/2026',real:f$$(aumR),meta:f$$(m.metaAUM),pct:pctAUM,falta:f$$(Math.max(0,m.metaAUM-aumR))},
+      {n:'Reuniões C&amp;S',d:'Consórcio e Seguros — prospecção',real:csR+' reuniões',meta:m.metaCS+' reuniões',pct:pctCS,falta:Math.max(0,m.metaCS-csR)+' reuniões'},
+      {n:'Reuniões Projetos',d:'Projetos Consultivos SOMA',real:prR+' reuniões',meta:m.metaProj+' reuniões',pct:pctPR,falta:Math.max(0,m.metaProj-prR)+' reuniões'},
+      {n:'Leads Instagram',d:'Leads qualificados pelo Instagram',real:igR+' leads',meta:m.metaIG+' leads',pct:pctIG,falta:Math.max(0,m.metaIG-igR)+' leads'},
+    ];
+    var updAt=_metasAt?new Date(_metasAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
+    var html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'
+      +'<div style="font-size:10px;color:var(--text3)">📋 Metas carregadas da planilha · atualizado às '+updAt+'</div>'
+      +'<button class="btn btn-ol btn-sm" onclick="_metasCache=null;rMetas()">↺ Atualizar</button></div>'
+      +'<div class="g2" style="gap:14px">'+ms.map(function(m2){
+        var ok=m2.pct>=100;
+        return'<div class="mc"><div class="mc-hdr"><div><div class="mc-n">'+m2.n+'</div><div style="font-size:10.5px;color:var(--text3);margin-top:3px">'+m2.d+'</div></div><div class="mc-pct'+(ok?' ok':'')+'">'+m2.pct+'%</div></div>'
+          +'<div class="pbar"><div class="pfill'+(ok?' ok':'')+'" style="width:'+Math.min(m2.pct,100)+'%"></div></div>'
+          +'<div class="mc-vals"><div class="mc-val">Realizado: <strong>'+m2.real+'</strong></div><div class="mc-val">Meta: <strong>'+m2.meta+'</strong></div><div class="mc-val">Falta: <strong>'+m2.falta+'</strong></div></div>'
+          +'</div>';
+      }).join('')+'</div>'
+      +'<div class="panel" style="margin-top:14px"><div class="ph"><div class="pt">AUM Captado por Responsável</div></div><div class="pb">'
+      +['Gui','Ana','Pedro','Lara'].map(function(j,i){var v=[100000,80000,90000,70000][i],p=m.metaAUM>0?Math.round(v/(m.metaAUM/4)*100):0;
+        return'<div style="margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><span style="font-size:11.5px;font-weight:700">'+xe(j)+'</span><div style="font-size:11px;font-weight:700">'+f$$(v)+' de '+f$$(m.metaAUM/4)+' ('+p+'%)</div></div><div class="pbar"><div class="pfill" style="width:'+Math.min(p,100)+'%"></div></div></div>';
+      }).join('')+'</div></div>';
+    el.innerHTML=html;
+  });
+  return '';
 }
 
 function rTime(){
