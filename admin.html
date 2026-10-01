@@ -957,13 +957,14 @@ body{display:flex;flex-direction:column;overflow:hidden}
 
     function mcMakeClientes(sec,extraColIdx){
       if(!sec.rows.length)return'<div style="font-size:10.5px;color:rgba(255,255,255,.2);font-style:italic;margin-top:10px">Nenhum registro ainda.</div>';
-      var cNome=0,cData=-1,cStatus=-1,cFup=-1,cExtra=-1;
+      var cNome=0,cData=-1,cStatus=-1,cFup=-1,cExtra=-1,cResp=-1;
       sec.cols.forEach(function(c,j){
         var u=mcNorm(c);
         if(u.indexOf('NOME')>-1)cNome=j;
         if(u.indexOf('DATA')>-1)cData=j;
         if(u.indexOf('STATUS')>-1)cStatus=j;
         if(u.indexOf('FUP')>-1||u.indexOf('FOLLOW')>-1)cFup=j;
+        if(u.indexOf('RESPONSAVEL')>-1||u.indexOf('RESP')===0)cResp=j;
         if(extraColIdx&&u.indexOf(extraColIdx)>-1)cExtra=j;
       });
       return'<div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.06);padding-top:12px;display:flex;flex-direction:column;gap:10px">'
@@ -973,6 +974,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
           var status=r[cStatus]||'';
           var fup=cFup>=0?r[cFup]:'';
           var extra=cExtra>=0?r[cExtra]:'';
+          var resp=cResp>=0?r[cResp]:'';
           var dot=mcStatusDot(status);
           return'<div style="display:flex;align-items:flex-start;gap:10px">'
             +'<div style="width:7px;height:7px;border-radius:50%;background:'+dot+';flex-shrink:0;margin-top:4px"></div>'
@@ -981,6 +983,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
             +'<span style="font-size:12px;font-weight:700;color:#fff">'+nome+'</span>'
             +(status?'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5)">'+status+'</span>':'')
             +(extra?'<span style="font-size:9px;color:rgba(255,255,255,.35)">'+extra+'</span>':'')
+            +(resp?'<span style="font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;background:rgba(201,150,60,.12);color:rgba(201,150,60,.8)">'+resp+'</span>':'')
             +'</div>'
             +(data?'<div style="font-size:9.5px;color:rgba(255,255,255,.3);margin-top:2px">'+data+'</div>':'')
             +(fup?'<div style="font-size:9.5px;color:rgba(201,150,60,.6);margin-top:3px">&#128337; '+fup+'</div>':'')
@@ -1044,9 +1047,12 @@ body{display:flex;flex-direction:column;overflow:hidden}
         var cFup=colIdx(tab.cols,'FUP');
         var cValor=colIdx(tab.cols,'VALOR');
 
+        var cResp=colIdx(tab.cols,'RESPONSAVEL');
+        if(cResp<0)cResp=colIdx(tab.cols,'RESP');
+
         var tRows='';
         if(tab.rows.length){
-          var ths=(cNome>=0?'<th>Cliente</th>':'')+(cData>=0?'<th>Data</th>':'')+(cStatus>=0?'<th>Status</th>':'')+(cValor>=0?'<th style="text-align:right">Valor</th>':'')+(cFup>=0?'<th>Follow-up</th>':'');
+          var ths=(cNome>=0?'<th>Cliente</th>':'')+(cData>=0?'<th>Data</th>':'')+(cStatus>=0?'<th>Status</th>':'')+(cValor>=0?'<th style="text-align:right">Valor</th>':'')+(cResp>=0?'<th>Responsável</th>':'')+(cFup>=0?'<th>Follow-up</th>':'');
           var tbody=tab.rows.map(function(r,i){
             var dc=dotColor(cStatus>=0?r[cStatus]:'');
             return'<tr>'
@@ -1054,7 +1060,8 @@ body{display:flex;flex-direction:column;overflow:hidden}
               +(cData>=0?'<td style="color:#666">'+xe(r[cData]||'')+'</td>':'')
               +(cStatus>=0?'<td><span style="display:inline-flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:'+dc+';display:inline-block;flex-shrink:0"></span><span>'+xe(r[cStatus]||'')+'</span></span></td>':'')
               +(cValor>=0?'<td style="text-align:right;font-weight:700;color:#0b1e30">'+xe(r[cValor]||'')+'</td>':'')
-              +(cFup>=0?'<td style="color:#c9963c">'+xe(r[cFup]||'')+'</td>':'')
+              +(cResp>=0?'<td style="color:#c9963c;font-weight:600">'+xe(r[cResp]||'')+'</td>':'')
+              +(cFup>=0?'<td style="color:#666">'+xe(r[cFup]||'')+'</td>':'')
               +'</tr>';
           }).join('');
           tRows='<table class="rpt-tbl" style="margin-top:14px"><thead><tr>'+ths+'</tr></thead><tbody>'+tbody+'</tbody></table>';
