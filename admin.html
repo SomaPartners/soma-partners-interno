@@ -851,7 +851,10 @@ body{display:flex;flex-direction:column;overflow:hidden}
     }
 
     function mcParseN(s){
-      return parseFloat((s||'0').replace(/[^\d,]/g,'').replace(',','.'))||0;
+      var v=(s||'').trim().replace(/^R\$\s*/,'').trim();
+      // only parse if the string is purely numeric (digits, dots, commas) — no letters
+      if(v===''||/[a-zA-ZÀ-ÿ]/.test(v)) return 0;
+      return parseFloat(v.replace(/\./g,'').replace(',','.'))||0;
     }
 
     // Find header row (has NOME) then read data rows
