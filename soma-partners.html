@@ -55,11 +55,11 @@
     .hero-thin { font-size: clamp(16px, 2.2vw, 36px); font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
     .hero-bold { font-size: clamp(20px, 2.8vw, 44px); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
 
-    /* ════════════ CARDS GRID 4×2 ════════════ */
+    /* ════════════ CARDS GRID 2×2 ════════════ */
     .cards-grid {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
       gap: 5px;
       min-height: 0;
@@ -216,7 +216,7 @@
       .page { height: auto; padding: 18px 14px 10px; gap: 12px; }
       .hero-thin { font-size: clamp(16px, 4.5vw, 28px); }
       .hero-bold { font-size: clamp(20px, 5.5vw, 34px); }
-      .cards-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, 42vw); gap: 5px; }
+      .cards-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(2, 42vw); gap: 5px; }
       .card-footer { opacity: 1; transform: none; }
       .card-title { font-size: 11px; letter-spacing: 3px; }
       .card-subtitle { font-size: 9px; }
@@ -259,7 +259,7 @@
     <div class="hero-bold">Cada decisão conta.</div>
   </div>
 
-  <!-- CARDS GRID 4×2 -->
+  <!-- CARDS GRID 2×2 -->
   <div class="cards-grid">
 
     <!-- CONCIERGE -->
@@ -273,8 +273,6 @@
       </div>
     </div>
 
-    <!-- WEALTH -->
-
     <!-- EVENTOS -->
     <div class="card card-eventos" onclick="window.location.href='eventos.html'">
       <div class="card-placeholder"></div>
@@ -286,20 +284,14 @@
       </div>
     </div>
 
-
-
-
-    <!-- FERRAMENTAS -->
-    <div class="card card-ferramentas card-admin" id="card-ferramentas">
+    <!-- DOCUMENTOS -->
+    <div class="card card-documentos" onclick="window.location.href='documentos.html'">
       <div class="card-placeholder"></div>
-      <img class="card-img" src="img/ferramentas.jpg" alt="Ferramentas" />
+      <img class="card-img" src="img/documentos.png" alt="Documentos" />
       <div class="card-tint"></div>
-      <div class="admin-lock-icon" id="ferramentas-lock">
-        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      </div>
       <div class="card-footer">
-        <div class="card-title">Ferramentas</div>
-        <div class="card-subtitle" id="ferramentas-subtitle">Acesso restrito</div>
+        <div class="card-title">Documentos</div>
+        <div class="card-subtitle">Arquivos &amp; Links por Cliente</div>
       </div>
     </div>
 
@@ -319,66 +311,7 @@
 
   </div><!-- /cards-grid -->
 
-  <!-- SCROLL HINT -->
-  <div class="scroll-hint" onclick="document.querySelector('.extra-section').scrollIntoView({behavior:'smooth'})">
-    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"/></svg>
-  </div>
-
 </div><!-- /page -->
-
-<!-- EXTRA: ROW ABAIXO DO FOLD -->
-<div class="extra-section">
-  <div class="extra-grid">
-
-    <!-- DOCUMENTOS -->
-    <div class="card card-documentos card-extra" onclick="window.location.href='documentos.html'">
-      <div class="card-placeholder"></div>
-      <img class="card-img" src="img/documentos.png" alt="Documentos" />
-      <div class="card-tint"></div>
-      <div class="card-footer">
-        <div class="card-title">Documentos</div>
-        <div class="card-subtitle">Arquivos &amp; Links por Cliente</div>
-      </div>
-    </div>
-
-    <!-- JURÍDICO -->
-    <div class="card card-juridico card-extra" onclick="window.location.href='juridico.html'">
-      <div class="card-placeholder"></div>
-      <div class="card-tint"></div>
-      <div class="fu-live" id="jur-live" style="display:none">
-        <div class="fu-live-count" id="jur-live-count">0</div>
-        <div class="fu-live-label">pendentes</div>
-      </div>
-      <div class="card-footer">
-        <div class="card-title">Jurídico</div>
-        <div class="card-subtitle">Tarefas &amp; Prazos Legais</div>
-      </div>
-    </div>
-
-    <!-- EM BREVE 2 -->
-    <div class="card card-embreve card-extra">
-      <div class="card-placeholder"></div>
-      <div class="card-embreve-body">
-        <div class="card-embreve-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="card-embreve-label">Em breve</div>
-      </div>
-    </div>
-
-    <!-- EM BREVE 3 -->
-    <div class="card card-embreve card-extra">
-      <div class="card-placeholder"></div>
-      <div class="card-embreve-body">
-        <div class="card-embreve-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="card-embreve-label">Em breve</div>
-      </div>
-    </div>
-
-  </div>
-</div>
 
 <script>
 if(sessionStorage.getItem('soma_auth')!=='1') window.location.href='login.html';
@@ -449,19 +382,3 @@ function logout(){
 // ── Ferramentas card ──
 (function(){
   const isAdmin = sessionStorage.getItem('soma_admin') === '1';
-  const card = document.getElementById('card-ferramentas');
-  const lock = document.getElementById('ferramentas-lock');
-  const sub  = document.getElementById('ferramentas-subtitle');
-  if(isAdmin){
-    lock.style.display = 'none';
-    sub.textContent = 'Análise · Newsletter · Mais';
-    card.style.cursor = 'pointer';
-    card.onclick = function(){ window.location.href = 'ferramentas.html'; };
-  } else {
-    card.classList.add('card-admin-locked');
-    card.onclick = function(){};
-  }
-})();
-</script>
-</body>
-</html>
