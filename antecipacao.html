@@ -596,7 +596,7 @@ function openClient(idx){
   document.getElementById('detail-content').innerHTML=`
     <div class="client-header" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px">
       <div>
-        <div class="client-label">${c.isBilling?L.billingLabel:L.antecipLabel}</div>
+        <div class="client-label">${c.isBilling?'Faturamento Mensal':'Antecipação de Saldos'}</div>
         <div class="client-name">${c.name}</div>
       </div>
       <button class="btn-rpt" onclick="openRpt(${idx})">
