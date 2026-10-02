@@ -326,42 +326,6 @@ function logout(){
   window.location.href = 'login.html';
 }
 
-// ── Follow-ups badge ──
-(async function(){
-  try{
-    const SUPA_URL='https://mdftseanzfganeiyotlf.supabase.co';
-    const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
-    const _sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-    const pad = n => String(n).padStart(2,'0');
-    const d = new Date();
-    const todayStr = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-    const {data} = await _sb.from('wealth_followups').select('id,data');
-    const pending = (data||[]).map(r=>({...r.data})).filter(f=>!f.feito&&f.data&&f.data<=todayStr);
-    if(pending.length){
-      document.getElementById('fu-live-count').textContent = pending.length;
-      document.getElementById('fu-live').style.display = 'flex';
-    }
-  }catch(e){}
-})();
-
-// ── Jurídico badge ──
-(async function(){
-  try{
-    const SUPA_URL='https://mdftseanzfganeiyotlf.supabase.co';
-    const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
-    const _sb2 = supabase.createClient(SUPA_URL, SUPA_KEY);
-    const pad = n => String(n).padStart(2,'0');
-    const d = new Date();
-    const todayStr = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-    const {data} = await _sb2.from('juridico_tarefas').select('id,data');
-    const pending = (data||[]).map(r=>({...r.data})).filter(f=>!f.feito&&f.data&&f.data<=todayStr);
-    if(pending.length){
-      document.getElementById('jur-live-count').textContent = pending.length;
-      document.getElementById('jur-live').style.display = 'flex';
-    }
-  }catch(e){}
-})();
-
 // ── Admin card ──
 (function(){
   const isAdmin = sessionStorage.getItem('soma_admin') === '1';
@@ -378,7 +342,6 @@ function logout(){
     card.onclick = function(){};
   }
 })();
-
-// ── Ferramentas card ──
-(function(){
-  const isAdmin = sessionStorage.getItem('soma_admin') === '1';
+</script>
+</body>
+</html>
