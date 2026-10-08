@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal do Cliente — Soma Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0b1e30;--gold:#c9963c;--white:#fff;--muted:rgba(255,255,255,0.45)}
+html,body{width:100%;min-height:100%;font-family:'Montserrat',sans-serif}
+
+/* ── LOGIN SCREEN ── */
+#screen-login{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;background:var(--navy);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cpolygon points='150,40 400,40 400,400 90,400' fill='%23152b3c'/%3E%3Cpolygon points='130,120 360,100 360,400 130,400' fill='%230d1e2e' opacity='.7'/%3E%3C/svg%3E");
+  background-position:bottom right;background-repeat:no-repeat;background-size:400px 400px;
+}
+.login-box{width:380px;padding:48px 40px 44px}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:40px}
+.login-logo-text{font-size:20px;font-weight:300;color:#fff;letter-spacing:.3px}
+.login-logo-div{width:1px;height:22px;background:rgba(255,255,255,.25)}
+.login-logo-sub{font-size:9px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,.45);text-transform:uppercase}
+.login-title{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.login-subtitle{font-size:22px;font-weight:800;color:#fff;margin-bottom:32px;line-height:1.3}
+.login-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px}
+.login-input{
+  width:100%;padding:12px 16px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);border-radius:8px;
+  color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:500;
+  outline:none;transition:border-color .15s;
+}
+.login-input:focus{border-color:rgba(201,150,60,.5)}
+.login-btn{
+  width:100%;margin-top:24px;padding:14px;
+  background:var(--gold);border:none;border-radius:8px;
+  color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;
+  letter-spacing:.5px;cursor:pointer;transition:opacity .15s;
+}
+.login-btn:hover{opacity:.88}
+.login-btn:disabled{opacity:.5;cursor:default}
+.login-error{margin-top:14px;font-size:11px;font-weight:600;color:#f87171;display:none}
+.login-loading{margin-top:14px;font-size:11px;color:rgba(255,255,255,.4);display:none}
+
+/* ── DASHBOARD ── */
+#screen-dash{display:none;background:#f0f2f5;min-height:100vh}
+.dash-topbar{
+  background:var(--navy);padding:0 32px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+.dash-logo{display:flex;align-items:center;gap:10px}
+.dash-logo span{font-size:16px;font-weight:300;color:#fff}
+.dash-logo div{width:1px;height:18px;background:rgba(255,255,255,.2)}
+.dash-logo small{font-size:8px;font-weight:700;letter-spacing:4px;color:rgba(255,255,255,.4);text-transform:uppercase}
+.dash-client{font-size:11px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.5px}
+.dash-body{padding:32px;max-width:1100px;margin:0 auto}
+.dash-greeting{margin-bottom:28px}
+.dash-greeting h1{font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px}
+.dash-greeting p{font-size:12px;color:#6b7280}
+
+/* KPI cards */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.kpi{background:#fff;border-radius:12px;padding:22px 24px;border-top:3px solid var(--gold);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.kpi-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9ca3af;margin-bottom:10px}
+.kpi-value{font-size:22px;font-weight:900;color:var(--navy);letter-spacing:-.5px}
+.kpi-sub{font-size:10px;color:#9ca3af;margin-top:6px}
+.kpi.green .kpi-value{color:#059669}
+.kpi.red .kpi-value{color:#dc2626}
+.kpi.gold .kpi-value{color:#d97706}
+
+/* Section */
+.section{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:24px;overflow:hidden}
+.section-hd{padding:20px 24px 16px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:10px}
+.section-hd-dot{width:3px;height:14px;background:var(--gold);border-radius:2px;flex-shrink:0}
+.section-hd-title{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#374151}
+
+/* Transaction table */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:10px 14px;text-align:left;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;border-bottom:2px solid #f3f4f6}
+.tbl th.r{text-align:right}
+.tbl td{padding:10px 14px;border-bottom:1px solid #f9fafb;color:#374151}
+.tbl td.r{text-align:right;font-weight:700}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#fafafa}
+.badge-e{background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700}
+.badge-s{background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700}
+.tipo-tag{background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase}
+.ve{color:#059669!important}
+.vs{color:#dc2626!important}
+
+/* Demandas */
+.dem-row{display:flex;align-items:flex-start;gap:14px;padding:14px 24px;border-bottom:1px solid #f3f4f6}
+.dem-row:last-child{border-bottom:none}
+.dem-status{flex-shrink:0;margin-top:2px}
+.dem-dot{width:10px;height:10px;border-radius:50%;background:#9ca3af}
+.dem-dot.done{background:#10b981}
+.dem-dot.prog{background:#f59e0b}
+.dem-dot.open{background:#6366f1}
+.dem-info{flex:1;min-width:0}
+.dem-desc{font-size:12px;font-weight:600;color:#111827;margin-bottom:4px}
+.dem-meta{font-size:10px;color:#9ca3af;display:flex;gap:12px;flex-wrap:wrap}
+.dem-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px}
+.dem-badge.done{background:#d1fae5;color:#065f46}
+.dem-badge.prog{background:#fef3c7;color:#92400e}
+.dem-badge.open{background:#ede9fe;color:#5b21b6}
+.dem-badge.def{background:#f3f4f6;color:#6b7280}
+
+/* Pagination */
+.pag{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:14px 24px}
+.pag-btn{padding:6px 14px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:#374151;cursor:pointer}
+.pag-btn:hover{background:#f9fafb}
+.pag-btn:disabled{opacity:.4;cursor:default}
+.pag-info{font-size:11px;color:#9ca3af}
+
+/* Empty */
+.empty{padding:40px;text-align:center;color:#9ca3af;font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="login-logo-text">Soma</span>
+      <div class="login-logo-div"></div>
+      <small class="login-logo-sub">Partners</small>
+    </div>
+    <div class="login-title">Portal do Cliente</div>
+    <div class="login-subtitle" id="login-client-name">Carregando...</div>
+    <div class="login-label">Senha de acesso</div>
+    <input class="login-input" type="password" id="login-pass" placeholder="Digite sua senha" autocomplete="current-password">
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Senha incorreta. Tente novamente.</div>
+    <div class="login-loading" id="login-loading">Carregando dados...</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="screen-dash">
+  <div class="dash-topbar">
+    <div class="dash-logo">
+      <span>Soma</span><div></div><small>Partners</small>
+    </div>
+    <div class="dash-client" id="dash-client-label"></div>
+  </div>
+  <div class="dash-body">
+    <div class="dash-greeting">
+      <h1 id="dash-title">Olá!</h1>
+      <p id="dash-date"></p>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row" id="kpi-row"></div>
+
+    <!-- Saldo / Extrato -->
+    <div class="section" id="section-extrato">
+      <div class="section-hd">
+        <div class="section-hd-dot"></div>
+        <div class="section-hd-title">Extrato de Movimentações</div>
+      </div>
+      <table class="tbl">
+        <thead><tr>
+          <th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th class="r">Valor</th>
+        </tr></thead>
+        <tbody id="tx-tbody"></tbody>
+      </table>
+      <div class="pag" id="tx-pag"></div>
+    </div>
+
+    <!-- Demandas -->
+    <div class="section" id="section-demandas" style="display:none">
+      <div class="section-hd">
+        <div class="section-hd-dot"></div>
+        <div class="section-hd-title">Demandas</div>
+      </div>
+      <div id="dem-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL='https://mdftseanzfganeiyotlf.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
+const ANTEC_BASE='https://docs.google.com/spreadsheets/d/e/2PACX-1vTzhi6lcErPeiH-CUwSxXXAS1EIW-elVoY0iHWCjoN5KrHXG6qEhdeaIZHOD5AhSP0v7gsFVEsc3hUy/pub?output=csv';
+const DEM_BASE='https://docs.google.com/spreadsheets/d/e/2PACX-1vTw3bhacnZOSnWBDep3kHwk98nRq5LoYGysyPzbcvb2I8IeivPwEIsn3T651CyEmw8NkwwF9OJPJTsa/pub?output=csv&gid=';
+const DEM_PUBHTML='https://docs.google.com/spreadsheets/d/e/2PACX-1vTw3bhacnZOSnWBDep3kHwk98nRq5LoYGysyPzbcvb2I8IeivPwEIsn3T651CyEmw8NkwwF9OJPJTsa/pubhtml';
+
+const _sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+let _portal=null, _txAll=[], _txPage=0;
+const TX_PER_PAGE=20;
+
+const BRL=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+(async function init(){
+  const t=new URLSearchParams(location.search).get('t');
+  if(!t){showFatal('Link inválido. Solicite um novo link ao seu assessor.');return;}
+  const {data,error}=await _sb.from('client_portals').select('*').eq('token',t).single();
+  if(error||!data){showFatal('Link não encontrado ou expirado. Solicite um novo link.');return;}
+  _portal=data;
+  document.getElementById('login-client-name').textContent=data.client_name;
+  document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+})();
+
+function showFatal(msg){
+  document.getElementById('login-client-name').textContent=msg;
+  document.getElementById('login-btn').disabled=true;
+}
+
+async function doLogin(){
+  const pass=document.getElementById('login-pass').value;
+  if(!pass){document.getElementById('login-error').style.display='block';return;}
+  if(pass!==_portal.password){
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('login-pass').value='';
+    return;
+  }
+  document.getElementById('login-error').style.display='none';
+  document.getElementById('login-btn').disabled=true;
+  document.getElementById('login-loading').style.display='block';
+  await loadDashboard();
+}
+
+// ── Load dashboard ────────────────────────────────────────────────────────────
+async function loadDashboard(){
+  const c=_portal;
+  // Fetch antecipacao CSV
+  let tx=[], isBilling=false, entradas=0, saidas=0, saldo=0;
+  try{
+    const url=`${ANTEC_BASE}&gid=${c.antecipacao_gid}&_=${Date.now()}`;
+    const txt=await fetch(url).then(r=>r.text());
+    const rows=Papa.parse(txt).data;
+    const parsed=parseAntecCSV(rows);
+    tx=parsed.transactions; entradas=parsed.entradas; saidas=parsed.saidas;
+    saldo=parsed.saldo; isBilling=parsed.isBilling;
+  }catch(e){console.warn('antec error',e);}
+
+  // Fetch demandas (auto-discover by client name)
+  let demands=[];
+  try{demands=await fetchDemandas(c.client_name);}catch(e){console.warn('dem error',e);}
+
+  // Render
+  showDashboard(c.client_name,tx,entradas,saidas,saldo,isBilling,demands);
+}
+
+// ── Parse antecipacao CSV ─────────────────────────────────────────────────────
+function parseAntecCSV(rows){
+  const SKIP_TABS_ANT=['MODELO BASE','BASE','TEMPLATE','MODELO'];
+  const norm=s=>String(s||'').trim().toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'');
+  // Find header row
+  let hIdx=-1;
+  for(let i=0;i<rows.length;i++){
+    const row=rows[i].map(c=>norm(c));
+    if(row.some(c=>c==='DATA'||c==='NOME'||c==='VALOR')){hIdx=i;break;}
+  }
+  if(hIdx<0) return {transactions:[],entradas:0,saidas:0,saldo:0,isBilling:false};
+  const hdr=rows[hIdx].map(c=>norm(c));
+  const iData=hdr.findIndex(h=>h==='DATA');
+  const iDesc=hdr.findIndex(h=>h.includes('DESC')||h.includes('NOME'));
+  const iVal=hdr.findIndex(h=>h.includes('VALOR'));
+  const iTipo=hdr.findIndex(h=>h.includes('CATEG')||h.includes('TIPO'));
+  const iDir=hdr.findIndex(h=>h==='DIRECAO'||h==='TIPO'||(h.includes('ENT')||h.includes('SAI')));
+
+  const txAll=[];
+  for(let i=hIdx+1;i<rows.length;i++){
+    const r=rows[i];
+    const raw=iVal>=0?String(r[iVal]||'').trim():'';
+    const v=parseN(raw); if(v===0&&!raw) continue;
+    const dateRaw=iData>=0?String(r[iData]||'').trim():'';
+    const desc=iDesc>=0?String(r[iDesc]||'').trim():'';
+    const tipo=iTipo>=0?String(r[iTipo]||'').trim():'';
+    // Determine direction from value sign or column
+    let dir='SAÍDA';
+    if(v>0){
+      const rowTxt=r.map(c=>norm(c)).join('');
+      if(rowTxt.includes('ENTRADA')||rowTxt.includes('ANTECIP')||rowTxt.includes('APORTE')) dir='ENTRADA';
+    }
+    if(iDir>=0){
+      const d=norm(r[iDir]||'');
+      if(d.includes('ENT')||d.includes('CRED')) dir='ENTRADA';
+      else if(d.includes('SAI')||d.includes('DEB')) dir='SAÍDA';
+    }
+    txAll.push({date:dateRaw,desc,tipo,direction:dir,valor:Math.abs(v)});
+  }
+  const entradas=txAll.filter(t=>t.direction==='ENTRADA').reduce((s,t)=>s+t.valor,0);
+  const saidas=txAll.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
+  const isBilling=entradas===0;
+  const saldo=isBilling?-saidas:Math.round((entradas-saidas)*100)/100;
+  return {transactions:txAll,entradas,saidas,saldo,isBilling};
+}
+
+function parseN(s){
+  const v=String(s||'').trim().replace(/^R\$\s*/,'').trim();
+  if(v===''||/[a-zA-ZÀ-ÿ]/.test(v)) return 0;
+  return parseFloat(v.replace(/\./g,'').replace(',','.'))||0;
+}
+
+// ── Fetch demandas by client name ─────────────────────────────────────────────
+async function fetchDemandas(clientName){
+  const norm=s=>String(s||'').trim().toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const cn=norm(clientName);
+  // Discover tabs from pubhtml
+  const html=await fetch(DEM_PUBHTML+'?_='+Date.now()).then(r=>r.text()).catch(()=>'');
+  const gids=[...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]);
+  if(!gids.length) return [];
+  // Try each gid, find one matching client name
+  for(const gid of gids){
+    try{
+      const txt=await fetch(DEM_BASE+gid+'&_='+Date.now()).then(r=>r.text());
+      const rows=Papa.parse(txt).data;
+      // Check if any cell matches client name
+      const flat=rows.slice(0,5).flat().map(c=>norm(String(c||'')));
+      if(flat.some(v=>v.includes(cn)||cn.includes(v.replace(/\s+/g,'')))){
+        return parseDemCSV(rows);
+      }
+    }catch(e){}
+  }
+  return [];
+}
+
+function parseDemCSV(rows){
+  let hIdx=-1;
+  for(let i=0;i<rows.length;i++){
+    const rowU=rows[i].slice(0,8).map(c=>String(c||'').trim().toUpperCase());
+    if(rowU.includes('DATA')||rowU.includes('DESCRIÇÃO')||rowU.includes('DESCRICAO')){hIdx=i;break;}
+  }
+  if(hIdx<0) return [];
+  const hdr=rows[hIdx].map(h=>String(h||'').trim().toUpperCase());
+  const _date=hdr.findIndex(h=>h==='DATA');
+  const _desc=hdr.findIndex(h=>h.includes('DESC'));
+  const _area=hdr.findIndex(h=>h==='ÁREA'||h==='AREA');
+  const _resp=hdr.findIndex(h=>h.includes('RESPONS'));
+  const statusStart=_resp>=0?_resp+1:(_area>=0?_area+1:3);
+  const demands=[];
+  for(let i=hIdx+1;i<rows.length;i++){
+    const r=rows[i];
+    const date=String(r[_date>=0?_date:0]||'').trim();
+    const desc=String(r[_desc>=0?_desc:1]||'').trim();
+    if(!date&&!desc) continue;
+    const area=_area>=0?String(r[_area]||'').trim():'';
+    const resp=_resp>=0?String(r[_resp]||'').trim():'';
+    let status='',comment='';
+    for(let c=statusStart;c<r.length;c+=2){
+      const s=String(r[c]||'').trim();const co=String(r[c+1]||'').trim();
+      if(s){status=s;comment=co;}
+    }
+    demands.push({date,desc,area,resp,status,comment});
+  }
+  return demands;
+}
+
+// ── Render dashboard ──────────────────────────────────────────────────────────
+function showDashboard(name,tx,entradas,saidas,saldo,isBilling,demands){
+  document.getElementById('screen-login').style.display='none';
+  document.getElementById('screen-dash').style.display='block';
+  document.getElementById('dash-client-label').textContent=name;
+  document.getElementById('dash-title').textContent='Olá, '+name.split(' ')[0]+'!';
+  const d=new Date();
+  document.getElementById('dash-date').textContent=d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // KPIs
+  const salPos=saldo>=0;
+  const kpiRow=document.getElementById('kpi-row');
+  if(isBilling){
+    kpiRow.innerHTML=`
+      ${kpi('Em Aberto',BRL(saidas),'Aguardando pagamento','gold')}
+      ${kpi('Total Cobrado',BRL(saidas),tx.length+' lançamentos','red')}
+      ${kpi('Regime','Faturamento Mensal','Pagamento ao final de cada período','')}`;
+  } else {
+    kpiRow.innerHTML=`
+      ${kpi('Saldo Atual',BRL(saldo),tx.length+' movimentações',salPos?'green':'red')}
+      ${kpi('Total Entradas',BRL(entradas),tx.filter(t=>t.direction==='ENTRADA').length+' lançamentos','green')}
+      ${kpi('Total Saídas',BRL(saidas),tx.filter(t=>t.direction==='SAÍDA').length+' lançamentos','red')}`;
+  }
+
+  // Transactions
+  _txAll=tx; _txPage=0;
+  renderTxPage();
+
+  // Demandas
+  if(demands.length){
+    document.getElementById('section-demandas').style.display='block';
+    renderDemandas(demands);
+  }
+}
+
+function kpi(label,value,sub,cls){
+  return `<div class="kpi ${cls}">
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value">${value}</div>
+    <div class="kpi-sub">${sub}</div>
+  </div>`;
+}
+
+function renderTxPage(){
+  const start=_txPage*TX_PER_PAGE, end=start+TX_PER_PAGE;
+  const chunk=_txAll.slice(start,end);
+  const tbody=document.getElementById('tx-tbody');
+  if(!_txAll.length){tbody.innerHTML='<tr><td colspan="5" class="empty">Nenhuma movimentação encontrada.</td></tr>';return;}
+  tbody.innerHTML=chunk.map(t=>`
+    <tr>
+      <td style="white-space:nowrap;color:#9ca3af;font-size:11px">${t.date}</td>
+      <td>${t.desc||'—'}</td>
+      <td>${t.tipo?`<span class="tipo-tag">${t.tipo}</span>`:'<span style="color:#9ca3af">—</span>'}</td>
+      <td><span class="${t.direction==='ENTRADA'?'badge-e':'badge-s'}">${t.direction}</span></td>
+      <td class="r ${t.direction==='ENTRADA'?'ve':'vs'}">${t.direction==='ENTRADA'?'+':'−'} ${BRL(t.valor)}</td>
+    </tr>`).join('');
+  // Pagination
+  const total=_txAll.length, pages=Math.ceil(total/TX_PER_PAGE);
+  const pag=document.getElementById('tx-pag');
+  if(pages<=1){pag.innerHTML='';return;}
+  pag.innerHTML=`
+    <button class="pag-btn" onclick="changePage(-1)" ${_txPage===0?'disabled':''}>← Anterior</button>
+    <span class="pag-info">Página ${_txPage+1} de ${pages}</span>
+    <button class="pag-btn" onclick="changePage(1)" ${_txPage>=pages-1?'disabled':''}>Próxima →</button>`;
+}
+function changePage(d){_txPage+=d;renderTxPage();}
+
+function renderDemandas(demands){
+  const body=document.getElementById('dem-body');
+  if(!demands.length){body.innerHTML='<div class="empty">Nenhuma demanda encontrada.</div>';return;}
+  body.innerHTML=demands.map(d=>{
+    const k=d.status?d.status.toLowerCase():'';
+    let dotCls='',badgeCls='def';
+    if(k.includes('conclu')||k.includes('feito')){dotCls='done';badgeCls='done';}
+    else if(k.includes('andamento')||k.includes('execu')){dotCls='prog';badgeCls='prog';}
+    else if(k.includes('pendent')||k.includes('aberto')||k.includes('aguard')){dotCls='open';badgeCls='open';}
+    return `<div class="dem-row">
+      <div class="dem-status"><div class="dem-dot ${dotCls}"></div></div>
+      <div class="dem-info">
+        <div class="dem-desc">${d.desc||'—'}</div>
+        <div class="dem-meta">
+          ${d.date?`<span>${d.date}</span>`:''}
+          ${d.area?`<span>${d.area}</span>`:''}
+          ${d.resp?`<span>Resp: ${d.resp}</span>`:''}
+          ${d.comment?`<span style="color:#374151;font-style:italic">${d.comment}</span>`:''}
+        </div>
+      </div>
+      ${d.status?`<div><span class="dem-badge ${badgeCls}">${d.status}</span></div>`:''}
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

@@ -599,10 +599,16 @@ function openClient(idx){
         <div class="client-label">${c.isBilling?'Faturamento Mensal':'Antecipação de Saldos'}</div>
         <div class="client-name">${c.name}</div>
       </div>
-      <button class="btn-rpt" onclick="openRpt(${idx})">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-        Gerar Relatório
-      </button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-rpt" onclick="openRpt(${idx})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Gerar Relatório
+        </button>
+        <button class="btn-rpt" style="border-color:rgba(201,150,60,.35);background:rgba(201,150,60,.1)" onclick="openPortalModal(${idx})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Gerar Link
+        </button>
+      </div>
     </div>
 
     <div class="kpi-grid">${kpiHTML}</div>
@@ -1553,6 +1559,107 @@ setInterval(()=>{
 },5*60*1000);
 
 loadAll();
+
+// ── Portal link generation ────────────────────────────────────────────────────
+const SUPA_URL_P='https://mdftseanzfganeiyotlf.supabase.co';
+const SUPA_KEY_P='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
+const _sbP=supabase.createClient(SUPA_URL_P,SUPA_KEY_P);
+let _portalIdx=-1;
+
+function openPortalModal(idx){
+  _portalIdx=idx;
+  const c=_clients[idx];
+  document.getElementById('pm-client-name').textContent=c.name;
+  document.getElementById('pm-pass').value='';
+  document.getElementById('pm-result').style.display='none';
+  document.getElementById('pm-err').style.display='none';
+  document.getElementById('pm-btn').disabled=false;
+  document.getElementById('pm-btn').textContent='Criar Link';
+  document.getElementById('portal-modal').style.display='flex';
+}
+function closePortalModal(){document.getElementById('portal-modal').style.display='none';}
+
+async function savePortal(){
+  const c=_clients[_portalIdx];
+  const pass=document.getElementById('pm-pass').value.trim();
+  if(!pass){
+    document.getElementById('pm-err').textContent='Digite uma senha para o cliente.';
+    document.getElementById('pm-err').style.display='block';
+    return;
+  }
+  const btn=document.getElementById('pm-btn');
+  btn.disabled=true;btn.textContent='Criando...';
+  document.getElementById('pm-err').style.display='none';
+
+  // Check if portal already exists for this client+gid
+  const {data:existing}=await _sbP.from('client_portals')
+    .select('token').eq('antecipacao_gid',c.gid).maybeSingle();
+  
+  let token;
+  if(existing){
+    // Update password
+    await _sbP.from('client_portals').update({password:pass,client_name:c.name,is_billing:c.isBilling||false})
+      .eq('token',existing.token);
+    token=existing.token;
+  } else {
+    // Insert new
+    const {data,error}=await _sbP.from('client_portals').insert({
+      client_name:c.name,
+      antecipacao_gid:c.gid,
+      is_billing:c.isBilling||false,
+      password:pass
+    }).select('token').single();
+    if(error){
+      document.getElementById('pm-err').textContent='Erro ao criar link: '+error.message;
+      document.getElementById('pm-err').style.display='block';
+      btn.disabled=false;btn.textContent='Criar Link';
+      return;
+    }
+    token=data.token;
+  }
+
+  const base=location.origin+location.pathname.replace('antecipacao.html','');
+  const link=base+'portal.html?t='+token;
+  document.getElementById('pm-link-input').value=link;
+  document.getElementById('pm-result').style.display='block';
+  btn.textContent='Link criado!';
+}
+
+function copyPortalLink(){
+  const input=document.getElementById('pm-link-input');
+  navigator.clipboard.writeText(input.value).then(()=>{
+    const btn=event.target;
+    btn.textContent='Copiado!';
+    setTimeout(()=>{btn.textContent='Copiar';},2000);
+  }).catch(()=>{input.select();document.execCommand('copy');});
+}
+
 </script>
+
+<!-- ── Portal modal ────────────────────────────────────────────── -->
+<div id="portal-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;display:none">
+  <div style="background:#0f1e2e;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:32px;width:440px;max-width:95vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div style="font-size:14px;font-weight:800;color:#fff">🔗 Gerar Link do Cliente</div>
+      <button onclick="closePortalModal()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:6px">Cliente</div>
+    <div id="pm-client-name" style="font-size:15px;font-weight:800;color:#fff;margin-bottom:20px"></div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px">Senha de acesso para o cliente</div>
+    <input id="pm-pass" type="text" placeholder="Ex: soma2025" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;outline:none;margin-bottom:20px">
+    <div id="pm-result" style="display:none;margin-bottom:20px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#c9963c;margin-bottom:8px">Link gerado com sucesso!</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="pm-link-input" readonly style="flex:1;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.8);font-size:11px;font-family:'Montserrat',sans-serif;outline:none">
+        <button onclick="copyPortalLink()" style="padding:10px 16px;background:#c9963c;border:none;border-radius:8px;color:#fff;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer">Copiar</button>
+      </div>
+    </div>
+    <div id="pm-err" style="display:none;font-size:11px;color:#f87171;margin-bottom:14px"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="closePortalModal()" style="padding:10px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;cursor:pointer">Cancelar</button>
+      <button id="pm-btn" onclick="savePortal()" style="padding:10px 24px;background:#c9963c;border:none;border-radius:8px;color:#fff;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer">Criar Link</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
