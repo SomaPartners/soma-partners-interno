@@ -229,23 +229,35 @@ async function doLogin(){
 // ── Load dashboard ────────────────────────────────────────────────────────────
 async function loadDashboard(){
   const c=_portal;
-  // Fetch antecipacao CSV
-  let tx=[], isBilling=false, entradas=0, saidas=0, saldo=0;
-  try{
-    const url=`${ANTEC_BASE}&gid=${c.antecipacao_gid}&_=${Date.now()}`;
-    const txt=await fetch(url).then(r=>r.text());
-    const rows=Papa.parse(txt).data;
-    const parsed=parseAntecCSV(rows);
-    tx=parsed.transactions; entradas=parsed.entradas; saidas=parsed.saidas;
-    saldo=parsed.saldo; isBilling=parsed.isBilling;
-  }catch(e){console.warn('antec error',e);}
+  const hasAntec=c.antecipacao_gid&&c.antecipacao_gid!=='';
+  const hasDemGid=c.demandas_gid&&c.demandas_gid!=='';
 
-  // Fetch demandas (auto-discover by client name)
+  // Fetch antecipacao CSV (if available)
+  let tx=[], isBilling=false, entradas=0, saidas=0, saldo=0;
+  if(hasAntec){
+    try{
+      const url=`${ANTEC_BASE}&gid=${c.antecipacao_gid}&_=${Date.now()}`;
+      const txt=await fetch(url).then(r=>r.text());
+      const rows=Papa.parse(txt).data;
+      const parsed=parseAntecCSV(rows);
+      tx=parsed.transactions; entradas=parsed.entradas; saidas=parsed.saidas;
+      saldo=parsed.saldo; isBilling=parsed.isBilling;
+    }catch(e){console.warn('antec error',e);}
+  }
+
+  // Fetch demandas — by gid if available, else auto-discover by name
   let demands=[];
-  try{demands=await fetchDemandas(c.client_name);}catch(e){console.warn('dem error',e);}
+  try{
+    if(hasDemGid){
+      const txt=await fetch(DEM_BASE+c.demandas_gid+'&_='+Date.now()).then(r=>r.text());
+      demands=parseDemCSV(Papa.parse(txt).data);
+    } else if(hasAntec) {
+      demands=await fetchDemandas(c.client_name);
+    }
+  }catch(e){console.warn('dem error',e);}
 
   // Render
-  showDashboard(c.client_name,tx,entradas,saidas,saldo,isBilling,demands);
+  showDashboard(c.client_name,tx,entradas,saidas,saldo,isBilling,demands,hasAntec);
 }
 
 // ── Parse antecipacao CSV ─────────────────────────────────────────────────────
@@ -355,7 +367,7 @@ function parseDemCSV(rows){
 }
 
 // ── Render dashboard ──────────────────────────────────────────────────────────
-function showDashboard(name,tx,entradas,saidas,saldo,isBilling,demands){
+function showDashboard(name,tx,entradas,saidas,saldo,isBilling,demands,hasAntec=true){
   document.getElementById('screen-login').style.display='none';
   document.getElementById('screen-dash').style.display='block';
   document.getElementById('dash-client-label').textContent=name;
@@ -366,7 +378,10 @@ function showDashboard(name,tx,entradas,saidas,saldo,isBilling,demands){
   // KPIs
   const salPos=saldo>=0;
   const kpiRow=document.getElementById('kpi-row');
-  if(isBilling){
+  if(!hasAntec){
+    kpiRow.innerHTML='';
+    document.getElementById('section-extrato').style.display='none';
+  } else if(isBilling){
     kpiRow.innerHTML=`
       ${kpi('Em Aberto',BRL(saidas),'Aguardando pagamento','gold')}
       ${kpi('Total Cobrado',BRL(saidas),tx.length+' lançamentos','red')}

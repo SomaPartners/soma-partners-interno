@@ -1606,6 +1606,7 @@ async function savePortal(){
     const {data,error}=await _sbP.from('client_portals').insert({
       client_name:c.name,
       antecipacao_gid:c.gid,
+      demandas_gid:null,
       is_billing:c.isBilling||false,
       password:pass
     }).select('token').single();

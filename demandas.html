@@ -161,10 +161,16 @@ body.embed .topnav{display:none}
       <div class="client-label">Soma Partners · Demandas</div>
       <div class="client-name" id="detail-name">—</div>
     </div>
-    <button onclick="abrirModalRelatorio()" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:#c9963c;border:none;border-radius:8px;color:#0b1e30;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:.5px">
-      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Gerar Relatório
-    </button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onclick="abrirModalRelatorio()" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:#c9963c;border:none;border-radius:8px;color:#0b1e30;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:.5px">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Gerar Relatório
+      </button>
+      <button onclick="openDemPortalModal()" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(201,150,60,.12);border:1px solid rgba(201,150,60,.35);border-radius:8px;color:#c9963c;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:.5px">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Gerar Link
+      </button>
+    </div>
   </div>
   <div class="status-grid" id="status-grid"></div>
   <div class="table-section">
@@ -252,7 +258,8 @@ body.embed .topnav{display:none}
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
 const PUBHTML='https://docs.google.com/spreadsheets/d/e/2PACX-1vTw3bhacnZOSnWBDep3kHwk98nRq5LoYGysyPzbcvb2I8IeivPwEIsn3T651CyEmw8NkwwF9OJPJTsa/pubhtml';
 const CSVBASE='https://docs.google.com/spreadsheets/d/e/2PACX-1vTw3bhacnZOSnWBDep3kHwk98nRq5LoYGysyPzbcvb2I8IeivPwEIsn3T651CyEmw8NkwwF9OJPJTsa/pub?output=csv&gid=';
@@ -1217,5 +1224,103 @@ loadAll();
   </div>
 </div>
 
+
+<!-- ── Portal modal (demandas) ── -->
+<div id="dem-portal-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center">
+  <div style="background:#0f1e2e;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:32px;width:440px;max-width:95vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div style="font-size:14px;font-weight:800;color:#fff">🔗 Gerar Link do Cliente</div>
+      <button onclick="closeDemPortalModal()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:6px">Cliente</div>
+    <div id="dpm-client-name" style="font-size:15px;font-weight:800;color:#fff;margin-bottom:20px"></div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px">Senha de acesso para o cliente</div>
+    <input id="dpm-pass" type="text" placeholder="Ex: soma2025" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;outline:none;margin-bottom:20px">
+    <div id="dpm-result" style="display:none;margin-bottom:20px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#c9963c;margin-bottom:8px">Link gerado com sucesso!</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="dpm-link-input" readonly style="flex:1;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.8);font-size:11px;font-family:'Montserrat',sans-serif;outline:none">
+        <button onclick="copyDemLink()" style="padding:10px 16px;background:#c9963c;border:none;border-radius:8px;color:#fff;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer">Copiar</button>
+      </div>
+    </div>
+    <div id="dpm-err" style="display:none;font-size:11px;color:#f87171;margin-bottom:14px"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="closeDemPortalModal()" style="padding:10px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;cursor:pointer">Cancelar</button>
+      <button id="dpm-btn" onclick="saveDemPortal()" style="padding:10px 24px;background:#c9963c;border:none;border-radius:8px;color:#fff;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer">Criar Link</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const _SUPA_URL_D='https://mdftseanzfganeiyotlf.supabase.co';
+const _SUPA_KEY_D='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
+const _sbD=supabase.createClient(_SUPA_URL_D,_SUPA_KEY_D);
+
+function openDemPortalModal(){
+  if(_activeIdx<0) return;
+  const c=_clients[_activeIdx];
+  document.getElementById('dpm-client-name').textContent=c.name;
+  document.getElementById('dpm-pass').value='';
+  document.getElementById('dpm-result').style.display='none';
+  document.getElementById('dpm-err').style.display='none';
+  document.getElementById('dpm-btn').disabled=false;
+  document.getElementById('dpm-btn').textContent='Criar Link';
+  document.getElementById('dem-portal-modal').style.display='flex';
+}
+function closeDemPortalModal(){document.getElementById('dem-portal-modal').style.display='none';}
+
+async function saveDemPortal(){
+  if(_activeIdx<0) return;
+  const c=_clients[_activeIdx];
+  const pass=document.getElementById('dpm-pass').value.trim();
+  if(!pass){
+    document.getElementById('dpm-err').textContent='Digite uma senha para o cliente.';
+    document.getElementById('dpm-err').style.display='block';
+    return;
+  }
+  const btn=document.getElementById('dpm-btn');
+  btn.disabled=true; btn.textContent='Criando...';
+  document.getElementById('dpm-err').style.display='none';
+
+  // Check if portal already exists for this demandas gid
+  const {data:existing}=await _sbD.from('client_portals')
+    .select('token').eq('demandas_gid',c.gid).eq('antecipacao_gid','').maybeSingle();
+
+  let token;
+  if(existing){
+    await _sbD.from('client_portals').update({password:pass,client_name:c.name}).eq('token',existing.token);
+    token=existing.token;
+  } else {
+    const {data,error}=await _sbD.from('client_portals').insert({
+      client_name:c.name,
+      antecipacao_gid:'',
+      demandas_gid:c.gid,
+      is_billing:false,
+      password:pass
+    }).select('token').single();
+    if(error){
+      document.getElementById('dpm-err').textContent='Erro: '+error.message;
+      document.getElementById('dpm-err').style.display='block';
+      btn.disabled=false; btn.textContent='Criar Link';
+      return;
+    }
+    token=data.token;
+  }
+
+  const base=location.origin+location.pathname.replace('demandas.html','');
+  const link=base+'portal.html?t='+token;
+  document.getElementById('dpm-link-input').value=link;
+  document.getElementById('dpm-result').style.display='block';
+  btn.textContent='Link criado!';
+}
+
+function copyDemLink(){
+  const input=document.getElementById('dpm-link-input');
+  navigator.clipboard.writeText(input.value).then(()=>{
+    const btn=event.target; btn.textContent='Copiado!';
+    setTimeout(()=>{btn.textContent='Copiar';},2000);
+  }).catch(()=>{input.select();document.execCommand('copy');});
+}
+</script>
 </body>
 </html>
