@@ -157,7 +157,10 @@ th.r,td.r{text-align:right}
   </div>
   <div class="nav-right">
     <span class="last-updated" id="lu"></span>
-    <button class="btn-refresh" id="btn-refresh" onclick="loadAll()">
+    <button class="btn-refresh" id="btn-portais" onclick="openPortaisModal()" style="border-color:rgba(201,150,60,.3);color:#c9963c">
+        🔗 Portais
+      </button>
+      <button class="btn-refresh" id="btn-refresh" onclick="loadAll()">
       <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
       Atualizar
     </button>
@@ -242,6 +245,7 @@ th.r,td.r{text-align:right}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
@@ -1560,6 +1564,49 @@ setInterval(()=>{
 
 loadAll();
 
+
+// ── Portais gerados ──────────────────────────────────────────────────────────
+async function openPortaisModal(){
+  document.getElementById('portais-modal').style.display='flex';
+  document.getElementById('portais-list').innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;text-align:center;padding:20px">Carregando...</div>';
+  const {data,error}=await _sbP.from('client_portals').select('*').order('created_at',{ascending:false});
+  if(error||!data||!data.length){
+    document.getElementById('portais-list').innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;text-align:center;padding:20px">Nenhum portal gerado ainda.</div>';
+    return;
+  }
+  const base=location.origin+location.pathname.replace('antecipacao.html','');
+  document.getElementById('portais-list').innerHTML=data.map(p=>{
+    const link=base+'portal.html?t='+p.token;
+    return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:16px 18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:800;color:#fff">${p.client_name}</div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.3)">${new Date(p.created_at).toLocaleDateString('pt-BR')}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:4px">Senha</div>
+          <div style="font-size:13px;font-weight:700;color:#c9963c;letter-spacing:.5px">${p.password}</div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:4px">Tipo</div>
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.6)">${p.antecipacao_gid?'Saldo + Demandas':'Só Demandas'}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input readonly value="${link}" style="flex:1;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:rgba(255,255,255,.6);font-size:10px;font-family:'Montserrat',sans-serif;outline:none">
+        <button onclick="navigator.clipboard.writeText('${link}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copiar',1500)})" style="padding:8px 14px;background:#c9963c;border:none;border-radius:6px;color:#fff;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Copiar</button>
+        <button onclick="deletePortal('${p.token}',this)" style="padding:8px 10px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:6px;color:#f87171;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;cursor:pointer">Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function deletePortal(token,btn){
+  if(!confirm('Excluir este portal? O link deixará de funcionar.')) return;
+  await _sbP.from('client_portals').delete().eq('token',token);
+  btn.closest('div[style*="border-radius:10px"]').remove();
+}
+
 // ── Portal link generation ────────────────────────────────────────────────────
 const SUPA_URL_P='https://mdftseanzfganeiyotlf.supabase.co';
 const SUPA_KEY_P='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZnRzZWFuemZnYW5laXlvdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTcwODgsImV4cCI6MjA5MzgzMzA4OH0.ZUD-vjmF0QX80U6EK4vJK7uek23NzCSTocxSGYH4PDo';
@@ -1636,6 +1683,20 @@ function copyPortalLink(){
 }
 
 </script>
+
+
+<!-- ── Portais Gerados modal ── -->
+<div id="portais-modal" style="display:none;position:fixed;inset:0;z-index:2001;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center">
+  <div style="background:#0f1e2e;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:32px;width:560px;max-width:95vw;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div style="font-size:14px;font-weight:800;color:#fff">🔗 Portais Gerados</div>
+      <button onclick="document.getElementById('portais-modal').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div id="portais-list" style="display:flex;flex-direction:column;gap:12px">
+      <div style="color:rgba(255,255,255,.4);font-size:12px;text-align:center;padding:20px">Carregando...</div>
+    </div>
+  </div>
+</div>
 
 <!-- ── Portal modal ────────────────────────────────────────────── -->
 <div id="portal-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;display:none">
