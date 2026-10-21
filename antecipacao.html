@@ -925,6 +925,7 @@ function generateExcel(){
   if(typeof XLSX==='undefined'){alert('Aguarde — biblioteca Excel ainda carregando.');return;}
   const c=_clients[_rptIdx];if(!c)return;
 
+  // Filtro de periodo
   const fv=document.getElementById('rpt-from').value;
   const tv=document.getElementById('rpt-to').value;
   let tx=c.transactions;
@@ -933,8 +934,7 @@ function generateExcel(){
   if(fd||td){tx=tx.filter(t=>{const d=txToDate(t.date);if(!d)return true;if(fd&&d<fd)return false;if(td&&d>td)return false;return true;});}
   tx=tx.slice().sort((a,b)=>{const da=txToDate(a.date),db=txToDate(b.date);if(da&&db)return da-db;if(da)return -1;if(db)return 1;return 0;});
 
-  function nParc(p){if(!p||String(p).trim()==='')return 1;const m=String(p).trim().match(/^(\d+)\s*[xX\xd7]?$/);return m?Math.max(1,parseInt(m[1])):1;}
-
+  function nParc(p){if(!p||String(p).trim()==='')return 1;const m=String(p).trim().match(/^(\d+)\s*[xX]?$/);return m?Math.max(1,parseInt(m[1])):1;}
   const expanded=[];
   tx.forEach(t=>{
     const d=txToDate(t.date);const n=nParc(t.parcelas);
@@ -946,120 +946,216 @@ function generateExcel(){
   const MNAMES=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const MSHORT=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
-  const NAVY='0F2540',NAVY2='162D4A',GOLD='C9963C',GREEN='059669',RED='DC2626',GRAY1='F1F5F9',WHITE='FFFFFF',TEXT='0F2540',MUTED='64748B';
-  const FMT='"R$"* #,##0.00;[Red]"R$"* (#,##0.00);"R$"* "-"??;@';
+  // Cores
+  const NAVY='0F2540',NAVY2='162D4A',NAVY3='1E3A5F',GOLD='C9963C',GOLD2='E8B96A';
+  const GREEN='059669',GREENL='D1FAE5',RED='DC2626',REDL='FEE2E2';
+  const GRAY1='F8FAFC',GRAY2='E2E8F0',WHITE='FFFFFF',TEXT='0F2540',MUTED='64748B';
+  const BAR_COLOR='3B82F6',BAR_BG='EFF6FF';
 
+  const FMT='"R$"* #,##0.00;[Red]"R$"* (#,##0.00);"R$"* "-"??;@';
+  const NBARS=12; // numero de celulas de barra
+
+  // Estilos
   const S={
-    titleBg: {fill:{fgColor:{rgb:NAVY}},  font:{bold:true,color:{rgb:WHITE},sz:16},alignment:{horizontal:'center',vertical:'center'}},
-    subtitle:{fill:{fgColor:{rgb:NAVY2}}, font:{bold:true,color:{rgb:GOLD}, sz:9}, alignment:{horizontal:'left',vertical:'center'}},
-    secHd:   {fill:{fgColor:{rgb:NAVY2}}, font:{bold:true,color:{rgb:WHITE},sz:10},alignment:{horizontal:'left',vertical:'center'}},
-    colHd:   {fill:{fgColor:{rgb:NAVY}},  font:{bold:true,color:{rgb:WHITE},sz:9}, alignment:{horizontal:'center',vertical:'center'},border:{bottom:{style:'medium',color:{rgb:GOLD}}}},
-    colHdR:  {fill:{fgColor:{rgb:NAVY}},  font:{bold:true,color:{rgb:WHITE},sz:9}, alignment:{horizontal:'right',vertical:'center'}, border:{bottom:{style:'medium',color:{rgb:GOLD}}}},
-    kpiLbl:  {font:{bold:true,color:{rgb:MUTED},sz:8}, alignment:{horizontal:'left',vertical:'bottom'}},
-    kpiG:    {font:{bold:true,color:{rgb:GREEN},sz:18},alignment:{horizontal:'left',vertical:'center'}},
-    kpiR:    {font:{bold:true,color:{rgb:RED},  sz:18},alignment:{horizontal:'left',vertical:'center'}},
-    kpiGold: {font:{bold:true,color:{rgb:GOLD}, sz:18},alignment:{horizontal:'left',vertical:'center'}},
-    kpiNum:  {font:{bold:true,color:{rgb:NAVY}, sz:18},alignment:{horizontal:'left',vertical:'center'}},
-    dOdd:    {fill:{fgColor:{rgb:WHITE}}, font:{color:{rgb:TEXT},sz:9},alignment:{vertical:'center'}},
-    dEven:   {fill:{fgColor:{rgb:GRAY1}}, font:{color:{rgb:TEXT},sz:9},alignment:{vertical:'center'}},
-    dROdd:   {fill:{fgColor:{rgb:WHITE}}, font:{color:{rgb:TEXT},sz:9},alignment:{horizontal:'right',vertical:'center'}},
-    dREven:  {fill:{fgColor:{rgb:GRAY1}}, font:{color:{rgb:TEXT},sz:9},alignment:{horizontal:'right',vertical:'center'}},
-    totLbl:  {fill:{fgColor:{rgb:NAVY}},  font:{bold:true,color:{rgb:WHITE},sz:10},alignment:{horizontal:'left', vertical:'center'}},
-    totR:    {fill:{fgColor:{rgb:NAVY}},  font:{bold:true,color:{rgb:WHITE},sz:10},alignment:{horizontal:'right',vertical:'center'}},
+    title:  {fill:{fgColor:{rgb:NAVY}}, font:{bold:true,color:{rgb:WHITE},sz:18,name:'Calibri'},alignment:{horizontal:'center',vertical:'center'}},
+    tag:    {fill:{fgColor:{rgb:GOLD}}, font:{bold:true,color:{rgb:NAVY}, sz:9, name:'Calibri'},alignment:{horizontal:'center',vertical:'center'}},
+    sub:    {fill:{fgColor:{rgb:NAVY2}},font:{bold:true,color:{rgb:GOLD}, sz:8, name:'Calibri'},alignment:{horizontal:'left',vertical:'center'}},
+    kpiCard:{fill:{fgColor:{rgb:NAVY3}},font:{color:{rgb:WHITE},sz:8},alignment:{horizontal:'left',vertical:'center'}},
+    kpiLbl: {fill:{fgColor:{rgb:NAVY3}},font:{bold:true,color:{rgb:GOLD}, sz:8, name:'Calibri'},alignment:{horizontal:'left',vertical:'bottom'}},
+    kpiVal: {fill:{fgColor:{rgb:NAVY3}},font:{bold:true,color:{rgb:WHITE},sz:22,name:'Calibri'},alignment:{horizontal:'left',vertical:'center'}},
+    kpiValG:{fill:{fgColor:{rgb:NAVY3}},font:{bold:true,color:{rgb:'6EE7B7'},sz:22,name:'Calibri'},alignment:{horizontal:'left',vertical:'center'}},
+    kpiValR:{fill:{fgColor:{rgb:NAVY3}},font:{bold:true,color:{rgb:'FCA5A5'},sz:22,name:'Calibri'},alignment:{horizontal:'left',vertical:'center'}},
+    kpiSub: {fill:{fgColor:{rgb:NAVY3}},font:{color:{rgb:GOLD2},sz:7,name:'Calibri'},alignment:{horizontal:'left',vertical:'top'}},
+    secHd:  {fill:{fgColor:{rgb:NAVY}}, font:{bold:true,color:{rgb:WHITE}, sz:9, name:'Calibri'},alignment:{horizontal:'left',vertical:'center'},border:{left:{style:'thick',color:{rgb:GOLD}}}},
+    colHd:  {fill:{fgColor:{rgb:NAVY2}},font:{bold:true,color:{rgb:WHITE}, sz:8, name:'Calibri'},alignment:{horizontal:'center',vertical:'center'},border:{bottom:{style:'thin',color:{rgb:GOLD}}}},
+    colHdR: {fill:{fgColor:{rgb:NAVY2}},font:{bold:true,color:{rgb:WHITE}, sz:8, name:'Calibri'},alignment:{horizontal:'right',vertical:'center'}, border:{bottom:{style:'thin',color:{rgb:GOLD}}}},
+    colHdC: {fill:{fgColor:{rgb:NAVY2}},font:{bold:true,color:{rgb:'93C5FD'},sz:8, name:'Calibri'},alignment:{horizontal:'center',vertical:'center'},border:{bottom:{style:'thin',color:{rgb:GOLD}}}},
+    dOdd:   {fill:{fgColor:{rgb:WHITE}},font:{color:{rgb:TEXT},sz:9},alignment:{vertical:'center'}},
+    dEven:  {fill:{fgColor:{rgb:GRAY1}},font:{color:{rgb:TEXT},sz:9},alignment:{vertical:'center'}},
+    dROdd:  {fill:{fgColor:{rgb:WHITE}},font:{color:{rgb:TEXT},sz:9},alignment:{horizontal:'right',vertical:'center'}},
+    dREven: {fill:{fgColor:{rgb:GRAY1}},font:{color:{rgb:TEXT},sz:9},alignment:{horizontal:'right',vertical:'center'}},
+    barFill:{fill:{fgColor:{rgb:BAR_COLOR}}},
+    barEmpty:{fill:{fgColor:{rgb:BAR_BG}}},
+    barFillG:{fill:{fgColor:{rgb:GREEN}}},
+    pct:    {font:{bold:true,color:{rgb:MUTED},sz:8},alignment:{horizontal:'center',vertical:'center'}},
+    totLbl: {fill:{fgColor:{rgb:NAVY}},font:{bold:true,color:{rgb:WHITE},sz:9,name:'Calibri'},alignment:{horizontal:'left',vertical:'center'}},
+    totR:   {fill:{fgColor:{rgb:NAVY}},font:{bold:true,color:{rgb:WHITE},sz:9,name:'Calibri'},alignment:{horizontal:'right',vertical:'center'}},
+    blank:  {fill:{fgColor:{rgb:WHITE}}},
+    blankN: {fill:{fgColor:{rgb:NAVY}}},
   };
 
-  function cv(r,c,v,s,ws2){const a=XLSX.utils.encode_cell({r,c});ws2[a]={v,t:typeof v==='number'?'n':'s',s};}
-  function cn(r,c,v,s,ws2){const a=XLSX.utils.encode_cell({r,c});ws2[a]={v,t:'n',z:FMT,s};}
-  function cnP(r,c,v,s,ws2){const a=XLSX.utils.encode_cell({r,c});ws2[a]={v,t:'n',z:'0.00%',s};}
+  function cv(r,c,v,s,ws){const a=XLSX.utils.encode_cell({r,c});ws[a]={v:String(v),t:'s',s};}
+  function cn(r,c,v,s,ws){const a=XLSX.utils.encode_cell({r,c});ws[a]={v:v,t:'n',z:FMT,s};}
+  function cnP(r,c,v,s,ws){const a=XLSX.utils.encode_cell({r,c});ws[a]={v:v,t:'n',z:'0%',s};}
+  function ce(r,c,s,ws){const a=XLSX.utils.encode_cell({r,c});ws[a]={v:'',t:'s',s};}
+  function mg(r1,c1,r2,c2,merges){merges.push({s:{r:r1,c:c1},e:{r:r2,c:c2}});}
 
+  // Totais
   const totEnt=tx.filter(t=>t.direction==='ENTRADA').reduce((s,t)=>s+t.valor,0);
-  const totSai=tx.filter(t=>t.direction==='SAIDA').reduce((s,t)=>s+t.valor,0)+tx.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
+  const totSai=tx.filter(t=>t.direction!=='ENTRADA').reduce((s,t)=>s+t.valor,0);
   const totSaldo=Math.round((totEnt-totSai)*100)/100;
   const isBill=c.isBilling;
   const genDate=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
   const period=(!fv&&!tv)?'Todo o periodo':(fv&&tv)?`${fv.split('-').reverse().join('/')} a ${tv.split('-').reverse().join('/')}`:`A partir de ${fv||tv}`;
 
-  // DASHBOARD
+  // ════════════════════════════════════════════════════════
+  // DASHBOARD GERAL
+  // ════════════════════════════════════════════════════════
   const wb=XLSX.utils.book_new();
   const ws={};const merges=[];
+  // Colunas: [A=nome/label 26] [B=valor 18] [C=% 7] [D..O = 12 barras de 2 cada] [P=4 spacer]
+  // Indice:    0                 1             2        3..14                         15
+  const COLS=[{wch:26},{wch:18},{wch:7},...Array(NBARS).fill({wch:2}),{wch:4}];
 
-  function mg(r1,c1,r2,c2){merges.push({s:{r:r1,c:c1},e:{r:r2,c:c2}});}
+  // ── Linha 0-1: Titulo principal ──────────────────────────────────────
+  mg(0,0,1,15,merges);
+  cv(0,0,`  ${c.name.toUpperCase()}`,S.title,ws);
+  for(let col=1;col<=15;col++){ce(0,col,S.title,ws);ce(1,col,S.title,ws);}
+  // tag SOMA PARTNERS na direita
+  // ── Linha 2: subtitulo / periodo ─────────────────────────────────────
+  mg(2,0,2,15,merges);
+  cv(2,0,`  Relatorio de Antecipacao de Saldos   |   ${period}   |   Gerado em: ${genDate}`,S.sub,ws);
+  for(let col=1;col<=15;col++){ce(2,col,S.sub,ws);}
+  // ── Linha 3: espaco ──────────────────────────────────────────────────
+  for(let col=0;col<=15;col++){ce(3,col,S.blank,ws);}
 
-  // Linha 0-1: Titulo
-  mg(0,0,1,7);cv(0,0,`SOMA PARTNERS  -  ${c.name.toUpperCase()}`,S.titleBg,ws);
+  // ── Linhas 4-7: KPI cards ────────────────────────────────────────────
+  // KPI 1: Saldo / Em Aberto  (cols 0-4)
+  const kpiV1=isBill?totSai:totSaldo;
+  const kpiS1=isBill?S.kpiValR:(totSaldo>=0?S.kpiValG:S.kpiValR);
+  const kpiL1=isBill?'EM ABERTO (PERIODO ATUAL)':'SALDO DO CLIENTE';
+  const kpiD1=isBill?`${tx.length} lancamentos no periodo`:(totSaldo>=0?'Saldo a favor do cliente':'Saldo devedor');
+  mg(4,0,4,4,merges);cv(4,0,'  '+kpiL1,S.kpiLbl,ws);for(let i=1;i<=4;i++)ce(4,i,S.kpiLbl,ws);
+  mg(5,0,6,4,merges);cv(5,0,' ',S.kpiVal,ws);for(let i=1;i<=4;i++){ce(5,i,S.kpiVal,ws);ce(6,i,S.kpiVal,ws);}
+  // valor KPI 1 como numero formatado
+  {const a=XLSX.utils.encode_cell({r:5,c:0});ws[a]={v:Math.abs(kpiV1),t:'n',z:FMT,s:kpiS1};}
+  mg(7,0,7,4,merges);cv(7,0,'  '+kpiD1,S.kpiSub,ws);for(let i=1;i<=4;i++)ce(7,i,S.kpiSub,ws);
 
-  // Linha 2: subtitulo
-  mg(2,0,2,7);cv(2,0,`Relatorio de Antecipacao de Saldos  |  ${period}  |  Gerado em ${genDate}`,S.subtitle,ws);
+  // spacer col 5
+  for(let rr=4;rr<=7;rr++)ce(rr,5,S.blank,ws);
 
-  // KPIs linha 4-5
-  mg(4,0,4,2);cv(4,0,isBill?'EM ABERTO':'SALDO',S.kpiLbl,ws);
-  mg(5,0,5,2);cn(5,0,isBill?totSai:totSaldo,totSaldo>=0?S.kpiG:S.kpiR,ws);
+  // KPI 2: Total Saidas (cols 6-10)
+  mg(4,6,4,10,merges);cv(4,6,'  TOTAL SAIDAS',S.kpiLbl,ws);for(let i=7;i<=10;i++)ce(4,i,S.kpiLbl,ws);
+  mg(5,6,6,10,merges);for(let i=7;i<=10;i++){ce(5,i,S.kpiValR,ws);ce(6,i,S.kpiValR,ws);}
+  {const a=XLSX.utils.encode_cell({r:5,c:6});ws[a]={v:totSai,t:'n',z:FMT,s:S.kpiValR};}
+  mg(7,6,7,10,merges);cv(7,6,'  Total historico acumulado',S.kpiSub,ws);for(let i=7;i<=10;i++)ce(7,i,S.kpiSub,ws);
 
-  mg(4,3,4,5);cv(4,3,'TOTAL SAIDAS',S.kpiLbl,ws);
-  mg(5,3,5,5);cn(5,3,totSai,S.kpiR,ws);
+  // spacer col 11
+  for(let rr=4;rr<=7;rr++)ce(rr,11,S.blank,ws);
 
-  mg(4,6,4,7);
-  if(!isBill){cv(4,6,'TOTAL ENTRADAS',S.kpiLbl,ws);mg(5,6,5,7);cn(5,6,totEnt,S.kpiG,ws);}
-  else{cv(4,6,'LANCAMENTOS',S.kpiLbl,ws);mg(5,6,5,7);cv(5,6,tx.length,S.kpiNum,ws);}
+  // KPI 3: Total Entradas ou Lancamentos (cols 12-15)
+  mg(4,12,4,15,merges);
+  if(!isBill){
+    cv(4,12,'  TOTAL ENTRADAS',S.kpiLbl,ws);for(let i=13;i<=15;i++)ce(4,i,S.kpiLbl,ws);
+    mg(5,12,6,15,merges);for(let i=13;i<=15;i++){ce(5,i,S.kpiValG,ws);ce(6,i,S.kpiValG,ws);}
+    {const a=XLSX.utils.encode_cell({r:5,c:12});ws[a]={v:totEnt,t:'n',z:FMT,s:S.kpiValG};}
+    mg(7,12,7,15,merges);cv(7,12,'  Total entradas no periodo',S.kpiSub,ws);for(let i=13;i<=15;i++)ce(7,i,S.kpiSub,ws);
+  } else {
+    cv(4,12,'  LANCAMENTOS',S.kpiLbl,ws);for(let i=13;i<=15;i++)ce(4,i,S.kpiLbl,ws);
+    mg(5,12,6,15,merges);for(let i=13;i<=15;i++){ce(5,i,S.kpiVal,ws);ce(6,i,S.kpiVal,ws);}
+    {const a=XLSX.utils.encode_cell({r:5,c:12});ws[a]={v:tx.length,t:'n',z:'#,##0',s:{...S.kpiVal,font:{bold:true,color:{rgb:WHITE},sz:22,name:'Calibri'}}};}
+    mg(7,12,7,15,merges);cv(7,12,'  Total de lancamentos',S.kpiSub,ws);for(let i=13;i<=15;i++)ce(7,i,S.kpiSub,ws);
+  }
 
-  let r=7;
+  // ── Linha 8: espaco ──────────────────────────────────────────────────
+  for(let col=0;col<=15;col++){ce(8,col,S.blank,ws);}
 
-  // Resumo por mes
-  mg(r,0,r,7);cv(r,0,'  RESUMO POR MES',S.secHd,ws);r++;
+  // ── Resumo por Mes ───────────────────────────────────────────────────
+  let r=9;
+  mg(r,0,r,15,merges);cv(r,0,'  RESUMO POR MES',S.secHd,ws);for(let i=1;i<=15;i++)ce(r,i,S.secHd,ws);r++;
+
+  // cabecalho da tabela
   cv(r,0,'Mes',S.colHd,ws);
-  if(!isBill){cv(r,1,'Entradas (R$)',S.colHdR,ws);cv(r,2,'Saidas (R$)',S.colHdR,ws);cv(r,3,'Liquido (R$)',S.colHdR,ws);}
-  else{cv(r,1,'Total (R$)',S.colHdR,ws);}
+  cv(r,1,isBill?'Total (R$)':'Saidas (R$)',S.colHdR,ws);
+  if(!isBill)cv(r,2,'Entradas (R$)',S.colHdR,ws);
+  else cv(r,2,'%',S.colHdC,ws);
+  // header barras
+  for(let b=0;b<NBARS;b++){const a=XLSX.utils.encode_cell({r,c:3+b});ws[a]={v:'',t:'s',s:S.colHdC};}
   r++;
 
-  let mTE=0,mTS=0;
+  // calcular max para barra
+  const mSaiArr=mKeys.map(ym=>byMonth[ym].filter(e=>e.t.direction!=='ENTRADA').reduce((s,e)=>s+e.valor,0));
+  const maxSai=Math.max(...mSaiArr,1);
+  let mTotS=0,mTotE=0;
+
   mKeys.forEach((ym,idx)=>{
     const[yr,mo]=ym.split('-');const lb=`${MNAMES[parseInt(mo)-1]} ${yr}`;
     const rows=byMonth[ym];
     const ent=rows.filter(e=>e.t.direction==='ENTRADA').reduce((s,e)=>s+e.valor,0);
     const sai=rows.filter(e=>e.t.direction!=='ENTRADA').reduce((s,e)=>s+e.valor,0);
-    const liq=Math.round((ent-sai)*100)/100;
-    mTE+=ent;mTS+=sai;
-    const bg=idx%2===0?S.dOdd:S.dEven;const bgR=idx%2===0?S.dROdd:S.dREven;
+    mTotS+=sai;mTotE+=ent;
+    const bg=idx%2===0?S.dOdd:S.dEven;
+    const bgR=idx%2===0?S.dROdd:S.dREven;
+    const bars=Math.round((sai/maxSai)*NBARS);
+    const pctVal=mTotS>0?sai/(mTotS+mTotE):0; // pct provisorio
     cv(r,0,lb,bg,ws);
-    if(isBill){cn(r,1,sai,{...bgR,font:{color:{rgb:RED},sz:9}},ws);}
-    else{cn(r,1,ent,{...bgR,font:{color:{rgb:GREEN},sz:9}},ws);cn(r,2,sai,{...bgR,font:{color:{rgb:RED},sz:9}},ws);cn(r,3,liq,{...bgR,font:{bold:true,color:{rgb:liq>=0?GREEN:RED},sz:9}},ws);}
+    {const a=XLSX.utils.encode_cell({r,c:1});ws[a]={v:sai,t:'n',z:FMT,s:{...bgR,font:{color:{rgb:RED},sz:9}}};}
+    if(!isBill){const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:ent,t:'n',z:FMT,s:{...bgR,font:{color:{rgb:GREEN},sz:9}}};}
+    else{{const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:sai/maxSai,t:'n',z:'0%',s:{...bgR,font:{color:{rgb:MUTED},sz:8}}};}}
+    // barras
+    for(let b=0;b<NBARS;b++){
+      const bc=3+b;const a=XLSX.utils.encode_cell({r,c:bc});
+      ws[a]={v:'',t:'s',s:b<bars?S.barFill:S.barEmpty};
+    }
+    r++;
+  });
+  // total
+  cv(r,0,'TOTAL',S.totLbl,ws);
+  {const a=XLSX.utils.encode_cell({r,c:1});ws[a]={v:mTotS,t:'n',z:FMT,s:S.totR};}
+  if(!isBill){const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:mTotE,t:'n',z:FMT,s:S.totR};}
+  else{const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:1,t:'n',z:'0%',s:S.totR};}
+  for(let b=0;b<NBARS;b++){const a=XLSX.utils.encode_cell({r,c:3+b});ws[a]={v:'',t:'s',s:S.blankN};}
+  r+=2;
+
+  // ── Resumo por TIPO ──────────────────────────────────────────────────
+  mg(r,0,r,15,merges);cv(r,0,'  RESUMO POR TIPO',S.secHd,ws);for(let i=1;i<=15;i++)ce(r,i,S.secHd,ws);r++;
+  cv(r,0,'Tipo',S.colHd,ws);
+  cv(r,1,'Total Saidas (R$)',S.colHdR,ws);
+  cv(r,2,'%',S.colHdC,ws);
+  for(let b=0;b<NBARS;b++){const a=XLSX.utils.encode_cell({r,c:3+b});ws[a]={v:'',t:'s',s:S.colHdC};}
+  r++;
+
+  const tipoMap={};
+  tx.filter(t=>t.direction!=='ENTRADA').forEach(t=>{const k=t.tipo||'Geral';tipoMap[k]=(tipoMap[k]||0)+t.valor;});
+  const tipoE=Object.entries(tipoMap).sort((a,b)=>b[1]-a[1]);
+  const tipoTot=tipoE.reduce((s,[,v])=>s+v,0);
+  const maxTipo=tipoE.length>0?tipoE[0][1]:1;
+
+  tipoE.forEach(([k,v],idx)=>{
+    const bg=idx%2===0?S.dOdd:S.dEven;const bgR=idx%2===0?S.dROdd:S.dREven;
+    const pct=tipoTot>0?v/tipoTot:0;
+    const bars=Math.round((v/maxTipo)*NBARS);
+    cv(r,0,k,bg,ws);
+    {const a=XLSX.utils.encode_cell({r,c:1});ws[a]={v:v,t:'n',z:FMT,s:{...bgR,font:{color:{rgb:RED},sz:9}}};}
+    {const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:pct,t:'n',z:'0%',s:{...bgR,font:{color:{rgb:MUTED},sz:8}}};}
+    for(let b=0;b<NBARS;b++){const a=XLSX.utils.encode_cell({r,c:3+b});ws[a]={v:'',t:'s',s:b<bars?S.barFillG:S.barEmpty};}
     r++;
   });
   cv(r,0,'TOTAL',S.totLbl,ws);
-  const mLiq=Math.round((mTE-mTS)*100)/100;
-  if(isBill){cn(r,1,mTS,S.totR,ws);}else{cn(r,1,mTE,S.totR,ws);cn(r,2,mTS,S.totR,ws);cn(r,3,mLiq,S.totR,ws);}
-  r+=2;
+  {const a=XLSX.utils.encode_cell({r,c:1});ws[a]={v:tipoTot,t:'n',z:FMT,s:S.totR};}
+  {const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:1,t:'n',z:'0%',s:S.totR};}
+  for(let b=0;b<NBARS;b++){const a=XLSX.utils.encode_cell({r,c:3+b});ws[a]={v:'',t:'s',s:S.blankN};}
+  r++;
 
-  // Resumo por Caracteristica
-  mg(r,0,r,7);cv(r,0,'  RESUMO POR CARACTERISTICA',S.secHd,ws);r++;
-  cv(r,0,'Caracteristica',S.colHd,ws);cv(r,1,'Total Saidas (R$)',S.colHdR,ws);cv(r,2,'% do Total',S.colHdR,ws);r++;
-  const catMap={};
-  tx.filter(t=>t.direction!=='ENTRADA').forEach(t=>{const k=t.desc||t.tipo||'Geral';catMap[k]=(catMap[k]||0)+t.valor;});
-  const catE=Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
-  const catTot=catE.reduce((s,[,v])=>s+v,0);
-  catE.forEach(([k,v],idx)=>{
-    const bg=idx%2===0?S.dOdd:S.dEven;const bgR=idx%2===0?S.dROdd:S.dREven;
-    cv(r,0,k,bg,ws);cn(r,1,v,bgR,ws);cnP(r,2,catTot>0?v/catTot:0,bgR,ws);r++;
-  });
-  cv(r,0,'TOTAL',S.totLbl,ws);cn(r,1,catTot,S.totR,ws);cnP(r,2,1,S.totR,ws);r++;
-
-  ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:r,c:7}});
+  ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:r,c:15}});
   ws['!merges']=merges;
-  ws['!cols']=[{wch:30},{wch:18},{wch:18},{wch:18},{wch:4},{wch:4},{wch:18},{wch:18}];
-  ws['!rows']=[{hpt:24},{hpt:24},{hpt:14},{hpt:6},{hpt:14},{hpt:30},{hpt:8}];
+  ws['!cols']=COLS;
+  ws['!rows']=[{hpt:28},{hpt:28},{hpt:14},{hpt:6},{hpt:14},{hpt:30},{hpt:30},{hpt:12},{hpt:8}];
   XLSX.utils.book_append_sheet(wb,ws,'Dashboard Geral');
 
+  // ════════════════════════════════════════════════════════
   // ABAS POR MES
+  // ════════════════════════════════════════════════════════
   const HDR=['Data','Caracteristica','Tipo','Responsavel','Subcaracteristica','Parcelas','Mov.','Valor (R$)'];
+
   function mkRow(e,idx,wsM){
     const{t,num,tot,valor}=e;const parc=tot>1?`${num}/${tot}`:(t.parcelas||'');
-    const isE=t.direction==='ENTRADA';
+    const isE=t.direction==='ENTRADA';const ri=idx+1;
     const bg=idx%2===0?S.dOdd:S.dEven;const bgR=idx%2===0?S.dROdd:S.dREven;
-    const ri=idx+1;
     cv(ri,0,t.date,bg,wsM);cv(ri,1,t.desc||'',bg,wsM);cv(ri,2,t.tipo||'',bg,wsM);
     cv(ri,3,t.resp||'',bg,wsM);cv(ri,4,t.sub||'',bg,wsM);cv(ri,5,parc,bg,wsM);
     cv(ri,6,isE?'Entrada':'Saida',{...bg,font:{bold:true,color:{rgb:isE?GREEN:RED},sz:9}},wsM);
-    const a=XLSX.utils.encode_cell({r:ri,c:7});wsM[a]={v:valor,t:'n',z:FMT,s:{...bgR,font:{color:{rgb:isE?GREEN:RED},sz:9}}};
+    {const a=XLSX.utils.encode_cell({r:ri,c:7});wsM[a]={v:valor,t:'n',z:FMT,s:{...bgR,font:{color:{rgb:isE?GREEN:RED},sz:9}}};}
   }
 
   mKeys.forEach(ym=>{
@@ -1073,7 +1169,7 @@ function generateExcel(){
     const tr=rows.length+1;
     [0,1,2,3,4,5].forEach(i=>{wsM[XLSX.utils.encode_cell({r:tr,c:i})]={v:'',t:'s',s:S.totLbl};});
     wsM[XLSX.utils.encode_cell({r:tr,c:6})]={v:'TOTAL',t:'s',s:S.totLbl};
-    wsM[XLSX.utils.encode_cell({r:tr,c:7})]={v:tL,t:'n',z:FMT,s:{...S.totR,font:{bold:true,color:{rgb:tL>=0?'6EE7B7':'FCA5A5'},sz:10}}};
+    wsM[XLSX.utils.encode_cell({r:tr,c:7})]={v:tL,t:'n',z:FMT,s:{...S.totR,font:{bold:true,color:{rgb:tL>=0?'6EE7B7':'FCA5A5'},sz:10,name:'Calibri'}}};
     wsM['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:tr,c:7}});
     wsM['!cols']=[{wch:12},{wch:30},{wch:18},{wch:18},{wch:28},{wch:8},{wch:8},{wch:18}];
     XLSX.utils.book_append_sheet(wb,wsM,shN);
