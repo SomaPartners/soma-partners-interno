@@ -990,10 +990,14 @@ function generateExcel(){
   function ce(r,c,s,ws){const a=XLSX.utils.encode_cell({r,c});ws[a]={v:'',t:'s',s};}
   function mg(r1,c1,r2,c2,merges){merges.push({s:{r:r1,c:c1},e:{r:r2,c:c2}});}
 
-  // Totais
-  const totEnt=tx.filter(t=>t.direction==='ENTRADA').reduce((s,t)=>s+t.valor,0);
-  const totSai=tx.filter(t=>t.direction!=='ENTRADA').reduce((s,t)=>s+t.valor,0);
-  const totSaldo=Math.round((totEnt-totSai)*100)/100;
+  // Totais do expanded (mesma fonte do resumo por mes)
+  const expTotSai=expanded.filter(e=>e.t.direction!=='ENTRADA').reduce((s,e)=>s+e.valor,0);
+  const expTotEnt=expanded.filter(e=>e.t.direction==='ENTRADA').reduce((s,e)=>s+e.valor,0);
+  const expTotSaldo=Math.round((expTotEnt-expTotSai)*100)/100;
+  // Totais do tx original (para referencia)
+  const totEnt=expTotEnt;
+  const totSai=expTotSai;
+  const totSaldo=expTotSaldo;
   const isBill=c.isBilling;
   const genDate=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
   const period=(!fv&&!tv)?'Todo o periodo':(fv&&tv)?`${fv.split('-').reverse().join('/')} a ${tv.split('-').reverse().join('/')}`:`A partir de ${fv||tv}`;
@@ -1073,8 +1077,6 @@ function generateExcel(){
   // calcular max para barra
   const mSaiArr=mKeys.map(ym=>byMonth[ym].filter(e=>e.t.direction!=='ENTRADA').reduce((s,e)=>s+e.valor,0));
   const maxSai=Math.max(...mSaiArr,1);
-  const expTotSai=expanded.filter(e=>e.t.direction!=='ENTRADA').reduce((s,e)=>s+e.valor,0);
-  const expTotEnt=expanded.filter(e=>e.t.direction==='ENTRADA').reduce((s,e)=>s+e.valor,0);
   let mTotS=0,mTotE=0;
 
   mKeys.forEach((ym,idx)=>{
