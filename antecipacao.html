@@ -250,7 +250,7 @@ th.r,td.r{text-align:right}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script>
 const SHEET_ID = '2PACX-1vTzhi6lcErPeiH-CUwSxXXAS1EIW-elVoY0iHWCjoN5KrHXG6qEhdeaIZHOD5AhSP0v7gsFVEsc3hUy';
 const BASE    = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}`;
@@ -919,154 +919,183 @@ function openRpt(idx){
 function closeRpt(){document.getElementById('rpt-modal').style.display='none';}
 
 // ── Excel export ──────────────────────────────────────────────────────────
-function generateExcelDirect(idx){
-  _rptIdx=idx;
-  generateExcel();
-}
+function generateExcelDirect(idx){_rptIdx=idx;generateExcel();}
+
 function generateExcel(){
-  if(typeof XLSX==='undefined'){alert('Biblioteca Excel ainda carregando, tente novamente em segundos.');return;}
-  const c=_clients[_rptIdx]; if(!c) return;
+  if(typeof XLSX==='undefined'){alert('Aguarde — biblioteca Excel ainda carregando.');return;}
+  const c=_clients[_rptIdx];if(!c)return;
+
   const fv=document.getElementById('rpt-from').value;
   const tv=document.getElementById('rpt-to').value;
   let tx=c.transactions;
   const fd=fv?new Date(fv+'T00:00:00'):null;
   const td=tv?new Date(tv+'T23:59:59'):null;
-  if(fd||td){
-    tx=tx.filter(t=>{
-      const d=txToDate(t.date);if(!d) return true;
-      if(fd&&d<fd) return false;if(td&&d>td) return false;return true;
-    });
-  }
-  tx=tx.slice().sort((a,b)=>{
-    const da=txToDate(a.date),db=txToDate(b.date);
-    if(da&&db) return da-db;
-    if(da) return -1;if(db) return 1;return 0;
-  });
+  if(fd||td){tx=tx.filter(t=>{const d=txToDate(t.date);if(!d)return true;if(fd&&d<fd)return false;if(td&&d>td)return false;return true;});}
+  tx=tx.slice().sort((a,b)=>{const da=txToDate(a.date),db=txToDate(b.date);if(da&&db)return da-db;if(da)return -1;if(db)return 1;return 0;});
 
-  // Parse número de parcelas a partir do campo parcelas
-  function nParcelas(p){
-    if(!p||String(p).trim()==='') return 1;
-    const s=String(p).trim();
-    // "6x" ou "6" → 6 parcelas
-    const m1=s.match(/^(\d+)\s*[xX×]?$/);
-    if(m1) return Math.max(1,parseInt(m1[1]));
-    // "2/6" → já é uma parcela posicionada; tratar como 1 (não expandir)
-    return 1;
-  }
+  function nParc(p){if(!p||String(p).trim()==='')return 1;const m=String(p).trim().match(/^(\d+)\s*[xX\xd7]?$/);return m?Math.max(1,parseInt(m[1])):1;}
 
-  const MNAMES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-                'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  const MSHORT=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-  // Expandir parcelas: cada transação com N parcelas vira N entradas (uma por mês)
   const expanded=[];
   tx.forEach(t=>{
-    const d=txToDate(t.date);
-    const n=nParcelas(t.parcelas);
-    if(n<=1){
-      const ym=d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`:'0000-00';
-      expanded.push({t,ym,num:1,tot:1,valor:t.valor});
-    } else {
-      const parcVal=Math.round(t.valor/n*100)/100;
-      for(let i=0;i<n;i++){
-        let mo=d?new Date(d.getFullYear(),d.getMonth()+i,1):null;
-        const ym=mo?`${mo.getFullYear()}-${String(mo.getMonth()+1).padStart(2,'0')}`:'0000-00';
-        expanded.push({t,ym,num:i+1,tot:n,valor:parcVal});
-      }
-    }
+    const d=txToDate(t.date);const n=nParc(t.parcelas);
+    if(n<=1){const ym=d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`:'0000-00';expanded.push({t,ym,num:1,tot:1,valor:t.valor});}
+    else{const pv=Math.round(t.valor/n*100)/100;for(let i=0;i<n;i++){const mo=d?new Date(d.getFullYear(),d.getMonth()+i,1):null;const ym=mo?`${mo.getFullYear()}-${String(mo.getMonth()+1).padStart(2,'0')}`:'0000-00';expanded.push({t,ym,num:i+1,tot:n,valor:pv});}}
   });
-
-  // Agrupar por mês
-  const byMonth={};
-  expanded.forEach(e=>{
-    if(!byMonth[e.ym]) byMonth[e.ym]=[];
-    byMonth[e.ym].push(e);
-  });
+  const byMonth={};expanded.forEach(e=>{if(!byMonth[e.ym])byMonth[e.ym]=[];byMonth[e.ym].push(e);});
   const mKeys=Object.keys(byMonth).filter(k=>k!=='0000-00').sort();
+  const MNAMES=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const MSHORT=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
-  const HDR=['Data','Característica','Tipo','Responsável','Subcaracterística','Parcelas','Movimento','Valor (R$)'];
+  const NAVY='0F2540',NAVY2='162D4A',GOLD='C9963C',GREEN='059669',RED='DC2626',GRAY1='F1F5F9',WHITE='FFFFFF',TEXT='0F2540',MUTED='64748B';
+  const FMT='"R$"* #,##0.00;[Red]"R$"* (#,##0.00);"R$"* "-"??;@';
 
-  function makeDataRow(e){
-    const{t,num,tot,valor}=e;
-    const parcLabel=tot>1?`${num}/${tot}`:(t.parcelas||'');
-    return[t.date,t.desc||'',t.tipo||'',t.resp||'',t.sub||'',parcLabel,
-           t.direction==='ENTRADA'?'Entrada':'Saída',valor];
-  }
+  const S={
+    titleBg: {fill:{fgColor:{rgb:NAVY}},  font:{bold:true,color:{rgb:WHITE},sz:16},alignment:{horizontal:'center',vertical:'center'}},
+    subtitle:{fill:{fgColor:{rgb:NAVY2}}, font:{bold:true,color:{rgb:GOLD}, sz:9}, alignment:{horizontal:'left',vertical:'center'}},
+    secHd:   {fill:{fgColor:{rgb:NAVY2}}, font:{bold:true,color:{rgb:WHITE},sz:10},alignment:{horizontal:'left',vertical:'center'}},
+    colHd:   {fill:{fgColor:{rgb:NAVY}},  font:{bold:true,color:{rgb:WHITE},sz:9}, alignment:{horizontal:'center',vertical:'center'},border:{bottom:{style:'medium',color:{rgb:GOLD}}}},
+    colHdR:  {fill:{fgColor:{rgb:NAVY}},  font:{bold:true,color:{rgb:WHITE},sz:9}, alignment:{horizontal:'right',vertical:'center'}, border:{bottom:{style:'medium',color:{rgb:GOLD}}}},
+    kpiLbl:  {font:{bold:true,color:{rgb:MUTED},sz:8}, alignment:{horizontal:'left',vertical:'bottom'}},
+    kpiG:    {font:{bold:true,color:{rgb:GREEN},sz:18},alignment:{horizontal:'left',vertical:'center'}},
+    kpiR:    {font:{bold:true,color:{rgb:RED},  sz:18},alignment:{horizontal:'left',vertical:'center'}},
+    kpiGold: {font:{bold:true,color:{rgb:GOLD}, sz:18},alignment:{horizontal:'left',vertical:'center'}},
+    kpiNum:  {font:{bold:true,color:{rgb:NAVY}, sz:18},alignment:{horizontal:'left',vertical:'center'}},
+    dOdd:    {fill:{fgColor:{rgb:WHITE}}, font:{color:{rgb:TEXT},sz:9},alignment:{vertical:'center'}},
+    dEven:   {fill:{fgColor:{rgb:GRAY1}}, font:{color:{rgb:TEXT},sz:9},alignment:{vertical:'center'}},
+    dROdd:   {fill:{fgColor:{rgb:WHITE}}, font:{color:{rgb:TEXT},sz:9},alignment:{horizontal:'right',vertical:'center'}},
+    dREven:  {fill:{fgColor:{rgb:GRAY1}}, font:{color:{rgb:TEXT},sz:9},alignment:{horizontal:'right',vertical:'center'}},
+    totLbl:  {fill:{fgColor:{rgb:NAVY}},  font:{bold:true,color:{rgb:WHITE},sz:10},alignment:{horizontal:'left', vertical:'center'}},
+    totR:    {fill:{fgColor:{rgb:NAVY}},  font:{bold:true,color:{rgb:WHITE},sz:10},alignment:{horizontal:'right',vertical:'center'}},
+  };
 
-  const wb=XLSX.utils.book_new();
+  function cv(r,c,v,s,ws2){const a=XLSX.utils.encode_cell({r,c});ws2[a]={v,t:typeof v==='number'?'n':'s',s};}
+  function cn(r,c,v,s,ws2){const a=XLSX.utils.encode_cell({r,c});ws2[a]={v,t:'n',z:FMT,s};}
+  function cnP(r,c,v,s,ws2){const a=XLSX.utils.encode_cell({r,c});ws2[a]={v,t:'n',z:'0.00%',s};}
 
-  // ── 1. Dashboard Geral ────────────────────────────────────────────────
-  const dash=[];
-  dash.push([c.name]);
-  dash.push(['Relatório de Antecipação de Saldos']);
-  dash.push([]);
-  dash.push(['RESUMO GERAL']);
   const totEnt=tx.filter(t=>t.direction==='ENTRADA').reduce((s,t)=>s+t.valor,0);
-  const totSai=tx.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
+  const totSai=tx.filter(t=>t.direction==='SAIDA').reduce((s,t)=>s+t.valor,0)+tx.filter(t=>t.direction==='SAÍDA').reduce((s,t)=>s+t.valor,0);
   const totSaldo=Math.round((totEnt-totSai)*100)/100;
   const isBill=c.isBilling;
-  if(!isBill){
-    dash.push(['Total Entradas (R$)',totEnt]);
-    dash.push(['Total Saídas (R$)',totSai]);
-    dash.push(['Saldo (R$)',totSaldo]);
-  } else {
-    dash.push(['Total em Aberto (R$)',totSai]);
-  }
-  dash.push([]);
-  dash.push(['RESUMO POR MÊS']);
-  const mHdr=isBill?['Mês','Saídas (R$)']:['Mês','Entradas (R$)','Saídas (R$)','Líquido (R$)'];
-  dash.push(mHdr);
-  mKeys.forEach(ym=>{
-    const[yr,mo]=ym.split('-');
-    const label=`${MNAMES[parseInt(mo)-1]} ${yr}`;
+  const genDate=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const period=(!fv&&!tv)?'Todo o periodo':(fv&&tv)?`${fv.split('-').reverse().join('/')} a ${tv.split('-').reverse().join('/')}`:`A partir de ${fv||tv}`;
+
+  // DASHBOARD
+  const wb=XLSX.utils.book_new();
+  const ws={};const merges=[];
+
+  function mg(r1,c1,r2,c2){merges.push({s:{r:r1,c:c1},e:{r:r2,c:c2}});}
+
+  // Linha 0-1: Titulo
+  mg(0,0,1,7);cv(0,0,`SOMA PARTNERS  -  ${c.name.toUpperCase()}`,S.titleBg,ws);
+
+  // Linha 2: subtitulo
+  mg(2,0,2,7);cv(2,0,`Relatorio de Antecipacao de Saldos  |  ${period}  |  Gerado em ${genDate}`,S.subtitle,ws);
+
+  // KPIs linha 4-5
+  mg(4,0,4,2);cv(4,0,isBill?'EM ABERTO':'SALDO',S.kpiLbl,ws);
+  mg(5,0,5,2);cn(5,0,isBill?totSai:totSaldo,totSaldo>=0?S.kpiG:S.kpiR,ws);
+
+  mg(4,3,4,5);cv(4,3,'TOTAL SAIDAS',S.kpiLbl,ws);
+  mg(5,3,5,5);cn(5,3,totSai,S.kpiR,ws);
+
+  mg(4,6,4,7);
+  if(!isBill){cv(4,6,'TOTAL ENTRADAS',S.kpiLbl,ws);mg(5,6,5,7);cn(5,6,totEnt,S.kpiG,ws);}
+  else{cv(4,6,'LANCAMENTOS',S.kpiLbl,ws);mg(5,6,5,7);cv(5,6,tx.length,S.kpiNum,ws);}
+
+  let r=7;
+
+  // Resumo por mes
+  mg(r,0,r,7);cv(r,0,'  RESUMO POR MES',S.secHd,ws);r++;
+  cv(r,0,'Mes',S.colHd,ws);
+  if(!isBill){cv(r,1,'Entradas (R$)',S.colHdR,ws);cv(r,2,'Saidas (R$)',S.colHdR,ws);cv(r,3,'Liquido (R$)',S.colHdR,ws);}
+  else{cv(r,1,'Total (R$)',S.colHdR,ws);}
+  r++;
+
+  let mTE=0,mTS=0;
+  mKeys.forEach((ym,idx)=>{
+    const[yr,mo]=ym.split('-');const lb=`${MNAMES[parseInt(mo)-1]} ${yr}`;
     const rows=byMonth[ym];
     const ent=rows.filter(e=>e.t.direction==='ENTRADA').reduce((s,e)=>s+e.valor,0);
-    const sai=rows.filter(e=>e.t.direction==='SAÍDA').reduce((s,e)=>s+e.valor,0);
-    dash.push(isBill?[label,sai]:[label,ent,sai,Math.round((ent-sai)*100)/100]);
+    const sai=rows.filter(e=>e.t.direction!=='ENTRADA').reduce((s,e)=>s+e.valor,0);
+    const liq=Math.round((ent-sai)*100)/100;
+    mTE+=ent;mTS+=sai;
+    const bg=idx%2===0?S.dOdd:S.dEven;const bgR=idx%2===0?S.dROdd:S.dREven;
+    cv(r,0,lb,bg,ws);
+    if(isBill){cn(r,1,sai,{...bgR,font:{color:{rgb:RED},sz:9}},ws);}
+    else{cn(r,1,ent,{...bgR,font:{color:{rgb:GREEN},sz:9}},ws);cn(r,2,sai,{...bgR,font:{color:{rgb:RED},sz:9}},ws);cn(r,3,liq,{...bgR,font:{bold:true,color:{rgb:liq>=0?GREEN:RED},sz:9}},ws);}
+    r++;
   });
-  dash.push([]);
-  dash.push(['RESUMO POR CARACTERÍSTICA']);
-  dash.push(['Característica','Total Saídas (R$)']);
+  cv(r,0,'TOTAL',S.totLbl,ws);
+  const mLiq=Math.round((mTE-mTS)*100)/100;
+  if(isBill){cn(r,1,mTS,S.totR,ws);}else{cn(r,1,mTE,S.totR,ws);cn(r,2,mTS,S.totR,ws);cn(r,3,mLiq,S.totR,ws);}
+  r+=2;
+
+  // Resumo por Caracteristica
+  mg(r,0,r,7);cv(r,0,'  RESUMO POR CARACTERISTICA',S.secHd,ws);r++;
+  cv(r,0,'Caracteristica',S.colHd,ws);cv(r,1,'Total Saidas (R$)',S.colHdR,ws);cv(r,2,'% do Total',S.colHdR,ws);r++;
   const catMap={};
-  tx.filter(t=>t.direction==='SAÍDA').forEach(t=>{
-    const k=t.desc||t.tipo||'Geral';
-    catMap[k]=(catMap[k]||0)+t.valor;
+  tx.filter(t=>t.direction!=='ENTRADA').forEach(t=>{const k=t.desc||t.tipo||'Geral';catMap[k]=(catMap[k]||0)+t.valor;});
+  const catE=Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
+  const catTot=catE.reduce((s,[,v])=>s+v,0);
+  catE.forEach(([k,v],idx)=>{
+    const bg=idx%2===0?S.dOdd:S.dEven;const bgR=idx%2===0?S.dROdd:S.dREven;
+    cv(r,0,k,bg,ws);cn(r,1,v,bgR,ws);cnP(r,2,catTot>0?v/catTot:0,bgR,ws);r++;
   });
-  Object.entries(catMap).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>dash.push([k,Math.round(v*100)/100]));
-  const wsDash=XLSX.utils.aoa_to_sheet(dash);
-  // column widths
-  wsDash['!cols']=[{wch:35},{wch:18},{wch:18},{wch:18}];
-  XLSX.utils.book_append_sheet(wb,wsDash,'Dashboard Geral');
+  cv(r,0,'TOTAL',S.totLbl,ws);cn(r,1,catTot,S.totR,ws);cnP(r,2,1,S.totR,ws);r++;
 
-  // ── 2. Aba por mês ────────────────────────────────────────────────────
-  mKeys.forEach(ym=>{
-    const[yr,mo]=ym.split('-');
-    const shName=`${MSHORT[parseInt(mo)-1]} ${yr}`;
-    const rows=byMonth[ym];
-    const data=[HDR,...rows.map(makeDataRow)];
-    // Linha de total
-    const totM=rows.reduce((s,e)=>s+(e.t.direction==='SAÍDA'?-e.valor:e.valor),0);
-    data.push(['','','','','','','TOTAL',Math.round(totM*100)/100]);
-    const ws=XLSX.utils.aoa_to_sheet(data);
-    ws['!cols']=[{wch:12},{wch:30},{wch:20},{wch:20},{wch:30},{wch:8},{wch:9},{wch:14}];
-    XLSX.utils.book_append_sheet(wb,ws,shName);
-  });
+  ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:r,c:7}});
+  ws['!merges']=merges;
+  ws['!cols']=[{wch:30},{wch:18},{wch:18},{wch:18},{wch:4},{wch:4},{wch:18},{wch:18}];
+  ws['!rows']=[{hpt:24},{hpt:24},{hpt:14},{hpt:6},{hpt:14},{hpt:30},{hpt:8}];
+  XLSX.utils.book_append_sheet(wb,ws,'Dashboard Geral');
 
-  // ── 3. Todos os Lançamentos ───────────────────────────────────────────
-  const allData=[HDR,...expanded.map(makeDataRow)];
-  const wsAll=XLSX.utils.aoa_to_sheet(allData);
-  wsAll['!cols']=[{wch:12},{wch:30},{wch:20},{wch:20},{wch:30},{wch:8},{wch:9},{wch:14}];
-  XLSX.utils.book_append_sheet(wb,wsAll,'Todos os Lançamentos');
-
-  // Download
-  try{
-    XLSX.writeFile(wb,`${c.name} - Relatório.xlsx`);
-    closeRpt();
-  } catch(e){
-    console.error('Erro ao gerar Excel:',e);
-    alert('Erro ao gerar Excel: '+e.message);
+  // ABAS POR MES
+  const HDR=['Data','Caracteristica','Tipo','Responsavel','Subcaracteristica','Parcelas','Mov.','Valor (R$)'];
+  function mkRow(e,idx,wsM){
+    const{t,num,tot,valor}=e;const parc=tot>1?`${num}/${tot}`:(t.parcelas||'');
+    const isE=t.direction==='ENTRADA';
+    const bg=idx%2===0?S.dOdd:S.dEven;const bgR=idx%2===0?S.dROdd:S.dREven;
+    const ri=idx+1;
+    cv(ri,0,t.date,bg,wsM);cv(ri,1,t.desc||'',bg,wsM);cv(ri,2,t.tipo||'',bg,wsM);
+    cv(ri,3,t.resp||'',bg,wsM);cv(ri,4,t.sub||'',bg,wsM);cv(ri,5,parc,bg,wsM);
+    cv(ri,6,isE?'Entrada':'Saida',{...bg,font:{bold:true,color:{rgb:isE?GREEN:RED},sz:9}},wsM);
+    const a=XLSX.utils.encode_cell({r:ri,c:7});wsM[a]={v:valor,t:'n',z:FMT,s:{...bgR,font:{color:{rgb:isE?GREEN:RED},sz:9}}};
   }
+
+  mKeys.forEach(ym=>{
+    const[yr,mo]=ym.split('-');const shN=`${MSHORT[parseInt(mo)-1]} ${yr}`;
+    const rows=byMonth[ym];const wsM={};
+    HDR.forEach((h,i)=>{wsM[XLSX.utils.encode_cell({r:0,c:i})]={v:h,t:'s',s:i===7?S.colHdR:S.colHd};});
+    rows.forEach((e,i)=>mkRow(e,i,wsM));
+    const tE=rows.filter(e=>e.t.direction==='ENTRADA').reduce((s,e)=>s+e.valor,0);
+    const tS=rows.filter(e=>e.t.direction!=='ENTRADA').reduce((s,e)=>s+e.valor,0);
+    const tL=Math.round((tE-tS)*100)/100;
+    const tr=rows.length+1;
+    [0,1,2,3,4,5].forEach(i=>{wsM[XLSX.utils.encode_cell({r:tr,c:i})]={v:'',t:'s',s:S.totLbl};});
+    wsM[XLSX.utils.encode_cell({r:tr,c:6})]={v:'TOTAL',t:'s',s:S.totLbl};
+    wsM[XLSX.utils.encode_cell({r:tr,c:7})]={v:tL,t:'n',z:FMT,s:{...S.totR,font:{bold:true,color:{rgb:tL>=0?'6EE7B7':'FCA5A5'},sz:10}}};
+    wsM['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:tr,c:7}});
+    wsM['!cols']=[{wch:12},{wch:30},{wch:18},{wch:18},{wch:28},{wch:8},{wch:8},{wch:18}];
+    XLSX.utils.book_append_sheet(wb,wsM,shN);
+  });
+
+  // TODOS OS LANCAMENTOS
+  const wsA={};
+  HDR.forEach((h,i)=>{wsA[XLSX.utils.encode_cell({r:0,c:i})]={v:h,t:'s',s:i===7?S.colHdR:S.colHd};});
+  expanded.forEach((e,i)=>mkRow(e,i,wsA));
+  const allTL=expanded.reduce((s,e)=>s+(e.t.direction==='ENTRADA'?e.valor:-e.valor),0);
+  const allTR=expanded.length+1;
+  [0,1,2,3,4,5].forEach(i=>{wsA[XLSX.utils.encode_cell({r:allTR,c:i})]={v:'',t:'s',s:S.totLbl};});
+  wsA[XLSX.utils.encode_cell({r:allTR,c:6})]={v:'TOTAL',t:'s',s:S.totLbl};
+  wsA[XLSX.utils.encode_cell({r:allTR,c:7})]={v:allTL,t:'n',z:FMT,s:S.totR};
+  wsA['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:allTR,c:7}});
+  wsA['!cols']=[{wch:12},{wch:30},{wch:18},{wch:18},{wch:28},{wch:8},{wch:8},{wch:18}];
+  XLSX.utils.book_append_sheet(wb,wsA,'Todos os Lancamentos');
+
+  try{XLSX.writeFile(wb,`${c.name} - Relatorio.xlsx`);closeRpt();}
+  catch(e){console.error('Erro ao gerar Excel:',e);alert('Erro: '+e.message);}
 }
+
 
 
 function setQD(p,btn){
