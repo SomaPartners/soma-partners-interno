@@ -346,6 +346,7 @@ function processSheet(rows){
 
   // Detect if there's a RESPONSAVEL column — if so, no direction column
   const respIdx=hdr.findIndex(h=>h.includes('RESPONS'));
+  const subIdx =hdr.findIndex(h=>h.includes('SUBCA'));
   if(respIdx>=0){
     hasDir=false; // format: DATA, CARACT, TIPO, RESPONSAVEL, DESC, VALOR
     dirCol=-1;
@@ -388,7 +389,8 @@ function processSheet(rows){
       if(dirRaw.startsWith('EN')) direction='ENTRADA';
     }
     const resp=respIdx>=0?String(row[respIdx]||'').trim():'';
-    tx.push({date,desc,tipo,direction,valor:val,resp});
+    const sub =subIdx>=0?String(row[subIdx]||'').trim():'';
+    tx.push({date,desc,tipo,direction,valor:val,resp,sub});
   }
   if(!tx.length) return null;
 
@@ -545,7 +547,7 @@ function openClient(idx){
   // cats
   const cats={};
   tx.filter(t=>t.direction==='SAÍDA').forEach(t=>{
-    const k=t.tipo||'GERAL'; cats[k]=(cats[k]||0)+t.valor;
+    const k=t.desc||t.tipo||'GERAL'; cats[k]=(cats[k]||0)+t.valor;
   });
   const topCats=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,10);
 
@@ -563,7 +565,7 @@ function openClient(idx){
   const mEnt=mKeys.map(m=>mes[m].e);
   const mSai=mKeys.map(m=>mes[m].s);
 
-  const tipos=['TODOS',...new Set(tx.filter(t=>t.tipo).map(t=>t.tipo))];
+  const tipos=['TODOS',...new Set(tx.filter(t=>t.desc||t.tipo).map(t=>t.desc||t.tipo))];
 
   const kpiHTML = c.isBilling ? `
       <div class="kpi-card" style="--accent:#f59e0b">
@@ -619,7 +621,7 @@ function openClient(idx){
 
     <div class="charts-grid">
       <div class="chart-card">
-        <div class="chart-title">Gastos por Categoria</div>
+        <div class="chart-title">Gastos por Característica</div>
         <div style="position:relative;height:${Math.max(180,topCats.length*34)}px">
           <canvas id="ch-cats"></canvas>
         </div>
@@ -642,7 +644,7 @@ function openClient(idx){
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th class="r">Valor</th>
+            <th>Data</th><th>Característica</th><th>Tipo</th><th>Responsável</th><th>Subcaracterística</th><th class="r">Valor</th>
           </tr></thead>
           <tbody id="tbody"></tbody>
         </table>
@@ -662,15 +664,16 @@ function backToSummary(){
 }
 
 function renderTable(tx){
-  const data=_filter==='TODOS'?tx:tx.filter(t=>t.tipo===_filter);
+  const data=_filter==='TODOS'?tx:tx.filter(t=>(t.desc||t.tipo)===_filter);
   const tbody=document.getElementById('tbody');
   if(!tbody) return;
   tbody.innerHTML=data.map(t=>`
     <tr>
       <td style="white-space:nowrap;color:var(--muted)">${t.date}</td>
-      <td>${t.desc}</td>
+      <td>${t.desc||'—'}</td>
       <td>${t.tipo?`<span class="tipo-tag">${t.tipo}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
-      <td><span class="badge badge-${t.direction==='ENTRADA'?'e':'s'}">${t.direction}</span></td>
+      <td style="font-size:11px;color:var(--muted)">${t.resp||'—'}</td>
+      <td style="font-size:11px;color:var(--muted)">${t.sub||'—'}</td>
       <td class="r ${t.direction==='ENTRADA'?'ve':'vs'}">${t.direction==='ENTRADA'?'+':'−'} ${BRL(t.valor)}</td>
     </tr>`).join('');
 }
