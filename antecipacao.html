@@ -1073,6 +1073,8 @@ function generateExcel(){
   // calcular max para barra
   const mSaiArr=mKeys.map(ym=>byMonth[ym].filter(e=>e.t.direction!=='ENTRADA').reduce((s,e)=>s+e.valor,0));
   const maxSai=Math.max(...mSaiArr,1);
+  const expTotSai=expanded.filter(e=>e.t.direction!=='ENTRADA').reduce((s,e)=>s+e.valor,0);
+  const expTotEnt=expanded.filter(e=>e.t.direction==='ENTRADA').reduce((s,e)=>s+e.valor,0);
   let mTotS=0,mTotE=0;
 
   mKeys.forEach((ym,idx)=>{
@@ -1088,7 +1090,7 @@ function generateExcel(){
     cv(r,0,lb,bg,ws);
     {const a=XLSX.utils.encode_cell({r,c:1});ws[a]={v:sai,t:'n',z:FMT,s:{...bgR,font:{color:{rgb:RED},sz:9}}};}
     if(!isBill){const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:ent,t:'n',z:FMT,s:{...bgR,font:{color:{rgb:GREEN},sz:9}}};}
-    else{{const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:sai/maxSai,t:'n',z:'0%',s:{...bgR,font:{color:{rgb:MUTED},sz:8}}};}}
+    else{{const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:expTotSai>0?sai/expTotSai:0,t:'n',z:'0%',s:{...bgR,font:{color:{rgb:MUTED},sz:8}}};}}
     // barras
     for(let b=0;b<NBARS;b++){
       const bc=3+b;const a=XLSX.utils.encode_cell({r,c:bc});
