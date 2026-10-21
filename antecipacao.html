@@ -939,7 +939,7 @@ function generateExcel(){
   tx.forEach(t=>{
     const d=txToDate(t.date);const n=nParc(t.parcelas);
     if(n<=1){const ym=d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`:'0000-00';expanded.push({t,ym,num:1,tot:1,valor:t.valor});}
-    else{const pv=Math.round(t.valor/n*100)/100;for(let i=0;i<n;i++){const mo=d?new Date(d.getFullYear(),d.getMonth()+i,1):null;const ym=mo?`${mo.getFullYear()}-${String(mo.getMonth()+1).padStart(2,'0')}`:'0000-00';expanded.push({t,ym,num:i+1,tot:n,valor:pv});}}
+    else{const pv=Math.round(t.valor/n*100)/100;let acc=0;for(let i=0;i<n;i++){const isL=i===n-1;const iv=isL?Math.round((t.valor-acc)*100)/100:pv;acc+=iv;const mo=d?new Date(d.getFullYear(),d.getMonth()+i,1):null;const ym=mo?`${mo.getFullYear()}-${String(mo.getMonth()+1).padStart(2,'0')}`:'0000-00';expanded.push({t,ym,num:i+1,tot:n,valor:iv});}}
   });
   const byMonth={};expanded.forEach(e=>{if(!byMonth[e.ym])byMonth[e.ym]=[];byMonth[e.ym].push(e);});
   const mKeys=Object.keys(byMonth).filter(k=>k!=='0000-00').sort();
@@ -1005,7 +1005,7 @@ function generateExcel(){
   const ws={};const merges=[];
   // Colunas: [A=nome/label 26] [B=valor 18] [C=% 7] [D..O = 12 barras de 2 cada] [P=4 spacer]
   // Indice:    0                 1             2        3..14                         15
-  const COLS=[{wch:26},{wch:18},{wch:7},...Array(NBARS).fill({wch:2}),{wch:4}];
+  const COLS=[{wch:26},{wch:18},{wch:7},...Array(NBARS).fill({wch:4}),{wch:4}];
 
   // ── Linha 0-1: Titulo principal ──────────────────────────────────────
   mg(0,0,1,15,merges);
@@ -1037,24 +1037,21 @@ function generateExcel(){
   // KPI 2: Total Saidas (cols 6-10)
   mg(4,6,4,10,merges);cv(4,6,'  TOTAL SAIDAS',S.kpiLbl,ws);for(let i=7;i<=10;i++)ce(4,i,S.kpiLbl,ws);
   mg(5,6,6,10,merges);for(let i=7;i<=10;i++){ce(5,i,S.kpiValR,ws);ce(6,i,S.kpiValR,ws);}
-  {const a=XLSX.utils.encode_cell({r:5,c:6});ws[a]={v:totSai,t:'n',z:FMT,s:S.kpiValR};}
+  {const a=XLSX.utils.encode_cell({r:5,c:6});ws[a]={v:totSai,t:'n',z:FMT,s:{...S.kpiValR,font:{bold:true,color:{rgb:'FCA5A5'},sz:14,name:'Calibri'}}};}
   mg(7,6,7,10,merges);cv(7,6,'  Total historico acumulado',S.kpiSub,ws);for(let i=7;i<=10;i++)ce(7,i,S.kpiSub,ws);
 
-  // spacer col 11
-  for(let rr=4;rr<=7;rr++)ce(rr,11,S.blank,ws);
-
-  // KPI 3: Total Entradas ou Lancamentos (cols 12-15)
-  mg(4,12,4,15,merges);
+  // KPI 3: Total Entradas ou Lancamentos (cols 11-15, ocupa antigo spacer)
+  mg(4,11,4,15,merges);
   if(!isBill){
-    cv(4,12,'  TOTAL ENTRADAS',S.kpiLbl,ws);for(let i=13;i<=15;i++)ce(4,i,S.kpiLbl,ws);
-    mg(5,12,6,15,merges);for(let i=13;i<=15;i++){ce(5,i,S.kpiValG,ws);ce(6,i,S.kpiValG,ws);}
-    {const a=XLSX.utils.encode_cell({r:5,c:12});ws[a]={v:totEnt,t:'n',z:FMT,s:S.kpiValG};}
-    mg(7,12,7,15,merges);cv(7,12,'  Total entradas no periodo',S.kpiSub,ws);for(let i=13;i<=15;i++)ce(7,i,S.kpiSub,ws);
+    cv(4,11,'  TOTAL ENTRADAS',S.kpiLbl,ws);for(let i=12;i<=15;i++)ce(4,i,S.kpiLbl,ws);
+    mg(5,11,6,15,merges);for(let i=12;i<=15;i++){ce(5,i,S.kpiValG,ws);ce(6,i,S.kpiValG,ws);}
+    {const a=XLSX.utils.encode_cell({r:5,c:11});ws[a]={v:totEnt,t:'n',z:FMT,s:{...S.kpiValG,font:{bold:true,color:{rgb:'6EE7B7'},sz:14,name:'Calibri'}}};}
+    mg(7,11,7,15,merges);cv(7,11,'  Total entradas no periodo',S.kpiSub,ws);for(let i=12;i<=15;i++)ce(7,i,S.kpiSub,ws);
   } else {
-    cv(4,12,'  LANCAMENTOS',S.kpiLbl,ws);for(let i=13;i<=15;i++)ce(4,i,S.kpiLbl,ws);
-    mg(5,12,6,15,merges);for(let i=13;i<=15;i++){ce(5,i,S.kpiVal,ws);ce(6,i,S.kpiVal,ws);}
-    {const a=XLSX.utils.encode_cell({r:5,c:12});ws[a]={v:tx.length,t:'n',z:'#,##0',s:{...S.kpiVal,font:{bold:true,color:{rgb:WHITE},sz:22,name:'Calibri'}}};}
-    mg(7,12,7,15,merges);cv(7,12,'  Total de lancamentos',S.kpiSub,ws);for(let i=13;i<=15;i++)ce(7,i,S.kpiSub,ws);
+    cv(4,11,'  LANCAMENTOS',S.kpiLbl,ws);for(let i=12;i<=15;i++)ce(4,i,S.kpiLbl,ws);
+    mg(5,11,6,15,merges);for(let i=12;i<=15;i++){ce(5,i,S.kpiVal,ws);ce(6,i,S.kpiVal,ws);}
+    {const a=XLSX.utils.encode_cell({r:5,c:11});ws[a]={v:tx.length,t:'n',z:'#,##0',s:{...S.kpiVal,font:{bold:true,color:{rgb:WHITE},sz:14,name:'Calibri'}}};}
+    mg(7,11,7,15,merges);cv(7,11,'  Total de lancamentos',S.kpiSub,ws);for(let i=12;i<=15;i++)ce(7,i,S.kpiSub,ws);
   }
 
   // ── Linha 8: espaco ──────────────────────────────────────────────────
