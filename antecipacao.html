@@ -340,13 +340,14 @@ function processSheet(rows){
   const hdr=rows[headerIdx].map(c=>stripAcc(String(c||'').trim().toUpperCase()));
   if(saldoCol<0) saldoCol=hdr.findIndex(h=>h==='SALDO');
 
-  // Find VALOR column (explicit label wins)
-  const vIdx=hdr.findIndex(h=>h==='VALOR');
+  // Find VALOR column — match VALOR, VALOR TOTAL, etc.
+  const vIdx=hdr.findIndex(h=>h==='VALOR'||h.startsWith('VALOR'));
   if(vIdx>=0) valorCol=vIdx;
 
   // Detect if there's a RESPONSAVEL column — if so, no direction column
   const respIdx=hdr.findIndex(h=>h.includes('RESPONS'));
-  const subIdx =hdr.findIndex(h=>h.includes('SUBCA'));
+  const subIdx   =hdr.findIndex(h=>h.includes('SUBCA'));
+  const parcelIdx=hdr.findIndex(h=>h.includes('PARCEL'));
   if(respIdx>=0){
     hasDir=false; // format: DATA, CARACT, TIPO, RESPONSAVEL, DESC, VALOR
     dirCol=-1;
@@ -389,8 +390,9 @@ function processSheet(rows){
       if(dirRaw.startsWith('EN')) direction='ENTRADA';
     }
     const resp=respIdx>=0?String(row[respIdx]||'').trim():'';
-    const sub =subIdx>=0?String(row[subIdx]||'').trim():'';
-    tx.push({date,desc,tipo,direction,valor:val,resp,sub});
+    const sub    =subIdx>=0?String(row[subIdx]||'').trim():'';
+    const parcelas=parcelIdx>=0?String(row[parcelIdx]||'').trim():'';
+    tx.push({date,desc,tipo,direction,valor:val,resp,sub,parcelas});
   }
   if(!tx.length) return null;
 
@@ -644,7 +646,7 @@ function openClient(idx){
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Data</th><th>Característica</th><th>Tipo</th><th>Responsável</th><th>Subcaracterística</th><th class="r">Valor</th>
+            <th>Data</th><th>Característica</th><th>Tipo</th><th>Responsável</th><th>Subcaracterística</th><th>Parc.</th><th class="r">Valor</th>
           </tr></thead>
           <tbody id="tbody"></tbody>
         </table>
@@ -674,6 +676,7 @@ function renderTable(tx){
       <td>${t.tipo?`<span class="tipo-tag">${t.tipo}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
       <td style="font-size:11px;color:var(--muted)">${t.resp||'—'}</td>
       <td style="font-size:11px;color:var(--muted)">${t.sub||'—'}</td>
+      <td style="font-size:11px;color:var(--muted);text-align:center">${t.parcelas||'—'}</td>
       <td class="r ${t.direction==='ENTRADA'?'ve':'vs'}">${t.direction==='ENTRADA'?'+':'−'} ${BRL(t.valor)}</td>
     </tr>`).join('');
 }
