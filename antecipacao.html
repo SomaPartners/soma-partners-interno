@@ -1098,6 +1098,20 @@ function generateExcel(){
     }
     r++;
   });
+  // linha "Sem data" para transacoes sem data (ym='0000-00')
+  if(byMonth['0000-00']){
+    const sdRows=byMonth['0000-00'];
+    const sdSai=sdRows.filter(e=>e.t.direction!=='ENTRADA').reduce((s,e)=>s+e.valor,0);
+    const sdEnt=sdRows.filter(e=>e.t.direction==='ENTRADA').reduce((s,e)=>s+e.valor,0);
+    mTotS+=sdSai;mTotE+=sdEnt;
+    const bg=mKeys.length%2===0?S.dOdd:S.dEven;const bgR=mKeys.length%2===0?S.dROdd:S.dREven;
+    cv(r,0,'Sem data',bg,ws);
+    {const a=XLSX.utils.encode_cell({r,c:1});ws[a]={v:sdSai,t:'n',z:FMT,s:{...bgR,font:{color:{rgb:RED},sz:9}}};}
+    if(!isBill){const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:sdEnt,t:'n',z:FMT,s:{...bgR,font:{color:{rgb:GREEN},sz:9}}};}
+    else{const a=XLSX.utils.encode_cell({r,c:2});ws[a]={v:expTotSai>0?sdSai/expTotSai:0,t:'n',z:'0%',s:{...bgR,font:{color:{rgb:MUTED},sz:8}}};}
+    for(let b=0;b<NBARS;b++){const a=XLSX.utils.encode_cell({r,c:3+b});ws[a]={v:'',t:'s',s:S.barEmpty};}
+    r++;
+  }
   // total
   cv(r,0,'TOTAL',S.totLbl,ws);
   {const a=XLSX.utils.encode_cell({r,c:1});ws[a]={v:mTotS,t:'n',z:FMT,s:S.totR};}
