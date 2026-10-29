@@ -409,12 +409,144 @@ function setFilter(f){_filter=f;renderDetail();}
 function setFilterArea(a){_filterArea=a;renderDetail();}
 function setFilterResp(r){_filterResp=r;renderDetail();}
 
-// Stubs for buttons still in HTML
-function openAllView(){}
-function abrirModalRelatorio(){}
-function openDemPortalModal(){}
-function abrirRelatorioAll(){}
-function clearAllFilters(){}
+// ── VER TODAS ────────────────────────────────────────────────────────────────
+let _allFilter='TODOS', _allClient='TODOS', _allPage=0;
+const ALL_PAGE=20;
+
+function openAllView(){
+  _allFilter='TODOS';_allClient='TODOS';_allPage=0;
+  renderAllView();showView('all');
+}
+
+function renderAllView(){
+  // Status summary cards
+  const sg=el('all-status-grid');
+  if(sg) sg.innerHTML=[
+    {v:_demands.length,l:'Total',c:'var(--blue)',sc:'var(--blue)'},
+    {v:_demands.filter(d=>d.status==='EM ANDAMENTO').length,l:'Em Andamento',c:'#f97316',sc:'#f97316'},
+    {v:_demands.filter(d=>d.status==='CONCLUÍDO').length,l:'Concluído',c:'#10b981',sc:'#10b981'},
+    {v:_demands.filter(d=>d.status==='NÃO CONCLUÍDO'||d.status==='NÃO REALIZADO').length,l:'Não Realizado',c:'#ef4444',sc:'#ef4444'},
+  ].map(x=>`<div class="status-card" style="--sc:${x.sc}"><div class="status-card-v" style="color:${x.c}">${x.v}</div><div class="status-card-l">${x.l}</div></div>`).join('');
+
+  // Client dropdown
+  const sel=el('all-client-sel');
+  if(sel){
+    sel.innerHTML='<option value="TODOS">Todos os clientes</option>'+
+      _clients.map(c=>`<option value="${c}" ${_allClient===c?'selected':''}>${c}</option>`).join('');
+    sel.value=_allClient;
+  }
+
+  // Status filter chips
+  const sf=el('all-status-filter');
+  if(sf) sf.innerHTML=['TODOS','EM ANDAMENTO','CONCLUÍDO','NÃO REALIZADO'].map(s=>
+    `<button class="fb ${_allFilter===s?'active':''}" onclick="setAllStatus('${s}')">${s}</button>`
+  ).join('');
+
+  // Filter demands
+  let filtered=_demands;
+  if(_allClient!=='TODOS') filtered=filtered.filter(d=>d.cliente===_allClient);
+  if(_allFilter!=='TODOS') filtered=filtered.filter(d=>d.status===_allFilter);
+
+  const cnt=el('all-count');if(cnt)cnt.textContent=filtered.length+' demanda'+(filtered.length!==1?'s':'');
+  const cb=el('all-clear-btn');if(cb)cb.style.display=(_allFilter!=='TODOS'||_allClient!=='TODOS')?'inline-block':'none';
+
+  // Paginate
+  const total=filtered.length,pages=Math.ceil(total/ALL_PAGE)||1;
+  _allPage=Math.min(_allPage,pages-1);
+  const page=filtered.slice(_allPage*ALL_PAGE,(_allPage+1)*ALL_PAGE);
+
+  const tbody=el('all-tbody');
+  if(!tbody)return;
+  if(!page.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">Nenhuma demanda</td></tr>';}
+  else tbody.innerHTML=page.map(d=>`<tr>
+    <td style="color:rgba(255,255,255,.45);font-size:11px;white-space:nowrap">${d.data}</td>
+    <td><span class="client-tag">${d.cliente}</span></td>
+    <td style="font-weight:600;word-break:break-word;white-space:normal">${d.descricao}</td>
+    <td><span class="area-tag">${d.area||'—'}</span></td>
+    <td style="font-size:11px;color:rgba(255,255,255,.6)">${d.resp||'—'}</td>
+    <td><span class="badge ${badgeCls(d.status)}">${d.status||'—'}</span></td>
+    <td style="color:rgba(255,255,255,.5);font-size:11px;font-style:italic;word-break:break-word;white-space:normal">${d.comentario||'—'}</td>
+  </tr>`).join('');
+
+  // Pagination bar
+  const pb=el('all-pagination-bar');
+  if(pb){
+    if(pages<=1){pb.innerHTML='';return;}
+    pb.innerHTML=`<button class="pg-btn" onclick="allGoPage(${_allPage-1})" ${_allPage===0?'disabled':''}>← Anterior</button>
+      <span style="font-size:11px;color:rgba(255,255,255,.4)">${_allPage+1} / ${pages}</span>
+      <button class="pg-btn" onclick="allGoPage(${_allPage+1})" ${_allPage>=pages-1?'disabled':''}>Próxima →</button>`;
+  }
+}
+
+function setAllStatus(s){_allFilter=s;_allPage=0;renderAllView();}
+function setAllClient(v){_allClient=v;_allPage=0;renderAllView();}
+function allGoPage(p){_allPage=p;renderAllView();}
+function clearAllFilters(){_allFilter='TODOS';_allClient='TODOS';_allPage=0;renderAllView();}
+
+// ── GERAR RELATÓRIO ───────────────────────────────────────────────────────────
+function abrirModalRelatorio(){gerarRelatorio(_activeClient);}
+function abrirRelatorioAll(){gerarRelatorio(null);}
+
+function gerarRelatorio(clienteFiltro){
+  const lista=clienteFiltro?_demands.filter(d=>d.cliente===clienteFiltro):_demands;
+  const titulo=clienteFiltro||'Todas as Demandas';
+  const data=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+
+  const rows=lista.map(d=>`<tr>
+    <td>${d.data}</td>
+    <td>${d.cliente}</td>
+    <td>${d.descricao}</td>
+    <td>${d.area}</td>
+    <td>${d.resp}</td>
+    <td style="color:${d.status==='CONCLUÍDO'?'#059669':d.status==='EM ANDAMENTO'?'#d97706':'#dc2626'};font-weight:700">${d.status}</td>
+    <td>${d.comentario}</td>
+  </tr>`).join('');
+
+  const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <title>Relatório – ${titulo}</title>
+  <style>
+    body{font-family:Arial,sans-serif;font-size:11px;color:#111;margin:0;padding:20px}
+    h1{font-size:16px;margin-bottom:4px}
+    .sub{color:#666;font-size:11px;margin-bottom:16px}
+    table{width:100%;border-collapse:collapse}
+    th{background:#0b1e30;color:#fff;padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+    td{padding:6px 8px;border-bottom:1px solid #e5e5e5;vertical-align:top}
+    tr:nth-child(even)td{background:#f9f9f9}
+    @media print{body{padding:0}}
+  </style></head><body>
+  <h1>Soma Partners — ${titulo}</h1>
+  <div class="sub">Gerado em ${data} · ${lista.length} demandas</div>
+  <table><thead><tr><th>Data</th><th>Cliente</th><th>Descrição</th><th>Área</th><th>Resp.</th><th>Status</th><th>Comentário</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  <script>window.onload=function(){window.print()}<\/script></body></html>`;
+
+  const w=window.open('','_blank');
+  if(w){w.document.write(html);w.document.close();}
+}
+
+// ── GERAR LINK (portal do cliente) ───────────────────────────────────────────
+function openDemPortalModal(){
+  if(!_activeClient)return;
+  // Encode client name into URL as query param for a shareable filtered view
+  const base=location.origin+location.pathname.replace('admin.html','demandas.html');
+  const url=base+'?cliente='+encodeURIComponent(_activeClient);
+  // Show a simple modal
+  let m=el('portal-modal');
+  if(!m){
+    m=document.createElement('div');m.id='portal-modal';
+    m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+    m.innerHTML=`<div style="background:#0e1f35;border:1px solid rgba(201,150,60,.3);border-radius:16px;padding:28px;max-width:480px;width:90%;position:relative">
+      <button onclick="el('portal-modal').remove()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.07);border:none;color:rgba(255,255,255,.5);width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:15px;font-family:inherit">✕</button>
+      <div style="font-size:10px;font-weight:700;color:#c9963c;letter-spacing:1.5px;margin-bottom:8px">LINK DO CLIENTE</div>
+      <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:16px">${_activeClient}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px">Link para visualização das demandas deste cliente:</div>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;font-size:11px;color:#93c5fd;word-break:break-all;margin-bottom:14px">${url}</div>
+      <button onclick="navigator.clipboard.writeText('${url.replace(/'/g,"\\'")}').then(()=>{this.textContent='✓ Copiado!';setTimeout(()=>this.textContent='Copiar link',2000)})" style="width:100%;padding:11px;background:rgba(201,150,60,.15);border:1px solid rgba(201,150,60,.4);border-radius:8px;color:#c9963c;font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;cursor:pointer">Copiar link</button>
+    </div>`;
+    document.body.appendChild(m);
+  } else m.style.display='flex';
+  m.onclick=function(e){if(e.target===m)m.remove();};
+}
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 loadAll();
