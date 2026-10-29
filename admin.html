@@ -6205,8 +6205,7 @@ async function tvLoad(){
 }
 
 function tvParse(csv){
-  const lines=csv.split(/?
-/).map(l=>{
+  const lines=csv.split(/\r?\n/).map(l=>{
     const cells=[];let cur='',inQ=false;
     for(let i=0;i<l.length;i++){
       if(l[i]==='"'){inQ=!inQ;}else if(l[i]===','&&!inQ){cells.push(cur.trim());cur='';}else cur+=l[i];
@@ -6227,9 +6226,9 @@ function tvBuildChips(){
   tvRows.forEach(r=>{[r.resp1,r.resp2,r.resp3].forEach(p=>{if(p&&p.toUpperCase()!=='ND'&&p.trim())pessoas.add(p.trim());});});
   const wrap=document.getElementById('tv-chips');
   if(!wrap)return;
-  let html='<button class="tv-chip'+(tvFilter==='todos'?' active':'')+'" onclick="tvSetFilter('todos')">Todos</button>';
+  let html='<button class="tv-chip'+(tvFilter==='todos'?' active':'')+'" onclick="tvSetFilter(&quot;todos&quot;)">Todos</button>';
   [...pessoas].sort().forEach(p=>{
-    html+=`<button class="tv-chip${tvFilter===p?' active':''}" onclick="tvSetFilter('${p.replace(/'/g,"\'")}')">${p.split(' ')[0]}</button>`;
+    const ps=p.replace(/"/g,'&quot;');html+=`<button class="tv-chip${tvFilter===p?' active':''}" onclick="tvSetFilter(&quot;${ps}&quot;)">${p.split(' ')[0]}</button>`;
   });
   wrap.innerHTML=html;
 }
