@@ -608,8 +608,9 @@ function gerarRelatorio(clienteFiltro){
     .page-footer{position:absolute;bottom:14px;left:32px;right:32px;display:flex;justify-content:space-between;font-size:8.5px;color:#aaa;font-weight:600;letter-spacing:.5px}
     @media print{
       body{background:#fff}
-      .page{margin:0;box-shadow:none}
+      .page{margin:0;box-shadow:none;page-break-after:always}
     }
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
   </style></head><body>
 
   <!-- CAPA -->
@@ -662,7 +663,18 @@ function gerarRelatorio(clienteFiltro){
 
   ${tablePages}
 
-  <script>window.onload=function(){window.print();}<\/script>
+  <script>
+  window.onload=function(){
+    // Small delay so fonts load
+    setTimeout(function(){window.print();},600);
+  };
+  window.onafterprint=function(){};
+  <\/script>
+  <div id="print-tip" style="position:fixed;bottom:20px;right:20px;background:#0b1e30;color:#fff;padding:14px 18px;border-radius:10px;font-family:Montserrat,Arial,sans-serif;font-size:11px;max-width:280px;border:1px solid rgba(201,150,60,.4);z-index:9999">
+    <div style="font-weight:700;color:#c9963c;margin-bottom:6px">⚠️ Para cores corretas:</div>
+    Na janela de impressão, ative<br><strong>"Gráficos de fundo"</strong> (Background graphics)<br>nas configurações avançadas.
+    <div style="margin-top:10px;text-align:right"><button onclick="document.getElementById('print-tip').remove()" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:10px">OK</button></div>
+  </div>
   </body></html>`;
 
   const w=window.open('','_blank');
