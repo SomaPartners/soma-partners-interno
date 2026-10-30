@@ -829,9 +829,23 @@ body{display:flex;flex-direction:column;overflow:hidden}
           <div class="tv-date" id="tv-date"></div>
         </div>
       </div>
-      <div class="tv-filters">
-        <span class="tv-filter-lbl">FILTRAR:</span>
-        <div id="tv-chips"></div>
+      <div class="tv-filters" style="flex-direction:column;gap:6px;padding:8px 20px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span class="tv-filter-lbl">RESP.</span>
+          <div id="tv-chips"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span class="tv-filter-lbl">OBJETIVO</span>
+          <div id="tv-chips-obj"></div>
+        </div>
+        <div id="tv-filter-prod-row" style="display:none;gap:8px;flex-wrap:wrap;align-items:center">
+          <span class="tv-filter-lbl">PRODUTO</span>
+          <div id="tv-chips-prod"></div>
+        </div>
+        <div id="tv-filter-sub-row" style="display:none;gap:8px;flex-wrap:wrap;align-items:center">
+          <span class="tv-filter-lbl">SUBPRODUTO</span>
+          <div id="tv-chips-sub"></div>
+        </div>
       </div>
       <div class="tv-body">
         <div class="tv-grid" id="tv-grid"><div class="tv-empty">Carregando dados...</div></div>
@@ -6145,7 +6159,7 @@ function loadAccData(){
 const TV_CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vTiDPU8AjU7wnEORkawy6NYd5v27qQC2Au9sIAjhTA8Ca-NZa0j88RCoKpn3evMKaBQEGmq_FmVaw5g/pub?output=csv';
 const TV_MMAP={jan:0,fev:1,mar:2,abr:3,mai:4,jun:5,jul:6,ago:7,set:8,out:9,nov:10,dez:11};
 const TV_AVATAR_COLORS=['#6366f1','#059669','#d97706','#dc2626','#8b5cf6','#0891b2','#db2777','#65a30d'];
-let tvTimer=null,tvClockTimer=null,tvRows=[],tvFilter='todos';
+let tvTimer=null,tvClockTimer=null,tvRows=[],tvFilter='todos',tvFilterObj='todos',tvFilterProd='todos',tvFilterSub='todos';
 
 function tvInit(){
   if(tvClockTimer) return;
@@ -6221,21 +6235,65 @@ function tvParse(csv){
   }));
 }
 
+function tvChipHtml(val,current,onclick,label){
+  const ps=val.replace(/"/g,'&quot;');
+  return`<button class="tv-chip${current===val?' active':''}" onclick="${onclick}(&quot;${ps}&quot;)">${label||val}</button>`;
+}
+
 function tvBuildChips(){
   const pessoas=new Set();
   tvRows.forEach(r=>{[r.resp1,r.resp2,r.resp3].forEach(p=>{if(p&&p.toUpperCase()!=='ND'&&p.trim())pessoas.add(p.trim());});});
   const wrap=document.getElementById('tv-chips');
   if(!wrap)return;
   let html='<button class="tv-chip'+(tvFilter==='todos'?' active':'')+'" onclick="tvSetFilter(&quot;todos&quot;)">Todos</button>';
-  [...pessoas].sort().forEach(p=>{
-    const ps=p.replace(/"/g,'&quot;');html+=`<button class="tv-chip${tvFilter===p?' active':''}" onclick="tvSetFilter(&quot;${ps}&quot;)">${p.split(' ')[0]}</button>`;
-  });
+  [...pessoas].sort().forEach(p=>{html+=tvChipHtml(p,tvFilter,'tvSetFilter',p.split(' ')[0]);});
   wrap.innerHTML=html;
+
+  // OBJETIVO chips
+  const objs=new Set(['todos']);
+  tvRows.forEach(r=>{if(r.objetivo&&r.objetivo.toUpperCase()!=='ND'&&r.objetivo.trim())objs.add(r.objetivo.trim());});
+  const wo=document.getElementById('tv-chips-obj');
+  if(wo){
+    let h='<button class="tv-chip'+(tvFilterObj==='todos'?' active':'')+'" onclick="tvSetFilterObj(&quot;todos&quot;)">Todos</button>';
+    [...objs].filter(v=>v!=='todos').sort().forEach(v=>{h+=tvChipHtml(v,tvFilterObj,'tvSetFilterObj',v);});
+    wo.innerHTML=h;
+  }
+
+  // PRODUTO chips (filtered by obj)
+  const rowsForObj=tvFilterObj==='todos'?tvRows:tvRows.filter(r=>r.objetivo===tvFilterObj);
+  const prods=new Set();
+  rowsForObj.forEach(r=>{if(r.produto&&r.produto.toUpperCase()!=='ND'&&r.produto.trim())prods.add(r.produto.trim());});
+  const pr=document.getElementById('tv-filter-prod-row');
+  const wp=document.getElementById('tv-chips-prod');
+  if(pr&&wp){
+    if(prods.size>0){
+      pr.style.display='flex';
+      let h='<button class="tv-chip'+(tvFilterProd==='todos'?' active':'')+'" onclick="tvSetFilterProd(&quot;todos&quot;)">Todos</button>';
+      [...prods].sort().forEach(v=>{h+=tvChipHtml(v,tvFilterProd,'tvSetFilterProd',v);});
+      wp.innerHTML=h;
+    } else {pr.style.display='none';tvFilterProd='todos';}
+  }
+
+  // SUBPRODUTO chips (filtered by prod)
+  const rowsForProd=tvFilterProd==='todos'?rowsForObj:rowsForObj.filter(r=>r.produto===tvFilterProd);
+  const subs=new Set();
+  rowsForProd.forEach(r=>{if(r.subproduto&&r.subproduto.toUpperCase()!=='ND'&&r.subproduto.trim())subs.add(r.subproduto.trim());});
+  const sr=document.getElementById('tv-filter-sub-row');
+  const ws=document.getElementById('tv-chips-sub');
+  if(sr&&ws){
+    if(subs.size>0){
+      sr.style.display='flex';
+      let h='<button class="tv-chip'+(tvFilterSub==='todos'?' active':'')+'" onclick="tvSetFilterSub(&quot;todos&quot;)">Todos</button>';
+      [...subs].sort().forEach(v=>{h+=tvChipHtml(v,tvFilterSub,'tvSetFilterSub',v);});
+      ws.innerHTML=h;
+    } else {sr.style.display='none';tvFilterSub='todos';}
+  }
 }
 
-function tvSetFilter(f){
-  tvFilter=f;tvBuildChips();tvRenderCards();
-}
+function tvSetFilter(f){tvFilter=f;tvBuildChips();tvRenderCards();}
+function tvSetFilterObj(f){tvFilterObj=f;tvFilterProd='todos';tvFilterSub='todos';tvBuildChips();tvRenderCards();}
+function tvSetFilterProd(f){tvFilterProd=f;tvFilterSub='todos';tvBuildChips();tvRenderCards();}
+function tvSetFilterSub(f){tvFilterSub=f;tvBuildChips();tvRenderCards();}
 
 function tvRenderAll(){
   tvBuildChips();
@@ -6245,7 +6303,10 @@ function tvRenderAll(){
 function tvRenderCards(){
   const grid=document.getElementById('tv-grid');
   if(!grid)return;
-  const filtered=tvFilter==='todos'?tvRows:tvRows.filter(r=>[r.resp1,r.resp2,r.resp3].some(p=>p.trim()===tvFilter));
+  let filtered=tvFilter==='todos'?tvRows:tvRows.filter(r=>[r.resp1,r.resp2,r.resp3].some(p=>p.trim()===tvFilter));
+  if(tvFilterObj!=='todos') filtered=filtered.filter(r=>r.objetivo===tvFilterObj);
+  if(tvFilterProd!=='todos') filtered=filtered.filter(r=>r.produto===tvFilterProd);
+  if(tvFilterSub!=='todos') filtered=filtered.filter(r=>r.subproduto===tvFilterSub);
   // KPIs
   let over=0,hoje=0,breve=0;
   tvRows.forEach(r=>{const i=tvFupInfo(r.proxFup);if(i.diff!==null){if(i.diff<0)over++;else if(i.diff===0)hoje++;else if(i.diff<=4)breve++;}});
@@ -6300,7 +6361,10 @@ function tvRenderCards(){
 }
 
 function tvOpenModal(idx){
-  const filtered=tvFilter==='todos'?tvRows:tvRows.filter(r=>[r.resp1,r.resp2,r.resp3].some(p=>p.trim()===tvFilter));
+  let filtered=tvFilter==='todos'?tvRows:tvRows.filter(r=>[r.resp1,r.resp2,r.resp3].some(p=>p.trim()===tvFilter));
+  if(tvFilterObj!=='todos') filtered=filtered.filter(r=>r.objetivo===tvFilterObj);
+  if(tvFilterProd!=='todos') filtered=filtered.filter(r=>r.produto===tvFilterProd);
+  if(tvFilterSub!=='todos') filtered=filtered.filter(r=>r.subproduto===tvFilterSub);
   const sorted=[...filtered].sort((a,b)=>{
     const ai=tvFupInfo(a.proxFup),bi=tvFupInfo(b.proxFup);
     const ad=ai.diff!=null?ai.diff:999,bd=bi.diff!=null?bi.diff:999;return ad-bd;
